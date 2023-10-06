@@ -24,6 +24,32 @@ GridTestCase >> generateDemoGrid [
 ]
 
 { #category : #tests }
+GridTestCase >> testCellInteractions [
+
+	| grid cell expectedActiveLocationList foundOn |
+	grid := self generateDemoGrid.
+	cell := grid at: 5 @ 1.
+	self should: [ cell isOff ].
+	grid activateCellsInPath.
+	self should: [ cell isOn ].
+	expectedActiveLocationList := {
+		                              (1 @ 5).
+		                              (2 @ 5).
+		                              (3 @ 5).
+		                              (4 @ 5).
+		                              (4 @ 4).
+		                              (4 @ 3).
+		                              (4 @ 2).
+		                              (4 @ 1).
+		                              (5 @ 1) }.
+	foundOn := grid cells select: [ :each | each isOn ].
+	self should: [ foundOn size = expectedActiveLocationList size ].
+	foundOn do: [ :fCell |
+		self should: [
+			expectedActiveLocationList includes: fCell gridLocation ] ]
+]
+
+{ #category : #tests }
 GridTestCase >> testInitialConditions [
 
 	| grid cell |

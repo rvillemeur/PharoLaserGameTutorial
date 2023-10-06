@@ -5,7 +5,8 @@ Class {
 		'cells',
 		'laserIsActive',
 		'numberOfColumns',
-		'numberOfRows'
+		'numberOfRows',
+		'laserBeamPath'
 	],
 	#category : #'Laser-Game-Model'
 }
@@ -23,14 +24,41 @@ Grid class >> newOfSize: aPoint [
 ]
 
 { #category : #accessing }
+Grid >> activateCellsInPath [
+
+	self calculatePath.
+	self laserBeamPath do: [ :pe | pe activateCell ]
+]
+
+{ #category : #accessing }
 Grid >> at: aPoint [
-^self cells at: aPoint.
+
+	self revisit:
+		'sbw 05/21/2007 - We should add a more meaningful accessing technique hiere. x@y is confusing.'.
+	^ self cells at: aPoint ifAbsent: [  ]
 ]
 
 { #category : #accessing }
 Grid >> at: aPoint put: aCell [
 
+	self revisit:
+		'sbw 05/21/2007 - We should add a more meaningful accessing technique hiere. x@y is confusing.'.
+	aCell gridLocation: aPoint.
 	self cells at: aPoint put: aCell
+]
+
+{ #category : #accessing }
+Grid >> calculatePath [
+
+	| cell dirSym element next |
+	self laserBeamPath: OrderedCollection new.
+	cell := self startingCell.
+	dirSym := #south.
+	element := LaserPathElement cell: cell entrySide: dirSym.
+	[
+	self laserBeamPath addLast: element.
+	next := element nextElementIn: self.
+	next isNil ] whileFalse: [ element := next ]
 ]
 
 { #category : #accessing }
@@ -62,7 +90,19 @@ Grid >> initializeCells [
 			| pt cell |
 			pt := x @ y.
 			cell := BlankCell new.
-			self cells at: pt put: cell ] ]
+			self at: pt put: cell ] ]
+]
+
+{ #category : #accessing }
+Grid >> laserBeamPath [
+
+	^ laserBeamPath
+]
+
+{ #category : #accessing }
+Grid >> laserBeamPath: anObject [
+
+	laserBeamPath := anObject
 ]
 
 { #category : #accessing }
@@ -101,4 +141,12 @@ Grid >> numberOfRows [
 Grid >> numberOfRows: anObject [
 
 	numberOfRows := anObject
+]
+
+{ #category : #initialization }
+Grid >> startingCell [
+
+	| pt |
+	pt := 1 @ self numberOfRows.
+	^ self at: pt
 ]

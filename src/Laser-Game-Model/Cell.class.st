@@ -3,7 +3,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'activeSegments',
-		'exitSides'
+		'exitSides',
+		'gridLocation'
 	],
 	#category : #'Laser-Game-Model'
 }
@@ -36,6 +37,18 @@ Cell >> exitSides [
 Cell >> exitSides: anObject [
 
 	exitSides := anObject
+]
+
+{ #category : #accessing }
+Cell >> gridLocation [
+
+	^ gridLocation
+]
+
+{ #category : #accessing }
+Cell >> gridLocation: anObject [
+
+	gridLocation := anObject
 ]
 
 { #category : #initialization }
