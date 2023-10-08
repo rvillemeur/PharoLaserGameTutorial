@@ -38,6 +38,12 @@ LaserPathElement >> cell: anObject [
 	cell := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+LaserPathElement >> clearCell [
+
+	self cell clearCell
+]
+
 { #category : #accessing }
 LaserPathElement >> entrySide [
 

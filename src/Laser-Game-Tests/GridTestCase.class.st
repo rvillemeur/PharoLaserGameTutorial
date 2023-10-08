@@ -37,6 +37,19 @@ GridTestCase >> testCellInteractions [
 ]
 
 { #category : #tests }
+GridTestCase >> testFireLaser [
+
+	| grid cell |
+	grid := self generateDemoGrid.
+	grid fireLaser.
+	self should: [ grid laserIsActive ].
+	cell := grid startingCell.
+	self should: [ cell isOn ].
+	cell := grid at: 5@1.
+	self should: [ cell isOn ]
+]
+
+{ #category : #tests }
 GridTestCase >> testInitialConditions [
 
 	| grid cell |
@@ -56,5 +69,32 @@ GridTestCase >> testNonDefaultGridSizeInitialConditions [
 	self should: [ cell class = BlankCell ].
 	cell := grid at: 2 @ 3.
 	self should: [ cell class = BlankCell ].
+	self should: [ cell isOff ]
+]
+
+{ #category : #tests }
+GridTestCase >> testStopLaser [
+
+	| grid cell |
+	grid := self generateDemoGrid.
+	grid stopLaser.
+	self shouldnt: [ grid laserIsActive ].
+	cell := grid startingCell.
+	self should: [ cell isOff ].
+	cell := grid at: 5@1.
+	self should: [ cell isOff ]	
+]
+
+{ #category : #tests }
+GridTestCase >> testToggleLaser [
+
+	| grid cell |
+	grid := self generateDemoGrid.
+	grid fireLaser.
+	grid stopLaser.
+	self shouldnt: [ grid laserIsActive ].
+	cell := grid startingCell.
+	self should: [ cell isOff ].
+	cell := grid at: 5 @ 1.
 	self should: [ cell isOff ]
 ]

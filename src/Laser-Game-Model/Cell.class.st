@@ -21,6 +21,12 @@ Cell >> activeSegments: anObject [
 	activeSegments := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+Cell >> clearCell [
+
+	self initializeActiveSegments
+]
+
 { #category : #testing }
 Cell >> exitSideFor: aSymbol [
 

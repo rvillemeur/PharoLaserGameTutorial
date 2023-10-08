@@ -73,6 +73,20 @@ Grid >> cells: anObject [
 	cells := anObject
 ]
 
+{ #category : #drawing }
+Grid >> clearCellsInPath [
+
+	self calculatePath.
+	self laserBeamPath do: [ :pe | pe clearCell ]
+]
+
+{ #category : #drawing }
+Grid >> fireLaser [
+
+	self laserIsActive: true.
+	self activateCellsInPath
+]
+
 { #category : #initialization }
 Grid >> initialize [
 
@@ -149,4 +163,11 @@ Grid >> startingCell [
 	| pt |
 	pt := 1 @ self numberOfRows.
 	^ self at: pt
+]
+
+{ #category : #drawing }
+Grid >> stopLaser [
+
+	self laserIsActive: false.
+	self clearCellsInPath
 ]
