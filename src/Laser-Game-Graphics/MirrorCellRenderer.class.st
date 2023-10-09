@@ -16,6 +16,18 @@ MirrorCellRenderer >> cornerInset [
 	^ 8 @ 8
 ]
 
+{ #category : #'as yet unclassified' }
+MirrorCellRenderer >> redrawCell [
+
+	| offset backgroundRect |
+	offset := self offsetWithinGridForm.
+	backgroundRect := offset extent: CellRenderer cellExtent - 2.
+	self targetForm
+		fill: backgroundRect
+		fillColor: LaserGameColors gameBoardBackgroundColor.
+	self render
+]
+
 { #category : #rendering }
 MirrorCellRenderer >> renderContents [
 
@@ -62,4 +74,26 @@ MirrorCellRenderer >> renderContentsLeanRight [
 		        to: x2 @ y2
 		        withForm: fillForm.
 	line displayOn: self targetForm
+]
+
+{ #category : #'as yet unclassified' }
+MirrorCellRenderer >> showPositionHintFromWithinBoardOffset: aPoint [
+
+	| cellPosn offsetWithinCell regionClass pushRegionClass arrow tinyArrow offset |
+	self redrawCell.
+	cellPosn := self offsetWithinGridForm.
+	offsetWithinCell := aPoint - cellPosn.
+	regionClass := CellClickRegion clickRegionForPoint: offsetWithinCell.
+	pushRegionClass := regionClass showPositionHintFromWithinCell:
+		                   offsetWithinCell.
+	pushRegionClass isNil ifTrue: [ ^ self ].
+	arrow := pushRegionClass arrowForm.
+	tinyArrow := arrow scaledToSize: CellRenderer cellExtent - 2.
+	offset := self offsetWithinGridForm + 5.
+	tinyArrow
+		displayOn: self targetForm
+		at: offset
+		clippingBox: self targetForm computeBoundingBox 
+		rule: Form oldPaint
+		fillColor: Color gray
 ]

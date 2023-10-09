@@ -29,6 +29,14 @@ LaserGame >> boardForm: anObject [
 	boardForm := anObject
 ]
 
+{ #category : #'events - processing' }
+LaserGame >> boardRelativePositionFor: evt [
+
+	| evtPosn |
+	evtPosn := evt hand position.
+	^ evtPosn - self position
+]
+
 { #category : #drawing }
 LaserGame >> calculateExtent [
 
@@ -36,6 +44,25 @@ LaserGame >> calculateExtent [
 	pt := self boardForm extent.
 	pt := pt + (self panelWidth @ 0).
 	^ pt
+]
+
+{ #category : #'events - processing' }
+LaserGame >> cellForEvent: evt [
+
+	| posn |
+	posn := self cellPositionForEvent: evt.
+	^ self grid at: posn
+]
+
+{ #category : #'events - processing' }
+LaserGame >> cellPositionForEvent: evt [
+
+	| posn ext counts |
+	posn := self boardRelativePositionFor: evt.
+	ext := CellRenderer cellExtent.
+	counts := posn // ext.
+	counts := counts + (1 @ 1).
+	^ counts
 ]
 
 { #category : #drawing }
@@ -89,6 +116,20 @@ LaserGame >> grid [
 LaserGame >> grid: anObject [
 
 	grid := anObject
+]
+
+{ #category : #'events - processing' }
+LaserGame >> handleListenEvent: evt [
+
+	| pos unders boardMorph |
+	((evt isMouse and: [ evt isMove ]) and: [ evt isMouseDown not ])
+		ifFalse: [ ^ self ].
+	pos := evt hand position.
+	unders := self morphsAt: pos.
+	unders isEmpty ifTrue: [ ^ self ].
+	boardMorph := unders detect: [ :m | m externalName = 'board' ] ifNone: [  ].
+	boardMorph isNil ifTrue: [ ^ self ].
+	self mouseMoveWhileButtonDown: evt forMorph: boardMorph
 ]
 
 { #category : #initialization }
@@ -163,6 +204,14 @@ LaserGame >> makeGameBoardMorph [
 
 	| boardMorph |
 	boardMorph := ImageMorph withForm: self boardForm.
+	boardMorph name: 'board'.
+	boardMorph 
+		on: #mouseUp send: #mouseUp:forMorph: to: self;
+		on: #mouseDown send: #mouseDown:forMorph: to: self;
+		on: #mouseEnter send: #mouseEnter:forMorph: to: self;
+		on: #mouseLeave send: #mouseLeave:forMorph: to: self;
+		on: #mouseMove send: #mouseMoveWhileButtonDown:forMorph: to: self.
+		
 	^ boardMorph
 ]
 
@@ -170,6 +219,34 @@ LaserGame >> makeGameBoardMorph [
 LaserGame >> makeQuitGameButton [
 
 	^ self makeButton: 'Quit' action: #quitGame state: nil
+]
+
+{ #category : #'events - processing' }
+LaserGame >> mouseDown: evt forMorph: anImageMorph [
+]
+
+{ #category : #'events - processing' }
+LaserGame >> mouseEnter: evt forMorph: anImageMorph [
+
+	evt hand addMouseListener: self
+]
+
+{ #category : #'events - processing' }
+LaserGame >> mouseLeave: evt forMorph: anImageMorph [
+
+	evt hand removeMouseListener: self
+]
+
+{ #category : #'events - processing' }
+LaserGame >> mouseMoveWhileButtonDown: evt forMorph: anImageMorph [
+
+	| cell renderer pixelPositionWithinBoard|
+	cell := self cellForEvent: evt.
+	renderer := CellRenderer rendererFor:  cell grid: self grid  form: boardForm.
+	pixelPositionWithinBoard := self boardRelativePositionFor: evt.
+	renderer showPositionHintFromWithinBoardOffset: pixelPositionWithinBoard.
+	self changed.
+	
 ]
 
 { #category : #drawing }

@@ -9,10 +9,28 @@ Class {
 	#category : #'Laser-Game-Graphics'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #constants }
 CellRenderer class >> cellExtent [
 
 	^ 30 @ 30
+]
+
+{ #category : #constants }
+CellRenderer class >> ignoreRegionOffset [
+
+	^ 4
+]
+
+{ #category : #constants }
+CellRenderer class >> insideRegionExtent [
+
+	^ 10 @ 10
+]
+
+{ #category : #constants }
+CellRenderer class >> outsideRegionExtent [
+
+	^ self cellExtent - (2 * self ignoreRegionOffset)
 ]
 
 { #category : #rendering }
@@ -28,13 +46,13 @@ line := Line from: x1@y1 to: x2@y2 withForm: (Form extent: 1@1 depth: 8) fillBla
 line displayOn: self targetForm.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CellRenderer class >> rendererFor: aCell [
 
 	^ self subclasses detect: [ :cls | cls modelClass = aCell class ]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #rendering }
 CellRenderer class >> rendererFor: aCell grid: aGrid form: aForm [
 
 	| cls model |
@@ -174,6 +192,12 @@ CellRenderer >> renderBorderTop [
 		        to: x2 @ y2
 		        withForm: fillForm.
 	line displayOn: self targetForm
+]
+
+{ #category : #'as yet unclassified' }
+CellRenderer >> showPositionHintFromWithinBoardOffset: aPoint [
+
+	self subclassResponsibility
 ]
 
 { #category : #accessing }
