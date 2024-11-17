@@ -6,12 +6,10 @@ Class {
 
 { #category : #'as yet unclassified' }
 CellClickRegionIgnore class >> regionRectangle [
-
-	^ 0 @ 0 extent: CellRenderer cellExtent
+	^0@0 extent: CellRenderer cellExtent
 ]
 
-{ #category : #sorting }
+{ #category : #'as yet unclassified' }
 CellClickRegionIgnore class >> sortIndex [
-
-	^ 3
+	^3
 ]

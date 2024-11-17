@@ -11,13 +11,16 @@ GridDirectionNorth class >> adjacentInVersionSymbol [
 ]
 
 { #category : #'as yet unclassified' }
-GridDirectionNorth class >> directionSymbol [
+GridDirectionNorth class >> adjacentInversionSymbol [
+	^#south
+]
 
-	^ #north
+{ #category : #'as yet unclassified' }
+GridDirectionNorth class >> directionSymbol [
+	^#north
 ]
 
 { #category : #'as yet unclassified' }
 GridDirectionNorth class >> vector [
-
-	^ 0 @ -1
+	^0@(-1)
 ]

@@ -6,16 +6,23 @@ Class {
 
 { #category : #'as yet unclassified' }
 CellClickRegionPushWest class >> arrowForm [
-
-	^ LaserGameForms westArrow
+	^LaserGameForms westArrow
 ]
 
-{ #category : #testing }
-CellClickRegionPushWest class >> containsPoint: aPoint [
+{ #category : #'as yet unclassified' }
+CellClickRegionPushWest class >> canPushCell: aCell withinGrid: aGrid [
+	^aGrid canPushCellWestFromLocation: aCell gridLocation
+]
 
+{ #category : #'as yet unclassified' }
+CellClickRegionPushWest class >> containsPoint: aPoint [
 	| underHeadingDown underHeadingUp |
 	underHeadingDown := self pointIsUnderHeadingDownLine: aPoint.
 	underHeadingUp := self pointIsUnderHeadingUpLine: aPoint.
+	^underHeadingDown not and: [underHeadingUp]
+]
 
-	^ underHeadingDown not and: [ underHeadingUp ]
+{ #category : #'as yet unclassified' }
+CellClickRegionPushWest class >> mouseUpForCell: aCell withinGrid: aGrid [
+	^aGrid pushCellWestFromLocation: aCell gridLocation
 ]
