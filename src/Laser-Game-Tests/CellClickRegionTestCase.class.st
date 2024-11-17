@@ -23,6 +23,27 @@ CellClickRegionTestCase >> testClicksInIgnoreRegion [
 ]
 
 { #category : #tests }
+CellClickRegionTestCase >> testClicksInInsideRegion [
+	| pt regionClass |
+	pt := 1@1.
+	regionClass := CellClickRegion clickRegionForPoint: pt.
+	self shouldnt: [regionClass = CellClickRegionInside].
+	
+	pt := CellClickRegionOutside regionRectangle topLeft + (1@1).
+	regionClass := CellClickRegion clickRegionForPoint: pt.
+	self shouldnt: [regionClass = CellClickRegionInside].
+
+	pt := CellClickRegionInside regionRectangle topLeft - (1@1).
+	regionClass := CellClickRegion clickRegionForPoint: pt.
+	self shouldnt: [regionClass = CellClickRegionInside].
+
+	pt := CellClickRegionInside regionRectangle topLeft.
+	regionClass := CellClickRegion clickRegionForPoint: pt.
+	self should: [regionClass = CellClickRegionInside].
+
+]
+
+{ #category : #tests }
 CellClickRegionTestCase >> testClicksInOutsideRegion [
 
 	| pt regionClass |

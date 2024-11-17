@@ -79,6 +79,22 @@ self shouldnt: [ cell isOn ].
 ]
 
 { #category : #tests }
+MirrorCellTestCase >> testCellRotate [
+	| cell |
+	cell := MirrorCell new.
+	cell leanLeft.
+	self should: [cell isLeft].
+	self should: [(cell exitSideFor: #south) = #west].
+	cell rotateClockwise.
+	self should: [cell isRight].
+	self should: [(cell exitSideFor: #south) = #east].
+	cell rotateCounterClockwise.
+	self should: [cell isLeft].
+	self should: [(cell exitSideFor: #south) = #west].
+
+]
+
+{ #category : #tests }
 MirrorCellTestCase >> testCellSegmentState [
 
 	| cell |
@@ -87,4 +103,14 @@ MirrorCellTestCase >> testCellSegmentState [
 	self shouldnt: [ cell isSegmentOnFor: #east ].
 	self shouldnt: [ cell isSegmentOnFor: #south ].
 	self shouldnt: [ cell isSegmentOnFor: #west ]
+]
+
+{ #category : #tests }
+MirrorCellTestCase >> testCellSegmentsState [
+	| cell |
+	cell := MirrorCell new.
+	self shouldnt: [cell isSegmentOnFor: #north].
+	self shouldnt: [cell isSegmentOnFor: #east].
+	self shouldnt: [cell isSegmentOnFor: #south].
+	self shouldnt: [cell isSegmentOnFor: #west].
 ]
