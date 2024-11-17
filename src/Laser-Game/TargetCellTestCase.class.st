@@ -13,27 +13,29 @@ TargetCellTestCase >> testCellExitSides [
 	inputSides do: [ :inputSide |
 		| exit |
 		exit := cell exitSideFor: inputSide.
-		self should: [ exit isNil ] ]
+		self assert: exit isNil ]
 ]
 
 { #category : #tests }
-TargetCellTestCase >> testCellLaserActivity [ 
-|cell|
-cell := TargetCell new.
-cell laserEntersFrom: #north.
-self should: [ cell isOn ].
-self should: [ cell isSegmentOnFor: #north ].
-self shouldnt: [ cell isSegmentOnFor: #south ].
-self shouldnt: [ cell isSegmentOnFor: #east ].
-self shouldnt: [ cell isSegmentOnFor: #west ]
+TargetCellTestCase >> testCellLaserActivity [
+
+	| cell |
+	cell := TargetCell new.
+	cell laserEntersFrom: #north.
+	self assert: cell isOn.
+	self assert: (cell isSegmentOnFor: #north).
+	self shouldnt: [ cell isSegmentOnFor: #south ].
+	self shouldnt: [ cell isSegmentOnFor: #east ].
+	self shouldnt: [ cell isSegmentOnFor: #west ]
 ]
 
 { #category : #tests }
-TargetCellTestCase >> testCellOnState [ 
-|cell|
-cell := TargetCell new.
-self should: [ cell isOff ].
-self shouldnt: [ cell isOn ].
+TargetCellTestCase >> testCellOnState [
+
+	| cell |
+	cell := TargetCell new.
+	self assert: cell isOff.
+	self shouldnt: [ cell isOn ]
 ]
 
 { #category : #tests }

@@ -12,16 +12,16 @@ MirrorCellTestCase >> testCellExitSidesMirrorLeft [
 	cell leanLeft.
 
 	exit := cell exitSideFor: #north.
-	self should: [ exit = #east ].
+	self assert: exit equals: #east.
 
 	exit := cell exitSideFor: #east.
-	self should: [ exit = #north ].
+	self assert: exit equals: #north.
 
 	exit := cell exitSideFor: #south.
-	self should: [ exit = #west ].
+	self assert: exit equals: #west.
 
 	exit := cell exitSideFor: #west.
-	self should: [ exit = #south ]
+	self assert: exit equals: #south
 ]
 
 { #category : #tests }
@@ -29,69 +29,70 @@ MirrorCellTestCase >> testCellExitSidesMirrorRight [
 
 	| cell exit |
 	cell := MirrorCell new.
-	cell leanRight .
+	cell leanRight.
 
 	exit := cell exitSideFor: #north.
-	self should: [ exit = #west ].
+	self assert: exit equals: #west.
 
 	exit := cell exitSideFor: #east.
-	self should: [ exit = #south ].
+	self assert: exit equals: #south.
 
 	exit := cell exitSideFor: #south.
-	self should: [ exit = #east ].
+	self assert: exit equals: #east.
 
 	exit := cell exitSideFor: #west.
-	self should: [ exit = #north ]
+	self assert: exit equals: #north
 ]
 
 { #category : #tests }
 MirrorCellTestCase >> testCellLaserActivityMirrorLeft [
-|cell|
-cell := MirrorCell leanLeft .
-cell laserEntersFrom: #north.
-self should: [ cell isOn ].
-self should: [ cell isSegmentOnFor: #north ].
-self should: [ cell isSegmentOnFor: #east  ].
-self shouldnt: [ cell isSegmentOnFor: #south ].
-self shouldnt: [ cell isSegmentOnFor: #west ]
+
+	| cell |
+	cell := MirrorCell leanLeft.
+	cell laserEntersFrom: #north.
+	self assert: cell isOn.
+	self assert: (cell isSegmentOnFor: #north).
+	self assert: (cell isSegmentOnFor: #east).
+	self shouldnt: [ cell isSegmentOnFor: #south ].
+	self shouldnt: [ cell isSegmentOnFor: #west ]
 ]
 
 { #category : #tests }
 MirrorCellTestCase >> testCellLaserActivityMirrorRight [
-|cell|
-cell := MirrorCell leanRight .
-cell laserEntersFrom: #north.
-self should: [ cell isOn ].
-self should: [ cell isSegmentOnFor: #north ].
-self should: [ cell isSegmentOnFor: #west  ].
-self shouldnt: [ cell isSegmentOnFor: #south ].
-self shouldnt: [ cell isSegmentOnFor: #east ]
+
+	| cell |
+	cell := MirrorCell leanRight.
+	cell laserEntersFrom: #north.
+	self assert: cell isOn.
+	self assert: (cell isSegmentOnFor: #north).
+	self assert: (cell isSegmentOnFor: #west).
+	self shouldnt: [ cell isSegmentOnFor: #south ].
+	self shouldnt: [ cell isSegmentOnFor: #east ]
 ]
 
 { #category : #tests }
 MirrorCellTestCase >> testCellOnState [
-|cell|
 
-cell := MirrorCell  new.
-self should: [ cell isOff ].
-self shouldnt: [ cell isOn ].
-
+	| cell |
+	cell := MirrorCell new.
+	self assert: cell isOff.
+	self shouldnt: [ cell isOn ]
 ]
 
 { #category : #tests }
 MirrorCellTestCase >> testCellRotate [
+
 	| cell |
 	cell := MirrorCell new.
 	cell leanLeft.
-	self should: [cell isLeft].
-	self should: [(cell exitSideFor: #south) = #west].
+	self assert: cell isLeft.
+	self assert: (cell exitSideFor: #south) equals: #west.
 	cell rotateClockwise.
-	self should: [cell isRight].
-	self should: [(cell exitSideFor: #south) = #east].
+	self assert: cell isRight.
+	self assert: (cell exitSideFor: #south) equals: #east.
 	cell rotateCounterClockwise.
-	self should: [cell isLeft].
-	self should: [(cell exitSideFor: #south) = #west].
-
+	self assert: cell isLeft.
+	self assert: (cell exitSideFor: #south) equals: #west
 ]
 
 { #category : #tests }
