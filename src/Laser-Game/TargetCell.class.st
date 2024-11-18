@@ -4,14 +4,14 @@ Class {
 	#category : #'Laser-Game-Model'
 }
 
-{ #category : #'initialize-release' }
+{ #category : #initialization }
 TargetCell >> initialize [
 	super initialize.
 	self initializeExitSides.
 	
 ]
 
-{ #category : #'initialize-release' }
+{ #category : #initialization }
 TargetCell >> initializeExitSides [
 	self exitSides: Dictionary new.
 	self exitSides at: #north put: nil.

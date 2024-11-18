@@ -23,7 +23,7 @@ Cell >> activeSegments: aDictionary [
 	activeSegments := aDictionary
 ]
 
-{ #category : #accessing }
+{ #category : #initialization }
 Cell >> clearCell [
 	self initializeActiveSegments
 ]
@@ -61,14 +61,14 @@ Cell >> gridLocation: anObject [
 	gridLocation := anObject
 ]
 
-{ #category : #'initialize-release' }
+{ #category : #initialization }
 Cell >> initialize [
 	super initialize.
 	self initializeActiveSegments.
 
 ]
 
-{ #category : #'initialize-release' }
+{ #category : #initialization }
 Cell >> initializeActiveSegments [
 	self activeSegments: Dictionary new.
 	self activeSegments at: #north put: false.

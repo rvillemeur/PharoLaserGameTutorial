@@ -17,14 +17,14 @@ MirrorCell class >> leanRight [
 	^super new leanRight
 ]
 
-{ #category : #'initialize-release' }
+{ #category : #initialization }
 MirrorCell >> initialize [
 	super initialize.
 	self initializeExitSides.
 	self leanLeft
 ]
 
-{ #category : #'initialize-release' }
+{ #category : #initialization }
 MirrorCell >> initializeExitSides [
 	self exitSides: Dictionary new.
 	
@@ -40,7 +40,7 @@ MirrorCell >> isRight [
 	^self isLeft not
 ]
 
-{ #category : #accessing }
+{ #category : #initialization }
 MirrorCell >> leanLeft [
 	self leansLeft: true.
 	self exitSides at: #north put: #east.
@@ -50,7 +50,7 @@ MirrorCell >> leanLeft [
 	
 ]
 
-{ #category : #accessing }
+{ #category : #initialization }
 MirrorCell >> leanRight [
 	self leansLeft: false.
 	self exitSides at: #north put: #west.
