@@ -32,13 +32,13 @@ Grid >> activateCellsInPath [
 
 { #category : #accessing }
 Grid >> at: aPoint [
-	self revisit: 'sbw 05/21/2007 - We should add a more meaningful accessing technique here.  x@y is confusing.'.
+	"TODO sbw 05/21/2007 - We should add a more meaningful accessing technique here.  x@y is confusing."
 	^self cells at: aPoint ifAbsent: []
 ]
 
 { #category : #accessing }
 Grid >> at: aPoint put: aCell [
-	self revisit: 'sbw 05/21/2007 - We should add a more meaningful accessing technique here.  x@y is confusing.'.
+	"TODO sbw 05/21/2007 - We should add a more meaningful accessing technique here.  x@y is confusing."
 	aCell gridLocation: aPoint.
 	self cells at: aPoint put: aCell
 ]
