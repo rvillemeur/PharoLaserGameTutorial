@@ -119,30 +119,128 @@ Rules for the port:
 5. **Deployment section rewritten.** Section 6's Squeak-specific packaging is replaced by the current
    story: Metacello baseline, Pharo Launcher, a headless start script.
 
-## 6. Step plan (one commit per step)
+## 6. Roadmap — one commit per tutorial subsection
 
-Every step: write the code in the image through the MCP server, run `run_tests` on the package, run
-`run_critics` on what changed, write the matching Pillar chapter, then commit code and chapter
-together.
+### Numbering
 
-| # | Pages | Work | Done when |
+Work is numbered `section.subsection`, counting the `<h3>` headings of `tut2007/html` inside each
+Section, and skipping the interpolated lowercase page `038a` (a sub-step of 2.3). The anchor is
+fixed, so any disagreement about counting is settled by it:
+
+- **2.8 = page 048A, The Smalltalk-Way To Do A Case Statement — done.**
+- **2.9 = pages 049–050, Game Graphics — the next commit.**
+
+### Commit convention
+
+One commit per numbered subsection, in order. Subject line: `Section <n.m> — <tutorial heading>: <what
+changed>`. The body names the original pages covered. A commit carries three things together:
+
+1. the code, compiled in the image and written out by Iceberg;
+2. the matching Pillar chapter text;
+3. green tests (`run_tests` on `Laser-Game`) and a clean critics run on what changed.
+
+Never bundle two subsections in one commit, and never commit code without its chapter.
+
+### Book files
+
+Sections 2 to 6 continue the Pillar book. New chapters go to `SectionTwo/`, `SectionThree/`, … as
+`12-GameGraphics.pier`, `13-CellRendering.pier`, and so on, each added to `inputFiles` in
+`pillar.conf`. The original chapter structure is kept: one book chapter per tutorial heading group,
+same order, same explanations, with the Squeak graphics replaced by the Bloc equivalent and a short
+note whenever the port diverges from the 2007 text. The `doc/section1..6` markdown scaffold from 2023
+is dead and is not used.
+
+### Preparation, already committed
+
+| Commit | Work |
+|---|---|
+| `84acd71` | this map |
+| `db9fdff` | dead duplicate package directories removed |
+| `bd388d7` | `testCellOffsetCalculations` freed from `Display`; `CellRenderer class>>rendererFor:grid:` added |
+| `c23d354` | click region tests derived from the region rectangles, proven independent of `cellExtent` |
+| `5593078` | the two hard constraints recorded |
+
+### Section 2 — the game appears on screen
+
+| # | Pages | Work on the new stack | Done when |
 |---|---|---|---|
-| 0 | — | Housekeeping: delete the stale duplicate directories `src/Laser-Game-Model/`, `src/Laser-Game-Graphics/`, `src/Laser-Game-Tests/` (dead copies, not in the baseline) and the leftover `.probe-out.txt` | Baseline still loads in a fresh image |
-| 1 | — | Fix `CellRendererTestCase>>testCellOffsetCalculations` (drop the `Display` reference) | 51 tests, 51 pass |
-| 2 | — | Derive `testClicksInOutsideRegion` and the duplicate `testClicksInsideRegion` from the region rectangles instead of literal points | Tests still green after changing `cellExtent` |
-| 3 | 049–052 | `CellRenderer` hierarchy on Bloc: cell element with background, border and per-subclass contents (blank, mirror, target). New tests assert element structure and geometry, not pixels | Cells render in a `BlSpace` opened from a class-side example |
-| 4 | 053–054 | `LaserGameBoardElement` with a `BlGridLayout` over `Grid` | Whole demo grid renders |
-| 5 | 055–063 | `GridFactory` wiring and `LaserGameColors` reviewed against Bloc paints | Named grids render with the right colors |
-| 6 | 064–073 | `LaserGameElement` root, control panel (Toplo buttons), `LaserGame class >> open`; port page 073's bug-demonstrating test | Game window opens, controls respond |
-| 7 | 074–080 | Mouse events per cell element; reuse `CellClickRegion` unchanged | Clicking a mirror cell reports its region |
-| 8 | 081–100 | Hint arrows as polygons (`LaserGameShapes`), hint overlay on hover, push regions | Arrows appear where the Squeak version drew forms |
-| 9 | 101–121 | Rotate regions and the rotate action, click-and-rotate | Mirror rotates on click, model updated |
-| 10 | 122–129A | Push a cell, push with the mouse, hint cleanup; page 128 rewritten for Iceberg/git instead of Monticello | Push works, no left-over hints |
-| 11 | 130–148 | Arrow colors, cursor/hover feedback, larger cells, move counter, randomizer | Section 4 first half renders |
-| 12 | 147–173 | Bigger board, laser beam drawing for blank, target and mirror cells | Beam follows the computed path |
-| 13 | 174–204 | Missed bug, game stats, undo (the `Reverse*LaserGameAction` classes already exist), baseline update, reset, laser home visual, less brittle tests, alignment and cosmetics | Section 5 complete |
-| 14 | 205–220 | Deployment chapter rewritten for Pharo 13 | A fresh image loads and launches the game from the baseline |
-| 15 | — | Delete `MorphPath`, `Arc`, `Circle`, `Line`, `LaserGameForms`, the `Form` extension; final critics pass | No reference to `Display`, `Form`, `SketchMorph`, `World` or `Cursor` remains |
+| 2.9 | 049–050 | Replace the `Form`/`Display` board surface with `LaserGameBoardElement`, a `BlElement` using `BlGridLayout` sized from `CellRenderer cellExtent`. Class-side `example` opens it in a `BlSpace`. Delete nothing yet. | An empty board of the right size opens and resizes correctly |
+| 2.10 | 051–052 | `CellRenderer` hierarchy moves from drawing into a shared `Form` to answering one element per cell: background `BlRectangleGeometry` plus border, `BlankCellRenderer` empty, `MirrorCellRenderer` a thick diagonal `BlLineGeometry`, `TargetCellRenderer` a `BlCircleGeometry` with crosshair lines. Tests assert element structure and geometry class, never pixels. | The demo grid renders every cell type |
+| 2.11 | 053–054 | The chapter's `LaserGame` Morph becomes `LaserGameElement`, root element holding the board. `LaserGame` keeps the model role (grid, stats) and gains `open`. `World` and `Display` references die here. | `LaserGame new open` shows the game |
+| 2.12 | 055–060 | `GridFactory` wired to the element, named grids selectable | Each factory grid renders |
+| 2.13 | 061–063 | `LaserGameColors` reviewed as Bloc paints; background, border and cell colors come from it alone | No literal `Color` outside `LaserGameColors` |
+| 2.14 | 064 | Progress chapter: screenshots regenerated from the Bloc version | Chapter text matches what the reader sees |
+| 2.15 | 065–067 | Board refresh path: the element observes model changes instead of `changed`/`redrawCell` on a `Form` | Changing a cell in the model updates the view |
+| 2.16 | 068–072 | Control panel with Toplo buttons (`ToButton`), laid out by `BlLinearLayout`, plus the panel divider | Buttons act on the model and the board follows |
+| 2.17 | 073–073A | Port the bug-demonstrating unit test of the original page | Test reproduces the bug, then passes |
+
+### Section 3 — interaction
+
+| # | Pages | Work on the new stack | Done when |
+|---|---|---|---|
+| 3.1 | 074–077 | Cells become event targets; hit testing is per element, so board-wide offset arithmetic goes away | Clicking a cell identifies it without coordinate maths |
+| 3.2 | 078–079 | `BlClickEvent`, `BlMouseMoveEvent`, `BlMouseEnterEvent`, `BlMouseLeaveEvent` handlers replace the `mouse*forMorph:` family | Events reach the right cell |
+| 3.3 | 080 | `CellClickRegion` reused unchanged on cell-local coordinates | Region reported for every click position |
+| 3.4 | 081–085 | *Diverges from the original.* "Creating Custom Forms" becomes "Creating Custom Shapes": `LaserGameShapes` holds vertex arrays and answers elements with `BlPolygonGeometry`. `LaserGameForms`, flood fill and the `Form` extension are not ported. | Arrow and crosshair shapes render at any size |
+| 3.5 | 086–092 | Push regions wired to the push actions | Correct push region for every inside point |
+| 3.6 | 093–094 | Hint arrows drawn as overlay elements on the hovered cell | Hints appear and follow the pointer |
+| 3.7 | 095–100 | Debugging chapter kept; `haltOnce` still exists in Pharo 13 | Chapter text valid against Pharo 13 |
+| 3.8 | 101–106 | Rotate regions | Correct rotate region for every outside point |
+| 3.9 | 107–110 | Rotate a mirror cell in the model | Model rotates, view follows |
+| 3.10 | 111–115 | Click to rotate, end to end | Clicking a mirror rotates it on screen |
+| 3.11 | 116–117 | Hint cleanup on mouse leave — trivial once hints are child elements | No stale hint remains |
+| 3.12 | 118–121 | Target cell bug, with its failing test first | Test fails, then passes |
+| 3.13 | 122–124 | Push a cell in the model | Push rules respected, undo entry recorded |
+| 3.14 | 125–126 | Push with the mouse | Dragging or clicking pushes the row or column |
+| 3.15 | 127 | The original's visual push bug; check whether the vector rendering still has it and say so in the chapter | Behaviour documented, bug fixed if present |
+| 3.16 | 128–129A | *Rewritten.* Monticello becomes Iceberg and git: baseline, branches, commit from the image | Chapter matches the workflow this project uses |
+
+### Section 4 — feedback and the laser beam
+
+| # | Pages | Work on the new stack | Done when |
+|---|---|---|---|
+| 4.1 | 130–133 | Arrow colors from `LaserGameColors` | Hint color states distinguishable |
+| 4.2 | 134–136 | *Diverges.* `Cursor` manipulation is replaced by hover feedback on elements, or `BlSpace` cursor if available | Pointer feedback without the `Cursor` global |
+| 4.3 | 137–138 | Larger cells — a one-line change now that everything derives from `cellExtent` | Board renders at the new size, tests still green |
+| 4.4 | 139–142 | Counter and window colors, with Toplo labels | Counter visible and correct |
+| 4.5 | 143–146 | Move counter and grid randomizer | Randomized grids solvable |
+| 4.6 | 147–148 | Bigger game board | Layout holds at the larger grid |
+| 4.7 | 149–155 | Laser beam as line elements along the computed path, replacing the beam mask `Form`s | Beam drawn for a straight path |
+| 4.8 | 156–158 | Beam across blank cells | Path continues correctly |
+| 4.9 | 159–165 | Beam hitting the target | Target lights up |
+| 4.10 | 166–173 | Beam reflected by mirrors | Full demo grid solves visually |
+
+### Section 5 — polish
+
+| # | Pages | Work on the new stack | Done when |
+|---|---|---|---|
+| 5.1 | 174–179 | The missed bug, failing test first | Test fails, then passes |
+| 5.2 | 180–182 | More game stats in the panel | Stats update live |
+| 5.3 | 183–187 | Undo, on the existing `Reverse*LaserGameAction` classes | Undo reverses pushes and rotations |
+| 5.4 | 187A | Baseline updated for the final package structure | Fresh image loads the finished game |
+| 5.5 | 188 | Reset, and the bug fix the page describes | Reset returns the start state |
+| 5.6 | 189 | Laser home shown visually | Home marker rendered |
+| 5.7 | 190–196 | Less brittle test design, in the spirit already applied in `c23d354` | Tests survive a change of `cellExtent` and of grid size |
+| 5.8 | 197–199 | Hint arrow alignment | Arrows centred in their region |
+| 5.9 | 200–204 | Cosmetic tweaks | Final look agreed |
+
+### Section 6 — shipping
+
+| # | Pages | Work on the new stack | Done when |
+|---|---|---|---|
+| 6.1 | 205–207 | *Rewritten for Pharo 13.* Deployment preparation: Metacello baseline, package structure, headless considerations | Baseline loads into a clean image with no manual step |
+| 6.2 | 208–213 | *Rewritten.* Build script producing a runnable image, Pharo Launcher usage | A script produces a launchable game image |
+| 6.3 | 214–217 | *Rewritten.* Double-clickable application on current macOS, Linux and Windows | Instructions verified on at least one platform |
+| 6.4 | 218–index | *Rewritten.* Lock-down and stripping replaced by what Pharo 13 actually supports | Chapter honest about what is possible today |
+
+`notes.html` and `notes01`–`notes04` (the author's notes and the longest-path puzzle) are an optional
+appendix, taken last if at all.
+
+### Then, and only then
+
+| # | Work | Done when |
+|---|---|---|
+| Z | Delete `MorphPath`, `Arc`, `Circle`, `Line`, `LaserGameForms` and the `Form` extension; final critics pass over the package | No reference to `Form`, `BitBlt`, `Morph`, `SketchMorph`, `Display`, `World`, `Cursor` or `DisplayObject` remains anywhere in `Laser-Game` |
 
 ## 7. Working rules
 
@@ -172,6 +270,13 @@ Drawing composes elements that carry geometries (`BlPolygonGeometry`, `BlCircleG
 shapes no geometry can express. Toplo provides the control panel widgets. `BlSpace` replaces the
 `World`.
 
+### One commit per tutorial subsection
+
+Every commit corresponds to exactly one numbered subsection of the original tutorial, taken in
+order, and its subject says which: `Section <n.m> — <tutorial heading>: <what changed>`. Section 2.8
+(page 048A) is done; the next commit is Section 2.9 (pages 049–050, Game Graphics). Code and the
+matching Pillar chapter travel in the same commit. Section 6 of this file holds the full list.
+
 ### Other rules
 
 - A change to a class the package does not own belongs in `*.extension.st`, with the `*Laser-Game`
@@ -184,8 +289,9 @@ shapes no geometry can express. Toplo provides the control panel widgets. `BlSpa
 ## 8. Known debt
 
 - `Form >> floodFill:at:` and `FloodFillBlt` are gone from Pharo 13; the eight call sites disappear
-  with step 8 rather than being ported.
-- `Display` and `World` globals are gone; six sites, handled in steps 1, 6 and 15.
+  at 3.4, where the bitmap masks become polygons, and the classes holding them go at Z.
+- The `Display` and `World` globals are gone; the six sites go at 2.9, 2.11 and Z. One was already
+  removed in `bd388d7`.
 - Pharo 13 API changes already met: `RPackageOrganizer` is now `Smalltalk packageOrganizer`,
   `SystemNavigation>>senders:` is gone, `TonelRepository>>version:` is now `versionFrom:`,
   `Package>>snapshot` is now `(MCPackage named: 'Laser-Game') snapshot`.
