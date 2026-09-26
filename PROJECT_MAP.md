@@ -146,13 +146,40 @@ together.
 
 ## 7. Working rules
 
-- All code is written in the running image through the MCP server, then mirrored to `src/` in Tonel
-  format (the repository is Tonel v2: `#name : 'Foo'`, with `#package` and `#tag`).
-- Paths differ between the two sides: the shell sees this clone as `/home/me/workspace`, the image
-  sees it as `/home/renaud/devzone/sources/PharoLaserGameTutorial`.
-- Never let a kernel class be captured into the package. A change to an existing class belongs in
-  `*.extension.st` with the `*Laser-Game` protocol prefix, never in a `*.class.st`.
-- Tests first, critics before each commit, one commit per finished step.
+These are constraints, not preferences.
+
+### All code is written in the image
+
+No detached working copy. Code is compiled in the running image through the MCP server, and the
+image writes it out to `src/` through Iceberg. Never hand-edit a `.class.st` file, never call
+`TonelWriter` or `fileOut`, never change the file side and expect the image to notice. If the image
+and this clone disagree, repair the image's Iceberg repository instead of patching files. Commits
+are made from the image side, one per finished step.
+
+The repository is Tonel v2 (`#name : 'Foo'`, with `#package` and `#tag`), which is what Iceberg in
+Pharo 13 writes. Paths differ between the two sides: the shell sees this clone as
+`/home/me/workspace`, the image sees it as `/home/renaud/devzone/sources/PharoLaserGameTutorial`.
+The Iceberg repository `PharoLaserGameTutorial` is registered in the image, on branch `master`, and
+owns the `Laser-Game` package.
+
+### All graphics are Bloc, Alexandrie and Toplo
+
+Nothing else. New code never mentions `Form`, `BitBlt`, `Morph`, `SketchMorph`, `Display`, `World`,
+`Cursor` or `DisplayObject`. The Squeak display classes captured into the package — `MorphPath`,
+`Arc`, `Circle`, `Line`, `LaserGameForms` and the `Form` extension — are deleted, not ported.
+Drawing composes elements that carry geometries (`BlPolygonGeometry`, `BlCircleGeometry`,
+`BlLineGeometry`, `BlRectangleGeometry`); `aeDrawOn:` and the Alexandrie canvas are reserved for
+shapes no geometry can express. Toplo provides the control panel widgets. `BlSpace` replaces the
+`World`.
+
+### Other rules
+
+- A change to a class the package does not own belongs in `*.extension.st`, with the `*Laser-Game`
+  protocol prefix — never in a `*.class.st`. A kernel class must never be captured into the package
+  again; that mistake froze one image and was undone in `fdbf6cb`.
+- Tests first. `run_tests` on `Laser-Game` after each compile, `run_critics` on what changed before
+  each commit.
+- No literal pixel coordinates in tests. Everything derives from `CellRenderer class>>cellExtent`.
 
 ## 8. Known debt
 
