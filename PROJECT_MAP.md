@@ -277,6 +277,24 @@ order, and its subject says which: `Section <n.m> — <tutorial heading>: <what 
 (page 048A) is done; the next commit is Section 2.9 (pages 049–050, Game Graphics). Code and the
 matching Pillar chapter travel in the same commit. Section 6 of this file holds the full list.
 
+### Committing from the image
+
+```smalltalk
+| repo wc |
+repo := IceRepository registry detect: [ :each | each name = 'PharoLaserGameTutorial' ].
+wc := repo workingCopy.
+wc commitWithMessage: 'Section 2.9 - ...'
+```
+
+This writes the Tonel files and makes the git commit in one step. The book chapter, which lives
+outside `src/`, is added to that same commit from the shell with `git add` and `git commit --amend
+--no-edit`.
+
+Iceberg fails with `IceWorkingCopyDesyncronized` whenever git HEAD moved without it — a doc-only
+commit or an amend is enough. Repair with `wc adoptCommit: repo headCommit`, which re-bases the
+working copy on HEAD and keeps the image code. Never answer that situation with "Load version": that
+overwrites the image from disk.
+
 ### Other rules
 
 - A change to a class the package does not own belongs in `*.extension.st`, with the `*Laser-Game`
