@@ -30,56 +30,51 @@ CellClickRegionTestCase >> testClicksInIgnoreRegion [
 { #category : 'tests' }
 CellClickRegionTestCase >> testClicksInInsideRegion [
 
-	| pt regionClass |
-	pt := 1 @ 1.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self shouldnt: [ regionClass = CellClickRegionInside ].
-
-	pt := CellClickRegionOutside regionRectangle topLeft + (1 @ 1).
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self shouldnt: [ regionClass = CellClickRegionInside ].
-
-	pt := CellClickRegionInside regionRectangle topLeft - (1 @ 1).
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self shouldnt: [ regionClass = CellClickRegionInside ].
-
-	pt := CellClickRegionInside regionRectangle topLeft.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self assert: regionClass equals: CellClickRegionInside
+	| insideRect outsideRect |
+	insideRect := CellClickRegionInside regionRectangle.
+	outsideRect := CellClickRegionOutside regionRectangle.
+	"Points outside the inside region belong to another region."
+	self
+		deny: (CellClickRegion clickRegionForPoint: 0 @ 0)
+		equals: CellClickRegionInside.
+	self
+		deny: (CellClickRegion clickRegionForPoint: outsideRect topLeft)
+		equals: CellClickRegionInside.
+	self
+		deny: (CellClickRegion clickRegionForPoint: insideRect topLeft - (1 @ 1))
+		equals: CellClickRegionInside.
+	"The inside region owns its top left corner, its centre and its last pixel."
+	self
+		assert: (CellClickRegion clickRegionForPoint: insideRect topLeft)
+		equals: CellClickRegionInside.
+	self
+		assert: (CellClickRegion clickRegionForPoint: insideRect center)
+		equals: CellClickRegionInside.
+	self
+		assert: (CellClickRegion clickRegionForPoint: insideRect bottomRight - (1 @ 1))
+		equals: CellClickRegionInside
 ]
 
 { #category : 'tests' }
 CellClickRegionTestCase >> testClicksInOutsideRegion [
 
-	| pt regionClass |
-	pt := 1 @ 1.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self shouldnt: [ regionClass = CellClickRegionOutside ].
-	pt := 5 @ 5.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self assert: regionClass equals: CellClickRegionOutside.
-	pt := 9 @ 9.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self assert: regionClass equals: CellClickRegionOutside.
-	pt := 16 @ 16.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self shouldnt: [ regionClass = CellClickRegionOutside ]
-]
-
-{ #category : 'tests' }
-CellClickRegionTestCase >> testClicksInsideRegion [
-
-	| pt regionClass |
-	pt := 1 @ 1.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self shouldnt: [ regionClass = CellClickRegionInside ].
-	pt := 5 @ 5.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self shouldnt: [ regionClass = CellClickRegionInside ].
-	pt := 9 @ 9.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self shouldnt: [ regionClass = CellClickRegionInside ].
-	pt := 10 @ 10.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self assert: regionClass equals: CellClickRegionInside
+	| insideRect outsideRect |
+	insideRect := CellClickRegionInside regionRectangle.
+	outsideRect := CellClickRegionOutside regionRectangle.
+	"The outside region is the ring between the ignore margin and the inside region."
+	self
+		deny: (CellClickRegion clickRegionForPoint: outsideRect topLeft - (1 @ 1))
+		equals: CellClickRegionOutside.
+	self
+		assert: (CellClickRegion clickRegionForPoint: outsideRect topLeft)
+		equals: CellClickRegionOutside.
+	self
+		assert: (CellClickRegion clickRegionForPoint: insideRect topLeft - (1 @ 1))
+		equals: CellClickRegionOutside.
+	self
+		assert: (CellClickRegion clickRegionForPoint: outsideRect bottomRight - (1 @ 1))
+		equals: CellClickRegionOutside.
+	self
+		deny: (CellClickRegion clickRegionForPoint: insideRect center)
+		equals: CellClickRegionOutside
 ]
