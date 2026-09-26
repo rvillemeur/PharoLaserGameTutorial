@@ -49,16 +49,24 @@ CellRenderer class >> rendererFor: aCell [
 	^self subclasses detect: [:cls | cls modelClass = aCell class]
 ]
 
-{ #category : 'as yet unclassified' }
-CellRenderer class >> rendererFor: aCell grid: aGrid form: aForm [
-	| cls model |
-	cls := self rendererFor: aCell.
-	model := cls new.
-	model
+{ #category : 'instance creation' }
+CellRenderer class >> rendererFor: aCell grid: aGrid [
+	"Answer a renderer for aCell positioned within aGrid. Cell geometry needs no target form."
+
+	| renderer |
+	renderer := (self rendererFor: aCell) new.
+	renderer
 		cellLocation: aCell gridLocation;
-		grid: aGrid;
-		targetForm: aForm.
-	^model
+		grid: aGrid.
+	^ renderer
+]
+
+{ #category : 'instance creation' }
+CellRenderer class >> rendererFor: aCell grid: aGrid form: aForm [
+	| renderer |
+	renderer := self rendererFor: aCell grid: aGrid.
+	renderer targetForm: aForm.
+	^ renderer
 ]
 
 { #category : 'drawing' }

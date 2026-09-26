@@ -9,36 +9,20 @@ Class {
 { #category : 'tests' }
 CellRendererTestCase >> testCellOffsetCalculations [
 
-	| grid form cellLoc cell  renderer offset |
+	| grid extent expected |
 	grid := GridFactory demoGrid.
-	form := Form
-		        extent: (LaserGame boardExtendFor: grid)
-		        depth: Display depth.
-	form fillColor: (Color r: 0.820 g: 0.820 b: 0.820).
-
-	cellLoc := 1 @ 1.
-	cell := grid at: cellLoc.
-	renderer := CellRenderer rendererFor: cell grid: grid form: form.
-	offset := renderer offsetWithinGridForm.
-	self assert: offset equals: 0 @ 0.
-
-	cellLoc := 2 @ 1.
-	cell := grid at: cellLoc.
-	renderer := CellRenderer rendererFor: cell grid: grid form: form.
-	offset := renderer offsetWithinGridForm.
-	self assert: offset equals: 50 @ 0.
-
-	cellLoc := 1 @ 2.
-	cell := grid at: cellLoc.
-	renderer := CellRenderer rendererFor: cell grid: grid form: form.
-	offset := renderer offsetWithinGridForm.
-	self assert: offset equals: 0 @ 50.
-
-	cellLoc := 2 @ 2.
-	cell := grid at: cellLoc.
-	renderer := CellRenderer rendererFor: cell grid: grid form: form.
-	offset := renderer offsetWithinGridForm.
-	self assert: offset equals: 50 @ 50
+	extent := CellRenderer cellExtent.
+	expected := {
+		            (1 @ 1 -> (0 @ 0)).
+		            (2 @ 1 -> (extent x @ 0)).
+		            (1 @ 2 -> (0 @ extent y)).
+		            (2 @ 2 -> (extent x @ extent y)) }.
+	expected do: [ :each |
+		| renderer |
+		renderer := CellRenderer
+			            rendererFor: (grid at: each key)
+			            grid: grid.
+		self assert: renderer offsetWithinGridForm equals: each value ]
 ]
 
 { #category : 'tests' }
