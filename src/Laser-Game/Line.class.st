@@ -1,10 +1,12 @@
 Class {
-	#name : #Line,
-	#superclass : #MorphPath,
-	#category : #'Laser-Game-Graphics'
+	#name : 'Line',
+	#superclass : 'MorphPath',
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 Line class >> from: beginPoint to: endPoint withForm: aForm [ 
 	"Answer an instance of me with end points begingPoint and endPoint; 
 	the source form for displaying the line is aForm."
@@ -17,7 +19,7 @@ Line class >> from: beginPoint to: endPoint withForm: aForm [
 	^newSelf
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 Line class >> new [
 
 	| newSelf | 
@@ -27,14 +29,14 @@ Line class >> new [
 	^newSelf
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Line >> beginPoint [
 	"Answer the first end point of the receiver."
 
 	^self first
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Line >> beginPoint: aPoint [ 
 	"Set the first end point of the receiver to be the argument, aPoint. 
 	Answer aPoint."
@@ -43,7 +45,7 @@ Line >> beginPoint: aPoint [
 	^aPoint
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Line >> displayOn: aDisplayMedium at: aPoint clippingBox: clipRect rule: anInteger fillColor: aForm [ 
 	"The form associated with this Path will be displayed, according  
 	to one of the sixteen functions of two logical variables (rule), at  
@@ -60,7 +62,7 @@ Line >> displayOn: aDisplayMedium at: aPoint clippingBox: clipRect rule: anInteg
 		fillColor: aForm
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Line >> displayOn: aDisplayMedium transformation: aTransformation clippingBox: clipRect rule: anInteger fillColor: aForm [
 
 	| newPath newLine |
@@ -77,21 +79,21 @@ Line >> displayOn: aDisplayMedium transformation: aTransformation clippingBox: c
 		fillColor: aForm
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Line >> displayOnPort: aPort at: aPoint [ 
 	aPort sourceForm: self form; combinationRule: Form under; fillColor: nil.
 	aPort drawFrom: collectionOfPoints first + aPoint
 		to: collectionOfPoints last + aPoint
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Line >> endPoint [
 	"Answer the last end point of the receiver."
 
 	^self last
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Line >> endPoint: aPoint [ 
 	"Set the first end point of the receiver to be the argument, aPoint. 
 	Answer aPoint."

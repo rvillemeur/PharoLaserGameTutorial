@@ -1,29 +1,31 @@
 Class {
-	#name : #Arc,
-	#superclass : #MorphPath,
+	#name : 'Arc',
+	#superclass : 'MorphPath',
 	#instVars : [
 		'center',
 		'radius',
 		'numberOfVertices'
 	],
-	#category : #'Laser-Game-Graphics'
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Arc >> center [
 	"Answer the point at the center of the receiver."
 
 	^center
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Arc >> center: aPoint [ 
 	"Set aPoint to be the receiver's center."
 
 	center := aPoint
 ]
 
-{ #category : #'displaying - generic' }
+{ #category : 'displaying - generic' }
 Arc >> computeVertices: size [
 
 	| dAngle dSin dCos point |
@@ -41,7 +43,7 @@ Arc >> computeVertices: size [
 		yourself
 ]
 
-{ #category : #'displaying - generic' }
+{ #category : 'displaying - generic' }
 Arc >> displayOn: aDisplayMedium at: aPoint clippingBox: clipRect rule: anInteger fillColor: aForm [
 
 	| line |
@@ -58,7 +60,7 @@ Arc >> displayOn: aDisplayMedium at: aPoint clippingBox: clipRect rule: anIntege
 				fillColor: aForm]
 ]
 
-{ #category : #'displaying - generic' }
+{ #category : 'displaying - generic' }
 Arc >> displayOn: aDisplayMedium transformation: aTransformation clippingBox: clipRect rule: anInteger fillColor: aForm [
 
 	| newArc tempCenter |
@@ -76,26 +78,26 @@ Arc >> displayOn: aDisplayMedium transformation: aTransformation clippingBox: cl
 		fillColor: aForm
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Arc >> numberOfVertices [
 
 	^ numberOfVertices ifNil: [12]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Arc >> numberOfVertices: anInteger [
 
 	numberOfVertices := anInteger.
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Arc >> radius [
 	"Answer the receiver's radius."
 
 	^radius
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Arc >> radius: anInteger [ 
 	"Set the receiver's radius to be the argument, anInteger."
 

@@ -1,6 +1,6 @@
 Class {
-	#name : #LaserGame,
-	#superclass : #Morph,
+	#name : 'LaserGame',
+	#superclass : 'Morph',
 	#instVars : [
 		'grid',
 		'boardForm',
@@ -11,17 +11,19 @@ Class {
 	#classVars : [
 		'FullWorld'
 	],
-	#category : #'Laser-Game-Graphics'
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> addApplication [
 	"LaserGame addApplication"
 	Smalltalk addToStartUpList: LaserGame.
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> boardExtendFor: aGrid [
 
 	| x y |
@@ -30,7 +32,7 @@ LaserGame class >> boardExtendFor: aGrid [
 	^ x @ y
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> boardExtentFor: aGrid [
 	| x y |
 	x := CellRenderer cellExtent x * aGrid numberOfColumns.
@@ -38,26 +40,26 @@ LaserGame class >> boardExtentFor: aGrid [
 	^x@y
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> clearApplication [
 	"LaserGame clearApplication"
 	Smalltalk removeFromStartUpList: LaserGame.
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> closeAllOpenWindowsMessage [
 	^'Do you really want to close all windows?' translated
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> closeAllWindows [
 	"LaserGame closeAllWindows"
 	(SystemWindow windowsIn: World satisfying: [:w | w model canDiscardEdits])
 		do: [:w | w delete]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> disableFeatures [
 	Preferences disable: #warnIfNoSourcesFile.
 	Preferences disable: #warnIfNoChangesFile.
@@ -72,20 +74,20 @@ LaserGame class >> disableFeatures [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> fullWorld [
 	FullWorld isNil ifTrue: [self fullWorld: false].
 	^FullWorld
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> fullWorld: aBoolean [
 	"LaserGame fullWorld: false"
 	FullWorld := aBoolean
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> launchFullWorld [
 	"LaserGame launchFullWorld"
 	| morph |
@@ -95,7 +97,7 @@ LaserGame class >> launchFullWorld [
 	^morph
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> launchStandard [
 	"LaserGame launchStandard"
 	| morph |
@@ -104,7 +106,7 @@ LaserGame class >> launchStandard [
 	morph openInHand
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> prepareApplication [
 	"LaserGame prepareApplication"
 	(self confirm: self prepareApplicationWarningMessage) ifTrue: [
@@ -118,7 +120,7 @@ LaserGame class >> prepareApplication [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> prepareApplicationWarningMessage [
 	^'Really make a stand-alone image?
 	Any existing Laser Game morpsh should be closed.
@@ -128,7 +130,7 @@ The image should be saved a new name as the final step of this process.' transla
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> purgeAndAnswerSoleInstance [
 	"LaserGame purgeAndAnswerSoleInstance"
 	| coll result |
@@ -143,7 +145,7 @@ LaserGame class >> purgeAndAnswerSoleInstance [
 	^result
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> randomizedGridOfExtent: aPoint [
 	| model grid |
 	model := self basicNew.
@@ -152,7 +154,7 @@ LaserGame class >> randomizedGridOfExtent: aPoint [
 	^model
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame class >> startUp [
 	| soleInstance |
 	soleInstance := self purgeAndAnswerSoleInstance.
@@ -162,17 +164,17 @@ LaserGame class >> startUp [
 	
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> activeCellLocation [
 	^activeCellLocation
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> activeCellLocation: aPoint [
 	activeCellLocation := aPoint
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> addButtonsToPanel: panel [
 	| layout |
 	layout := self buttonLayoutFrameForRow: 1 column: 1.
@@ -193,7 +195,7 @@ LaserGame >> addButtonsToPanel: panel [
 	^panel
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> addCountersToPanel: panel [
 	panel
 		addMorph: self makeLaserPathCounterMorph
@@ -217,7 +219,7 @@ LaserGame >> addCountersToPanel: panel [
 				offsets: (4 @ 144 corner: -8 @ 188))
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> addDividerBarToPanel: panel [
 	| layout offset |
 	offset := -105.
@@ -228,28 +230,28 @@ LaserGame >> addDividerBarToPanel: panel [
 	^panel
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> boardForm [
 	"Answer the value of boardForm"
 
 	^ boardForm
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> boardForm: anObject [
 	"Set the value of boardForm"
 
 	boardForm := anObject
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> boardRelativePositionFor: evt [
 	| evtPosn |
 	evtPosn := evt hand position.
 	^evtPosn - self position - ((self gameMargin + self panelWidth) @ self gameMargin)
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> buttonLayoutFrameForRow: fromBottom column: fromLeft [
 	| buttonHeight buttonWidth xOffset xOrigin yOrigin xCorner yCorner yOffset |
 	buttonHeight := 20.
@@ -272,7 +274,7 @@ LaserGame >> buttonLayoutFrameForRow: fromBottom column: fromLeft [
 		offsets: (xOrigin@yOrigin corner: xCorner@yCorner)
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 LaserGame >> calculateExtent [
 
 	| pt |
@@ -281,7 +283,7 @@ LaserGame >> calculateExtent [
 	^ pt
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> calculatedExtent [
 	| pt |
 	pt := self boardForm extent.
@@ -290,14 +292,14 @@ LaserGame >> calculatedExtent [
 	^pt
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> cellForEvent: evt [
 	| posn |
 	posn := self cellPositionForEvent: evt.
 	^self grid at: posn
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> cellPositionForEvent: evt [
 	| posn ext counts |
 	posn := self boardRelativePositionFor: evt.
@@ -307,18 +309,18 @@ LaserGame >> cellPositionForEvent: evt [
 	^counts
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> dirty [
 	dirty isNil ifTrue: [self initializeDirty].
 	^dirty
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> dirty: aDictionary [
 	dirty := aDictionary
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 LaserGame >> drawGameBoard [
 	| cell renderer |
 	1 to: self grid numberOfColumns do: [:x |
@@ -328,7 +330,7 @@ LaserGame >> drawGameBoard [
 		renderer render]].
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> eventDiagnosticFor: evt tag: aString [
 	| cell posn |
 	cell := self cellForEvent: evt.
@@ -339,39 +341,39 @@ LaserGame >> eventDiagnosticFor: evt tag: aString [
 		cr
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> findActiveMirrorsCounter [
 	^self allMorphs detect: [:m | m knownName = 'activeMirrors'] ifNone: []
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> findFireButton [
 	^self allMorphs detect: [:m | m knownName = 'fireButton'] ifNone: []
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> findLaserPathCounter [
 	^self allMorphs detect: [:m | m knownName = 'laserPath'] ifNone: []
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> findMirrorsCounter [
 	^self allMorphs detect: [:m | m knownName = 'mirrors'] ifNone: []
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> findMovesCounter [
 	^self allMorphs detect: [:m | m knownName = 'moves'] ifNone: []
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> fireButtonLabel [
 	^self laserActive
 		ifTrue: ['Stop']
 		ifFalse: ['Fire']
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> fireLaser [
 	self laserActive
 		ifTrue: [self grid stopLaser]
@@ -379,26 +381,26 @@ LaserGame >> fireLaser [
 	self updateGameBoardAndControls
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> gameMargin [
 	^10
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> grid [
 	"Answer the value of grid"
 
 	^ grid
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> grid: anObject [
 	"Set the value of grid"
 
 	grid := anObject
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> handleListenEvent: evt [
 	| pos unders boardMorph |
 	((evt isMouse and: [evt isMove]) and: [evt isMouseDown not]) ifFalse: [^self].
@@ -410,22 +412,22 @@ LaserGame >> handleListenEvent: evt [
 	self mouseMoveWhileButtonUp: evt forMorph: boardMorph
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> incrementMoves [
 	self moves: self moves + 1
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> initialize [
 	self initializeForGrid: GridFactory emptyStandardGrid
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> initializeDirty [
 	self dirty: Dictionary new
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> initializeForGrid: aGrid [
 	super initialize.
 	self moves: 0.
@@ -441,17 +443,17 @@ LaserGame >> initializeForGrid: aGrid [
 	self updateCounters.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> isDirty: aCell [
 	^self dirty at: aCell gridLocation ifAbsent: [false]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> laserActive [
 	^self grid laserIsActive
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> makeActiveMirrorsCounterMorph [
 	| count |
 	count := LedMorph new
@@ -463,7 +465,7 @@ LaserGame >> makeActiveMirrorsCounterMorph [
 	^ self wrapPanel: count label: 'Active Mirrors'
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> makeButton: label action: actionSymbol state: stateSymbol [
 	| btn labelMorph |
 	btn := PluggableButtonMorph
@@ -483,7 +485,7 @@ LaserGame >> makeButton: label action: actionSymbol state: stateSymbol [
 	^ btn
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> makeControlPanelMorph [
 	| panel |
 	panel := RectangleMorph new borderWidth: 0;
@@ -495,7 +497,7 @@ LaserGame >> makeControlPanelMorph [
 	^panel
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> makeFireLaserButton [
 	| btn |
 	btn := self makeButton: self fireButtonLabel action: #fireLaser state: #laserActive.
@@ -503,7 +505,7 @@ LaserGame >> makeFireLaserButton [
 	^btn
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> makeGameBoardMorph [
 	| boardMorph |
 	boardMorph := SketchMorph withForm: self boardForm.
@@ -521,7 +523,7 @@ LaserGame >> makeGameBoardMorph [
 	^boardMorph
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> makeLaserHomeMorph [
 	| form |
 	form := Form
@@ -531,7 +533,7 @@ LaserGame >> makeLaserHomeMorph [
 	^SketchMorph withForm: form
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> makeLaserPathCounterMorph [
 	| count |
 	count := LedMorph new
@@ -543,7 +545,7 @@ LaserGame >> makeLaserPathCounterMorph [
 	^ self wrapPanel: count label: 'Laser Path'
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> makeMirrorsCounterMorph [
 	| count |
 	count := LedMorph new
@@ -555,7 +557,7 @@ LaserGame >> makeMirrorsCounterMorph [
 	^ self wrapPanel: count label: 'Mirrors'
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> makeMovesCounterMorph [
 	| count |
 	count := LedMorph new
@@ -567,12 +569,12 @@ LaserGame >> makeMovesCounterMorph [
 	^ self wrapPanel: count label: 'Moves'
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> makeNewGameButton [
 	^self makeButton: 'New' action: #newGame state: nil
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> makePanelDividerMorph [
 	| divider |
 	divider := RectangleMorph new.
@@ -592,22 +594,22 @@ LaserGame >> makePanelDividerMorph [
 	^divider
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> makeQuitGameButton [
 	^self makeButton: 'Quit' action: #quitGame state: nil
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> makeResetButton [
 	^self makeButton: 'Reset' action: #reset state: nil
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> makeUndoButton [
 	^self makeButton: 'Undo' action: #undo state: nil
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> mouseDown: evt forMorph: aSketchMorph [
 	| cell |
 	cell := self cellForEvent: evt.
@@ -616,13 +618,13 @@ LaserGame >> mouseDown: evt forMorph: aSketchMorph [
 		ifFalse: [self activeCellLocation: cell gridLocation].
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> mouseEnter: evt forMorph: aSketchMorph [
 	evt hand addMouseListener: self.
 
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> mouseLeave: evt forMorph: aSketchMorph [
 	evt hand removeMouseListener: self.
 	self sweepDirtyCells.
@@ -630,12 +632,12 @@ LaserGame >> mouseLeave: evt forMorph: aSketchMorph [
 	self currentHand showTemporaryCursor: nil
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> mouseMoveWhileButtonDown: evt forMorph: aSketchMorph [
 
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> mouseMoveWhileButtonUp: evt forMorph: aSketchMorph [
 	| cell renderer pixelPositionWithinBoard |
 	cell := self cellForEvent: evt.
@@ -647,7 +649,7 @@ LaserGame >> mouseMoveWhileButtonUp: evt forMorph: aSketchMorph [
 	self changed
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> mouseUp: evt forMorph: aSketchMorph [
 	| cell |
 	cell := self cellForEvent: evt.
@@ -659,7 +661,7 @@ LaserGame >> mouseUp: evt forMorph: aSketchMorph [
 	self activeCellLocation: nil
 ]
 
-{ #category : #'events-processing' }
+{ #category : 'events-processing' }
 LaserGame >> mouseUp: evt forMorph: aSketchMorph cell: aCell [
 	| renderer pixelPositionWithinBoard cellForRedraw |
 	renderer := CellRenderer rendererFor: aCell grid: self grid form: self boardForm.
@@ -671,17 +673,17 @@ LaserGame >> mouseUp: evt forMorph: aSketchMorph cell: aCell [
 
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> moves [
 	^moves
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserGame >> moves: anInteger [
 	moves := anInteger
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> newGame [
 	self grid initializeCells.
 	self grid stopLaser.
@@ -692,37 +694,37 @@ LaserGame >> newGame [
 	self updateGameBoardAndControls
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> panelWidth [
 	^110
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> quitGame [
 	(self confirm: 'Are you sure you want to quit?') ifTrue: [self quitGameAction]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> quitGameAction [
 	self delete.
 	self class fullWorld ifTrue: [self class fullWorld: false].
 	self quitGameExitSqueakCheck
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> quitGameExitSqueakCheck [
 	"Use the Preferences cmdDotEnabled as an indicator that we are run-time or not."
 	Preferences cmdDotEnabled ifFalse: [Smalltalk quitPrimitive]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 LaserGame >> redrawCell: aCell [
 	| renderer |
 	renderer := CellRenderer rendererFor: aCell grid: self grid form: self boardForm.
 	renderer redrawCell
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> reset [
 	self grid reset.
 	self grid stopLaser.
@@ -732,22 +734,22 @@ LaserGame >> reset [
 	self updateGameBoardAndControls
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> setClean: aCell [
 	self dirty removeKey: aCell gridLocation ifAbsent: []
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> setDirty: aCell [
 	self dirty at: aCell gridLocation put: true
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> setExtent [
 	self extent: self calculatedExtent
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> setWindowColors [
 	| targetForFill |
 	self class fullWorld
@@ -762,7 +764,7 @@ LaserGame >> setWindowColors [
 	targetForFill fillWithRamp: self windowColorRamp oriented: 0.3@0.8
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> setupMorphs [
 	self layoutPolicy: ProportionalLayout new.
 	self setWindowColors.
@@ -786,7 +788,7 @@ LaserGame >> setupMorphs [
 					corner: (self gameMargin + self panelWidth + CellRenderer cellExtent x - 2)@(self gameMargin negated + 4))).
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 LaserGame >> sweepDirtyCells [
 	| cell renderer |
 	1 to: self grid numberOfColumns do: [:x |
@@ -799,7 +801,7 @@ LaserGame >> sweepDirtyCells [
 				]]].
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> undo [
 	| completed |
 	completed := self grid undo.
@@ -808,7 +810,7 @@ LaserGame >> undo [
 		self updateGameBoardAndControls]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> updateCounters [
 	| led |
 	led := self findLaserPathCounter.
@@ -839,14 +841,14 @@ LaserGame >> updateCounters [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> updateFireButtonLabel [
 	| btn |
 	btn := self findFireButton.
 	btn notNil ifTrue: [btn label contents: self fireButtonLabel]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGame >> updateGameBoardAndControls [
 	self drawGameBoard.
 	self updateFireButtonLabel.
@@ -854,13 +856,13 @@ LaserGame >> updateGameBoardAndControls [
 	self changed
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> windowColorRamp [
 	^ {0.0 -> (Color r: 0.3 g: 0.8 b: 0.9).
                         1.0 -> (Color r: 0.2 g: 0.1 b: 0.7)}
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 LaserGame >> wrapPanel: aPanel label: aLabel [ 
 	"wrap a panel in an alignmentMorph and put a label above it"
 	| column strM |

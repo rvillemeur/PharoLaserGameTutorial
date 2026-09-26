@@ -1,28 +1,33 @@
 Class {
-	#name : #CellClickRegionTestCase,
-	#superclass : #TestCase,
-	#category : #'Laser-Game-Tests'
+	#name : 'CellClickRegionTestCase',
+	#superclass : 'TestCase',
+	#category : 'Laser-Game-Tests',
+	#package : 'Laser-Game',
+	#tag : 'Tests'
 }
 
-{ #category : #tests }
+{ #category : 'tests' }
 CellClickRegionTestCase >> testClicksInIgnoreRegion [
 
-	| pt regionClass |
-	pt := 1 @ 1.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self assert: regionClass equals: CellClickRegionIgnore.
-	pt := 29 @ 29.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self assert: regionClass equals: CellClickRegionIgnore.
-	pt := 3 @ 3.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self assert: regionClass equals: CellClickRegionIgnore.
-	pt := 10 @ 10.
-	regionClass := CellClickRegion clickRegionForPoint: pt.
-	self shouldnt: [ regionClass = CellClickRegionIgnore ]
+	| ignoreRect outsideRect |
+	ignoreRect := CellClickRegionIgnore regionRectangle.
+	outsideRect := CellClickRegionOutside regionRectangle.
+	"The ignore region is the margin of the cell left over once the outside region is inset."
+	self
+		assert: (CellClickRegion clickRegionForPoint: ignoreRect topLeft)
+		equals: CellClickRegionIgnore.
+	self
+		assert: (CellClickRegion clickRegionForPoint: ignoreRect bottomRight - (1 @ 1))
+		equals: CellClickRegionIgnore.
+	self
+		assert: (CellClickRegion clickRegionForPoint: outsideRect topLeft - (1 @ 1))
+		equals: CellClickRegionIgnore.
+	self
+		deny: (CellClickRegion clickRegionForPoint: CellClickRegionInside regionRectangle center)
+		equals: CellClickRegionIgnore
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CellClickRegionTestCase >> testClicksInInsideRegion [
 
 	| pt regionClass |
@@ -43,7 +48,7 @@ CellClickRegionTestCase >> testClicksInInsideRegion [
 	self assert: regionClass equals: CellClickRegionInside
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CellClickRegionTestCase >> testClicksInOutsideRegion [
 
 	| pt regionClass |
@@ -61,7 +66,7 @@ CellClickRegionTestCase >> testClicksInOutsideRegion [
 	self shouldnt: [ regionClass = CellClickRegionOutside ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CellClickRegionTestCase >> testClicksInsideRegion [
 
 	| pt regionClass |

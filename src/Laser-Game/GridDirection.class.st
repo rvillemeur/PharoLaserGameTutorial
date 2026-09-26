@@ -1,10 +1,12 @@
 Class {
-	#name : #GridDirection,
-	#superclass : #Object,
-	#category : #'Laser-Game-Model'
+	#name : 'GridDirection',
+	#superclass : 'Object',
+	#category : 'Laser-Game-Model',
+	#package : 'Laser-Game',
+	#tag : 'Model'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridDirection class >> directionFor: aSymbol [
 	^self subclasses detect: [:cls | cls directionSymbol = aSymbol]
 ]

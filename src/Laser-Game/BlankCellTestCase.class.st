@@ -1,10 +1,12 @@
 Class {
-	#name : #BlankCellTestCase,
-	#superclass : #TestCase,
-	#category : #'Laser-Game-Tests'
+	#name : 'BlankCellTestCase',
+	#superclass : 'TestCase',
+	#category : 'Laser-Game-Tests',
+	#package : 'Laser-Game',
+	#tag : 'Tests'
 }
 
-{ #category : #tests }
+{ #category : 'tests' }
 BlankCellTestCase >> testCellExitSides [
 
 	| cell exit |
@@ -22,7 +24,7 @@ BlankCellTestCase >> testCellExitSides [
 	self assert: exit equals: #east
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BlankCellTestCase >> testCellLaserActivity [
 
 	| cell |
@@ -35,7 +37,7 @@ BlankCellTestCase >> testCellLaserActivity [
 	self shouldnt: [ cell isSegmentOnFor: #west ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BlankCellTestCase >> testCellOnState [
 
 	| cell |
@@ -44,7 +46,7 @@ BlankCellTestCase >> testCellOnState [
 	self shouldnt: [ cell isOn ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BlankCellTestCase >> testCellSegmentState [
 
 	| cell |
@@ -55,7 +57,7 @@ BlankCellTestCase >> testCellSegmentState [
 	self shouldnt: [ cell isSegmentOnFor: #west ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 BlankCellTestCase >> testCellSegmentsState [
 	| cell |
 	cell := BlankCell new.

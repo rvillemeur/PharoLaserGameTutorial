@@ -1,15 +1,17 @@
 Class {
-	#name : #ReverseRotateClockwiseLaserGameAction,
-	#superclass : #ReverseLaserGameAction,
-	#category : #'Laser-Game-Model'
+	#name : 'ReverseRotateClockwiseLaserGameAction',
+	#superclass : 'ReverseLaserGameAction',
+	#category : 'Laser-Game-Model',
+	#package : 'Laser-Game',
+	#tag : 'Model'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 ReverseRotateClockwiseLaserGameAction class >> actionSymbol [
 	^#clockwise
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 ReverseRotateClockwiseLaserGameAction class >> reverseActionSymbol [
 	^#rotateCellCounterClockwiseAt:
 ]

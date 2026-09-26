@@ -1,10 +1,12 @@
 Class {
-	#name : #MirrorCellTestCase,
-	#superclass : #TestCase,
-	#category : #'Laser-Game-Tests'
+	#name : 'MirrorCellTestCase',
+	#superclass : 'TestCase',
+	#category : 'Laser-Game-Tests',
+	#package : 'Laser-Game',
+	#tag : 'Tests'
 }
 
-{ #category : #tests }
+{ #category : 'tests' }
 MirrorCellTestCase >> testCellExitSidesMirrorLeft [
 
 	| cell exit |
@@ -24,7 +26,7 @@ MirrorCellTestCase >> testCellExitSidesMirrorLeft [
 	self assert: exit equals: #south
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 MirrorCellTestCase >> testCellExitSidesMirrorRight [
 
 	| cell exit |
@@ -44,7 +46,7 @@ MirrorCellTestCase >> testCellExitSidesMirrorRight [
 	self assert: exit equals: #north
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 MirrorCellTestCase >> testCellLaserActivityMirrorLeft [
 
 	| cell |
@@ -57,7 +59,7 @@ MirrorCellTestCase >> testCellLaserActivityMirrorLeft [
 	self shouldnt: [ cell isSegmentOnFor: #west ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 MirrorCellTestCase >> testCellLaserActivityMirrorRight [
 
 	| cell |
@@ -70,7 +72,7 @@ MirrorCellTestCase >> testCellLaserActivityMirrorRight [
 	self shouldnt: [ cell isSegmentOnFor: #east ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 MirrorCellTestCase >> testCellOnState [
 
 	| cell |
@@ -79,7 +81,7 @@ MirrorCellTestCase >> testCellOnState [
 	self shouldnt: [ cell isOn ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 MirrorCellTestCase >> testCellRotate [
 
 	| cell |
@@ -95,7 +97,7 @@ MirrorCellTestCase >> testCellRotate [
 	self assert: (cell exitSideFor: #south) equals: #west
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 MirrorCellTestCase >> testCellSegmentState [
 
 	| cell |
@@ -106,7 +108,7 @@ MirrorCellTestCase >> testCellSegmentState [
 	self shouldnt: [ cell isSegmentOnFor: #west ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 MirrorCellTestCase >> testCellSegmentsState [
 	| cell |
 	cell := MirrorCell new.

@@ -1,74 +1,76 @@
 Class {
-	#name : #Cell,
-	#superclass : #Object,
+	#name : 'Cell',
+	#superclass : 'Object',
 	#instVars : [
 		'activeSegments',
 		'exitSides',
 		'gridLocation'
 	],
-	#category : #'Laser-Game-Model'
+	#category : 'Laser-Game-Model',
+	#package : 'Laser-Game',
+	#tag : 'Model'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Cell >> activeSegments [
 	"Answer the value of activeSegments"
 
 	^ activeSegments
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Cell >> activeSegments: aDictionary [
 	"Set the value of activeSegments"
 
 	activeSegments := aDictionary
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 Cell >> clearCell [
 	self initializeActiveSegments
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Cell >> exitSideFor: aSymbol [
 	^self exitSides at: aSymbol
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Cell >> exitSides [
 	"Answer the value of exitSides"
 
 	^ exitSides
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Cell >> exitSides: aDictionary [
 	"Set the value of exitSides"
 
 	exitSides := aDictionary
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Cell >> gridLocation [
 	"Answer the value of gridLocation"
 
 	^ gridLocation
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Cell >> gridLocation: anObject [
 	"Set the value of gridLocation"
 
 	gridLocation := anObject
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 Cell >> initialize [
 	super initialize.
 	self initializeActiveSegments.
 
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 Cell >> initializeActiveSegments [
 	self activeSegments: Dictionary new.
 	self activeSegments at: #north put: false.
@@ -78,22 +80,22 @@ Cell >> initializeActiveSegments [
 	
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 Cell >> isOff [
 	^self isOn not
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 Cell >> isOn [
 	^self activeSegments values anySatisfy: [:each | each = true]
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 Cell >> isSegmentOnFor: aSymbol [
 	^self activeSegments at: aSymbol
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Cell >> laserEntersFrom: aSymbol [
 	| exit |
 	self activeSegments at: aSymbol put: true.
@@ -101,7 +103,7 @@ Cell >> laserEntersFrom: aSymbol [
 	self activeSegments at: exit put: true.
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 Cell >> printOn: aStream [
 	super printOn: aStream.
 	aStream
@@ -112,10 +114,10 @@ Cell >> printOn: aStream [
 		nextPutAll: (self isOn ifTrue: ['ON'] ifFalse: ['OFF'])
 ]
 
-{ #category : #actions }
+{ #category : 'actions' }
 Cell >> rotateClockwise [
 ]
 
-{ #category : #actions }
+{ #category : 'actions' }
 Cell >> rotateCounterClockwise [
 ]

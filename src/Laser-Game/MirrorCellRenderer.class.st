@@ -1,20 +1,22 @@
 Class {
-	#name : #MirrorCellRenderer,
-	#superclass : #CellRenderer,
-	#category : #'Laser-Game-Graphics'
+	#name : 'MirrorCellRenderer',
+	#superclass : 'CellRenderer',
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 MirrorCellRenderer class >> modelClass [
 	^MirrorCell
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> cornerInset [
 	^8@8
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> hintArrowColorFor: regionClass offset: offsetWithinCell [
 	| permissionToActOnCell arrowColor |
 	permissionToActOnCell := regionClass
@@ -27,7 +29,7 @@ MirrorCellRenderer >> hintArrowColorFor: regionClass offset: offsetWithinCell [
 	^arrowColor
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> maskForNorthEast [
 	| mask pen line cellPosn |
 	mask := Form extent: CellRenderer cellExtent depth: 1.
@@ -51,7 +53,7 @@ MirrorCellRenderer >> maskForNorthEast [
 	self renderBorderRight
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> maskForNorthWest [
 	| mask pen line cellPosn |
 	mask := Form extent: CellRenderer cellExtent depth: 1.
@@ -75,7 +77,7 @@ MirrorCellRenderer >> maskForNorthWest [
 	self renderBorderLeft
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> maskForSouthEast [
 	| mask pen line cellPosn |
 	mask := Form extent: CellRenderer cellExtent depth: 1.
@@ -99,7 +101,7 @@ MirrorCellRenderer >> maskForSouthEast [
 	self renderBorderRight
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> maskForSouthWest [
 	| mask pen line cellPosn |
 	mask := Form extent: CellRenderer cellExtent depth: 1.
@@ -123,17 +125,17 @@ MirrorCellRenderer >> maskForSouthWest [
 	self renderBorderLeft
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> maskOffHorizontalOn: aMask [
 	^aMask
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> maskOffVerticalOn: aMask [
 	^aMask
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> mouseUpWithinBoardOffset: aPoint [
 	| cellPosn offsetWithinCell regionClass |
 	cellPosn := self offsetWithinGridForm.
@@ -143,7 +145,7 @@ MirrorCellRenderer >> mouseUpWithinBoardOffset: aPoint [
 
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> redrawCell [
 
 	| offset backgroundRect |
@@ -155,34 +157,34 @@ MirrorCellRenderer >> redrawCell [
 	self render
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> removeLaserFromInactiveLeftSide [
 	(self cell activeSegments at: #west) ifFalse: [self maskForSouthWest].
 	(self cell activeSegments at: #east) ifFalse: [self maskForNorthEast].
 	
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> removeLaserFromInactiveRightSide [
 	(self cell activeSegments at: #west) ifFalse: [self maskForNorthWest].
 	(self cell activeSegments at: #east) ifFalse: [self maskForSouthEast].
 	
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> removeLaserFromInactiveSide [
 	self cell isLeft
 		ifTrue: [self removeLaserFromInactiveLeftSide]
 		ifFalse: [self removeLaserFromInactiveRightSide]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> renderContents [
 	self fillBackground.
 	self renderMirror
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> renderContentsLeanLeft [
 	| offset delta x1 x2 y1 y2 line fillForm |
 	offset := self offsetWithinGridForm.
@@ -200,7 +202,7 @@ MirrorCellRenderer >> renderContentsLeanLeft [
 	line displayOn: self targetForm
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> renderContentsLeanRight [
 	| offset delta x1 x2 y1 y2 line fillForm |
 	offset := self offsetWithinGridForm.
@@ -218,7 +220,7 @@ MirrorCellRenderer >> renderContentsLeanRight [
 	line displayOn: self targetForm
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> renderLaser [
 	self cell isOff ifTrue: [^self].
 	self renderLaserVertical.
@@ -229,14 +231,14 @@ MirrorCellRenderer >> renderLaser [
 
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> renderMirror [
 	self cell isLeft
 		ifTrue: [self renderContentsLeanLeft]
 		ifFalse: [self renderContentsLeanRight]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 MirrorCellRenderer >> showPositionHintFromWithinBoardOffset: aPoint [
 	| cellPosn offsetWithinCell regionClass arrowAndOffset |
 	cellPosn := self offsetWithinGridForm.

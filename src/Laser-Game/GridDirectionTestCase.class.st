@@ -1,10 +1,12 @@
 Class {
-	#name : #GridDirectionTestCase,
-	#superclass : #TestCase,
-	#category : #'Laser-Game-Tests'
+	#name : 'GridDirectionTestCase',
+	#superclass : 'TestCase',
+	#category : 'Laser-Game-Tests',
+	#package : 'Laser-Game',
+	#tag : 'Tests'
 }
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridDirectionTestCase >> testDirectionSelection [
 
 	| direction |

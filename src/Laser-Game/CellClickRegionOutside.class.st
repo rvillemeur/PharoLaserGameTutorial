@@ -1,22 +1,24 @@
 Class {
-	#name : #CellClickRegionOutside,
-	#superclass : #CellClickRegion,
-	#category : #'Laser-Game-Graphics'
+	#name : 'CellClickRegionOutside',
+	#superclass : 'CellClickRegion',
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionOutside class >> canActOnCellAtPoint: aPoint cell: aCell withinGrid: aGrid [
 	^true
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionOutside class >> mouseUpWithinCellAtPoint: aPoint cell: aCell withinGrid: aGrid [
 	| rotateRegion |
 	rotateRegion := self rotateRegionForPoint: aPoint.
 	^rotateRegion mouseUpForCell: aCell withinGrid: aGrid
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionOutside class >> regionRectangle [
 	"CellClickRegionOutside regionRectangle"
 	| outer delta |
@@ -25,12 +27,12 @@ CellClickRegionOutside class >> regionRectangle [
 	^outer insetBy: (delta // 2)
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionOutside class >> rotateRegionForPoint: aPoint [
 	^self subclasses detect: [:cls | cls containsPoint: aPoint]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionOutside class >> scaledHintArrowAndOffsetFromWithinCell: aPoint [
 	| arrow tinyArrow offset rotateRegion |
 	rotateRegion := self rotateRegionForPoint: aPoint.
@@ -40,7 +42,7 @@ CellClickRegionOutside class >> scaledHintArrowAndOffsetFromWithinCell: aPoint [
 	^offset->tinyArrow
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionOutside class >> sortIndex [
 	^2
 ]

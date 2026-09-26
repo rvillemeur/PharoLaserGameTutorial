@@ -1,31 +1,33 @@
 Class {
-	#name : #BlankCellRenderer,
-	#superclass : #CellRenderer,
-	#category : #'Laser-Game-Graphics'
+	#name : 'BlankCellRenderer',
+	#superclass : 'CellRenderer',
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 BlankCellRenderer class >> modelClass [
 	^BlankCell
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 BlankCellRenderer >> maskOffHorizontalOn: aMask [
 	^aMask
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 BlankCellRenderer >> maskOffVerticalOn: aMask [
 	^aMask
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 BlankCellRenderer >> renderContents [
 	self fillBackground
 
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 BlankCellRenderer >> renderLaser [
 	self cell isOff ifTrue: [^self].
 	(self cell activeSegments at: #north) ifTrue: [self renderLaserVertical].

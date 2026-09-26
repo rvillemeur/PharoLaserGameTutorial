@@ -1,20 +1,22 @@
 Class {
-	#name : #CellClickRegionPushSouth,
-	#superclass : #CellClickRegionInside,
-	#category : #'Laser-Game-Graphics'
+	#name : 'CellClickRegionPushSouth',
+	#superclass : 'CellClickRegionInside',
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionPushSouth class >> arrowForm [
 	^LaserGameForms southArrow
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionPushSouth class >> canPushCell: aCell withinGrid: aGrid [
 	^aGrid canPushCellSouthFromLocation: aCell gridLocation
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionPushSouth class >> containsPoint: aPoint [
 	| underHeadingDown underHeadingUp |
 	underHeadingDown := self pointIsUnderHeadingDownLine: aPoint.
@@ -22,7 +24,7 @@ CellClickRegionPushSouth class >> containsPoint: aPoint [
 	^underHeadingDown and: [underHeadingUp]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionPushSouth class >> mouseUpForCell: aCell withinGrid: aGrid [
 	^aGrid pushCellSouthFromLocation: aCell gridLocation
 ]

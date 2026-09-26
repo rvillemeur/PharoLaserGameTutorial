@@ -1,15 +1,17 @@
 Class {
-	#name : #ReverseLaserGameAction,
-	#superclass : #Object,
-	#category : #'Laser-Game-Model'
+	#name : 'ReverseLaserGameAction',
+	#superclass : 'Object',
+	#category : 'Laser-Game-Model',
+	#package : 'Laser-Game',
+	#tag : 'Model'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 ReverseLaserGameAction class >> reverseActionClassFor: aSymbol [
 	^self subclasses detect: [:cls | cls actionSymbol = aSymbol]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 ReverseLaserGameAction class >> reverseActionSymbolFor: aSymbol [
 	| cls |
 	cls := self reverseActionClassFor: aSymbol.

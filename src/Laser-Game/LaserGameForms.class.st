@@ -1,13 +1,15 @@
 Class {
-	#name : #LaserGameForms,
-	#superclass : #Object,
+	#name : 'LaserGameForms',
+	#superclass : 'Object',
 	#classVars : [
 		'CachedForms'
 	],
-	#category : #'Laser-Game-Graphics'
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> arrowFormFromPointArray: pts [
 
 	| form fillForm index startPoint nextIndex endPoint line offset |
@@ -33,7 +35,7 @@ LaserGameForms class >> arrowFormFromPointArray: pts [
 	^ form
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> arrowFormFromPointsArray: pts [
 	"LaserGameForms initializeCachedForms"
 	| form fillForm index startPoint nextIndex endPoint line offset |
@@ -59,32 +61,32 @@ LaserGameForms class >> arrowFormFromPointsArray: pts [
 	^form copy: (form tightRectangleAroundColor: Color black)
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> centerBeamMask [
 	CachedForms isNil ifTrue: [self initializeCachedForms].
 	^CachedForms at: #centerBeamMask
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> clockwiseArrow [
 	CachedForms isNil ifTrue: [self initializeCachedForms].
 	^CachedForms at: #clockwise
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> counterClockwiseArrow [
 	CachedForms isNil ifTrue: [self initializeCachedForms].
 	^CachedForms at: #counterClockwise
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> crossHair [
 	CachedForms isNil ifTrue: [self initializeCachedForms].
 	^CachedForms at: #crossHair
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawCenterLaserBeamMask [
     ^(Form
 	extent: 736@196
@@ -93,18 +95,18 @@ LaserGameForms class >> drawCenterLaserBeamMask [
 	offset: 0@0)
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawClockWiseArrow [
 
 	^ self drawConterClockWiseArrow flipBy: #horizonal centerAt: 0 @ 0
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawClockwiseArrow [
 	^self drawCounterClockwiseArrow flipBy: #horizontal centerAt: 0@0
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawConterClockWiseArrow [
 
 	| form penForm |
@@ -116,7 +118,7 @@ LaserGameForms class >> drawConterClockWiseArrow [
 	^ form
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawCounterClockWiseArrowHeadOn: form withPen: penForm [
 
 	| arrowPts index offset startPoint nextIndex endPoint line |
@@ -144,7 +146,7 @@ LaserGameForms class >> drawCounterClockWiseArrowHeadOn: form withPen: penForm [
 	form fill: Color black
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawCounterClockwiseArcsOn: form withPen: penForm [
 	| center outsideCircle insideCircle line bigPen |
 	center := 282@240.
@@ -174,7 +176,7 @@ LaserGameForms class >> drawCounterClockwiseArcsOn: form withPen: penForm [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawCounterClockwiseArrow [
 	| form penForm |
 	form := Form extent: 450@450 depth: 1.
@@ -187,7 +189,7 @@ LaserGameForms class >> drawCounterClockwiseArrow [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawCounterClockwiseArrowHeadOn: form withPen: penForm [
 	| arrowPts index offset startPoint nextIndex endPoint line |
 	arrowPts := {100@260. 40@150. 80@150. 80@141. 120@141. 120@150. 160@150}.
@@ -208,7 +210,7 @@ LaserGameForms class >> drawCounterClockwiseArrowHeadOn: form withPen: penForm [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawCrossHair [
 	"LaserGameForms initializeCachedForms"
 	| form pen startPoint endPoint line lineLength inset |
@@ -230,7 +232,7 @@ LaserGameForms class >> drawCrossHair [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawLaserBeamForm [
 	^(Form
 	extent: 368@196
@@ -239,7 +241,7 @@ LaserGameForms class >> drawLaserBeamForm [
 	offset: 0@0)
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawSplatterLaserBeamMask [
     ^(Form
 	extent: 736@196
@@ -248,18 +250,18 @@ LaserGameForms class >> drawSplatterLaserBeamMask [
 	offset: 0@0)
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> eastArrow [
 	CachedForms isNil ifTrue: [self initializeCachedForms].
 	^CachedForms at: #east
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> eastArrowPoints [
 	^{0@80. 150@80. 150@0. 260@100. 150@200. 150@120. 0@120}
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> extractLaserBeamMaskForms [
 	"LaserGameForms extractLaserBeamMaskForms"
 
@@ -299,13 +301,13 @@ LaserGameForms class >> extractLaserBeamMaskForms [
 		fillColor: (Color r: 0.909 g: 1.0 b: 0.27)
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> initialize [
 	super initialize.
 	LaserGameForms initializeCachedForms
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> initializeCachedForms [
 	"LaserGameForms initializeCachedForms"
 	| form |
@@ -333,48 +335,48 @@ LaserGameForms class >> initializeCachedForms [
 	
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> laserBeam [
 	CachedForms isNil ifTrue: [self initializeCachedForms].
 	^CachedForms at: #laserBeam
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> northArrow [
 	CachedForms isNil ifTrue: [self initializeCachedForms].
 	^CachedForms at: #north
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> northArrowPoints [
 	^{100@0. 200@110. 120@110. 120@260. 80@260. 80@110. 0@110}
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> southArrow [
 	CachedForms isNil ifTrue: [self initializeCachedForms].
 	^CachedForms at: #south
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> southArrowPoints [
 	^{100@260. 0@150. 80@150. 80@0. 120@0. 120@150. 200@150}
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> splatterBeamMask [
 	CachedForms isNil ifTrue: [self initializeCachedForms].
 	^CachedForms at: #splatterBeamMask
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> westArrow [
 	CachedForms isNil ifTrue: [self initializeCachedForms].
 	^CachedForms at: #west
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserGameForms class >> westArrowPoints [
 	^{260@80. 110@80. 110@0. 0@100. 110@200. 110@120. 260@120}
 ]

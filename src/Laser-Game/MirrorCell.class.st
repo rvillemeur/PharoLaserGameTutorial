@@ -1,46 +1,48 @@
 Class {
-	#name : #MirrorCell,
-	#superclass : #Cell,
+	#name : 'MirrorCell',
+	#superclass : 'Cell',
 	#instVars : [
 		'leansLeft'
 	],
-	#category : #'Laser-Game-Model'
+	#category : 'Laser-Game-Model',
+	#package : 'Laser-Game',
+	#tag : 'Model'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 MirrorCell class >> leanLeft [
 	^super new leanLeft
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 MirrorCell class >> leanRight [
 	^super new leanRight
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 MirrorCell >> initialize [
 	super initialize.
 	self initializeExitSides.
 	self leanLeft
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 MirrorCell >> initializeExitSides [
 	self exitSides: Dictionary new.
 	
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 MirrorCell >> isLeft [
 	^self leansLeft
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 MirrorCell >> isRight [
 	^self isLeft not
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 MirrorCell >> leanLeft [
 	self leansLeft: true.
 	self exitSides at: #north put: #east.
@@ -50,7 +52,7 @@ MirrorCell >> leanLeft [
 	
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 MirrorCell >> leanRight [
 	self leansLeft: false.
 	self exitSides at: #north put: #west.
@@ -60,21 +62,21 @@ MirrorCell >> leanRight [
 	
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 MirrorCell >> leansLeft [
 	"Answer the value of leansLeft"
 
 	^ leansLeft
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 MirrorCell >> leansLeft: anObject [
 	"Set the value of leansLeft"
 
 	leansLeft := anObject
 ]
 
-{ #category : #actions }
+{ #category : 'actions' }
 MirrorCell >> rotate [
 	self isLeft
 		ifTrue: [self leanRight]
@@ -82,12 +84,12 @@ MirrorCell >> rotate [
 
 ]
 
-{ #category : #actions }
+{ #category : 'actions' }
 MirrorCell >> rotateClockwise [
 	self rotate
 ]
 
-{ #category : #actions }
+{ #category : 'actions' }
 MirrorCell >> rotateCounterClockwise [
 	self rotate
 ]

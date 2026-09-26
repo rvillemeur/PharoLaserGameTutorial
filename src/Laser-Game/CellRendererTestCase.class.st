@@ -1,10 +1,12 @@
 Class {
-	#name : #CellRendererTestCase,
-	#superclass : #TestCase,
-	#category : #'Laser-Game-Tests'
+	#name : 'CellRendererTestCase',
+	#superclass : 'TestCase',
+	#category : 'Laser-Game-Tests',
+	#package : 'Laser-Game',
+	#tag : 'Tests'
 }
 
-{ #category : #tests }
+{ #category : 'tests' }
 CellRendererTestCase >> testCellOffsetCalculations [
 
 	| grid form cellLoc cell  renderer offset |
@@ -39,7 +41,7 @@ CellRendererTestCase >> testCellOffsetCalculations [
 	self assert: offset equals: 50 @ 50
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CellRendererTestCase >> testRendererSelection [
 
 	| renderer cell |

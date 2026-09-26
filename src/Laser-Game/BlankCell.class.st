@@ -1,17 +1,19 @@
 Class {
-	#name : #BlankCell,
-	#superclass : #Cell,
-	#category : #'Laser-Game-Model'
+	#name : 'BlankCell',
+	#superclass : 'Cell',
+	#category : 'Laser-Game-Model',
+	#package : 'Laser-Game',
+	#tag : 'Model'
 }
 
-{ #category : #'initialize-release' }
+{ #category : 'initialize-release' }
 BlankCell >> initialize [
 	super initialize.
 	self initializeExitSides.
 	
 ]
 
-{ #category : #'initialize-release' }
+{ #category : 'initialize-release' }
 BlankCell >> initializeExitSides [
 	self exitSides: Dictionary new.
 	self exitSides at: #north put: #south.

@@ -1,16 +1,18 @@
 Class {
-	#name : #GridTestCase,
-	#superclass : #TestCase,
-	#category : #'Laser-Game-Tests'
+	#name : 'GridTestCase',
+	#superclass : 'TestCase',
+	#category : 'Laser-Game-Tests',
+	#package : 'Laser-Game',
+	#tag : 'Tests'
 }
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> generateDemoGrid [
 
 	^ GridFactory demoGrid
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testCellInteractions [
 
 	| grid cell expectedActiveLocationList foundOn |
@@ -36,7 +38,7 @@ GridTestCase >> testCellInteractions [
 			(expectedActiveLocationList includes: fCell gridLocation) ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testFireLaser [
 
 	| grid cell |
@@ -49,7 +51,7 @@ GridTestCase >> testFireLaser [
 	self assert: cell isOn
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testFireLaserAfterMirrorPush [
 
 	| grid cell |
@@ -68,7 +70,7 @@ GridTestCase >> testFireLaserAfterMirrorPush [
 	self assert: cell isOff
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testFireLaserAfterMirrorRotation [
 
 	| grid cell |
@@ -92,7 +94,7 @@ GridTestCase >> testFireLaserAfterMirrorRotation [
 	self assert: cell isOff
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testFireLaserDuringMirrorPush [
 
 	| grid cell |
@@ -111,7 +113,7 @@ GridTestCase >> testFireLaserDuringMirrorPush [
 	self assert: cell isOff
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testFireLaserDuringMirrorRotation [
 
 	| grid cell |
@@ -129,7 +131,7 @@ GridTestCase >> testFireLaserDuringMirrorRotation [
 	self assert: cell isOff
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testInitialConditions [
 
 	| grid cell |
@@ -139,7 +141,7 @@ GridTestCase >> testInitialConditions [
 	self assert: cell class equals: BlankCell
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testInitialEmptyGrid [
 
 	| grid |
@@ -153,7 +155,7 @@ GridTestCase >> testInitialEmptyGrid [
 			self assert: cell class equals: BlankCell ] ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testNonDefaultGridSizeInitialConditions [
 
 	| grid cell |
@@ -166,7 +168,7 @@ GridTestCase >> testNonDefaultGridSizeInitialConditions [
 	self assert: cell isOff
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testNumberOfActiveMirrorsCounter [
 
 	| grid count |
@@ -178,7 +180,7 @@ GridTestCase >> testNumberOfActiveMirrorsCounter [
 	self assert: count equals: 3
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testNumberOfMirrorsCounter [
 
 	| grid count |
@@ -187,7 +189,7 @@ GridTestCase >> testNumberOfMirrorsCounter [
 	self assert: count equals: 10
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testPushBlankCell [
 
 	| grid cell |
@@ -207,7 +209,7 @@ GridTestCase >> testPushBlankCell [
 	self assert: cell class equals: BlankCell
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellEastCase1 [
 
 	| grid cell |
@@ -223,7 +225,7 @@ GridTestCase >> testPushIsolatedMirrorCellEastCase1 [
 	self assert: cell class equals: BlankCell
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellEastCase2 [
 
 	| grid cell |
@@ -241,7 +243,7 @@ GridTestCase >> testPushIsolatedMirrorCellEastCase2 [
 	self assert: cell class equals: MirrorCell
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellNorthCase1 [
 
 	| grid cell |
@@ -257,7 +259,7 @@ GridTestCase >> testPushIsolatedMirrorCellNorthCase1 [
 	self assert: cell class equals: BlankCell
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellNorthCase2 [
 
 	| grid cell |
@@ -275,7 +277,7 @@ GridTestCase >> testPushIsolatedMirrorCellNorthCase2 [
 	self assert: cell class equals: BlankCell
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellSouth [
 
 	| grid cell |
@@ -293,7 +295,7 @@ GridTestCase >> testPushIsolatedMirrorCellSouth [
 	self assert: cell class equals: BlankCell
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellWest [
 
 	| grid cell |
@@ -311,7 +313,7 @@ GridTestCase >> testPushIsolatedMirrorCellWest [
 	self assert: cell class equals: BlankCell
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testPushTargetCell [
 
 	| grid cell |
@@ -330,7 +332,7 @@ GridTestCase >> testPushTargetCell [
 	self assert: cell class equals: TargetCell
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testResetGrid [
 
 	| grid cell |
@@ -352,7 +354,7 @@ GridTestCase >> testResetGrid [
 	self assert: grid movesStack isEmpty
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testStopLaser [
 
 	| grid cell |
@@ -365,7 +367,7 @@ GridTestCase >> testStopLaser [
 	self assert: cell isOff
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testToggleLaser [
 
 	| grid cell |
@@ -379,7 +381,7 @@ GridTestCase >> testToggleLaser [
 	self assert: cell isOff
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testUndoActions [
 
 	| undoAction |
@@ -399,7 +401,7 @@ GridTestCase >> testUndoActions [
 	self assert: undoAction equals: #rotateCellClockwiseAt:
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GridTestCase >> testUndoStackAfterPush [
 
 	| grid |

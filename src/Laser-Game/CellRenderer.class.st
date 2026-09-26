@@ -1,35 +1,37 @@
 Class {
-	#name : #CellRenderer,
-	#superclass : #Object,
+	#name : 'CellRenderer',
+	#superclass : 'Object',
 	#instVars : [
 		'cellLocation',
 		'grid',
 		'targetForm'
 	],
-	#category : #'Laser-Game-Graphics'
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #constants }
+{ #category : 'constants' }
 CellRenderer class >> cellExtent [
 	^50@50
 ]
 
-{ #category : #constants }
+{ #category : 'constants' }
 CellRenderer class >> ignoreRegionOffset [
 	^4
 ]
 
-{ #category : #constants }
+{ #category : 'constants' }
 CellRenderer class >> insideRegionExtent [
 	^self cellExtent - 20
 ]
 
-{ #category : #constants }
+{ #category : 'constants' }
 CellRenderer class >> outsideRegionExtent [
 	^self cellExtent - (2 * self ignoreRegionOffset)
 ]
 
-{ #category : #rendering }
+{ #category : 'rendering' }
 CellRenderer class >> renderBorderTop [ 
 |line delta offset x1 x2 y1 y2|
 delta := CellRenderer cellExtent.
@@ -42,12 +44,12 @@ line := Line from: x1@y1 to: x2@y2 withForm: (Form extent: 1@1 depth: 8) fillBla
 line displayOn: self targetForm.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellRenderer class >> rendererFor: aCell [
 	^self subclasses detect: [:cls | cls modelClass = aCell class]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellRenderer class >> rendererFor: aCell grid: aGrid form: aForm [
 	| cls model |
 	cls := self rendererFor: aCell.
@@ -59,34 +61,34 @@ CellRenderer class >> rendererFor: aCell grid: aGrid form: aForm [
 	^model
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> backgroundRectangle [
 	| offset |
 	offset := self offsetWithinGridForm + 1.
 	^offset extent: CellRenderer cellExtent - 2
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CellRenderer >> cell [
 	^self grid at: self cellLocation.
 
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CellRenderer >> cellLocation [
 	"Answer the value of cellLocation"
 
 	^ cellLocation
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CellRenderer >> cellLocation: anObject [
 	"Set the value of cellLocation"
 
 	cellLocation := anObject
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> fillBackground [
 	| backgroundRect |
 	backgroundRect := self backgroundRectangle.
@@ -94,26 +96,26 @@ CellRenderer >> fillBackground [
 
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CellRenderer >> grid [
 	"Answer the value of grid"
 
 	^ grid
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CellRenderer >> grid: anObject [
 	"Set the value of grid"
 
 	grid := anObject
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> mouseUpWithinBoardOffset: aPoint [ 
 	^self cell
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CellRenderer >> offsetWithinGridForm [
 	| delta xCount yCount offset |
 	delta := CellRenderer cellExtent.
@@ -123,14 +125,14 @@ CellRenderer >> offsetWithinGridForm [
 	^offset
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> redrawCell [
 	self fillBackground.
 	self render
 
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> render [
 	self
 		renderBorder;
@@ -138,7 +140,7 @@ CellRenderer >> render [
 	self grid laserIsActive ifTrue: [self renderLaser]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderBorder [
 	self
 		renderBorderTop;
@@ -147,7 +149,7 @@ CellRenderer >> renderBorder [
 		renderBorderLeft
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderBorderBottom [
 	| line delta offset x1 x2 y1 y2 fillForm |
 	delta := CellRenderer cellExtent - 1.
@@ -165,7 +167,7 @@ CellRenderer >> renderBorderBottom [
 	line displayOn: self targetForm
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderBorderLeft [
 	| line delta offset x1 x2 y1 y2 fillForm |
 	delta := CellRenderer cellExtent.
@@ -183,7 +185,7 @@ CellRenderer >> renderBorderLeft [
 	line displayOn: self targetForm
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderBorderRight [
 	| line delta offset x1 x2 y1 y2 fillForm |
 	delta := CellRenderer cellExtent - 1.
@@ -201,7 +203,7 @@ CellRenderer >> renderBorderRight [
 	line displayOn: self targetForm
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderBorderTop [
 	| line delta offset x1 x2 y1 y2 fillForm |
 	delta := CellRenderer cellExtent.
@@ -219,29 +221,29 @@ CellRenderer >> renderBorderTop [
 	line displayOn: self targetForm
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderContents [
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderLaser [
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderLaserHorizontal [
 	self renderLaserHorizontalSplatter.
 	self renderLaserHorizontalCenter.
 	
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderLaserHorizontalCenter [
 	self
 		renderLaserHorizontalMask: LaserGameForms centerBeamMask 
 		color: LaserGameColors laserBeamCenterColor
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderLaserHorizontalMask: aMaskForm color: aColor [
 	| cellPosn scaledBeam scale trimmedBeam offset masked |
 	cellPosn := self offsetWithinGridForm.
@@ -264,28 +266,28 @@ CellRenderer >> renderLaserHorizontalMask: aMaskForm color: aColor [
 		fillColor: aColor
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderLaserHorizontalSplatter [
 	self
 		renderLaserHorizontalMask: LaserGameForms splatterBeamMask 
 		color: LaserGameColors laserBeamSplatterColor
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderLaserVertical [
 	self renderLaserVerticalSplatter.
 	self renderLaserVerticalCenter.
 	
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderLaserVerticalCenter [
 	self
 		renderLaserVerticalMask: LaserGameForms centerBeamMask 
 		color: LaserGameColors laserBeamCenterColor
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderLaserVerticalMask: aMaskForm color: aColor [
 	| cellPosn scaledBeam scale trimmedBeam offset rotatedBeam masked |
 	cellPosn := self offsetWithinGridForm.
@@ -309,25 +311,25 @@ CellRenderer >> renderLaserVerticalMask: aMaskForm color: aColor [
 		fillColor: aColor
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> renderLaserVerticalSplatter [
 	self
 		renderLaserVerticalMask: LaserGameForms splatterBeamMask 
 		color: LaserGameColors laserBeamSplatterColor
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 CellRenderer >> showPositionHintFromWithinBoardOffset: aPoint [ 
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CellRenderer >> targetForm [
 	"Answer the value of targetForm"
 
 	^ targetForm
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CellRenderer >> targetForm: anObject [
 	"Set the value of targetForm"
 

@@ -1,20 +1,22 @@
 Class {
-	#name : #CellClickRegionPushNorth,
-	#superclass : #CellClickRegionInside,
-	#category : #'Laser-Game-Graphics'
+	#name : 'CellClickRegionPushNorth',
+	#superclass : 'CellClickRegionInside',
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionPushNorth class >> arrowForm [
 	^LaserGameForms northArrow
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionPushNorth class >> canPushCell: aCell withinGrid: aGrid [
 	^aGrid canPushCellNorthFromLocation: aCell gridLocation
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionPushNorth class >> containsPoint: aPoint [
 	| underHeadingDown underHeadingUp |
 	underHeadingDown := self pointIsUnderHeadingDownLine: aPoint.
@@ -23,7 +25,7 @@ CellClickRegionPushNorth class >> containsPoint: aPoint [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CellClickRegionPushNorth class >> mouseUpForCell: aCell withinGrid: aGrid [
 	^aGrid pushCellNorthFromLocation: aCell gridLocation
 ]

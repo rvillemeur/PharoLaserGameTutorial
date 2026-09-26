@@ -1,18 +1,20 @@
 Class {
-	#name : #GridFactory,
-	#superclass : #Object,
+	#name : 'GridFactory',
+	#superclass : 'Object',
 	#classVars : [
 		'RandomNumberGenerator'
 	],
-	#category : #'Laser-Game-Model'
+	#category : 'Laser-Game-Model',
+	#package : 'Laser-Game',
+	#tag : 'Model'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> defaultGrid [
 	^self randomizedGridOfExtent: 8@10
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> demoGrid [
 	| grid |
 	grid := Grid newOfSize: 5@5.
@@ -30,7 +32,7 @@ GridFactory class >> demoGrid [
 	^grid
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> emptyRandomLocationsFor: aGrid [
 	| dict |
 	dict := Dictionary new.
@@ -43,19 +45,19 @@ GridFactory class >> emptyRandomLocationsFor: aGrid [
 	^dict
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> emptyStandardGrid [
 	^Grid newOfSize: 8@10
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> randomBoolean [
 	| int |
 	int := self randomNumberGenerator nextInt: 2.
 	^int > 1
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> randomNumberGenerator [
 	RandomNumberGenerator isNil ifTrue: [
 		RandomNumberGenerator := Random new.
@@ -63,12 +65,12 @@ GridFactory class >> randomNumberGenerator [
 	^RandomNumberGenerator
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> randomizeGrid: aGrid [
 	self randomizeGrid: aGrid targetAt: (aGrid numberOfColumns@1)
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> randomizeGrid: aGrid targetAt: pt [
 	| emptyList loc howMany |
 	emptyList := self emptyRandomLocationsFor: aGrid.
@@ -79,7 +81,7 @@ GridFactory class >> randomizeGrid: aGrid targetAt: pt [
 		aGrid at: loc put: self randomizedMirrorCell]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> randomizedGridOfExtent: ext [
 	| grid |
 	grid := Grid newOfSize: ext.
@@ -87,19 +89,19 @@ GridFactory class >> randomizedGridOfExtent: ext [
 	^grid
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> randomizedMirrorCell [
 	^self randomBoolean
 		ifTrue: [MirrorCell leanLeft]
 		ifFalse: [MirrorCell leanRight]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> reSeed [
 	self randomNumberGenerator seed: Time totalSeconds
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 GridFactory class >> unusedRandomLocationIn: list forGrid: aGrid [
 	| x y pt |
 	[

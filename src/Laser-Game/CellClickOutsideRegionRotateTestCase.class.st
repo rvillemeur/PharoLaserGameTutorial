@@ -1,10 +1,12 @@
 Class {
-	#name : #CellClickOutsideRegionRotateTestCase,
-	#superclass : #TestCase,
-	#category : #'Laser-Game-Tests'
+	#name : 'CellClickOutsideRegionRotateTestCase',
+	#superclass : 'TestCase',
+	#category : 'Laser-Game-Tests',
+	#package : 'Laser-Game',
+	#tag : 'Tests'
 }
 
-{ #category : #tests }
+{ #category : 'tests' }
 CellClickOutsideRegionRotateTestCase >> testClicksInRotateRegions [
 
 	| pt regionClass testTable cls rotateRegion inRect outRect |

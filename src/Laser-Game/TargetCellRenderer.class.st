@@ -1,27 +1,29 @@
 Class {
-	#name : #TargetCellRenderer,
-	#superclass : #CellRenderer,
-	#category : #'Laser-Game-Graphics'
+	#name : 'TargetCellRenderer',
+	#superclass : 'CellRenderer',
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 TargetCellRenderer class >> modelClass [
 	^TargetCell
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> drawCircleOutline [
 	self drawCircleOutlineOn: self targetForm color: LaserGameColors targetCenterColor
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> drawCircleOutlineOn: aForm color: aColor [
 	| offset |
 	offset := self offsetWithinGridForm.
 	self drawCircleOutlineOn: aForm color: aColor offset: offset
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> drawCircleOutlineOn: aForm color: aColor offset: offset [
 	| delta fillForm circle |
 	delta := self class cellExtent - 1.
@@ -34,7 +36,7 @@ TargetCellRenderer >> drawCircleOutlineOn: aForm color: aColor offset: offset [
 	circle displayOn: aForm
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> drawCrossHairsOutlines [
 	| inset delta offset x1 x2 y1 y2 fillForm line |
 	inset := 6@6.
@@ -65,13 +67,13 @@ TargetCellRenderer >> drawCrossHairsOutlines [
 
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> drawTargetOutlines [
 	self drawCrossHairsOutlines.
 	self drawCircleOutline
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> maskOffHorizontalOn: aMask [
 	| newMask halfExtent halfRect offset |
 	halfExtent := (aMask width // 2)@(aMask height).
@@ -90,7 +92,7 @@ TargetCellRenderer >> maskOffHorizontalOn: aMask [
 	^newMask
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> maskOffVerticalOn: aMask [
 	| newMask halfExtent halfRect offset |
 	newMask := Form extent: aMask extent depth: aMask depth.
@@ -109,12 +111,12 @@ TargetCellRenderer >> maskOffVerticalOn: aMask [
 	^newMask
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> radius [
 	^(self class cellExtent x // 2 - 8) min: 10
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> renderContents [
 	self fillBackground.
 	self drawTargetOutlines.
@@ -123,19 +125,19 @@ TargetCellRenderer >> renderContents [
 		ifFalse: [self renderContentsOff]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> renderContentsOff [
 	self renderInnerCircleColor: LaserGameColors targetCenterColorIdle.
 
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> renderContentsOn [
 	self renderInnerCircleColor: LaserGameColors targetCenterColorActive.
 
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> renderInnerCircleColor: aColor [
 	| circle fillForm offset delta |
 	delta := CellRenderer cellExtent - 1.
@@ -149,7 +151,7 @@ TargetCellRenderer >> renderInnerCircleColor: aColor [
 	circle displayOn: self targetForm.
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 TargetCellRenderer >> renderLaser [
 	| horizontal |
 	self cell isOff ifTrue: [^self].

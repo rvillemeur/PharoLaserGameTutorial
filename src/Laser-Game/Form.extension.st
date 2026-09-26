@@ -1,6 +1,6 @@
-Extension { #name : #Form }
+Extension { #name : 'Form' }
 
-{ #category : #'*Laser-Game' }
+{ #category : '*Laser-Game' }
 Form >> anyOfColor: aColor inColumn: int [
 	| color |
 	1 to: self height do: [:row |
@@ -9,7 +9,7 @@ Form >> anyOfColor: aColor inColumn: int [
 	^false
 ]
 
-{ #category : #'*Laser-Game' }
+{ #category : '*Laser-Game' }
 Form >> anyOfColor: aColor inRow: int [
 	| color |
 	1 to: self width do: [:column |
@@ -18,7 +18,7 @@ Form >> anyOfColor: aColor inRow: int [
 	^false
 ]
 
-{ #category : #'*Laser-Game' }
+{ #category : '*Laser-Game' }
 Form >> firstColumnOfColorFromLeft: aColor [
 	| x |
 	x := 1.
@@ -28,7 +28,7 @@ Form >> firstColumnOfColorFromLeft: aColor [
 	^x
 ]
 
-{ #category : #'*Laser-Game' }
+{ #category : '*Laser-Game' }
 Form >> firstColumnOfColorFromRight: aColor [
 	| x |
 	x := self width.
@@ -38,7 +38,7 @@ Form >> firstColumnOfColorFromRight: aColor [
 	^x
 ]
 
-{ #category : #'*Laser-Game' }
+{ #category : '*Laser-Game' }
 Form >> firstRowOfColorFromBottom: aColor [
 	| y |
 	y := height.
@@ -48,7 +48,7 @@ Form >> firstRowOfColorFromBottom: aColor [
 	^y
 ]
 
-{ #category : #'*Laser-Game' }
+{ #category : '*Laser-Game' }
 Form >> firstRowOfColorFromTop: aColor [
 	| y |
 	y := 1.
@@ -58,7 +58,7 @@ Form >> firstRowOfColorFromTop: aColor [
 	^y
 ]
 
-{ #category : #'*Laser-Game' }
+{ #category : '*Laser-Game' }
 Form >> tightRectangleAroundColor: aColor [
 	| left right top bottom |
 	left := self firstColumnOfColorFromLeft: aColor.

@@ -1,16 +1,18 @@
 Class {
-	#name : #Circle,
-	#superclass : #Arc,
-	#category : #'Laser-Game-Graphics'
+	#name : 'Circle',
+	#superclass : 'Arc',
+	#category : 'Laser-Game-Graphics',
+	#package : 'Laser-Game',
+	#tag : 'Graphics'
 }
 
-{ #category : #'accessing - display box' }
+{ #category : 'accessing - display box' }
 Circle >> computeBoundingBox [
 
 	^center - radius + form offset extent: form extent + (radius * 2) asPoint
 ]
 
-{ #category : #'accessing - display box' }
+{ #category : 'accessing - display box' }
 Circle >> displayOn: aDisplayMedium at: aPoint clippingBox: clipRect rule: anInteger fillColor: aForm [
 
 	1 to: 4 do:
@@ -23,7 +25,7 @@ Circle >> displayOn: aDisplayMedium at: aPoint clippingBox: clipRect rule: anInt
 			fillColor: aForm]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Circle >> displayOn: aDisplayMedium transformation: aTransformation clippingBox: clipRect rule: anInteger fillColor: aForm [
 
 	1 to: 4 do:

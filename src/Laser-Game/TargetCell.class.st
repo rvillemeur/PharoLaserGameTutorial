@@ -1,17 +1,19 @@
 Class {
-	#name : #TargetCell,
-	#superclass : #Cell,
-	#category : #'Laser-Game-Model'
+	#name : 'TargetCell',
+	#superclass : 'Cell',
+	#category : 'Laser-Game-Model',
+	#package : 'Laser-Game',
+	#tag : 'Model'
 }
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 TargetCell >> initialize [
 	super initialize.
 	self initializeExitSides.
 	
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 TargetCell >> initializeExitSides [
 	self exitSides: Dictionary new.
 	self exitSides at: #north put: nil.

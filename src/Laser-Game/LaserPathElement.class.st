@@ -1,14 +1,16 @@
 Class {
-	#name : #LaserPathElement,
-	#superclass : #Object,
+	#name : 'LaserPathElement',
+	#superclass : 'Object',
 	#instVars : [
 		'cell',
 		'entrySide'
 	],
-	#category : #'Laser-Game-Model'
+	#category : 'Laser-Game-Model',
+	#package : 'Laser-Game',
+	#tag : 'Model'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserPathElement class >> cell: aCell entrySide: aSymbol [
 	| model |
 	model := self basicNew.
@@ -19,45 +21,45 @@ LaserPathElement class >> cell: aCell entrySide: aSymbol [
 	^model
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserPathElement >> activateCell [
 	self cell laserEntersFrom: self entrySide
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserPathElement >> cell [
 	"Answer the value of cell"
 
 	^ cell
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserPathElement >> cell: anObject [
 	"Set the value of cell"
 
 	cell := anObject
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserPathElement >> clearCell [
 	self cell clearCell
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserPathElement >> entrySide [
 	"Answer the value of entrySide"
 
 	^ entrySide
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 LaserPathElement >> entrySide: anObject [
 	"Set the value of entrySide"
 
 	entrySide := anObject
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 LaserPathElement >> nextElementIn: aGrid [
 	| loc dirSym direction vector newLoc nextCell |
 	loc := self cell gridLocation.
@@ -72,7 +74,7 @@ LaserPathElement >> nextElementIn: aGrid [
 		ifFalse: [self class cell: nextCell entrySide: direction adjacentInversionSymbol]
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 LaserPathElement >> printOn: aStream [
 	super printOn: aStream.
 	aStream
