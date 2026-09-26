@@ -26,6 +26,25 @@ CellRendererTestCase >> testCellOffsetCalculations [
 ]
 
 { #category : 'tests' }
+CellRendererTestCase >> testEveryCellClassHasExactlyOneRenderer [
+
+	Cell allSubclasses do: [ :cellClass |
+		| renderers |
+		renderers := CellRenderer allSubclasses select: [ :each |
+			             each modelClass = cellClass ].
+		self
+			assert: renderers size = 1
+			description: cellClass name , ' must have exactly one renderer, found '
+				, renderers size printString ]
+]
+
+{ #category : 'tests' }
+CellRendererTestCase >> testRendererForUnsupportedModelIsAnError [
+
+	self should: [ CellRenderer rendererFor: 42 ] raise: Error
+]
+
+{ #category : 'tests' }
 CellRendererTestCase >> testRendererSelection [
 
 	| renderer cell |

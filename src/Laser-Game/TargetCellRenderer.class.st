@@ -1,3 +1,8 @@
+"
+I render a TargetCell: a background, a border, a circle and its crosshairs, and I show whether my cell model is lit by the laser.
+
+I am selected for a cell by `CellRenderer class >> rendererFor:`, which matches my modelClass against the class of the cell.
+"
 Class {
 	#name : 'TargetCellRenderer',
 	#superclass : 'CellRenderer',

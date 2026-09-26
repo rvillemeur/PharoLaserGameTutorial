@@ -1,3 +1,14 @@
+"
+I am the visual representation of one cell of a grid.
+
+The original tutorial had one SketchMorph for the whole board, and every cell drew its borders and contents into that single Form. This port drops that design: each cell gets its own element, so hit testing, redrawing and hint overlays are local to the cell instead of being computed against a board-wide bitmap.
+
+I hold the location of my cell inside the grid, and the grid itself, so I can always ask the model for the cell I represent. My subclasses declare which cell model they render with the class-side method modelClass, and `CellRenderer class >> rendererFor:` uses that to pick the right subclass for a cell. One subclass per concrete Cell subclass, no case statement.
+
+Instance variables:
+	cellLocation	<Point>	position of my cell inside the grid, 1@1 being the top left cell
+	grid		<Grid>	the model I read my cell from
+"
 Class {
 	#name : 'CellRenderer',
 	#superclass : 'Object',
@@ -26,27 +37,25 @@ CellRenderer class >> insideRegionExtent [
 	^self cellExtent - 20
 ]
 
+{ #category : 'accessing' }
+CellRenderer class >> modelClass [
+	"Answer the Cell subclass I render. Each concrete renderer answers exactly one."
+
+	^ self subclassResponsibility
+]
+
 { #category : 'constants' }
 CellRenderer class >> outsideRegionExtent [
 	^self cellExtent - (2 * self ignoreRegionOffset)
 ]
 
-{ #category : 'rendering' }
-CellRenderer class >> renderBorderTop [ 
-|line delta offset x1 x2 y1 y2|
-delta := CellRenderer cellExtent.
-offset := self offsetWithinGridForm.
-x1 := offset x.
-x2 := x1 + delta x.
-y1 := offset y.
-y2 := y1.
-line := Line from: x1@y1 to: x2@y2 withForm: (Form extent: 1@1 depth: 8) fillBlack.
-line displayOn: self targetForm.
-]
-
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 CellRenderer class >> rendererFor: aCell [
-	^self subclasses detect: [:cls | cls modelClass = aCell class]
+	"Answer the renderer class that renders aCell."
+
+	^ self subclasses
+		  detect: [ :each | each modelClass = aCell class ]
+		  ifNone: [ self error: 'No renderer for ' , aCell class name ]
 ]
 
 { #category : 'instance creation' }

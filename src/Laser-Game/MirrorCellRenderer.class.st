@@ -1,3 +1,8 @@
+"
+I render a MirrorCell: a background, a border and the mirror itself, drawn as a thick diagonal leaning one way or the other according to the orientation of my cell model.
+
+I am selected for a cell by `CellRenderer class >> rendererFor:`, which matches my modelClass against the class of the cell.
+"
 Class {
 	#name : 'MirrorCellRenderer',
 	#superclass : 'CellRenderer',
