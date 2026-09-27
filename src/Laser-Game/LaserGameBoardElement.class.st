@@ -5,16 +5,23 @@ I hold a grid and one child element per cell of it, built by the CellRenderer of
 
 The original tutorial computed the extent of that shared Form from the cell size, the border width and the grid dimensions. I keep the arithmetic as `LaserGameBoardElement class >> extentForGrid:`, because a window still has to be given a size, but nothing depends on it internally: I take the size of my cells through fitContent constraints, and cell borders are painted inside the cells, so they cost no space.
 
+I also hold what the mouse is doing to my cells. Each cell element handles its own mouse events and tells me: `hoverCellElement:` and `unhoverCellElement:` keep `hoveredCellElement` current, and `clickCellElement:` records `clickedCell`. So `hoveredCell` answers the cell under the pointer, which the original had to compute from the hand position, the board offset and the cell size, and printed to the Transcript on page 078.
+
 `LaserGameBoardElement openExample` opens the demo grid in a space.
 
 Instance variables:
 	grid	<Grid>	the model I show; setting it rebuilds my children
+	hoveredCellElement	<LaserGameCellElement>	the cell element under the pointer, nil when the pointer is off the board
+	clickedCell	<Cell>	the cell of the last click, nil until a cell is clicked
+
 "
 Class {
 	#name : 'LaserGameBoardElement',
 	#superclass : 'BlElement',
 	#instVars : [
-		'grid'
+		'grid',
+		'hoveredCellElement',
+		'clickedCell'
 	],
 	#category : 'Laser-Game-Graphics',
 	#package : 'Laser-Game',
@@ -90,6 +97,22 @@ LaserGameBoardElement >> cellElementAt: aPoint [
 	^ self children at: index
 ]
 
+{ #category : 'interaction' }
+LaserGameBoardElement >> clickCellElement: aCellElement [
+	"Record the cell of aCellElement as the one just clicked. A cell tells me this when a click
+	lands on it, that is when a press and a release fall in the same cell."
+
+	clickedCell := aCellElement cell
+]
+
+{ #category : 'accessing' }
+LaserGameBoardElement >> clickedCell [
+	"Answer the cell of the last click, or nil while no cell has been clicked. Nothing acts on
+	the click yet: the click regions decide what a click does from Section 3.5 on."
+
+	^ clickedCell
+]
+
 { #category : 'accessing' }
 LaserGameBoardElement >> grid [
 	"Answer the grid I show."
@@ -103,6 +126,30 @@ LaserGameBoardElement >> grid: aGrid [
 
 	grid := aGrid.
 	self rebuildCells
+]
+
+{ #category : 'interaction' }
+LaserGameBoardElement >> hoverCellElement: aCellElement [
+	"Remember that the pointer is over aCellElement. A cell tells me this when the pointer
+	enters it and while it moves inside it."
+
+	hoveredCellElement := aCellElement
+]
+
+{ #category : 'accessing' }
+LaserGameBoardElement >> hoveredCell [
+	"Answer the cell the pointer is over, or nil when the pointer is off the board. This is what
+	the original wrote to the Transcript on page 078, and it took a hand position, a board offset
+	and a division by the cell size to find it."
+
+	^ hoveredCellElement ifNotNil: [ :element | element cell ]
+]
+
+{ #category : 'accessing' }
+LaserGameBoardElement >> hoveredCellElement [
+	"Answer the cell element the pointer is over, or nil when the pointer is off the board."
+
+	^ hoveredCellElement
 ]
 
 { #category : 'initialization' }
@@ -132,4 +179,12 @@ LaserGameBoardElement >> rebuildCells [
 			self addChild: (CellRenderer
 					 rendererFor: (self grid at: location)
 					 grid: self grid) newElement ] ]
+]
+
+{ #category : 'interaction' }
+LaserGameBoardElement >> unhoverCellElement: aCellElement [
+	"Forget the pointer position, but only when aCellElement is the cell I hover. Moving from
+	one cell to the next can deliver the enter of the new cell before the leave of the old one."
+
+	hoveredCellElement == aCellElement ifTrue: [ hoveredCellElement := nil ]
 ]

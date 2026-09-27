@@ -244,13 +244,6 @@ LaserGame >> boardForm: anObject [
 	boardForm := anObject
 ]
 
-{ #category : 'events-processing' }
-LaserGame >> boardRelativePositionFor: evt [
-	| evtPosn |
-	evtPosn := evt hand position.
-	^evtPosn - self position - ((self gameMargin + self panelWidth) @ self gameMargin)
-]
-
 { #category : 'initialization' }
 LaserGame >> buttonLayoutFrameForRow: fromBottom column: fromLeft [
 	| buttonHeight buttonWidth xOffset xOrigin yOrigin xCorner yCorner yOffset |
@@ -292,23 +285,6 @@ LaserGame >> calculatedExtent [
 	^pt
 ]
 
-{ #category : 'events-processing' }
-LaserGame >> cellForEvent: evt [
-	| posn |
-	posn := self cellPositionForEvent: evt.
-	^self grid at: posn
-]
-
-{ #category : 'events-processing' }
-LaserGame >> cellPositionForEvent: evt [
-	| posn ext counts |
-	posn := self boardRelativePositionFor: evt.
-	ext := CellRenderer cellExtent.
-	counts := posn // ext.
-	counts := counts + (1@1).
-	^counts
-]
-
 { #category : 'accessing' }
 LaserGame >> dirty [
 	dirty isNil ifTrue: [self initializeDirty].
@@ -328,17 +304,6 @@ LaserGame >> drawGameBoard [
 			cell := self grid at: x@y.
 			renderer := CellRenderer rendererFor: cell grid: self grid form: self boardForm.
 		renderer render]].
-]
-
-{ #category : 'events-processing' }
-LaserGame >> eventDiagnosticFor: evt tag: aString [
-	| cell posn |
-	cell := self cellForEvent: evt.
-	posn := self boardRelativePositionFor: evt.
-	Transcript
-		show: aString, ' at ', posn asString; cr;
-		show: cell asString; cr;
-		cr
 ]
 
 { #category : 'initialization' }
@@ -378,18 +343,6 @@ LaserGame >> grid: anObject [
 	"Set the value of grid"
 
 	grid := anObject
-]
-
-{ #category : 'events-processing' }
-LaserGame >> handleListenEvent: evt [
-	| pos unders boardMorph |
-	((evt isMouse and: [evt isMove]) and: [evt isMouseDown not]) ifFalse: [^self].
-	pos := evt hand position.
-	unders := self morphsAt: pos.
-	unders isEmpty ifTrue: [^self].
-	boardMorph := unders detect: [:m | m knownName = 'board'] ifNone: [].
-	boardMorph isNil ifTrue: [^self].
-	self mouseMoveWhileButtonUp: evt forMorph: boardMorph
 ]
 
 { #category : 'as yet unclassified' }
@@ -569,70 +522,6 @@ LaserGame >> makeResetButton [
 { #category : 'as yet unclassified' }
 LaserGame >> makeUndoButton [
 	^self makeButton: 'Undo' action: #undo state: nil
-]
-
-{ #category : 'events-processing' }
-LaserGame >> mouseDown: evt forMorph: aSketchMorph [
-	| cell |
-	cell := self cellForEvent: evt.
-	cell isNil
-		ifTrue: [self activeCellLocation: nil]
-		ifFalse: [self activeCellLocation: cell gridLocation].
-]
-
-{ #category : 'events-processing' }
-LaserGame >> mouseEnter: evt forMorph: aSketchMorph [
-	evt hand addMouseListener: self.
-
-]
-
-{ #category : 'events-processing' }
-LaserGame >> mouseLeave: evt forMorph: aSketchMorph [
-	evt hand removeMouseListener: self.
-	self sweepDirtyCells.
-	self changed.
-	self currentHand showTemporaryCursor: nil
-]
-
-{ #category : 'events-processing' }
-LaserGame >> mouseMoveWhileButtonDown: evt forMorph: aSketchMorph [
-
-]
-
-{ #category : 'events-processing' }
-LaserGame >> mouseMoveWhileButtonUp: evt forMorph: aSketchMorph [
-	| cell renderer pixelPositionWithinBoard |
-	cell := self cellForEvent: evt.
-	renderer := CellRenderer rendererFor: cell grid: self grid form: self boardForm.
-	pixelPositionWithinBoard := self boardRelativePositionFor: evt.
-	self sweepDirtyCells.
-	renderer showPositionHintFromWithinBoardOffset: pixelPositionWithinBoard.
-	self setDirty: cell.
-	self changed
-]
-
-{ #category : 'events-processing' }
-LaserGame >> mouseUp: evt forMorph: aSketchMorph [
-	| cell |
-	cell := self cellForEvent: evt.
-	cell isNil ifFalse: [
-		self activeCellLocation = cell gridLocation ifTrue: [
-			self mouseUp: evt forMorph: aSketchMorph cell: cell
-			]
-		].
-	self activeCellLocation: nil
-]
-
-{ #category : 'events-processing' }
-LaserGame >> mouseUp: evt forMorph: aSketchMorph cell: aCell [
-	| renderer pixelPositionWithinBoard cellForRedraw |
-	renderer := CellRenderer rendererFor: aCell grid: self grid form: self boardForm.
-	pixelPositionWithinBoard := self boardRelativePositionFor: evt.
-	cellForRedraw := renderer mouseUpWithinBoardOffset: pixelPositionWithinBoard.
-	self redrawCell: cellForRedraw.
-	self incrementMoves.
-	self updateGameBoardAndControls
-
 ]
 
 { #category : 'accessing' }

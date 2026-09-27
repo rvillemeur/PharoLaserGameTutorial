@@ -7,6 +7,17 @@ Class {
 }
 
 { #category : 'tests' }
+LaserGameBoardElementTestCase >> testANewBoardHoversNothingAndHasNoClick [
+	"A board that no pointer has visited yet hovers no cell and holds no click."
+
+	| board |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	self assert: board hoveredCellElement isNil.
+	self assert: board hoveredCell isNil.
+	self assert: board clickedCell isNil
+]
+
+{ #category : 'tests' }
 LaserGameBoardElementTestCase >> testBoardHasOneElementPerCell [
 	"Every cell of the grid gets exactly one element, and no element is left over."
 

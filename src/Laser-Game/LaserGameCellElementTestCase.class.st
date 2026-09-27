@@ -42,6 +42,21 @@ LaserGameCellElementTestCase >> testACellElementKnowsTheCellItShows [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testClickingACellElementRecordsItsCell [
+	"A click reaches the cell element under the pointer, and the board records the cell that was
+	clicked. The original checked that mouse down and mouse up fell in the same cell itself;
+	BlClickEvent is that check."
+
+	| board element |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 3 @ 5.
+	element dispatchEvent: (BlClickEvent new
+			 position: 25 @ 25;
+			 yourself).
+	self assert: board clickedCell identicalTo: (board grid at: 3 @ 5)
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testEachCellElementCarriesTheRendererOfItsCell [
 	"The element is built by a renderer, and it keeps it: that is what redraws the cell later."
 
@@ -49,6 +64,19 @@ LaserGameCellElementTestCase >> testEachCellElementCarriesTheRendererOfItsCell [
 	board := LaserGameBoardElement on: GridFactory demoGrid.
 	board children do: [ :each |
 		self assert: each renderer class modelClass equals: each cell class ]
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testEnteringACellElementMakesItTheHoveredCell [
+	"The pointer entering a cell element is enough for the board to know which cell it is over.
+	The original had to ask the hand for its position and divide it by the cell size."
+
+	| board element |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 2 @ 3.
+	element dispatchEvent: BlMouseEnterEvent new.
+	self assert: board hoveredCellElement identicalTo: element.
+	self assert: board hoveredCell identicalTo: (board grid at: 2 @ 3)
 ]
 
 { #category : 'tests' }
@@ -63,6 +91,48 @@ LaserGameCellElementTestCase >> testEveryChildOfTheBoardIsACellElement [
 		equals: grid numberOfColumns * grid numberOfRows.
 	board children do: [ :each |
 		self assert: each class equals: LaserGameCellElement ]
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testLeavingACellElementThatIsNotHoveredKeepsTheHover [
+	"Moving from one cell to the next can deliver the enter of the new cell before the leave of
+	the old one, so a leave only clears the hover when it comes from the cell that holds it."
+
+	| board left entered |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	left := board cellElementAt: 1 @ 1.
+	entered := board cellElementAt: 2 @ 1.
+	left dispatchEvent: BlMouseEnterEvent new.
+	entered dispatchEvent: BlMouseEnterEvent new.
+	left dispatchEvent: BlMouseLeaveEvent new.
+	self assert: board hoveredCellElement identicalTo: entered
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testLeavingTheHoveredCellElementClearsTheHover [
+	"The pointer leaving the cell it hovers leaves the board hovering nothing."
+
+	| board element |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 2 @ 3.
+	element dispatchEvent: BlMouseEnterEvent new.
+	element dispatchEvent: BlMouseLeaveEvent new.
+	self assert: board hoveredCellElement isNil.
+	self assert: board hoveredCell isNil
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testMovingOverACellElementMakesItTheHoveredCell [
+	"A mouse move over a cell is the event the original watched: it answers which cell the
+	pointer is over. Bloc sends it to the cell itself, so the board learns it from the cell."
+
+	| board element |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 2.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: 10 @ 10;
+			 yourself).
+	self assert: board hoveredCellElement identicalTo: element
 ]
 
 { #category : 'tests' }
