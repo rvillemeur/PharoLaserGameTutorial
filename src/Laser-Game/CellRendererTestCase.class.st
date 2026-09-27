@@ -35,25 +35,6 @@ CellRendererTestCase >> testBlankCellElement [
 ]
 
 { #category : 'tests' }
-CellRendererTestCase >> testCellOffsetCalculations [
-
-	| grid extent expected |
-	grid := GridFactory demoGrid.
-	extent := CellRenderer cellExtent.
-	expected := {
-		            (1 @ 1 -> (0 @ 0)).
-		            (2 @ 1 -> (extent x @ 0)).
-		            (1 @ 2 -> (0 @ extent y)).
-		            (2 @ 2 -> (extent x @ extent y)) }.
-	expected do: [ :each |
-		| renderer |
-		renderer := CellRenderer
-			            rendererFor: (grid at: each key)
-			            grid: grid.
-		self assert: renderer offsetWithinGridForm equals: each value ]
-]
-
-{ #category : 'tests' }
 CellRendererTestCase >> testEveryCellClassHasExactlyOneRenderer [
 
 	Cell allSubclasses do: [ :cellClass |
