@@ -11,9 +11,34 @@ Class {
 	#tag : 'Graphics'
 }
 
+{ #category : 'constants' }
+MirrorCellRenderer class >> mirrorWidth [
+	"Answer the thickness, in pixels, of the mirror. The original drew its diagonal with a two
+	pixel pen, and this is that pen."
+
+	^ 2
+]
+
 { #category : 'accessing' }
 MirrorCellRenderer class >> modelClass [
 	^ MirrorCell
+]
+
+{ #category : 'drawing' }
+MirrorCellRenderer >> addMirrorFrom: aPoint to: anotherPoint on: anElement [
+	"Add the mirror to anElement as a child carrying a line geometry. The child covers the whole
+	cell, so both points are cell local, and the stroke is centered on the line so that the
+	mirror is as thick on one side of it as on the other."
+
+	| mirror |
+	mirror := BlElement new.
+	mirror extent: self class cellExtent.
+	mirror geometry: (BlLineGeometry from: aPoint to: anotherPoint).
+	mirror outskirts: BlOutskirts centered.
+	mirror border: (BlBorder
+			 paint: LaserGameColors mirrorColor
+			 width: self class mirrorWidth).
+	anElement addChild: mirror
 ]
 
 { #category : 'drawing' }
@@ -184,45 +209,40 @@ MirrorCellRenderer >> removeLaserFromInactiveSide [
 ]
 
 { #category : 'drawing' }
-MirrorCellRenderer >> renderContents [
-	self fillBackground.
-	self renderMirror
+MirrorCellRenderer >> renderContentsLeanLeftOn: anElement [
+	"Draw the mirror from the top left corner of the cell to the bottom right one, inset from
+	both."
+
+	| inset delta |
+	inset := self cornerInset.
+	delta := self class cellExtent - 1.
+	self
+		addMirrorFrom: inset
+		to: delta - inset
+		on: anElement
 ]
 
 { #category : 'drawing' }
-MirrorCellRenderer >> renderContentsLeanLeft [
-	| offset delta x1 x2 y1 y2 line fillForm |
-	offset := self offsetWithinGridForm.
-	delta := CellRenderer cellExtent - 1.
-	x1 := offset x + (self cornerInset x).
-	x2 := offset x + delta x - (self cornerInset x).
-	y1 := offset y + (self cornerInset y).
-	y2 := offset y + delta y - (self cornerInset y).
-	fillForm := Form extent: 2@2 depth: 8.
-	fillForm fillColor: LaserGameColors mirrorColor.
-	line := Line
-			from: x1@y1 
-			to: x2@y2
-			withForm: fillForm.
-	line displayOn: self targetForm
+MirrorCellRenderer >> renderContentsLeanRightOn: anElement [
+	"Draw the mirror from the top right corner of the cell to the bottom left one, inset from
+	both."
+
+	| inset delta |
+	inset := self cornerInset.
+	delta := self class cellExtent - 1.
+	self
+		addMirrorFrom: delta x - inset x @ inset y
+		to: inset x @ (delta y - inset y)
+		on: anElement
 ]
 
-{ #category : 'drawing' }
-MirrorCellRenderer >> renderContentsLeanRight [
-	| offset delta x1 x2 y1 y2 line fillForm |
-	offset := self offsetWithinGridForm.
-	delta := CellRenderer cellExtent - 1.
-	x1 := offset x + delta x - self cornerInset x.
-	x2 := offset x + self cornerInset x.
-	y1 := offset y + (self cornerInset y).
-	y2 := offset y + delta y - (self cornerInset y).
-	fillForm := Form extent: 2@2 depth: 8.
-	fillForm fillColor: LaserGameColors mirrorColor.
-	line := Line
-			from: x1@y1 
-			to: x2@y2
-			withForm: fillForm.
-	line displayOn: self targetForm
+{ #category : 'rendering' }
+MirrorCellRenderer >> renderContentsOn: anElement [
+	"A mirror is one diagonal, leaning the way my cell leans."
+
+	self cell isLeft
+		ifTrue: [ self renderContentsLeanLeftOn: anElement ]
+		ifFalse: [ self renderContentsLeanRightOn: anElement ]
 ]
 
 { #category : 'drawing' }
@@ -234,13 +254,6 @@ MirrorCellRenderer >> renderLaser [
 	self removeLaserFromInactiveSide.
 	self renderMirror.
 
-]
-
-{ #category : 'drawing' }
-MirrorCellRenderer >> renderMirror [
-	self cell isLeft
-		ifTrue: [self renderContentsLeanLeft]
-		ifFalse: [self renderContentsLeanRight]
 ]
 
 { #category : 'drawing' }
