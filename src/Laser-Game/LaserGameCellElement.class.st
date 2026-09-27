@@ -5,15 +5,19 @@ I keep the CellRenderer that built me, so I can answer the cell I show, where th
 
 I listen to the mouse myself: entering, leaving, moving and clicking all reach me because Bloc delivers an event to the element it happened in. I tell my board what happened (`hoverCellElement:`, `unhoverCellElement:`, `clickCellElement:`), and my board holds the state the game reads. The original registered five events on one board morph, added itself as a listener of the hand morph to see moves with the button up, and searched the submorphs under the pointer for the morph named 'board'; none of that has a counterpart here.
 
+While the pointer is in me I also keep a hint: `showPositionHintAt:` asks my renderer what applies at that point and `clearPositionHint` forgets it when the pointer leaves. Only a mirror answers a region, since a click acts on mirrors only.
+
 Instance variables:
 	renderer	<CellRenderer>	the renderer that built me; it carries the grid and my location in it
+	hintRegion	<CellClickRegion class>	the region the pointer is in, nil when it is elsewhere or my cell offers no hint
 
 "
 Class {
 	#name : 'LaserGameCellElement',
 	#superclass : 'BlElement',
 	#instVars : [
-		'renderer'
+		'renderer',
+		'hintRegion'
 	],
 	#category : 'Laser-Game-Graphics',
 	#package : 'Laser-Game',
@@ -32,6 +36,13 @@ LaserGameCellElement >> cell [
 	"Answer the cell I show."
 
 	^ self renderer cell
+]
+
+{ #category : 'interaction' }
+LaserGameCellElement >> clearPositionHint [
+	"Forget my hint: the pointer is no longer in me."
+
+	hintRegion := nil
 ]
 
 { #category : 'event handling' }
@@ -57,6 +68,15 @@ LaserGameCellElement >> gridLocation [
 	^ self renderer cellLocation
 ]
 
+{ #category : 'accessing' }
+LaserGameCellElement >> hintRegion [
+	"Answer the click region the pointer is in, or nil when the pointer is not in me or my cell
+	offers no hint. Section 3.6 draws an arrow from this; for now it is what the original wrote
+	to the Transcript on page 080."
+
+	^ hintRegion
+]
+
 { #category : 'initialization' }
 LaserGameCellElement >> initialize [
 	"Listen to the mouse myself. In the original the LaserGame morph registered interest in the
@@ -79,18 +99,20 @@ LaserGameCellElement >> mouseEnter: anEvent [
 
 { #category : 'event handling' }
 LaserGameCellElement >> mouseLeave: anEvent [
-	"The pointer left me: my board hovers me no longer."
+	"The pointer left me: my board hovers me no longer, and my hint goes with it."
 
-	self board ifNotNil: [ :board | board unhoverCellElement: self ]
+	self board ifNotNil: [ :board | board unhoverCellElement: self ].
+	self clearPositionHint
 ]
 
 { #category : 'event handling' }
 LaserGameCellElement >> mouseMove: anEvent [
-	"The pointer moved inside me, so I am the cell it is over. This is the event the original
-	watched on page 078 to report the cell under the pointer; from Section 3.3 on it also
-	carries the point that decides which hint the cell shows."
+	"The pointer moved inside me, so I am the cell it is over, and the point it carries decides
+	which hint I show. The original reached the same two facts from a hand position, a board
+	offset and a division by the cell size."
 
-	self board ifNotNil: [ :board | board hoverCellElement: self ]
+	self board ifNotNil: [ :board | board hoverCellElement: self ].
+	self showPositionHintAt: anEvent localPosition
 ]
 
 { #category : 'accessing' }
@@ -105,4 +127,12 @@ LaserGameCellElement >> renderer: aCellRenderer [
 	"Set the renderer that built me. It carries the grid and my location within it."
 
 	renderer := aCellRenderer
+]
+
+{ #category : 'interaction' }
+LaserGameCellElement >> showPositionHintAt: aPoint [
+	"Keep the hint my renderer answers for aPoint, which is in my own coordinates. My renderer
+	decides: a mirror answers the region the point falls in, every other cell answers nothing."
+
+	hintRegion := self renderer hintRegionAt: aPoint
 ]

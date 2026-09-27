@@ -48,6 +48,27 @@ CellRendererTestCase >> testEveryCellClassHasExactlyOneRenderer [
 ]
 
 { #category : 'tests' }
+CellRendererTestCase >> testOnlyAMirrorAnswersAHintRegion [
+	"Every renderer is asked for a hint region, and all but the mirror answer nothing. That is
+	the polymorphism the original page points at: the message goes to every cell renderer, and
+	each one decides what to do with it."
+
+	| grid point |
+	grid := GridFactory demoGrid.
+	point := CellClickRegionInside regionRectangle center.
+	self
+		assert: ((CellRenderer rendererFor: (grid at: 1 @ 1) grid: grid)
+				 hintRegionAt: point) isNil.
+	self
+		assert: ((CellRenderer rendererFor: (grid at: 5 @ 1) grid: grid)
+				 hintRegionAt: point) isNil.
+	self
+		assert: ((CellRenderer rendererFor: (grid at: 4 @ 1) grid: grid)
+				 hintRegionAt: point)
+		equals: CellClickRegionInside
+]
+
+{ #category : 'tests' }
 CellRendererTestCase >> testRendererForUnsupportedModelIsAnError [
 
 	self should: [ CellRenderer rendererFor: 42 ] raise: Error

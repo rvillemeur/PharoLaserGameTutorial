@@ -94,6 +94,21 @@ LaserGameCellElementTestCase >> testEveryChildOfTheBoardIsACellElement [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testLeavingACellClearsItsHintRegion [
+	"The pointer leaving a cell takes its hint with it, so no cell keeps a hint the pointer is
+	no longer in. The original cleared the temporary cursor at the same moment."
+
+	| board element |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle center;
+			 yourself).
+	element dispatchEvent: BlMouseLeaveEvent new.
+	self assert: element hintRegion isNil
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testLeavingACellElementThatIsNotHoveredKeepsTheHover [
 	"Moving from one cell to the next can deliver the enter of the new cell before the leave of
 	the old one, so a leave only clears the hover when it comes from the cell that holds it."
@@ -122,6 +137,25 @@ LaserGameCellElementTestCase >> testLeavingTheHoveredCellElementClearsTheHover [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion [
+	"A mouse move carries a point, and the cell keeps the region that point falls in. The
+	original computed the same thing by subtracting the offset of the cell within the board form
+	from a board-wide position, and wrote the answer to the Transcript."
+
+	| board element |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle center;
+			 yourself).
+	self assert: element hintRegion equals: CellClickRegionInside.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: 0 @ 0;
+			 yourself).
+	self assert: element hintRegion equals: CellClickRegionIgnore
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testMovingOverACellElementMakesItTheHoveredCell [
 	"A mouse move over a cell is the event the original watched: it answers which cell the
 	pointer is over. Bloc sends it to the cell itself, so the board learns it from the cell."
@@ -133,6 +167,21 @@ LaserGameCellElementTestCase >> testMovingOverACellElementMakesItTheHoveredCell 
 			 position: 10 @ 10;
 			 yourself).
 	self assert: board hoveredCellElement identicalTo: element
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testMovingOverACellThatIsNotAMirrorRecordsNoHint [
+	"Blank and target cells answer no hint region, so moving over them records nothing."
+
+	| board |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	#( 1 5 ) do: [ :column |
+		| element |
+		element := board cellElementAt: column @ 1.
+		element dispatchEvent: (BlMouseMoveEvent new
+				 position: CellClickRegionInside regionRectangle center;
+				 yourself).
+		self assert: element hintRegion isNil ]
 ]
 
 { #category : 'tests' }

@@ -29,6 +29,22 @@ MirrorCellRendererTestCase >> rendererLeaning: aSymbol [
 ]
 
 { #category : 'tests' }
+MirrorCellRendererTestCase >> testAMirrorAnswersTheClickRegionOfAPoint [
+	"A mirror is the only cell a click acts on, so it is the only renderer that answers a hint
+	region. The point is in cell coordinates, so the regions classify it directly."
+
+	| renderer |
+	renderer := self rendererLeaning: #left.
+	self
+		assert: (renderer hintRegionAt: CellClickRegionInside regionRectangle center)
+		equals: CellClickRegionInside.
+	self
+		assert: (renderer hintRegionAt: CellClickRegionOutside regionRectangle topLeft)
+		equals: CellClickRegionOutside.
+	self assert: (renderer hintRegionAt: 0 @ 0) equals: CellClickRegionIgnore
+]
+
+{ #category : 'tests' }
 MirrorCellRendererTestCase >> testLeanLeftMirrorRunsFromTopLeftToBottomRight [
 	"A left leaning mirror goes down and to the right, inset from both corners it points at."
 

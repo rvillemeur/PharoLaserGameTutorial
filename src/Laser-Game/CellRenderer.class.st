@@ -152,6 +152,15 @@ CellRenderer >> grid: anObject [
 	grid := anObject
 ]
 
+{ #category : 'interaction' }
+CellRenderer >> hintRegionAt: aPoint [
+	"Answer the click region whose hint applies at aPoint, in the coordinates of my cell, or nil
+	when my cell offers no hint at all. Every renderer is asked, and all but the mirror answer
+	nothing: a click acts on mirrors only."
+
+	^ nil
+]
+
 { #category : 'rendering' }
 CellRenderer >> newElement [
 	"Answer a new element rendering my cell. The element is square, keeps me as its renderer,
@@ -393,10 +402,6 @@ CellRenderer >> renderLaserVerticalSplatter [
 	self
 		renderLaserVerticalMask: LaserGameForms splatterBeamMask 
 		color: LaserGameColors laserBeamSplatterColor
-]
-
-{ #category : 'drawing' }
-CellRenderer >> showPositionHintFromWithinBoardOffset: aPoint [ 
 ]
 
 { #category : 'accessing' }

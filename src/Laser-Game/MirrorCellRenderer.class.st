@@ -59,6 +59,15 @@ MirrorCellRenderer >> hintArrowColorFor: regionClass offset: offsetWithinCell [
 	^arrowColor
 ]
 
+{ #category : 'interaction' }
+MirrorCellRenderer >> hintRegionAt: aPoint [
+	"Answer the click region aPoint falls in: a mirror reacts to a click, and which of its two
+	actions is meant depends on where in the cell the pointer is. The original had to subtract
+	the offset of my cell within the board form before it could ask this."
+
+	^ CellClickRegion clickRegionForPoint: aPoint
+]
+
 { #category : 'drawing' }
 MirrorCellRenderer >> maskForNorthEast [
 	| mask pen line cellPosn |
