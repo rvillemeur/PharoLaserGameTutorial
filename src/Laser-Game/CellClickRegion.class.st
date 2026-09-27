@@ -21,6 +21,15 @@ CellClickRegion class >> clickRegionForPoint: aPoint [
 	^self sortedSubclasses detect: [:cls | cls regionRectangle containsPoint: aPoint]
 ]
 
+{ #category : 'hints' }
+CellClickRegion class >> hintRegionForPoint: aPoint [
+	"Answer the region whose hint applies at aPoint, which I already contain. I have nothing
+	finer to say than my own name, so I answer myself; the inside region answers one of its four
+	push regions."
+
+	^ self
+]
+
 { #category : 'interaction' }
 CellClickRegion class >> mouseUpWithinCellAtPoint: aPoint cell: aCell withinGrid: aGrid [
 	^aCell

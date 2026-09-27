@@ -29,15 +29,20 @@ MirrorCellRendererTestCase >> rendererLeaning: aSymbol [
 ]
 
 { #category : 'tests' }
-MirrorCellRendererTestCase >> testAMirrorAnswersTheClickRegionOfAPoint [
-	"A mirror is the only cell a click acts on, so it is the only renderer that answers a hint
-	region. The point is in cell coordinates, so the regions classify it directly."
+MirrorCellRendererTestCase >> testAMirrorAnswersThePushRegionOfAPointInsideIt [
+	"A mirror asks the region of a point what hint applies there, so a point in the inside region
+	answers a push region rather than the inside region itself. That is what page 092 wrote to
+	the Transcript."
 
-	| renderer |
+	| renderer rect |
 	renderer := self rendererLeaning: #left.
+	rect := CellClickRegionInside regionRectangle.
 	self
-		assert: (renderer hintRegionAt: CellClickRegionInside regionRectangle center)
-		equals: CellClickRegionInside.
+		assert: (renderer hintRegionAt: rect leftCenter + (1 @ 0))
+		equals: CellClickRegionPushEast.
+	self
+		assert: (renderer hintRegionAt: rect topCenter + (0 @ 1))
+		equals: CellClickRegionPushSouth.
 	self
 		assert: (renderer hintRegionAt: CellClickRegionOutside regionRectangle topLeft)
 		equals: CellClickRegionOutside.

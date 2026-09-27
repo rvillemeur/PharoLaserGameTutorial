@@ -1,3 +1,9 @@
+"
+I am the push region on the east side of the inside region: the triangle between the two diagonals that touches the right edge. A click in me pushes the cell west, away from the edge the pointer is nearest, and my hint is a west arrow.
+
+`containsPoint:` reads the truth table of page 088: a point of mine is under the heading-up line and not under the heading-down line. `CellClickRegionInside` holds the two lines and the tests against them, so the four of us differ in that one expression only.
+
+"
 Class {
 	#name : 'CellClickRegionPushWest',
 	#superclass : 'CellClickRegionInside',
@@ -6,17 +12,17 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'hints' }
 CellClickRegionPushWest class >> arrowForm [
 	^LaserGameForms westArrow
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'interaction' }
 CellClickRegionPushWest class >> canPushCell: aCell withinGrid: aGrid [
 	^aGrid canPushCellWestFromLocation: aCell gridLocation
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'classifying' }
 CellClickRegionPushWest class >> containsPoint: aPoint [
 	| underHeadingDown underHeadingUp |
 	underHeadingDown := self pointIsUnderHeadingDownLine: aPoint.
@@ -24,7 +30,7 @@ CellClickRegionPushWest class >> containsPoint: aPoint [
 	^underHeadingDown not and: [underHeadingUp]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'interaction' }
 CellClickRegionPushWest class >> mouseUpForCell: aCell withinGrid: aGrid [
 	^aGrid pushCellWestFromLocation: aCell gridLocation
 ]

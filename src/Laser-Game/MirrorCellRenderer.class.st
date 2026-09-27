@@ -61,11 +61,13 @@ MirrorCellRenderer >> hintArrowColorFor: regionClass offset: offsetWithinCell [
 
 { #category : 'interaction' }
 MirrorCellRenderer >> hintRegionAt: aPoint [
-	"Answer the click region aPoint falls in: a mirror reacts to a click, and which of its two
-	actions is meant depends on where in the cell the pointer is. The original had to subtract
-	the offset of my cell within the board form before it could ask this."
+	"Answer the region whose hint applies at aPoint: a mirror reacts to a click, and which of its
+	actions is meant depends on where in the cell the pointer is. The region that contains the
+	point has the last word, so a point near the middle answers one of the four push regions.
+	The original had to subtract the offset of my cell within the board form before it could ask
+	this."
 
-	^ CellClickRegion clickRegionForPoint: aPoint
+	^ (CellClickRegion clickRegionForPoint: aPoint) hintRegionForPoint: aPoint
 ]
 
 { #category : 'drawing' }

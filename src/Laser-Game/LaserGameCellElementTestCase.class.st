@@ -138,9 +138,10 @@ LaserGameCellElementTestCase >> testLeavingTheHoveredCellElementClearsTheHover [
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion [
-	"A mouse move carries a point, and the cell keeps the region that point falls in. The
-	original computed the same thing by subtracting the offset of the cell within the board form
-	from a board-wide position, and wrote the answer to the Transcript."
+	"A mouse move carries a point, and the cell keeps the region that point falls in. In the
+	middle of the cell that is a push region, since the push regions divide the inside region
+	between them. The original computed the same thing by subtracting the offset of the cell
+	within the board form from a board-wide position, and wrote the answer to the Transcript."
 
 	| board element |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -148,7 +149,7 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion 
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: CellClickRegionInside regionRectangle center;
 			 yourself).
-	self assert: element hintRegion equals: CellClickRegionInside.
+	self assert: element hintRegion equals: CellClickRegionPushNorth.
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: 0 @ 0;
 			 yourself).

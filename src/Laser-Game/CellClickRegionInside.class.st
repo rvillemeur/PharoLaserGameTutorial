@@ -22,6 +22,22 @@ CellClickRegionInside class >> canActOnCellAtPoint: aPoint cell: aCell withinGri
 	^ pushRegion canPushCell: aCell withinGrid: aGrid
 ]
 
+{ #category : 'classifying' }
+CellClickRegionInside class >> containsPoint: aPoint [
+	"Answer whether aPoint falls in me. Each of my four push subclasses answers one line of the
+	truth table of page 088, written against the two diagonals I hold."
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'hints' }
+CellClickRegionInside class >> hintRegionForPoint: aPoint [
+	"Answer the push region aPoint falls in. A click here pushes a cell, and which way it pushes
+	is what the hint has to show, so the inside region is the one region that refines its answer."
+
+	^ self pushRegionForPoint: aPoint
+]
+
 { #category : 'interaction' }
 CellClickRegionInside class >> mouseUpWithinCellAtPoint: aPoint cell: aCell withinGrid: aGrid [
 	| pushRegion |
@@ -70,14 +86,6 @@ CellClickRegionInside class >> scaledHintArrowAndOffsetFromWithinCell: aPoint [
 	tinyArrow := arrow scaledToSize: CellRenderer cellExtent - 2.
 	offset := (CellRenderer cellExtent - tinyArrow extent) // 2.
 	^offset->tinyArrow
-]
-
-{ #category : 'hints' }
-CellClickRegionInside class >> showPositionHintFromWithinCell: aPoint [
-
-	| pushRegion |
-	pushRegion := self pushRegionForPoint: aPoint.
-	^ pushRegion
 ]
 
 { #category : 'accessing' }

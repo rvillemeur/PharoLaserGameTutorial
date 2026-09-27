@@ -78,3 +78,23 @@ CellClickRegionTestCase >> testClicksInOutsideRegion [
 		deny: (CellClickRegion clickRegionForPoint: insideRect center)
 		equals: CellClickRegionOutside
 ]
+
+{ #category : 'tests' }
+CellClickRegionTestCase >> testOnlyTheInsideRegionRefinesTheHintItAnswers [
+	"Page 092 gives every region the hint message and lets the inside region alone do something
+	with it: it answers the push region of the point. The others answer themselves, since they
+	have nothing finer to say yet."
+
+	| rect |
+	rect := CellClickRegionInside regionRectangle.
+	self
+		assert: (CellClickRegionOutside hintRegionForPoint: 
+				 CellClickRegionOutside regionRectangle topLeft)
+		equals: CellClickRegionOutside.
+	self
+		assert: (CellClickRegionIgnore hintRegionForPoint: 0 @ 0)
+		equals: CellClickRegionIgnore.
+	self
+		assert: (CellClickRegionInside hintRegionForPoint: rect leftCenter + (1 @ 0))
+		equals: CellClickRegionPushEast
+]

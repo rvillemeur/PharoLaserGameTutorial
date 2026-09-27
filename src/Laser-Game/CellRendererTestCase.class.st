@@ -51,7 +51,8 @@ CellRendererTestCase >> testEveryCellClassHasExactlyOneRenderer [
 CellRendererTestCase >> testOnlyAMirrorAnswersAHintRegion [
 	"Every renderer is asked for a hint region, and all but the mirror answer nothing. That is
 	the polymorphism the original page points at: the message goes to every cell renderer, and
-	each one decides what to do with it."
+	each one decides what to do with it. The mirror answers the push region of the point, since
+	the middle of a cell is where a push is asked for."
 
 	| grid point |
 	grid := GridFactory demoGrid.
@@ -65,7 +66,7 @@ CellRendererTestCase >> testOnlyAMirrorAnswersAHintRegion [
 	self
 		assert: ((CellRenderer rendererFor: (grid at: 4 @ 1) grid: grid)
 				 hintRegionAt: point)
-		equals: CellClickRegionInside
+		equals: CellClickRegionPushNorth
 ]
 
 { #category : 'tests' }
