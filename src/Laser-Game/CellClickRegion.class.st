@@ -23,8 +23,10 @@ CellClickRegion class >> clickRegionForPoint: aPoint [
 
 { #category : 'hints' }
 CellClickRegion class >> hintElementOfExtent: anExtent [
-	"Answer an element drawing my hint at anExtent, or nil when I have no picture to show. Only
-	the four push regions have one here; the rotate regions get theirs in Section 3.8."
+	"Answer an element drawing my hint at anExtent, or nil when I have no picture to show. The four
+	push regions answer a straight arrow and the two rotate regions a curved one; the inside and
+	outside regions never answer this themselves, since each refines itself first, and the ignore
+	region shows nothing."
 
 	^ nil
 ]
@@ -48,11 +50,6 @@ CellClickRegion class >> regionRectangle [
 	"Answer the rectangle, in cell coordinates, that I claim. Every concrete region answers one."
 
 	^ self subclassResponsibility
-]
-
-{ #category : 'hints' }
-CellClickRegion class >> scaledHintArrowAndOffsetFromWithinCell: aPoint [
-	^nil
 ]
 
 { #category : 'accessing' }

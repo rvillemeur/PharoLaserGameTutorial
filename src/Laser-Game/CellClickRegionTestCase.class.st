@@ -80,10 +80,11 @@ CellClickRegionTestCase >> testClicksInOutsideRegion [
 ]
 
 { #category : 'tests' }
-CellClickRegionTestCase >> testOnlyAPushRegionAnswersAHintElement [
-	"Page 094 asks a push region for its arrow. Here it answers an element, built at the size
-	asked for, and every other region answers nothing: the outside region gets its rotate arrows
-	in Section 3.8, and the ignore region never has a picture."
+CellClickRegionTestCase >> testEachRegionWithAPictureAnswersTheArrowOfItsDirection [
+	"Page 094 asks a push region for its arrow and page 105 asks a rotate region for its own. Here
+	each answers an element built at the size asked for, and the regions that have no picture
+	answer nothing: the inside and outside regions always refine themselves first, and the ignore
+	region never shows anything."
 
 	| extent |
 	extent := 48 @ 48.
@@ -93,7 +94,11 @@ CellClickRegionTestCase >> testOnlyAPushRegionAnswersAHintElement [
 	{ (CellClickRegionPushNorth -> LaserGameShapes northArrowPoints).
 	(CellClickRegionPushEast -> LaserGameShapes eastArrowPoints).
 	(CellClickRegionPushSouth -> LaserGameShapes southArrowPoints).
-	(CellClickRegionPushWest -> LaserGameShapes westArrowPoints) } do: [ :each |
+	(CellClickRegionPushWest -> LaserGameShapes westArrowPoints).
+	(CellClickRegionRotateClockwise
+	 -> LaserGameShapes clockwiseArrowPoints).
+	(CellClickRegionRotateCounterClockwise
+	 -> LaserGameShapes counterClockwiseArrowPoints) } do: [ :each |
 		| element |
 		element := each key hintElementOfExtent: extent.
 		self
@@ -102,17 +107,17 @@ CellClickRegionTestCase >> testOnlyAPushRegionAnswersAHintElement [
 ]
 
 { #category : 'tests' }
-CellClickRegionTestCase >> testOnlyTheInsideRegionRefinesTheHintItAnswers [
-	"Page 092 gives every region the hint message and lets the inside region alone do something
-	with it: it answers the push region of the point. The others answer themselves, since they
-	have nothing finer to say yet."
+CellClickRegionTestCase >> testTheInsideAndOutsideRegionsRefineTheHintTheyAnswer [
+	"Page 092 gives every region the hint message. The inside region answers the push region of
+	the point, and since page 105 the outside region answers the rotate region of the point. The
+	ignore region answers itself, having nothing finer to say and no picture to show."
 
 	| rect |
 	rect := CellClickRegionInside regionRectangle.
 	self
 		assert: (CellClickRegionOutside hintRegionForPoint: 
 				 CellClickRegionOutside regionRectangle topLeft)
-		equals: CellClickRegionOutside.
+		equals: CellClickRegionRotateClockwise.
 	self
 		assert: (CellClickRegionIgnore hintRegionForPoint: 0 @ 0)
 		equals: CellClickRegionIgnore.

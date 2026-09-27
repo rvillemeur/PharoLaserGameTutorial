@@ -162,6 +162,36 @@ LaserGameCellElementTestCase >> testLeavingTheHoveredCellElementClearsTheHover [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testMovingInTheOutsideRegionOfAMirrorCellShowsARotateArrow [
+	"Page 105 hovers the outside region and gets the curved arrows. The cell adds one as a child
+	exactly as it adds a push arrow, and the upper half of the region shows the clockwise one. The
+	last row of the region belongs to the ignore margin, as `Rectangle >> containsPoint:` leaves
+	its bottom edge out, so the lower point is taken one pixel above it."
+
+	| board element rect |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	rect := CellClickRegionOutside regionRectangle.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: rect topLeft;
+			 yourself).
+	self assert: (element children includes: element hintElement).
+	self
+		assert: element hintElement geometry vertices
+		equals: (LaserGameShapes
+				 pointsOf: LaserGameShapes clockwiseArrowPoints
+				 scaledToExtent: CellRenderer hintArrowExtent).
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: rect bottomLeft - (0 @ 1);
+			 yourself).
+	self
+		assert: element hintElement geometry vertices
+		equals: (LaserGameShapes
+				 pointsOf: LaserGameShapes counterClockwiseArrowPoints
+				 scaledToExtent: CellRenderer hintArrowExtent)
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion [
 	"A mouse move carries a point, and the cell keeps the region that point falls in. In the
 	middle of the cell that is a push region, since the push regions divide the inside region

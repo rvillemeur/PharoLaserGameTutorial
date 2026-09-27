@@ -19,6 +19,23 @@ CellClickRegionOutside class >> canActOnCellAtPoint: aPoint cell: aCell withinGr
 	^true
 ]
 
+{ #category : 'classifying' }
+CellClickRegionOutside class >> containsPoint: aPoint [
+	"Answer whether aPoint falls in me. My two subclasses split the region between them, so each
+	of them answers it; I only say that the question belongs to them."
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'hints' }
+CellClickRegionOutside class >> hintRegionForPoint: aPoint [
+	"Answer the rotate region aPoint falls in. A click here turns a mirror, and which way it turns
+	is what the hint has to show, so the outside region refines its answer just as the inside one
+	does. Page 105 of the original."
+
+	^ self rotateRegionForPoint: aPoint
+]
+
 { #category : 'interaction' }
 CellClickRegionOutside class >> mouseUpWithinCellAtPoint: aPoint cell: aCell withinGrid: aGrid [
 	| rotateRegion |
@@ -38,16 +55,6 @@ CellClickRegionOutside class >> regionRectangle [
 { #category : 'classifying' }
 CellClickRegionOutside class >> rotateRegionForPoint: aPoint [
 	^self subclasses detect: [:cls | cls containsPoint: aPoint]
-]
-
-{ #category : 'hints' }
-CellClickRegionOutside class >> scaledHintArrowAndOffsetFromWithinCell: aPoint [
-	| arrow tinyArrow offset rotateRegion |
-	rotateRegion := self rotateRegionForPoint: aPoint.
-	arrow := rotateRegion arrowForm.
-	tinyArrow := arrow scaledToSize: CellRenderer cellExtent.
-	offset := 0.
-	^offset->tinyArrow
 ]
 
 { #category : 'accessing' }

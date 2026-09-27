@@ -1,3 +1,10 @@
+"
+I am the lower half of the outside region of a mirror cell. A click in me turns the mirror counter clockwise, and my hint is the counter clockwise curved arrow of Section 3.7.
+
+Page 101 of the original divides the outside region with one horizontal line at half the height of the cell and decides the direction by which side of it the pointer is on. `containsPoint:` asks for a point strictly below that line, since page 103 gives the line itself to the upper half, which is `CellClickRegionRotateClockwise`.
+
+The line is written in terms of `CellRenderer class >> cellExtent`, not of the region, so it holds at any cell size.
+"
 Class {
 	#name : 'CellClickRegionRotateCounterClockwise',
 	#superclass : 'CellClickRegionOutside',
@@ -6,17 +13,21 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'as yet unclassified' }
-CellClickRegionRotateCounterClockwise class >> arrowForm [
-	^LaserGameForms counterClockwiseArrow
-]
-
-{ #category : 'as yet unclassified' }
+{ #category : 'classifying' }
 CellClickRegionRotateCounterClockwise class >> containsPoint: aPoint [
 	^aPoint y > (CellRenderer cellExtent y // 2)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'hints' }
+CellClickRegionRotateCounterClockwise class >> hintElementOfExtent: anExtent [
+	"Answer an element drawing the counter clockwise curved arrow at anExtent. Page 102 of the
+	original answers a cached 450 pixel Form here, and page 105 scales it down; the shape of
+	Section 3.7 is drawn at whatever size it is given."
+
+	^ LaserGameShapes counterClockwiseArrowElementOfExtent: anExtent
+]
+
+{ #category : 'interaction' }
 CellClickRegionRotateCounterClockwise class >> mouseUpForCell: aCell withinGrid: aGrid [
 	aGrid rotateCellCounterClockwiseAt: aCell gridLocation.
 	^aCell

@@ -31,8 +31,8 @@ MirrorCellRendererTestCase >> rendererLeaning: aSymbol [
 { #category : 'tests' }
 MirrorCellRendererTestCase >> testAMirrorAnswersThePushRegionOfAPointInsideIt [
 	"A mirror asks the region of a point what hint applies there, so a point in the inside region
-	answers a push region rather than the inside region itself. That is what page 092 wrote to
-	the Transcript."
+	answers a push region rather than the inside region itself, and since page 105 a point in the
+	outside region answers a rotate region. That is what page 092 wrote to the Transcript."
 
 	| renderer rect |
 	renderer := self rendererLeaning: #left.
@@ -45,7 +45,7 @@ MirrorCellRendererTestCase >> testAMirrorAnswersThePushRegionOfAPointInsideIt [
 		equals: CellClickRegionPushSouth.
 	self
 		assert: (renderer hintRegionAt: CellClickRegionOutside regionRectangle topLeft)
-		equals: CellClickRegionOutside.
+		equals: CellClickRegionRotateClockwise.
 	self assert: (renderer hintRegionAt: 0 @ 0) equals: CellClickRegionIgnore
 ]
 
