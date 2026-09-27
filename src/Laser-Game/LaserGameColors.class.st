@@ -28,6 +28,14 @@ LaserGameColors class >> cellBorderColor [
 ]
 
 { #category : 'colors' }
+LaserGameColors class >> controlPanelColor [
+	"Answer the color of the control panel beside the board. The original starts with a blank white
+	rectangle there, and the buttons come later."
+
+	^ Color white
+]
+
+{ #category : 'colors' }
 LaserGameColors class >> denyActionArrowColor [
 	^Color red
 ]
@@ -35,6 +43,14 @@ LaserGameColors class >> denyActionArrowColor [
 { #category : 'colors' }
 LaserGameColors class >> gameBoardBackgroundColor [
 	^Color r: 0.860 g: 0.860 b: 0.860
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> gameWindowColor [
+	"Answer the color behind the whole game: the margin around the board and the control panel.
+	This is the window color the original gives its morph."
+
+	^ Color r: 0.369 g: 0.369 b: 0.505
 ]
 
 { #category : 'colors' }
