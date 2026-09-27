@@ -82,6 +82,106 @@ LaserGameCellElementTestCase >> testClickingACellElementRecordsItsCell [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testClickingACellThatIsNotAMirrorDoesNothing [
+	"Only a mirror acts on a click. A blank cell and the target answer nothing wherever they are
+	clicked, which is page 114's rule that the renderer superclass does nothing."
+
+	| board |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	#( 1 5 ) do: [ :column |
+		| element |
+		element := board cellElementAt: column @ 1.
+		element dispatchEvent: (BlClickEvent new
+				 position: CellClickRegionInside regionRectangle center;
+				 yourself).
+		element dispatchEvent: (BlClickEvent new
+				 position: CellClickRegionOutside regionRectangle topLeft;
+				 yourself).
+		self assert: board clickedCell identicalTo: element cell ].
+	self assert: board grid movesStack isEmpty
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testClickingTheIgnoreRegionOfAMirrorDoesNothing [
+	"The margin around the outside region shows no hint and does nothing when it is clicked.
+	The superclass of the regions answers that no action is possible, which is where the ignore
+	region gets its answer from."
+
+	| board element mirror |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	mirror := element cell.
+	element dispatchEvent: (BlClickEvent new
+			 position: 0 @ 0;
+			 yourself).
+	self assert: mirror isRight.
+	self assert: board grid movesStack isEmpty.
+	self assert: board clickedCell identicalTo: mirror
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testClickingTheInsideRegionOfAMirrorPushesIt [
+	"The inside region pushes, which page 114 leaves unsent until page 122. The port cannot leave
+	it unsent: the click regions came with `mouseUpForCell:withinGrid:` already written on all six
+	of them, so the same wiring that turns a mirror also pushes one. A push region is named after
+	the side the cell is pushed from, so the lower triangle pushes north; the mirror at 1@2 has a
+	blank cell above it, and after the click each of the two cell elements draws what now stands
+	in it."
+
+	| board element |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 1 @ 2.
+	self assert: element cell class equals: MirrorCell.
+	element dispatchEvent: (BlClickEvent new
+			 position: CellClickRegionInside regionRectangle bottomCenter - (0 @ 1);
+			 yourself).
+	self assert: (board grid at: 1 @ 1) class equals: MirrorCell.
+	self assert: (board grid at: 1 @ 2) class equals: BlankCell.
+	self
+		assert: (board cellElementAt: 1 @ 1) renderer class
+		equals: MirrorCellRenderer.
+	self
+		assert: (board cellElementAt: 1 @ 2) renderer class
+		equals: BlankCellRenderer
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testClickingTheLowerOutsideRegionOfAMirrorTurnsItCounterClockwise [
+	"The other half of page 115. The mirror ends up on the same diagonal either way, so the
+	direction is read from the move the grid records. The last row of the outside rectangle
+	belongs to the ignore margin, as `Rectangle >> containsPoint:` leaves its bottom edge out,
+	so the point is taken one pixel above it."
+
+	| board element mirror |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	mirror := element cell.
+	element dispatchEvent: (BlClickEvent new
+			 position: CellClickRegionOutside regionRectangle bottomLeft - (0 @ 1);
+			 yourself).
+	self assert: mirror isLeft.
+	self assert: board grid movesStack last key equals: #counterClockwise
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testClickingTheUpperOutsideRegionOfAMirrorTurnsItClockwise [
+	"Page 115 of the original: a click in the outside region turns the mirror, and the upper half
+	turns it clockwise. The click carries a point in the coordinates of the cell, which is the
+	whole of what the region needs."
+
+	| board element mirror |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	mirror := element cell.
+	self assert: mirror isRight.
+	element dispatchEvent: (BlClickEvent new
+			 position: CellClickRegionOutside regionRectangle topLeft;
+			 yourself).
+	self assert: mirror isLeft.
+	self assert: board grid movesStack last key equals: #clockwise
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testEachCellElementCarriesTheRendererOfItsCell [
 	"The element is built by a renderer, and it keeps it: that is what redraws the cell later."
 
@@ -310,4 +410,26 @@ LaserGameCellElementTestCase >> testTheSameLocalPointMeansTheSameRegionInEveryCe
 		self
 			assert: (last clickRegionAt: point)
 			equals: (first clickRegionAt: point) ]
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testTurningAMirrorOnTheBeamRedrawsTheWholeBoard [
+	"One click changes more than one cell: the mirror at 4@1 sends the beam into the target at
+	5@1, and turning it sends the beam west instead. Every cell is drawn again after an action,
+	so the target goes dark without anything working out which cells the beam left."
+
+	| grid board target |
+	grid := GridFactory demoGrid.
+	grid fireLaser.
+	board := LaserGameBoardElement on: grid.
+	target := board cellElementAt: 5 @ 1.
+	self
+		assert: target children fourth background paint color
+		equals: LaserGameColors targetCenterColorActive.
+	(board cellElementAt: 4 @ 1) dispatchEvent: (BlClickEvent new
+			 position: CellClickRegionOutside regionRectangle topLeft;
+			 yourself).
+	self
+		assert: (board cellElementAt: 5 @ 1) children fourth background paint color
+		equals: LaserGameColors targetCenterColorIdle
 ]

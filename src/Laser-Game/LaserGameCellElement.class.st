@@ -48,12 +48,26 @@ LaserGameCellElement >> clearPositionHint [
 	self updateHintElement
 ]
 
-{ #category : 'event handling' }
+{ #category : 'interaction' }
 LaserGameCellElement >> click: anEvent [
 	"A click landed on me: a press and a release in the same cell, which the original checked by
-	keeping the location of the press in activeCellLocation and comparing it on mouse up."
+	keeping the location of the press in activeCellLocation and comparing it on mouse up. The
+	point the event carries is in my own coordinates, and it decides what the click does."
 
-	self board ifNotNil: [ :board | board clickCellElement: self ]
+	self clickAt: anEvent localPosition
+]
+
+{ #category : 'interaction' }
+LaserGameCellElement >> clickAt: aPoint [
+	"Act on a click at aPoint, in my own coordinates. My board records that I was clicked, my
+	renderer decides whether my cell acts and which region handles it, and the board draws itself
+	again when something changed. The original walked the same chain from the morph to the
+	renderer to the click region; it started from a board offset, where this starts from a point
+	Bloc already expressed in the cell."
+
+	self board ifNotNil: [ :board | board clickCellElement: self ].
+	(self renderer mouseUpAt: aPoint) ifNil: [ ^ self ].
+	self board ifNotNil: [ :board | board redrawCells ]
 ]
 
 { #category : 'interaction' }
@@ -123,6 +137,28 @@ LaserGameCellElement >> mouseMove: anEvent [
 
 	self board ifNotNil: [ :board | board hoverCellElement: self ].
 	self showPositionHintAt: anEvent localPosition
+]
+
+{ #category : 'drawing' }
+LaserGameCellElement >> redraw [
+	"Draw my cell again after the model changed. The cell standing at my location may be another
+	one than before, since a push swaps two cells, so the renderer is chosen again; my hint is
+	kept, because the pointer has not moved. The original repainted a rectangle of the board form
+	and called it redrawCell."
+
+	| grid location region |
+	grid := self renderer grid.
+	location := self gridLocation.
+	region := hintRegion.
+	self removeChildren.
+	hintElement := nil.
+	hintRegion := nil.
+	self renderer: (CellRenderer rendererFor: (grid at: location) grid: grid).
+	self renderer renderBackgroundOn: self.
+	self renderer renderBorderOn: self.
+	self renderer renderContentsOn: self.
+	hintRegion := region.
+	self updateHintElement
 ]
 
 { #category : 'accessing' }

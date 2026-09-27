@@ -176,14 +176,27 @@ MirrorCellRenderer >> maskOffVerticalOn: aMask [
 	^aMask
 ]
 
-{ #category : 'drawing' }
-MirrorCellRenderer >> mouseUpWithinBoardOffset: aPoint [
-	| cellPosn offsetWithinCell regionClass |
-	cellPosn := self offsetWithinGridForm.
-	offsetWithinCell := aPoint - cellPosn.
-	regionClass := CellClickRegion clickRegionForPoint: offsetWithinCell. 
-	^regionClass mouseUpWithinCellAtPoint: offsetWithinCell cell: self cell withinGrid: self grid.
+{ #category : 'interaction' }
+MirrorCellRenderer >> mouseUpAt: aPoint [
+	"Act on a click at aPoint, in the coordinates of my cell, and answer the cell it acted on, or
+	nil when the region aPoint falls in can do nothing. The region decides both questions: the
+	outside region turns my mirror one way or the other, the inside region pushes it when there
+	is room, and the ignore margin does nothing. Page 114 of the original passes the cell and the
+	grid down to the region for exactly this reason: a region knows what a click means, and
+	nothing else does."
 
+	| region |
+	region := CellClickRegion clickRegionForPoint: aPoint.
+	^ (region
+		   canActOnCellAtPoint: aPoint
+		   cell: self cell
+		   withinGrid: self grid)
+		  ifTrue: [
+		  region
+			  mouseUpWithinCellAtPoint: aPoint
+			  cell: self cell
+			  withinGrid: self grid ]
+		  ifFalse: [ nil ]
 ]
 
 { #category : 'drawing' }

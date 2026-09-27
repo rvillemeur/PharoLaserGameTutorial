@@ -16,6 +16,16 @@ Class {
 	#tag : 'Graphics'
 }
 
+{ #category : 'interaction' }
+CellClickRegion class >> canActOnCellAtPoint: aPoint cell: aCell withinGrid: aGrid [
+	"Answer whether a click at aPoint can do anything to aCell. Nothing can be done in me: the
+	ignore margin is a region where a click is a click on nothing, and the inside and outside
+	regions each answer for the region the point really falls in. Page 114 of the original says
+	the same of the mouse up handler it writes here: this guy will do nothing."
+
+	^ false
+]
+
 { #category : 'classifying' }
 CellClickRegion class >> clickRegionForPoint: aPoint [
 	^self sortedSubclasses detect: [:cls | cls regionRectangle containsPoint: aPoint]

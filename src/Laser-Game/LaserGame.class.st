@@ -4,7 +4,6 @@ Class {
 	#instVars : [
 		'grid',
 		'boardForm',
-		'activeCellLocation',
 		'dirty',
 		'moves'
 	],
@@ -162,16 +161,6 @@ LaserGame class >> startUp [
 	GridFactory reSeed.
 	soleInstance newGame.
 	
-]
-
-{ #category : 'accessing' }
-LaserGame >> activeCellLocation [
-	^activeCellLocation
-]
-
-{ #category : 'accessing' }
-LaserGame >> activeCellLocation: aPoint [
-	activeCellLocation := aPoint
 ]
 
 { #category : 'accessing' }
@@ -534,12 +523,11 @@ LaserGame >> moves: anInteger [
 	moves := anInteger
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'actions' }
 LaserGame >> newGame [
 	self grid initializeCells.
 	self grid stopLaser.
 	self moves: 0.
-	self activeCellLocation: nil.
 	self initializeDirty.
 	GridFactory randomizeGrid: self grid.
 	self updateGameBoardAndControls
@@ -563,13 +551,13 @@ LaserGame >> redrawCell: aCell [
 	renderer redrawCell
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'actions' }
 LaserGame >> reset [
 	self grid reset.
 	self grid stopLaser.
 	self moves: 0.
-	self activeCellLocation: nil.
-	self initializeDirty.	
+	self initializeDirty.
+	
 	self updateGameBoardAndControls
 ]
 

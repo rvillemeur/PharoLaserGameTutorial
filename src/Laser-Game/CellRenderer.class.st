@@ -177,6 +177,16 @@ CellRenderer >> hintRegionAt: aPoint [
 	^ nil
 ]
 
+{ #category : 'interaction' }
+CellRenderer >> mouseUpAt: aPoint [
+	"Act on a click at aPoint, in the coordinates of my cell, and answer the cell it acted on, or
+	nil when nothing happened. Nothing happens here: only a mirror answers a click, which is
+	page 114 of the original — the renderer superclass does nothing, and only the mirror renderer
+	deals with the request."
+
+	^ nil
+]
+
 { #category : 'rendering' }
 CellRenderer >> newElement [
 	"Answer a new element rendering my cell. The element is square, keeps me as its renderer,

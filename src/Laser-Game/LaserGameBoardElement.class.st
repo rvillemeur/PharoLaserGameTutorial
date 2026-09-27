@@ -181,6 +181,15 @@ LaserGameBoardElement >> rebuildCells [
 					 grid: self grid) newElement ] ]
 ]
 
+{ #category : 'drawing' }
+LaserGameBoardElement >> redrawCells [
+	"Draw every cell again. One action on one cell changes more than that cell: a turned mirror
+	sends the beam somewhere else, and a pushed mirror leaves its old place empty, so nothing
+	tries to work out which cells are affected."
+
+	self children do: [ :each | each redraw ]
+]
+
 { #category : 'interaction' }
 LaserGameBoardElement >> unhoverCellElement: aCellElement [
 	"Forget the pointer position, but only when aCellElement is the cell I hover. Moving from
