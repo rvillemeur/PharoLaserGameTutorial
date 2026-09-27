@@ -11,9 +11,9 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 MirrorCellRenderer class >> modelClass [
-	^MirrorCell
+	^ MirrorCell
 ]
 
 { #category : 'drawing' }

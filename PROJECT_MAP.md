@@ -128,7 +128,9 @@ Section, and skipping the interpolated lowercase page `038a` (a sub-step of 2.3)
 fixed, so any disagreement about counting is settled by it:
 
 - **2.8 = page 048A, The Smalltalk-Way To Do A Case Statement — done.**
-- **2.9 = pages 049–050, Game Graphics — the next commit.**
+- **2.9 = pages 049–050, Game Graphics — done (`f666984`).**
+- **2.10 = pages 051–052, Rendering The Cells — done (`2f5a502`).**
+- **2.11 = pages 053–054, LaserGame Morph — the next commit.**
 
 ### Commit convention
 
@@ -164,9 +166,9 @@ is dead and is not used.
 
 | # | Pages | Work on the new stack | Done when |
 |---|---|---|---|
-| 2.9 | 049–050 | Replace the `Form`/`Display` board surface with `LaserGameBoardElement`, a `BlElement` using `BlGridLayout` sized from `CellRenderer cellExtent`. Class-side `example` opens it in a `BlSpace`. Delete nothing yet. | An empty board of the right size opens and resizes correctly |
-| 2.10 | 051–052 | `CellRenderer` hierarchy moves from drawing into a shared `Form` to answering one element per cell: background `BlRectangleGeometry` plus border, `BlankCellRenderer` empty, `MirrorCellRenderer` a thick diagonal `BlLineGeometry`, `TargetCellRenderer` a `BlCircleGeometry` with crosshair lines. Tests assert element structure and geometry class, never pixels. | The demo grid renders every cell type |
-| 2.11 | 053–054 | The chapter's `LaserGame` Morph becomes `LaserGameElement`, root element holding the board. `LaserGame` keeps the model role (grid, stats) and gains `open`. `World` and `Display` references die here. | `LaserGame new open` shows the game |
+| 2.9 | 049–050 | **Done (`f666984`).** `CellRenderer` keeps `cellLocation` and `grid`, drops the target form from its geometry API (`rendererFor:grid:`), and gains a renderer hierarchy selected by `modelClass`. Tests cover selection, one renderer per cell class, and failure for a non-cell. Chapter `SectionTwo/12-GameGraphics.pier` explains why we take one element per cell instead of the tutorial's single shared `Form`. | Renderer selection is green and size-independent |
+| 2.10 | 051–052 | **Done (`2f5a502`).** `CellRenderer>>newElement` answers a square `BlElement` with `BlRectangleGeometry`, board background and a one pixel border, plus the empty `renderContentsOn:` hook. `borderWidth` added; the original's target-form size computation has no counterpart. `openExample` opens one cell in a `BlSpace`. `testBlankCellElement` reads the size from the layout constraints, since `forceLayout` is forbidden. Mirror and target contents come later. | A blank cell renders, 53 tests green |
+| 2.11 | 053–054 | The chapter's `LaserGame` Morph becomes `LaserGameElement`, a root element holding the board. `LaserGame` keeps the model role (grid, stats) and gains `open`. The board itself is a `BlElement` with `BlGridLayout`, sized by the layout rather than by a computed form extent. | `LaserGame new open` shows a board of blank cells |
 | 2.12 | 055–060 | `GridFactory` wired to the element, named grids selectable | Each factory grid renders |
 | 2.13 | 061–063 | `LaserGameColors` reviewed as Bloc paints; background, border and cell colors come from it alone | No literal `Color` outside `LaserGameColors` |
 | 2.14 | 064 | Progress chapter: screenshots regenerated from the Bloc version | Chapter text matches what the reader sees |

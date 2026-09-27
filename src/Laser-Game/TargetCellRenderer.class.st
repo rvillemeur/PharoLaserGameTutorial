@@ -11,9 +11,9 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 TargetCellRenderer class >> modelClass [
-	^TargetCell
+	^ TargetCell
 ]
 
 { #category : 'drawing' }

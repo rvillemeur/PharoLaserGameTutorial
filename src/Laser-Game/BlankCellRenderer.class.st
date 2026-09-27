@@ -11,9 +11,9 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 BlankCellRenderer class >> modelClass [
-	^BlankCell
+	^ BlankCell
 ]
 
 { #category : 'drawing' }

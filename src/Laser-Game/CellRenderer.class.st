@@ -23,6 +23,13 @@ Class {
 }
 
 { #category : 'constants' }
+CellRenderer class >> borderWidth [
+	"Answer the width, in pixels, of the border drawn inside the edges of every cell."
+
+	^ 1
+]
+
+{ #category : 'constants' }
 CellRenderer class >> cellExtent [
 	^50@50
 ]
@@ -42,6 +49,24 @@ CellRenderer class >> modelClass [
 	"Answer the Cell subclass I render. Each concrete renderer answers exactly one."
 
 	^ self subclassResponsibility
+]
+
+{ #category : 'examples' }
+CellRenderer class >> openExample [
+	"Open one blank cell in a space of its own, to look at it and change it.
+	This is the Bloc equivalent of the workspace experiment of the original tutorial.
+
+	CellRenderer openExample"
+
+	| grid renderer space |
+	grid := Grid new.
+	renderer := self rendererFor: (grid at: 1 @ 1) grid: grid.
+	space := BlSpace new.
+	space extent: self cellExtent * 3.
+	space title: 'Laser Game cell'.
+	space root addChild: renderer newElement.
+	space show.
+	^ space
 ]
 
 { #category : 'constants' }
@@ -132,6 +157,21 @@ CellRenderer >> mouseUpWithinBoardOffset: aPoint [
 	^self cell
 ]
 
+{ #category : 'rendering' }
+CellRenderer >> newElement [
+	"Answer a new element rendering my cell. The element is square, carries the cell
+	background and border, and holds whatever my subclass draws as children."
+
+	| element |
+	element := BlElement new.
+	element extent: self class cellExtent.
+	element geometry: BlRectangleGeometry new.
+	self renderBackgroundOn: element.
+	self renderBorderOn: element.
+	self renderContentsOn: element.
+	^ element
+]
+
 { #category : 'accessing' }
 CellRenderer >> offsetWithinGridForm [
 	| delta xCount yCount offset |
@@ -155,6 +195,13 @@ CellRenderer >> render [
 		renderBorder;
 		renderContents.
 	self grid laserIsActive ifTrue: [self renderLaser]
+]
+
+{ #category : 'rendering' }
+CellRenderer >> renderBackgroundOn: anElement [
+	"Paint the cell background. Every cell shares the game board background color."
+
+	anElement background: LaserGameColors gameBoardBackgroundColor
 ]
 
 { #category : 'drawing' }
@@ -202,6 +249,16 @@ CellRenderer >> renderBorderLeft [
 	line displayOn: self targetForm
 ]
 
+{ #category : 'rendering' }
+CellRenderer >> renderBorderOn: anElement [
+	"Draw the cell border. Bloc draws a border inside the bounds of the element, so the
+	border costs no space and the cells of a grid stay exactly cellExtent apart."
+
+	anElement border: (BlBorder
+			 paint: LaserGameColors cellBorderColor
+			 width: self class borderWidth)
+]
+
 { #category : 'drawing' }
 CellRenderer >> renderBorderRight [
 	| line delta offset x1 x2 y1 y2 fillForm |
@@ -240,6 +297,13 @@ CellRenderer >> renderBorderTop [
 
 { #category : 'drawing' }
 CellRenderer >> renderContents [
+]
+
+{ #category : 'rendering' }
+CellRenderer >> renderContentsOn: anElement [
+	"Draw what is inside the cell, as children of anElement. A cell with nothing inside
+	draws nothing, so this is empty here and overridden by the subclasses that have
+	contents."
 ]
 
 { #category : 'drawing' }
