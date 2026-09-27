@@ -12,70 +12,63 @@ Class {
 }
 
 { #category : 'accessing' }
+TargetCellRenderer class >> centerInset [
+	"Answer how far, in pixels, the filled center of the target stays inside the ring around it."
+
+	^ 4
+]
+
+{ #category : 'accessing' }
 TargetCellRenderer class >> modelClass [
 	^ TargetCell
 ]
 
-{ #category : 'drawing' }
-TargetCellRenderer >> drawCircleOutline [
-	self drawCircleOutlineOn: self targetForm color: LaserGameColors targetCenterColor
+{ #category : 'accessing' }
+TargetCellRenderer class >> outlineWidth [
+	"Answer the thickness, in pixels, of the target outline: the crosshairs and the ring. The
+	original drew both with a two pixel pen."
+
+	^ 2
 ]
 
 { #category : 'drawing' }
-TargetCellRenderer >> drawCircleOutlineOn: aForm color: aColor [
-	| offset |
-	offset := self offsetWithinGridForm.
-	self drawCircleOutlineOn: aForm color: aColor offset: offset
+TargetCellRenderer >> addOutlineLineFrom: aPoint to: anotherPoint on: anElement [
+	"Add one line of the target outline to anElement. Both points are cell local, and the stroke is
+	centered on the line, as the mirror's is."
+
+	| line |
+	line := BlElement new.
+	line extent: self class cellExtent.
+	line geometry: (BlLineGeometry from: aPoint to: anotherPoint).
+	line outskirts: BlOutskirts centered.
+	line border: (BlBorder
+			 paint: LaserGameColors targetCenterColor
+			 width: self class outlineWidth).
+	anElement addChild: line
 ]
 
 { #category : 'drawing' }
-TargetCellRenderer >> drawCircleOutlineOn: aForm color: aColor offset: offset [
-	| delta fillForm circle |
-	delta := self class cellExtent - 1.
-	circle := Circle new.
-	fillForm := Form extent: 2@2 depth: 8.
-	fillForm fillColor: aColor.
-	circle form: fillForm.
-	circle radius: self radius.
-	circle center: (offset + (delta // 2)).
-	circle displayOn: aForm
+TargetCellRenderer >> centerColor [
+	"Answer the fill of the target center: one color while the laser reaches my cell, another
+	while it does not."
+
+	^ self cell isOn
+		  ifTrue: [ LaserGameColors targetCenterColorActive ]
+		  ifFalse: [ LaserGameColors targetCenterColorIdle ]
 ]
 
 { #category : 'drawing' }
-TargetCellRenderer >> drawCrossHairsOutlines [
-	| inset delta offset x1 x2 y1 y2 fillForm line |
-	inset := 6@6.
-	delta := CellRenderer cellExtent - 1.
-	offset := self offsetWithinGridForm.
-	x1 := offset x + inset x.
-	x2 := offset x + delta x - inset x.
-	y1 := offset y + (delta y // 2).
-	y2 := y1.
-	fillForm := Form extent: 2@2 depth: 8.
-	fillForm fillColor: LaserGameColors targetCenterColor.
-	line := Line
-			from: x1@y1 
-			to: x2@y2
-			withForm: fillForm.
-	line displayOn: self targetForm.
-	x1 := offset x + (delta x // 2).
-	x2 := x1.
-	y1 := offset y + inset y.
-	y2 := offset y + delta y - inset y.
-	fillForm := Form extent: 2@2 depth: 8.
-	fillForm fillColor: LaserGameColors targetCenterColor.
-	line := Line
-			from: x1@y1 
-			to: x2@y2
-			withForm: fillForm.
-	line displayOn: self targetForm.
+TargetCellRenderer >> crossHairInset [
+	"Answer how far, in pixels, each end of the crosshairs stays inside the edge of the cell."
 
+	^ 6 @ 6
 ]
 
 { #category : 'drawing' }
-TargetCellRenderer >> drawTargetOutlines [
-	self drawCrossHairsOutlines.
-	self drawCircleOutline
+TargetCellRenderer >> innerRadius [
+	"Answer the radius of the filled center of the target, which stays inside the ring."
+
+	^ self radius - self class centerInset
 ]
 
 { #category : 'drawing' }
@@ -117,43 +110,62 @@ TargetCellRenderer >> maskOffVerticalOn: aMask [
 ]
 
 { #category : 'drawing' }
+TargetCellRenderer >> newCircleOfRadius: aRadius [
+	"Answer a circular element of aRadius, placed around the middle of the cell. A circle geometry
+	inscribes its circle in the bounds of its element, so the element is a square of the diameter
+	and sits one radius up and to the left of the middle."
+
+	| middle circle |
+	middle := self class cellExtent - 1 // 2.
+	circle := BlElement new.
+	circle geometry: BlCircleGeometry new.
+	circle extent: (aRadius * 2) asPoint.
+	circle position: middle - aRadius.
+	^ circle
+]
+
+{ #category : 'drawing' }
 TargetCellRenderer >> radius [
 	^(self class cellExtent x // 2 - 8) min: 10
 ]
 
 { #category : 'drawing' }
-TargetCellRenderer >> renderContents [
-	self fillBackground.
-	self drawTargetOutlines.
-	self cell isOn
-		ifTrue: [self renderContentsOn]
-		ifFalse: [self renderContentsOff]
+TargetCellRenderer >> renderCenterOn: anElement [
+	"The filled disc inside the ring. Its color is the whole of what the target says about the
+	state of the game."
+
+	| center |
+	center := self newCircleOfRadius: self innerRadius.
+	center background: self centerColor.
+	anElement addChild: center
+]
+
+{ #category : 'rendering' }
+TargetCellRenderer >> renderContentsOn: anElement [
+	"A target is a crosshair, a ring around the middle of the cell, and a disc inside the ring
+	showing whether the laser reaches my cell."
+
+	self renderCrossHairsOn: anElement.
+	self renderRingOn: anElement.
+	self renderCenterOn: anElement
 ]
 
 { #category : 'drawing' }
-TargetCellRenderer >> renderContentsOff [
-	self renderInnerCircleColor: LaserGameColors targetCenterColorIdle.
+TargetCellRenderer >> renderCrossHairsOn: anElement [
+	"Two lines crossing in the middle of the cell, each inset from the two edges it points at."
 
-]
-
-{ #category : 'drawing' }
-TargetCellRenderer >> renderContentsOn [
-	self renderInnerCircleColor: LaserGameColors targetCenterColorActive.
-
-]
-
-{ #category : 'drawing' }
-TargetCellRenderer >> renderInnerCircleColor: aColor [
-	| circle fillForm offset delta |
-	delta := CellRenderer cellExtent - 1.
-	offset := self offsetWithinGridForm.
-	circle := Circle new.
-	fillForm := Form extent: 4@4 depth: 8.
-	fillForm fillColor: aColor.
-	circle form: fillForm.
-	circle radius: self radius - 4.
-	circle center: (offset + (delta // 2) - 1).
-	circle displayOn: self targetForm.
+	| inset delta middle |
+	inset := self crossHairInset.
+	delta := self class cellExtent - 1.
+	middle := delta // 2.
+	self
+		addOutlineLineFrom: inset x @ middle y
+		to: delta x - inset x @ middle y
+		on: anElement.
+	self
+		addOutlineLineFrom: middle x @ inset y
+		to: middle x @ (delta y - inset y)
+		on: anElement
 ]
 
 { #category : 'drawing' }
@@ -167,4 +179,18 @@ TargetCellRenderer >> renderLaser [
 	self drawTargetOutlines.
 	self renderContentsOn.
 	
+]
+
+{ #category : 'drawing' }
+TargetCellRenderer >> renderRingOn: anElement [
+	"The ring of the target: an outline, with nothing painted inside it, so the crosshairs stay
+	visible through it."
+
+	| ring |
+	ring := self newCircleOfRadius: self radius.
+	ring outskirts: BlOutskirts centered.
+	ring border: (BlBorder
+			 paint: LaserGameColors targetCenterColor
+			 width: self class outlineWidth).
+	anElement addChild: ring
 ]
