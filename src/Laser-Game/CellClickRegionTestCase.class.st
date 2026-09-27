@@ -80,6 +80,28 @@ CellClickRegionTestCase >> testClicksInOutsideRegion [
 ]
 
 { #category : 'tests' }
+CellClickRegionTestCase >> testOnlyAPushRegionAnswersAHintElement [
+	"Page 094 asks a push region for its arrow. Here it answers an element, built at the size
+	asked for, and every other region answers nothing: the outside region gets its rotate arrows
+	in Section 3.8, and the ignore region never has a picture."
+
+	| extent |
+	extent := 48 @ 48.
+	self assert: (CellClickRegionOutside hintElementOfExtent: extent) isNil.
+	self assert: (CellClickRegionIgnore hintElementOfExtent: extent) isNil.
+	self assert: (CellClickRegionInside hintElementOfExtent: extent) isNil.
+	{ (CellClickRegionPushNorth -> LaserGameShapes northArrowPoints).
+	(CellClickRegionPushEast -> LaserGameShapes eastArrowPoints).
+	(CellClickRegionPushSouth -> LaserGameShapes southArrowPoints).
+	(CellClickRegionPushWest -> LaserGameShapes westArrowPoints) } do: [ :each |
+		| element |
+		element := each key hintElementOfExtent: extent.
+		self
+			assert: element geometry vertices
+			equals: (LaserGameShapes pointsOf: each value scaledToExtent: extent) ]
+]
+
+{ #category : 'tests' }
 CellClickRegionTestCase >> testOnlyTheInsideRegionRefinesTheHintItAnswers [
 	"Page 092 gives every region the hint message and lets the inside region alone do something
 	with it: it answers the push region of the point. The others answer themselves, since they

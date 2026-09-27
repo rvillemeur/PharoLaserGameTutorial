@@ -22,6 +22,14 @@ CellClickRegion class >> clickRegionForPoint: aPoint [
 ]
 
 { #category : 'hints' }
+CellClickRegion class >> hintElementOfExtent: anExtent [
+	"Answer an element drawing my hint at anExtent, or nil when I have no picture to show. Only
+	the four push regions have one here; the rotate regions get theirs in Section 3.8."
+
+	^ nil
+]
+
+{ #category : 'hints' }
 CellClickRegion class >> hintRegionForPoint: aPoint [
 	"Answer the region whose hint applies at aPoint, which I already contain. I have nothing
 	finer to say than my own name, so I answer myself; the inside region answers one of its four

@@ -266,29 +266,3 @@ MirrorCellRenderer >> renderLaser [
 	self renderMirror.
 
 ]
-
-{ #category : 'drawing' }
-MirrorCellRenderer >> showPositionHintFromWithinBoardOffset: aPoint [
-	| cellPosn offsetWithinCell regionClass arrowAndOffset |
-	cellPosn := self offsetWithinGridForm.
-	offsetWithinCell := aPoint - cellPosn.
-	regionClass := CellClickRegion clickRegionForPoint: offsetWithinCell. 
-	arrowAndOffset := regionClass scaledHintArrowAndOffsetFromWithinCell: offsetWithinCell.
-	arrowAndOffset isNil
-		ifTrue: [self currentHand showTemporaryCursor: nil]
-		ifFalse: [
-			| arrowColor arrow offset |
-			arrowColor := self hintArrowColorFor: regionClass offset: offsetWithinCell.
-			arrow := arrowAndOffset value.
-			offset := arrowAndOffset key.
-			offset := self offsetWithinGridForm + offset.
-			arrow
-				displayOn: self targetForm
-				at: offset
-				clippingBox: self backgroundRectangle
-				rule: Form oldPaint
-				fillColor: arrowColor.
-			self currentHand
-				showTemporaryCursor: LaserGameForms crossHair
-				hotSpotOffset: (LaserGameForms crossHair extent // 2)]
-]

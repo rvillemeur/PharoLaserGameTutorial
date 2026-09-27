@@ -78,16 +78,6 @@ CellClickRegionInside class >> regionRectangle [
 	^outer insetBy: (delta // 2)
 ]
 
-{ #category : 'hints' }
-CellClickRegionInside class >> scaledHintArrowAndOffsetFromWithinCell: aPoint [
-	| pushRegion arrow tinyArrow offset |
-	pushRegion := self pushRegionForPoint: aPoint.
-	arrow := pushRegion arrowForm.
-	tinyArrow := arrow scaledToSize: CellRenderer cellExtent - 2.
-	offset := (CellRenderer cellExtent - tinyArrow extent) // 2.
-	^offset->tinyArrow
-]
-
 { #category : 'accessing' }
 CellClickRegionInside class >> sortIndex [
 	^1

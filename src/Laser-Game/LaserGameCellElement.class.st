@@ -17,7 +17,8 @@ Class {
 	#superclass : 'BlElement',
 	#instVars : [
 		'renderer',
-		'hintRegion'
+		'hintRegion',
+		'hintElement'
 	],
 	#category : 'Laser-Game-Graphics',
 	#package : 'Laser-Game',
@@ -38,11 +39,13 @@ LaserGameCellElement >> cell [
 	^ self renderer cell
 ]
 
-{ #category : 'interaction' }
+{ #category : 'hints' }
 LaserGameCellElement >> clearPositionHint [
-	"Forget my hint: the pointer is no longer in me."
+	"Forget my hint: the pointer is no longer in me, so the arrow goes too."
 
-	hintRegion := nil
+	hintRegion ifNil: [ ^ self ].
+	hintRegion := nil.
+	self updateHintElement
 ]
 
 { #category : 'event handling' }
@@ -66,6 +69,13 @@ LaserGameCellElement >> gridLocation [
 	"Answer where my cell sits in the grid, x being the column and y the row."
 
 	^ self renderer cellLocation
+]
+
+{ #category : 'accessing' }
+LaserGameCellElement >> hintElement [
+	"Answer the element drawing my hint, or nil when I show none."
+
+	^ hintElement
 ]
 
 { #category : 'accessing' }
@@ -129,10 +139,29 @@ LaserGameCellElement >> renderer: aCellRenderer [
 	renderer := aCellRenderer
 ]
 
-{ #category : 'interaction' }
+{ #category : 'hints' }
 LaserGameCellElement >> showPositionHintAt: aPoint [
-	"Keep the hint my renderer answers for aPoint, which is in my own coordinates. My renderer
-	decides: a mirror answers the region the point falls in, every other cell answers nothing."
+	"Keep the hint my renderer answers for aPoint, which is in my own coordinates, and show it.
+	My renderer decides: a mirror answers the region the point falls in, every other cell answers
+	nothing. A move within the same region changes nothing, so the arrow is built once."
 
-	hintRegion := self renderer hintRegionAt: aPoint
+	| region |
+	region := self renderer hintRegionAt: aPoint.
+	region = hintRegion ifTrue: [ ^ self ].
+	hintRegion := region.
+	self updateHintElement
+]
+
+{ #category : 'hints' }
+LaserGameCellElement >> updateHintElement [
+	"Show the picture of the hint I hold, and no other. The original drew its arrow straight onto
+	the board form, which is why page 093 warns that old arrows have to be cleaned off; here the
+	arrow is a child of mine, so the previous one goes when it is removed."
+
+	hintElement ifNotNil: [ :each | self removeChild: each ].
+	hintElement := hintRegion ifNotNil: [ :region |
+		               region hintElementOfExtent: CellRenderer hintArrowExtent ].
+	hintElement ifNotNil: [ :each |
+		each position: CellRenderer hintArrowOffset.
+		self addChild: each ]
 ]

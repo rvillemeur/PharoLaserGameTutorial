@@ -12,11 +12,6 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'hints' }
-CellClickRegionPushEast class >> arrowForm [
-	^LaserGameForms eastArrow
-]
-
 { #category : 'interaction' }
 CellClickRegionPushEast class >> canPushCell: aCell withinGrid: aGrid [
 	^aGrid canPushCellEastFromLocation: aCell gridLocation
@@ -28,6 +23,13 @@ CellClickRegionPushEast class >> containsPoint: aPoint [
 	underHeadingDown := self pointIsUnderHeadingDownLine: aPoint.
 	underHeadingUp := self pointIsUnderHeadingUpLine: aPoint.
 	^underHeadingDown and: [underHeadingUp not]
+]
+
+{ #category : 'hints' }
+CellClickRegionPushEast class >> hintElementOfExtent: anExtent [
+	"Answer the east arrow at anExtent."
+
+	^ LaserGameShapes eastArrowElementOfExtent: anExtent
 ]
 
 { #category : 'interaction' }

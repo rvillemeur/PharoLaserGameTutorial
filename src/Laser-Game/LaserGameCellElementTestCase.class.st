@@ -42,6 +42,31 @@ LaserGameCellElementTestCase >> testACellElementKnowsTheCellItShows [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime [
+	"The fourth design consideration of page 093: old arrows must not clutter the board. The
+	original had to redraw the cell before drawing the new arrow; here the cell has one hint
+	child, and moving to another push region replaces it."
+
+	| board element rect childCount |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	childCount := element children size.
+	rect := CellClickRegionInside regionRectangle.
+	{ (rect leftCenter + (1 @ 0) -> LaserGameShapes eastArrowPoints).
+	(rect topCenter + (0 @ 1) -> LaserGameShapes southArrowPoints).
+	(rect rightCenter - (1 @ 0) -> LaserGameShapes westArrowPoints) } do: [ :each |
+		element dispatchEvent: (BlMouseMoveEvent new
+				 position: each key;
+				 yourself).
+		self assert: element children size equals: childCount + 1.
+		self
+			assert: element hintElement geometry vertices
+			equals: (LaserGameShapes
+					 pointsOf: each value
+					 scaledToExtent: CellRenderer hintArrowExtent) ]
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testClickingACellElementRecordsItsCell [
 	"A click reaches the cell element under the pointer, and the board records the cell that was
 	clicked. The original checked that mouse down and mouse up fell in the same cell itself;
@@ -157,6 +182,30 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion 
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testMovingInsideAMirrorCellShowsTheArrowOfItsPushRegion [
+	"Page 093 draws the arrow of the hint onto the board. Here the cell adds it as a child, a
+	few pixels smaller than the cell and centred in it, and its vertices are the ones of the
+	direction the pointer asks for."
+
+	| board element |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	self assert: element hintElement isNil.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle center;
+			 yourself).
+	self assert: (element children includes: element hintElement).
+	self
+		assert: element hintElement geometry vertices
+		equals: (LaserGameShapes
+				 pointsOf: LaserGameShapes northArrowPoints
+				 scaledToExtent: CellRenderer hintArrowExtent).
+	self
+		assert: element hintElement constraints position
+		equals: CellRenderer hintArrowOffset
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testMovingOverACellElementMakesItTheHoveredCell [
 	"A mouse move over a cell is the event the original watched: it answers which cell the
 	pointer is over. Bloc sends it to the cell itself, so the board learns it from the cell."
@@ -172,17 +221,46 @@ LaserGameCellElementTestCase >> testMovingOverACellElementMakesItTheHoveredCell 
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testMovingOverACellThatIsNotAMirrorRecordsNoHint [
-	"Blank and target cells answer no hint region, so moving over them records nothing."
+	"Blank and target cells answer no hint region, so moving over them records nothing and draws
+	nothing."
 
 	| board |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
 	#( 1 5 ) do: [ :column |
-		| element |
+		| element childCount |
 		element := board cellElementAt: column @ 1.
+		childCount := element children size.
 		element dispatchEvent: (BlMouseMoveEvent new
 				 position: CellClickRegionInside regionRectangle center;
 				 yourself).
-		self assert: element hintRegion isNil ]
+		self assert: element hintRegion isNil.
+		self assert: element hintElement isNil.
+		self assert: element children size equals: childCount ]
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testTheArrowGoesWhenThePointerLeavesOrReachesARegionWithoutOne [
+	"A hint lasts as long as the pointer is in a region that has one. Leaving the cell takes the
+	arrow with it, and so does moving out to the margin, where the ignore region has no picture."
+
+	| board element childCount |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	childCount := element children size.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle center;
+			 yourself).
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: 0 @ 0;
+			 yourself).
+	self assert: element hintElement isNil.
+	self assert: element children size equals: childCount.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle center;
+			 yourself).
+	element dispatchEvent: BlMouseLeaveEvent new.
+	self assert: element hintElement isNil.
+	self assert: element children size equals: childCount
 ]
 
 { #category : 'tests' }

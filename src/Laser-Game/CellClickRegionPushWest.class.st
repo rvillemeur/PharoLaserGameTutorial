@@ -12,11 +12,6 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'hints' }
-CellClickRegionPushWest class >> arrowForm [
-	^LaserGameForms westArrow
-]
-
 { #category : 'interaction' }
 CellClickRegionPushWest class >> canPushCell: aCell withinGrid: aGrid [
 	^aGrid canPushCellWestFromLocation: aCell gridLocation
@@ -28,6 +23,13 @@ CellClickRegionPushWest class >> containsPoint: aPoint [
 	underHeadingDown := self pointIsUnderHeadingDownLine: aPoint.
 	underHeadingUp := self pointIsUnderHeadingUpLine: aPoint.
 	^underHeadingDown not and: [underHeadingUp]
+]
+
+{ #category : 'hints' }
+CellClickRegionPushWest class >> hintElementOfExtent: anExtent [
+	"Answer the west arrow at anExtent."
+
+	^ LaserGameShapes westArrowElementOfExtent: anExtent
 ]
 
 { #category : 'interaction' }

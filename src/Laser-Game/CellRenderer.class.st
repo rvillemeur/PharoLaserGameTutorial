@@ -34,6 +34,22 @@ CellRenderer class >> cellExtent [
 	^50@50
 ]
 
+{ #category : 'accessing' }
+CellRenderer class >> hintArrowExtent [
+	"Answer the size a hint arrow is drawn at: a couple of pixels smaller than a cell, which is
+	the size page 094 scales its arrow form to."
+
+	^ self cellExtent - 2
+]
+
+{ #category : 'accessing' }
+CellRenderer class >> hintArrowOffset [
+	"Answer where a hint arrow sits within its cell: centred, as page 094 computes it from the
+	two extents."
+
+	^ (self cellExtent - self hintArrowExtent) // 2
+]
+
 { #category : 'constants' }
 CellRenderer class >> ignoreRegionOffset [
 	^4

@@ -12,11 +12,6 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'hints' }
-CellClickRegionPushNorth class >> arrowForm [
-	^LaserGameForms northArrow
-]
-
 { #category : 'interaction' }
 CellClickRegionPushNorth class >> canPushCell: aCell withinGrid: aGrid [
 	^aGrid canPushCellNorthFromLocation: aCell gridLocation
@@ -29,6 +24,14 @@ CellClickRegionPushNorth class >> containsPoint: aPoint [
 	underHeadingUp := self pointIsUnderHeadingUpLine: aPoint.
 	^(underHeadingDown not) and: [underHeadingUp not]
 
+]
+
+{ #category : 'hints' }
+CellClickRegionPushNorth class >> hintElementOfExtent: anExtent [
+	"Answer the north arrow at anExtent. The original answered a 330 pixel bitmap mask from the
+	forms cache and scaled it down; a polygon is drawn at the size it is given."
+
+	^ LaserGameShapes northArrowElementOfExtent: anExtent
 ]
 
 { #category : 'interaction' }

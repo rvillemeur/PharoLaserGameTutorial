@@ -12,11 +12,6 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'hints' }
-CellClickRegionPushSouth class >> arrowForm [
-	^LaserGameForms southArrow
-]
-
 { #category : 'interaction' }
 CellClickRegionPushSouth class >> canPushCell: aCell withinGrid: aGrid [
 	^aGrid canPushCellSouthFromLocation: aCell gridLocation
@@ -28,6 +23,13 @@ CellClickRegionPushSouth class >> containsPoint: aPoint [
 	underHeadingDown := self pointIsUnderHeadingDownLine: aPoint.
 	underHeadingUp := self pointIsUnderHeadingUpLine: aPoint.
 	^underHeadingDown and: [underHeadingUp]
+]
+
+{ #category : 'hints' }
+CellClickRegionPushSouth class >> hintElementOfExtent: anExtent [
+	"Answer the south arrow at anExtent."
+
+	^ LaserGameShapes southArrowElementOfExtent: anExtent
 ]
 
 { #category : 'interaction' }
