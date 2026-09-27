@@ -368,6 +368,24 @@ GridTestCase >> testStopLaser [
 ]
 
 { #category : 'tests' }
+GridTestCase >> testTheInspectorTabsOfAGridShowTheBoardAndTheBeam [
+	"Where page 108 improves what a cell prints in a debugger, a grid can show the board itself and
+	the path the laser takes, since Section 2 gave it an element that draws it. One row per step of
+	the beam, and the board as a picture."
+
+	| grid builder |
+	grid := self generateDemoGrid.
+	grid fireLaser.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	self
+		assert: (grid inspectionBeam: builder) items size
+		equals: grid laserBeamPath size.
+	self assert: (grid inspectionBoard: builder) class equals: SpMorphPresenter
+]
+
+{ #category : 'tests' }
 GridTestCase >> testToggleLaser [
 
 	| grid cell |

@@ -1,3 +1,10 @@
+"
+I am the model of the whole board: a dictionary of `Cell`s keyed by `column @ row` points, `numberOfColumns` of them across and `numberOfRows` down, plus the state of the laser. Every location holds a cell; `BlankCell` fills the empty ones.
+
+`fireLaser` lights the cells the beam crosses and `stopLaser` clears them again. The beam is `laserBeamPath`, an ordered collection of `LaserPathElement`s built by `calculatePath`, which walks from `startingCell` until the beam stops. `movesStack` records the player's moves so `undo` can take them back.
+
+Cells are moved with the `pushCell...FromLocation:` methods, each guarded by its `canPushCell...FromLocation:`, and mirrors are turned with `rotateCellClockwiseAt:` and `rotateCellCounterClockwiseAt:`. Inspect me for a picture of the board and a list of the beam path.
+"
 Class {
 	#name : 'Grid',
 	#superclass : 'Object',
@@ -45,7 +52,7 @@ Grid >> at: aPoint put: aCell [
 	self cells at: aPoint put: aCell
 ]
 
-{ #category : 'accessing' }
+{ #category : 'action' }
 Grid >> calculatePath [
 	| cell dirSym element next |
 	self laserBeamPath: OrderedCollection new.
@@ -129,7 +136,7 @@ Grid >> fireLaser [
 	
 ]
 
-{ #category : 'initialize-release' }
+{ #category : 'initialization' }
 Grid >> initialize [
 	super initialize.
 	self laserIsActive: false.
@@ -146,6 +153,34 @@ Grid >> initializeCells [
 			pt := x@y.
 			cell := BlankCell new.
 			self at: pt put: cell]]
+]
+
+{ #category : 'inspecting' }
+Grid >> inspectionBeam: aBuilder [
+	"Show the path the laser takes, one row per step, which is the collection pages 108 and 109
+	step through in a debugger."
+
+	<inspectorPresentationOrder: 2 title: 'Beam'>
+	^ aBuilder newTable
+		  items: (self laserBeamPath ifNil: [ #(  ) ]);
+		  addColumn: (SpStringTableColumn title: 'Cell' evaluated: [ :each |
+					   each cell printString ]);
+		  addColumn:
+			  (SpStringTableColumn title: 'Enters from' evaluated: [ :each |
+					   each entrySide asString ]);
+		  yourself
+]
+
+{ #category : 'inspecting' }
+Grid >> inspectionBoard: aBuilder [
+	"Show me as the board the player sees. Page 108 of the original opens a browser beside its
+	debugger to make a cell say more about itself; a grid can do better than say anything, since
+	Section 2 gave it an element that draws it."
+
+	<inspectorPresentationOrder: 1 title: 'Board'>
+	^ aBuilder newMorph
+		  morph: (LaserGameBoardElement on: self) asPreviewMorph;
+		  yourself
 ]
 
 { #category : 'accessing' }
@@ -280,26 +315,31 @@ Grid >> reset [
 	[self undo] whileTrue: []
 ]
 
-{ #category : 'action' }
+{ #category : 'actions' }
 Grid >> rotateCellClockwiseAt: aPoint [
+	"Turn the cell at aPoint clockwise. The beam is taken off the board first and put back
+	afterwards if the laser is on, so the cells it lit before the turn go dark and the cells on the
+	new path light up. The turn is recorded for the undo of Section 5."
+
 	| cell |
 	cell := self at: aPoint.
 	self clearCellsInPath.
 	(self at: aPoint) rotateClockwise.
-	self laserIsActive ifTrue: [self activateCellsInPath].
+	self laserIsActive ifTrue: [ self activateCellsInPath ].
 	self stackAction: #clockwise forCell: cell
-
 ]
 
-{ #category : 'action' }
+{ #category : 'actions' }
 Grid >> rotateCellCounterClockwiseAt: aPoint [
+	"Turn the cell at aPoint counter clockwise. See `rotateCellClockwiseAt:`; only the action
+	recorded for the undo differs."
+
 	| cell |
 	cell := self at: aPoint.
 	self clearCellsInPath.
 	(self at: aPoint) rotateCounterClockwise.
-	self laserIsActive ifTrue: [self activateCellsInPath].
+	self laserIsActive ifTrue: [ self activateCellsInPath ].
 	self stackAction: #counterClockwise forCell: cell
-
 ]
 
 { #category : 'action' }

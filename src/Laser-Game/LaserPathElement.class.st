@@ -1,3 +1,8 @@
+"
+I am one step of the laser beam: a `Cell` and the side the beam enters it from. `Grid >> calculatePath` starts one of me at the laser and follows `nextElementIn:` until a cell swallows the beam or the beam leaves the board, keeping the chain as the grid's `laserBeamPath`.
+
+`nextElementIn: aGrid` asks my cell which side the beam leaves by, steps one cell that way, and answers the element for the cell it lands on, or `nil` when there is none. `activateCell` and `clearCell` turn the light of my cell on and off for the side the beam enters from.
+"
 Class {
 	#name : 'LaserPathElement',
 	#superclass : 'Object',
@@ -10,7 +15,7 @@ Class {
 	#tag : 'Model'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 LaserPathElement class >> cell: aCell entrySide: aSymbol [
 	| model |
 	model := self basicNew.
@@ -21,7 +26,7 @@ LaserPathElement class >> cell: aCell entrySide: aSymbol [
 	^model
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'action' }
 LaserPathElement >> activateCell [
 	self cell laserEntersFrom: self entrySide
 ]
@@ -40,7 +45,7 @@ LaserPathElement >> cell: anObject [
 	cell := anObject
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'action' }
 LaserPathElement >> clearCell [
 	self cell clearCell
 ]
@@ -59,7 +64,7 @@ LaserPathElement >> entrySide: anObject [
 	entrySide := anObject
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 LaserPathElement >> nextElementIn: aGrid [
 	| loc dirSym direction vector newLoc nextCell |
 	loc := self cell gridLocation.
@@ -76,13 +81,14 @@ LaserPathElement >> nextElementIn: aGrid [
 
 { #category : 'printing' }
 LaserPathElement >> printOn: aStream [
+	"Name the cell this step of the beam is about and the side the beam enters it from. Page 108 of
+	the original prints the same over three lines."
+
 	super printOn: aStream.
 	aStream
-		cr;
-		nextPut: $(..
-	self cell printOn: aStream.
-	aStream
-		cr;
-		nextPutAll: 'entrySide = ', self entrySide asString;
+		nextPut: $(;
+		print: self cell;
+		nextPutAll: ' from ';
+		nextPutAll: self entrySide asString;
 		nextPut: $)
 ]

@@ -1,3 +1,10 @@
+"
+I am a `Cell` with a mirror on one of its diagonals. `leansLeft` says which one. When I lean left the mirror runs from my top left corner to my bottom right one, and a beam entering from the north leaves by the east. When I lean right it runs from my top right corner to my bottom left one, and the same beam leaves by the west.
+
+`leanLeft` and `leanRight` set the lean and all four exit sides together, which is why `rotate` uses them instead of flipping `leansLeft` on its own: pages 107 to 110 of the original spend three pages on exactly that bug.
+
+`rotateClockwise` and `rotateCounterClockwise` are both `rotate`. A diagonal has only two positions, so either direction lands on the other one.
+"
 Class {
 	#name : 'MirrorCell',
 	#superclass : 'Cell',
@@ -11,12 +18,16 @@ Class {
 
 { #category : 'instance creation' }
 MirrorCell class >> leanLeft [
-	^super new leanLeft
+	"Answer a mirror on the diagonal from my top left corner to my bottom right one."
+
+	^ self new leanLeft
 ]
 
 { #category : 'instance creation' }
 MirrorCell class >> leanRight [
-	^super new leanRight
+	"Answer a mirror on the diagonal from my top right corner to my bottom left one."
+
+	^ self new leanRight
 ]
 
 { #category : 'initialization' }
@@ -76,20 +87,40 @@ MirrorCell >> leansLeft: anObject [
 	leansLeft := anObject
 ]
 
+{ #category : 'printing' }
+MirrorCell >> printDetailsOn: aStream [
+	"Add the way I lean, which is the fact pages 109 and 110 are about."
+
+	super printDetailsOn: aStream.
+	aStream nextPutAll:
+		(self isLeft ifTrue: [ ' leans left' ] ifFalse: [ ' leans right' ])
+]
+
 { #category : 'actions' }
 MirrorCell >> rotate [
-	self isLeft
-		ifTrue: [self leanRight]
-		ifFalse: [self leanLeft]
+	"Turn me a quarter of a turn, which puts my mirror on the other diagonal. Page 107 of the
+	original writes this as `leansLeft: self isLeft not`, and pages 108 to 110 spend three pages
+	finding out why the laser then leaves me on the side it left before: the lean changed and my
+	exit sides did not. `leanLeft` and `leanRight` set both, so the fix of page 110 is to use them."
 
+	self isLeft
+		ifTrue: [ self leanRight ]
+		ifFalse: [ self leanLeft ]
 ]
 
 { #category : 'actions' }
 MirrorCell >> rotateClockwise [
+	"Turn me clockwise. A quarter of a turn either way leaves my mirror on the same diagonal, so
+	both directions do the same thing to me; page 107 keeps them apart anyway, in case the turn is
+	ever animated, and lets one method do the work."
+
 	self rotate
 ]
 
 { #category : 'actions' }
 MirrorCell >> rotateCounterClockwise [
+	"Turn me counter clockwise, which does the same to me as turning me clockwise. See
+	`rotateClockwise`."
+
 	self rotate
 ]

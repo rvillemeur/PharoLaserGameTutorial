@@ -117,3 +117,36 @@ MirrorCellTestCase >> testCellSegmentsState [
 	self shouldnt: [cell isSegmentOnFor: #south].
 	self shouldnt: [cell isSegmentOnFor: #west].
 ]
+
+{ #category : 'tests' }
+MirrorCellTestCase >> testPrintStringSaysWhereTheCellIsHowItLeansAndWhetherItIsOn [
+	"Page 108 of the original improves what a cell shows in a debugger. Pharo prints objects on
+	one line, in lists, in inspector headers and in the code pane, so the port says the same
+	things in one line and lets the inspector show the rest."
+
+	| cell |
+	cell := MirrorCell leanLeft.
+	cell gridLocation: 4 @ 1.
+	self assert: cell printString equals: 'a MirrorCell(4@1 leans left, off)'.
+	cell rotate.
+	self assert: cell printString equals: 'a MirrorCell(4@1 leans right, off)'.
+	cell laserEntersFrom: #north.
+	self assert: cell printString equals: 'a MirrorCell(4@1 leans right, on)'
+]
+
+{ #category : 'tests' }
+MirrorCellTestCase >> testTheSidesTabListsTheFourSidesOfTheCell [
+	"Page 108 of the original wants a cell to say more about itself while it is being debugged. In
+	Pharo that belongs in an inspector tab, and the tab has one row per side, which is where the
+	bug of page 110 becomes visible: the exit sides of a rotated mirror."
+
+	| cell table |
+	cell := MirrorCell leanRight.
+	cell gridLocation: 4 @ 1.
+	table := cell inspectionSides:
+		         (SpPresenterBuilder new
+			          application: SpApplication new;
+			          yourself).
+	self assert: table items asArray equals: #( #north #east #south #west ).
+	self assert: table columns size equals: 3
+]
