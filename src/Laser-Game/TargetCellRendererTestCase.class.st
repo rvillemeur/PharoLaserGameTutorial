@@ -73,6 +73,29 @@ TargetCellRendererTestCase >> testCenterSitsInsideTheRing [
 ]
 
 { #category : 'tests' }
+TargetCellRendererTestCase >> testCrossHairsCrossInTheMiddleInsetFromTheEdges [
+	"The horizontal line runs along the middle row of the cell and the vertical one along the
+	middle column, each stopping short of the two edges it points at."
+
+	| renderer children inset delta middle |
+	renderer := self rendererForTarget: TargetCell new.
+	children := renderer newElement children.
+	inset := renderer crossHairInset.
+	delta := TargetCellRenderer cellExtent - 1.
+	middle := delta // 2.
+	self assert: children first geometry from equals: inset x @ middle y.
+	self
+		assert: children first geometry to
+		equals: delta x - inset x @ middle y.
+	self
+		assert: (children at: 2) geometry from
+		equals: middle x @ inset y.
+	self
+		assert: (children at: 2) geometry to
+		equals: middle x @ (delta y - inset y)
+]
+
+{ #category : 'tests' }
 TargetCellRendererTestCase >> testOutlinesAreDrawnInTheTargetColor [
 	"Both crosshairs and the ring share one color, and all three are strokes of the same width."
 
