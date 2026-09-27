@@ -16,6 +16,22 @@ Class {
 	#tag : 'Graphics'
 }
 
+{ #category : 'rotate arrow geometry' }
+LaserGameShapes class >> arcPointsFromAngle: startDegrees toAngle: stopDegrees radius: aRadius [
+	"Answer the points of an arc of aRadius about my rotate arrow centre, running from
+	startDegrees to stopDegrees. Angles are measured anticlockwise from east, and the sine is
+	subtracted because y grows downwards."
+
+	| center step |
+	center := self rotateArrowCenter.
+	step := stopDegrees - startDegrees / self rotateArrowArcSteps.
+	^ (0 to: self rotateArrowArcSteps) collect: [ :each |
+		  | angle |
+		  angle := (startDegrees + (each * step)) degreesToRadians.
+		  (center x + (aRadius * angle cos))
+		  @ (center y - (aRadius * angle sin)) ]
+]
+
 { #category : 'accessing' }
 LaserGameShapes class >> arrowColor [
 	"Answer the colour an arrow is painted in when nobody says otherwise: the grey of page 081.
@@ -37,6 +53,53 @@ LaserGameShapes class >> arrowElementFromPoints: anArrayOfPoints ofExtent: anExt
 		  extent: anExtent;
 		  background: self arrowColor;
 		  yourself
+]
+
+{ #category : 'shapes' }
+LaserGameShapes class >> clockwiseArrowElementOfExtent: anExtent [
+	"Answer an element drawing the clockwise rotate arrow at anExtent."
+
+	^ self
+		  arrowElementFromPoints: self clockwiseArrowPoints
+		  ofExtent: anExtent
+]
+
+{ #category : 'rotate arrow geometry' }
+LaserGameShapes class >> clockwiseArrowPoints [
+	"Answer the outline of the arrow that turns a mirror clockwise, which page 099 makes by
+	flipping the other one horizontally."
+
+	^ self counterClockwiseArrowPoints collect: [ :each |
+		  each x negated @ each y ]
+]
+
+{ #category : 'shapes' }
+LaserGameShapes class >> counterClockwiseArrowElementOfExtent: anExtent [
+	"Answer an element drawing the anticlockwise rotate arrow at anExtent."
+
+	^ self
+		  arrowElementFromPoints: self counterClockwiseArrowPoints
+		  ofExtent: anExtent
+]
+
+{ #category : 'rotate arrow geometry' }
+LaserGameShapes class >> counterClockwiseArrowPoints [
+	"Answer the outline of the arrow that turns a mirror anticlockwise: the head of page 099,
+	then the outer arc from the head round to the cut, the cut itself, and the inner arc back.
+	The original drew the same shape as two arcs, a line and a flood fill."
+
+	| head |
+	head := self rotateArrowHeadPoints.
+	^ { head first. head second. head third }
+	  , (self
+			   arcPointsFromAngle: 180
+			   toAngle: self rotateArrowCutAngle
+			   radius: self rotateArrowOuterRadius)
+	  , (self
+			   arcPointsFromAngle: self rotateArrowCutAngle
+			   toAngle: 180
+			   radius: self rotateArrowInnerRadius)
+	  , { head sixth. head seventh }
 ]
 
 { #category : 'building' }
@@ -116,6 +179,60 @@ LaserGameShapes class >> pointsOf: anArrayOfPoints scaledToExtent: anExtent [
 	scale := anExtent x / bounds width @ (anExtent y / bounds height).
 	^ anArrayOfPoints collect: [ :each |
 		  ((each - bounds origin) * scale) asFloatPoint ]
+]
+
+{ #category : 'rotate arrow geometry' }
+LaserGameShapes class >> rotateArrowArcSteps [
+	"Answer how many segments an arc of the curved arrow is drawn with. The original had a pixel
+	arc and no choice to make; a polygon has as many corners as it is given, and two dozen are
+	enough for the largest cell the game uses."
+
+	^ 24
+]
+
+{ #category : 'rotate arrow geometry' }
+LaserGameShapes class >> rotateArrowCenter [
+	"Answer the centre both arcs of the curved arrow turn about, as page 099 typed it into its
+	workspace."
+
+	^ 282 @ 240
+]
+
+{ #category : 'rotate arrow geometry' }
+LaserGameShapes class >> rotateArrowCutAngle [
+	"Answer where the ring stops, in degrees measured anticlockwise from east. Page 099 draws a
+	line from the centre of the arcs to the top right corner of its 450 pixel form, fills the
+	shape the line closes, and then paints the line out again with a very wide white pen. The
+	angle of that line is all the port keeps of it."
+
+	| corner |
+	corner := 450 @ 0 - self rotateArrowCenter.
+	^ (corner y negated arcTan: corner x) radiansToDegrees
+]
+
+{ #category : 'rotate arrow geometry' }
+LaserGameShapes class >> rotateArrowHeadPoints [
+	"Answer the arrow head of the curved arrow: the array page 099 types into its workspace,
+	moved by the offset the page adds to it. It is the south arrow of page 082 with almost no
+	stem, since the ring is the stem. The two points in the middle, at the top of the stem, are
+	where the ring begins, so the outline replaces them with the ends of the two arcs."
+
+	^ { 100 @ 260. 40 @ 150. 80 @ 150. 80 @ 141. 120 @ 141. 120 @ 150. 160 @ 150 }
+		  collect: [ :each | each + (2 @ 100) ]
+]
+
+{ #category : 'rotate arrow geometry' }
+LaserGameShapes class >> rotateArrowInnerRadius [
+	"Answer the radius of the inner arc of the curved arrow, the 160 of page 099."
+
+	^ 160
+]
+
+{ #category : 'rotate arrow geometry' }
+LaserGameShapes class >> rotateArrowOuterRadius [
+	"Answer the radius of the outer arc of the curved arrow, the 200 of page 099."
+
+	^ 200
 ]
 
 { #category : 'building' }

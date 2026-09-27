@@ -134,3 +134,75 @@ LaserGameShapesTestCase >> testShapesAreBuiltAtWhateverSizeIsAsked [
 		LaserGameShapes crossHairElementOfExtent: extent } do: [ :element |
 			self assert: (self requestedExtentOf: element) equals: extent ] ]
 ]
+
+{ #category : 'tests' }
+LaserGameShapesTestCase >> testTheClockwiseArrowIsTheCounterClockwiseOneMirrored [
+	"Page 099 makes the clockwise arrow by flipping the other one horizontally, which is one
+	step there and one line here."
+
+	| left right |
+	left := LaserGameShapes counterClockwiseArrowPoints.
+	right := LaserGameShapes clockwiseArrowPoints.
+	self assert: right size equals: left size.
+	left with: right do: [ :each :mirrored |
+		self assert: mirrored x equals: each x negated.
+		self assert: mirrored y equals: each y ]
+]
+
+{ #category : 'tests' }
+LaserGameShapesTestCase >> testTheRingOfTheRotateArrowIsAsWideAsTheStemOfItsHead [
+	"The two radii of page 099 are 160 and 200, and the stem of its arrow head is 40 wide and
+	sits at the left end of the ring. That is why the flood fill of the original made one shape
+	out of the two drawings, and it is what keeps the outline of the port closed."
+
+	| head ring |
+	head := LaserGameShapes rotateArrowHeadPoints.
+	ring := LaserGameShapes rotateArrowOuterRadius
+	        - LaserGameShapes rotateArrowInnerRadius.
+	self assert: ring equals: (head sixth x - head third x).
+	self
+		assert: LaserGameShapes rotateArrowCenter x
+		        - LaserGameShapes rotateArrowOuterRadius
+		equals: head third x.
+	self
+		assert: LaserGameShapes rotateArrowCenter x
+		        - LaserGameShapes rotateArrowInnerRadius
+		equals: head sixth x
+]
+
+{ #category : 'tests' }
+LaserGameShapesTestCase >> testTheRotateArrowElementsArePolygonsOfTheSizeAsked [
+	"Like the four straight arrows, a rotate arrow is a polygon scaled into the extent asked
+	for, so the 450 pixel form of page 099 and the cache it went into have no counterpart."
+
+	{ (#counterClockwiseArrowElementOfExtent:
+	 -> LaserGameShapes counterClockwiseArrowPoints).
+	(#clockwiseArrowElementOfExtent: -> LaserGameShapes clockwiseArrowPoints) }
+		do: [ :each |
+			#( 30 48 120 ) do: [ :size |
+				| element extent |
+				extent := size @ size.
+				element := LaserGameShapes perform: each key with: extent.
+				self assert: (self requestedExtentOf: element) equals: extent.
+				self
+					assert: element geometry vertices
+					equals:
+					(LaserGameShapes pointsOf: each value scaledToExtent: extent) ] ]
+]
+
+{ #category : 'tests' }
+LaserGameShapesTestCase >> testTheRotateArrowIsARingBetweenTwoCirclesWithAHeadOnIt [
+	"Page 099 draws the curved arrow as two arcs about one centre, cut off by a line, with the
+	straight arrow head of the earlier pages stuck on the end. Every point of the outline is
+	therefore either a point of that head or a point of one of the two circles."
+
+	| center head |
+	center := LaserGameShapes rotateArrowCenter.
+	head := LaserGameShapes rotateArrowHeadPoints.
+	LaserGameShapes counterClockwiseArrowPoints do: [ :each |
+		| radius |
+		radius := (each - center) r.
+		self assert: ((head includes: each) or: [
+				 (radius closeTo: LaserGameShapes rotateArrowInnerRadius) or: [
+					 radius closeTo: LaserGameShapes rotateArrowOuterRadius ] ]) ]
+]
