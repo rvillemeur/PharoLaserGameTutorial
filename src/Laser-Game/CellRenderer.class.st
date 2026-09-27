@@ -152,18 +152,14 @@ CellRenderer >> grid: anObject [
 	grid := anObject
 ]
 
-{ #category : 'drawing' }
-CellRenderer >> mouseUpWithinBoardOffset: aPoint [ 
-	^self cell
-]
-
 { #category : 'rendering' }
 CellRenderer >> newElement [
-	"Answer a new element rendering my cell. The element is square, carries the cell
-	background and border, and holds whatever my subclass draws as children."
+	"Answer a new element rendering my cell. The element is square, keeps me as its renderer,
+	carries the cell background and border, and holds whatever my subclass draws as children."
 
 	| element |
-	element := BlElement new.
+	element := LaserGameCellElement new.
+	element renderer: self.
 	element extent: self class cellExtent.
 	element geometry: BlRectangleGeometry new.
 	self renderBackgroundOn: element.

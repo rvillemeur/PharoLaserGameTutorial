@@ -1,3 +1,11 @@
+"
+I am the innermost click region of a cell: a square of `CellRenderer class >> insideRegionExtent` centred in the cell. A click here asks for the cell to be pushed.
+
+My own subclasses are the four push regions, one per direction. They divide me along my two diagonals, which is what `yForHeadingUpLineWith:` and `yForHeadingDownLineWith:` describe, and `pushRegionForPoint:` answers the one a point falls in.
+
+I sort first (`sortIndex` 1), so a point I contain is mine even though the outside and ignore rectangles contain it too.
+
+"
 Class {
 	#name : 'CellClickRegionInside',
 	#superclass : 'CellClickRegion',
@@ -6,7 +14,7 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'interaction' }
 CellClickRegionInside class >> canActOnCellAtPoint: aPoint cell: aCell withinGrid: aGrid [
 
 	| pushRegion |
@@ -14,14 +22,14 @@ CellClickRegionInside class >> canActOnCellAtPoint: aPoint cell: aCell withinGri
 	^ pushRegion canPushCell: aCell withinGrid: aGrid
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'interaction' }
 CellClickRegionInside class >> mouseUpWithinCellAtPoint: aPoint cell: aCell withinGrid: aGrid [
 	| pushRegion |
 	pushRegion := self pushRegionForPoint: aPoint.
 	^pushRegion mouseUpForCell: aCell withinGrid: aGrid
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'classifying' }
 CellClickRegionInside class >> pointIsUnderHeadingDownLine: aPoint [
 
 	| realX realY lineY |
@@ -31,7 +39,7 @@ CellClickRegionInside class >> pointIsUnderHeadingDownLine: aPoint [
 	^ realY < lineY
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'classifying' }
 CellClickRegionInside class >> pointIsUnderHeadingUpLine: aPoint [
 	| realX realY lineY |
 	realX := aPoint x.
@@ -40,12 +48,12 @@ CellClickRegionInside class >> pointIsUnderHeadingUpLine: aPoint [
 	^realY < lineY
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'classifying' }
 CellClickRegionInside class >> pushRegionForPoint: aPoint [
 	^self subclasses detect: [:cls | cls containsPoint: aPoint]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 CellClickRegionInside class >> regionRectangle [
 	"CellClickRegionInside regionRectangle"
 	| outer delta |
@@ -54,7 +62,7 @@ CellClickRegionInside class >> regionRectangle [
 	^outer insetBy: (delta // 2)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'hints' }
 CellClickRegionInside class >> scaledHintArrowAndOffsetFromWithinCell: aPoint [
 	| pushRegion arrow tinyArrow offset |
 	pushRegion := self pushRegionForPoint: aPoint.
@@ -64,7 +72,7 @@ CellClickRegionInside class >> scaledHintArrowAndOffsetFromWithinCell: aPoint [
 	^offset->tinyArrow
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'hints' }
 CellClickRegionInside class >> showPositionHintFromWithinCell: aPoint [
 
 	| pushRegion |
@@ -72,17 +80,17 @@ CellClickRegionInside class >> showPositionHintFromWithinCell: aPoint [
 	^ pushRegion
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 CellClickRegionInside class >> sortIndex [
 	^1
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'classifying' }
 CellClickRegionInside class >> yForHeadingDownLineWith: x [
 	^CellRenderer cellExtent x - x
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'classifying' }
 CellClickRegionInside class >> yForHeadingUpLineWith: x [
 	^x
 ]

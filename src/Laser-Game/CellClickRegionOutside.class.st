@@ -1,3 +1,11 @@
+"
+I am the ring between the ignore margin and the inside region: a square of `CellRenderer class >> outsideRegionExtent` centred in the cell, minus the inside region, which sorts before me. A click here asks for the cell to be rotated.
+
+My own subclasses are the two rotate regions, clockwise and counter-clockwise, and `rotateRegionForPoint:` answers the one a point falls in.
+
+I sort second (`sortIndex` 2).
+
+"
 Class {
 	#name : 'CellClickRegionOutside',
 	#superclass : 'CellClickRegion',
@@ -6,19 +14,19 @@ Class {
 	#tag : 'Graphics'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'interaction' }
 CellClickRegionOutside class >> canActOnCellAtPoint: aPoint cell: aCell withinGrid: aGrid [
 	^true
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'interaction' }
 CellClickRegionOutside class >> mouseUpWithinCellAtPoint: aPoint cell: aCell withinGrid: aGrid [
 	| rotateRegion |
 	rotateRegion := self rotateRegionForPoint: aPoint.
 	^rotateRegion mouseUpForCell: aCell withinGrid: aGrid
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 CellClickRegionOutside class >> regionRectangle [
 	"CellClickRegionOutside regionRectangle"
 	| outer delta |
@@ -27,12 +35,12 @@ CellClickRegionOutside class >> regionRectangle [
 	^outer insetBy: (delta // 2)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'classifying' }
 CellClickRegionOutside class >> rotateRegionForPoint: aPoint [
 	^self subclasses detect: [:cls | cls containsPoint: aPoint]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'hints' }
 CellClickRegionOutside class >> scaledHintArrowAndOffsetFromWithinCell: aPoint [
 	| arrow tinyArrow offset rotateRegion |
 	rotateRegion := self rotateRegionForPoint: aPoint.
@@ -42,7 +50,7 @@ CellClickRegionOutside class >> scaledHintArrowAndOffsetFromWithinCell: aPoint [
 	^offset->tinyArrow
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 CellClickRegionOutside class >> sortIndex [
 	^2
 ]
