@@ -128,17 +128,25 @@ LaserGameElement >> initialize [
 	self padding: (BlInsets all: self class gameMargin)
 ]
 
+{ #category : 'accessing' }
+LaserGameElement >> laserIsActive [
+	"Answer whether the laser is firing. The grid knows; I only ask."
+
+	^ self grid laserIsActive
+]
+
 { #category : 'initialization' }
 LaserGameElement >> newControlPanel [
-	"Answer the control panel: a blank column of a fixed width, as tall as the board beside it. The
-	controls go in at the next step."
+	"Answer the control panel: the fixed-width column of buttons that sits beside the board."
 
-	| panel |
-	panel := BlElement new.
-	panel background: LaserGameColors controlPanelColor.
-	panel extent: self class panelWidth
-		@ (LaserGameBoardElement extentForGrid: self grid) y.
-	^ panel
+	^ LaserGameControlPanelElement on: self
+]
+
+{ #category : 'actions' }
+LaserGameElement >> quit [
+	"Close the game. The original sends #delete to its morph."
+
+	self space ifNotNil: [ :aSpace | aSpace close ]
 ]
 
 { #category : 'initialization' }
@@ -152,4 +160,24 @@ LaserGameElement >> rebuild [
 	self addChild: board.
 	self addChild: controlPanel.
 	self extent: (self class extentForGrid: self grid)
+]
+
+{ #category : 'updating' }
+LaserGameElement >> refresh [
+	"Show what the model says now: redraw the cells and put the right label on the fire button.
+	This is the original's #updateGameBoardAndControls, without the counters it does not have yet."
+
+	self board rebuildCells.
+	self controlPanel updateFireButtonLabel
+]
+
+{ #category : 'actions' }
+LaserGameElement >> toggleLaser [
+	"Fire the laser, or stop it if it is already firing, and show the result. This is what the fire
+	button does, and it is the original's #fireLaser on the morph."
+
+	self laserIsActive
+		ifTrue: [ self grid stopLaser ]
+		ifFalse: [ self grid fireLaser ].
+	self refresh
 ]

@@ -85,3 +85,58 @@ LaserGameElementTestCase >> testGameTakesTheExtentItCalculates [
 		assert: game background paint color
 		equals: LaserGameColors gameWindowColor
 ]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testQuittingAGameThatIsNotOpenDoesNothing [
+	"Quit closes the space the game is in. A game that was never opened has no space, and asking it
+	to quit is harmless."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	self assert: game space isNil.
+	game quit.
+	self assert: game children size equals: 2
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testSettingAnotherGridRebuildsTheGame [
+	"Handing the game another grid throws away the board and the panel it held and builds them
+	again for the new grid, so its size follows."
+
+	| game oldBoard smallGrid |
+	game := LaserGameElement on: GridFactory demoGrid.
+	oldBoard := game board.
+	smallGrid := Grid new.
+	game grid: smallGrid.
+	self assert: game children size equals: 2.
+	self deny: game board identicalTo: oldBoard.
+	self assert: game board grid equals: smallGrid.
+	self assert: game board children size equals: 1.
+	self
+		assert: game constraints horizontal resizer size
+		equals: (LaserGameElement extentForGrid: smallGrid) x
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain [
+	"The fire button toggles: the first click fires the laser and lights the target, the second
+	stops it and puts the target out. The board and the button label both follow."
+
+	| game target |
+	game := LaserGameElement on: GridFactory demoGrid.
+	target := game grid at: 5 @ 1.
+	game toggleLaser.
+	self assert: game laserIsActive.
+	self assert: target isOn.
+	self
+		assert: (game board cellElementAt: 5 @ 1) children fourth background paint color
+		equals: LaserGameColors targetCenterColorActive.
+	self assert: game controlPanel fireButton labelText asString equals: 'Stop'.
+	game toggleLaser.
+	self deny: game laserIsActive.
+	self assert: target isOff.
+	self
+		assert: (game board cellElementAt: 5 @ 1) children fourth background paint color
+		equals: LaserGameColors targetCenterColorIdle.
+	self assert: game controlPanel fireButton labelText asString equals: 'Fire'
+]

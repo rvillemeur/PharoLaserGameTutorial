@@ -346,11 +346,6 @@ LaserGame >> findActiveMirrorsCounter [
 	^self allMorphs detect: [:m | m knownName = 'activeMirrors'] ifNone: []
 ]
 
-{ #category : 'as yet unclassified' }
-LaserGame >> findFireButton [
-	^self allMorphs detect: [:m | m knownName = 'fireButton'] ifNone: []
-]
-
 { #category : 'initialization' }
 LaserGame >> findLaserPathCounter [
 	^self allMorphs detect: [:m | m knownName = 'laserPath'] ifNone: []
@@ -364,21 +359,6 @@ LaserGame >> findMirrorsCounter [
 { #category : 'initialization' }
 LaserGame >> findMovesCounter [
 	^self allMorphs detect: [:m | m knownName = 'moves'] ifNone: []
-]
-
-{ #category : 'as yet unclassified' }
-LaserGame >> fireButtonLabel [
-	^self laserActive
-		ifTrue: ['Stop']
-		ifFalse: ['Fire']
-]
-
-{ #category : 'as yet unclassified' }
-LaserGame >> fireLaser [
-	self laserActive
-		ifTrue: [self grid stopLaser]
-		ifFalse: [self grid fireLaser].
-	self updateGameBoardAndControls
 ]
 
 { #category : 'initialization' }
@@ -448,11 +428,6 @@ LaserGame >> isDirty: aCell [
 	^self dirty at: aCell gridLocation ifAbsent: [false]
 ]
 
-{ #category : 'as yet unclassified' }
-LaserGame >> laserActive [
-	^self grid laserIsActive
-]
-
 { #category : 'initialization' }
 LaserGame >> makeActiveMirrorsCounterMorph [
 	| count |
@@ -495,14 +470,6 @@ LaserGame >> makeControlPanelMorph [
 	self addCountersToPanel: panel.
 	self addDividerBarToPanel: panel.
 	^panel
-]
-
-{ #category : 'as yet unclassified' }
-LaserGame >> makeFireLaserButton [
-	| btn |
-	btn := self makeButton: self fireButtonLabel action: #fireLaser state: #laserActive.
-	btn name: 'fireButton'.
-	^btn
 ]
 
 { #category : 'initialization' }
@@ -592,11 +559,6 @@ LaserGame >> makePanelDividerMorph [
 						radial: false
 					).
 	^divider
-]
-
-{ #category : 'as yet unclassified' }
-LaserGame >> makeQuitGameButton [
-	^self makeButton: 'Quit' action: #quitGame state: nil
 ]
 
 { #category : 'as yet unclassified' }
@@ -697,18 +659,6 @@ LaserGame >> newGame [
 { #category : 'initialization' }
 LaserGame >> panelWidth [
 	^110
-]
-
-{ #category : 'as yet unclassified' }
-LaserGame >> quitGame [
-	(self confirm: 'Are you sure you want to quit?') ifTrue: [self quitGameAction]
-]
-
-{ #category : 'as yet unclassified' }
-LaserGame >> quitGameAction [
-	self delete.
-	self class fullWorld ifTrue: [self class fullWorld: false].
-	self quitGameExitSqueakCheck
 ]
 
 { #category : 'as yet unclassified' }
@@ -839,13 +789,6 @@ LaserGame >> updateCounters [
 			highlighted: false;
 			value: self grid numberOfActiveMirrors asString].
 
-]
-
-{ #category : 'as yet unclassified' }
-LaserGame >> updateFireButtonLabel [
-	| btn |
-	btn := self findFireButton.
-	btn notNil ifTrue: [btn label contents: self fireButtonLabel]
 ]
 
 { #category : 'as yet unclassified' }
