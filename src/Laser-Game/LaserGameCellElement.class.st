@@ -18,7 +18,8 @@ Class {
 	#instVars : [
 		'renderer',
 		'hintRegion',
-		'hintElement'
+		'hintElement',
+		'hintPosition'
 	],
 	#category : 'Laser-Game-Graphics',
 	#package : 'Laser-Game',
@@ -41,8 +42,10 @@ LaserGameCellElement >> cell [
 
 { #category : 'hints' }
 LaserGameCellElement >> clearPositionHint [
-	"Forget my hint: the pointer is no longer in me, so the arrow goes too."
+	"Forget my hint: the pointer is no longer in me, so the arrow goes too, and so does the point
+	it was read at."
 
+	hintPosition := nil.
 	hintRegion ifNil: [ ^ self ].
 	hintRegion := nil.
 	self updateHintElement
@@ -142,14 +145,16 @@ LaserGameCellElement >> mouseMove: anEvent [
 { #category : 'drawing' }
 LaserGameCellElement >> redraw [
 	"Draw my cell again after the model changed. The cell standing at my location may be another
-	one than before, since a push swaps two cells, so the renderer is chosen again; my hint is
-	kept, because the pointer has not moved. The original repainted a rectangle of the board form
-	and called it redrawCell."
+	one than before, since a push swaps two cells, so the renderer is chosen again — and so is
+	the hint, at the point the pointer was last seen at, because page 126 of the original is the
+	tale of a view that went on believing in the cell that had moved away. A blank cell offers no
+	push, so the arrow of the mirror that left goes with it. The original repainted a rectangle
+	of the board form and called it redrawCell."
 
-	| grid location region |
+	| grid location point |
 	grid := self renderer grid.
 	location := self gridLocation.
-	region := hintRegion.
+	point := hintPosition.
 	self removeChildren.
 	hintElement := nil.
 	hintRegion := nil.
@@ -157,8 +162,7 @@ LaserGameCellElement >> redraw [
 	self renderer renderBackgroundOn: self.
 	self renderer renderBorderOn: self.
 	self renderer renderContentsOn: self.
-	hintRegion := region.
-	self updateHintElement
+	point ifNotNil: [ self showPositionHintAt: point ]
 ]
 
 { #category : 'accessing' }
@@ -179,9 +183,12 @@ LaserGameCellElement >> renderer: aCellRenderer [
 LaserGameCellElement >> showPositionHintAt: aPoint [
 	"Keep the hint my renderer answers for aPoint, which is in my own coordinates, and show it.
 	My renderer decides: a mirror answers the region the point falls in, every other cell answers
-	nothing. A move within the same region changes nothing, so the arrow is built once."
+	nothing. A move within the same region changes nothing, so the arrow is built once. The point
+	itself is kept, because a redraw has to ask the question again for the cell that stands in me
+	then."
 
 	| region |
+	hintPosition := aPoint.
 	region := self renderer hintRegionAt: aPoint.
 	region = hintRegion ifTrue: [ ^ self ].
 	hintRegion := region.

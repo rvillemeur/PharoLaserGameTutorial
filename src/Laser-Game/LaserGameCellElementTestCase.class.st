@@ -421,6 +421,32 @@ LaserGameCellElementTestCase >> testMovingOverACellThatIsNotAMirrorRecordsNoHint
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testTheArrowGoesWhenAPushEmptiesTheCellUnderThePointer [
+	"Page 126 single-steps a push and finds a renderer that still believes it draws the mirror
+	cell at 1@2, the place the mirror has just left. The port chooses the renderer again when a
+	cell is drawn again, so the picture of the cell is right — but the hint drawn over it would
+	be the one of the cell that moved away. The pointer has not moved, and a blank cell offers
+	no push, so the arrow goes and the emptied cell looks like any other blank cell."
+
+	| board element blank |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 1 @ 2.
+	blank := board cellElementAt: 2 @ 2.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle bottomCenter - (0 @ 1);
+			 yourself).
+	self assert: (element children includes: element hintElement).
+	element dispatchEvent: (BlClickEvent new
+			 position: CellClickRegionInside regionRectangle bottomCenter - (0 @ 1);
+			 yourself).
+	self assert: element cell class equals: BlankCell.
+	self assert: element hintRegion isNil.
+	self assert: element hintElement isNil.
+	self assert: element children size equals: blank children size.
+	self assert: (board cellElementAt: 1 @ 1) hintElement isNil
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testTheArrowGoesWhenThePointerLeavesOrReachesARegionWithoutOne [
 	"A hint lasts as long as the pointer is in a region that has one. Leaving the cell takes the
 	arrow with it, and so does moving out to the margin, where the ignore region has no picture."
@@ -443,6 +469,29 @@ LaserGameCellElementTestCase >> testTheArrowGoesWhenThePointerLeavesOrReachesARe
 	element dispatchEvent: BlMouseLeaveEvent new.
 	self assert: element hintElement isNil.
 	self assert: element children size equals: childCount
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testTheArrowStaysWhenTheCellUnderThePointerStillOffersIt [
+	"The other half of the same rule: a turn leaves the mirror where it is, so the hint under the
+	pointer is still the right one and the arrow survives the redraw. The hint is read from the
+	cell that stands there after the action, not kept and not dropped."
+
+	| board element childCount |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	childCount := element children size.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionOutside regionRectangle topLeft;
+			 yourself).
+	self assert: element hintRegion equals: CellClickRegionRotateClockwise.
+	element dispatchEvent: (BlClickEvent new
+			 position: CellClickRegionOutside regionRectangle topLeft;
+			 yourself).
+	self assert: element cell class equals: MirrorCell.
+	self assert: element hintRegion equals: CellClickRegionRotateClockwise.
+	self assert: (element children includes: element hintElement).
+	self assert: element children size equals: childCount + 1
 ]
 
 { #category : 'tests' }
