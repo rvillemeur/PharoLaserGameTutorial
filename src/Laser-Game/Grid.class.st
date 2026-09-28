@@ -289,7 +289,9 @@ Grid >> pushCell: aGridDirection fromLocation: aPoint [
 	only when the neighbour in that direction is a blank cell, which includes there being a
 	neighbour at all. Nothing is really pushed — the mirror and the blank trade places. The beam
 	is taken off the board first and put back afterwards if the laser is on, as in
-	rotateCellClockwiseAt:, so the cells lit before the push go dark and the new path lights up."
+	rotateCellClockwiseAt:, so the cells lit before the push go dark and the new path lights up.
+	Page 127 is where the original adds those two lines, after a push under a running beam left
+	the target lit by nothing."
 
 	| cell vector swapLoc swapCell |
 	cell := self at: aPoint.

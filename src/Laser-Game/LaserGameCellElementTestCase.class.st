@@ -205,6 +205,38 @@ LaserGameCellElementTestCase >> testEnteringACellElementMakesItTheHoveredCell [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterAPush [
+	"Page 127 on the screen: fire the laser, then push the mirror at 4@5 west to 3@5. The target
+	at 5@1 is drawn lit while nothing feeds it any more. This is the same walk as after a turn,
+	made through a real click on a push arrow: the beam is off the board and back on it before
+	anything is drawn, and every cell element shows the cell that stands in it."
+
+	| grid board |
+	grid := GridFactory demoGrid.
+	grid fireLaser.
+	board := LaserGameBoardElement on: grid.
+	self assert: (grid at: 5 @ 1) isOn.
+	(board cellElementAt: 4 @ 5) dispatchEvent: (BlClickEvent new
+			 position: CellClickRegionInside regionRectangle rightCenter - (1 @ 0);
+			 yourself).
+	self assert: (grid at: 3 @ 5) class equals: MirrorCell.
+	self deny: (grid at: 5 @ 1) isOn.
+	1 to: grid numberOfRows do: [ :row |
+		1 to: grid numberOfColumns do: [ :column |
+			| location element cell |
+			location := column @ row.
+			cell := grid at: location.
+			element := board cellElementAt: location.
+			self assert: element renderer class modelClass equals: cell class.
+			cell class = TargetCell ifTrue: [
+				self
+					assert: element children fourth background paint color
+					equals: (cell isOn
+							 ifTrue: [ LaserGameColors targetCenterColorActive ]
+							 ifFalse: [ LaserGameColors targetCenterColorIdle ]) ] ] ]
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterATurn [
 	"Page 118 asks the question this test answers once and for all: after a mirror is turned while
 	the laser is on, is what the board shows still what the grid holds? The original had to cover
