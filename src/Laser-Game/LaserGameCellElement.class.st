@@ -64,14 +64,14 @@ LaserGameCellElement >> click: anEvent [
 { #category : 'interaction' }
 LaserGameCellElement >> clickAt: aPoint [
 	"Act on a click at aPoint, in my own coordinates. My board records that I was clicked, my
-	renderer decides whether my cell acts and which region handles it, and the board draws itself
-	again when something changed. The original walked the same chain from the morph to the
+	renderer decides whether my cell acts and which region handles it, and the board is told that a
+	move was made when something changed. The original walked the same chain from the morph to the
 	renderer to the click region; it started from a board offset, where this starts from a point
 	Bloc already expressed in the cell."
 
 	self board ifNotNil: [ :board | board clickCellElement: self ].
 	(self renderer mouseUpAt: aPoint) ifNil: [ ^ self ].
-	self board ifNotNil: [ :board | board redrawCells ]
+	self board ifNotNil: [ :board | board moveMade ]
 ]
 
 { #category : 'interaction' }

@@ -7,6 +7,26 @@ Class {
 }
 
 { #category : 'tests' }
+LaserGameElementTestCase >> testAMoveOnTheBoardSetsTheCounter [
+	"A move changes the path, so it changes the counter too: page 142 adds #updateCounters to the
+	mouse up handler as well. The board says that a move was made and the game asks its panel to
+	catch up; a board opened on its own says the same thing to nobody. Turning the mirror at the
+	foot of the first column sends the beam somewhere else, and the path gets shorter."
+
+	| game cellElement before |
+	game := LaserGameElement on: GridFactory demoGrid.
+	game toggleLaser.
+	before := game controlPanel laserPathCounter value.
+	self assert: before equals: game grid laserBeamPath size.
+	cellElement := game board cellElementAt: 1 @ 5.
+	cellElement clickAt: CellClickRegionRotateClockwise regionRectangle center.
+	self
+		assert: game controlPanel laserPathCounter value
+		equals: game grid laserBeamPath size.
+	self deny: game controlPanel laserPathCounter value equals: before
+]
+
+{ #category : 'tests' }
 LaserGameElementTestCase >> testBoardShowsTheGridOfTheGame [
 	"The board the game holds renders the game's own grid, one element per cell."
 
@@ -54,14 +74,32 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins [
 ]
 
 { #category : 'tests' }
+LaserGameElementTestCase >> testFiringTheLaserSetsTheCounter [
+	"The fire button reaches the counter: page 142 adds #updateCounters to the method behind it."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	self assert: game controlPanel laserPathCounter value equals: 0.
+	game toggleLaser.
+	self
+		assert: game controlPanel laserPathCounter value
+		equals: game grid laserBeamPath size.
+	self assert: game controlPanel laserPathCounter highlighted.
+	game toggleLaser.
+	self assert: game controlPanel laserPathCounter value equals: 0.
+	self deny: game controlPanel laserPathCounter highlighted
+]
+
+{ #category : 'tests' }
 LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel [
-	"A game is a row of two children: the board first, the control panel beside it."
+	"A game is a row of two children: the control panel first, the board beside it. Page 139 moves
+	the panel to the left of the board."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
 	self assert: game children size equals: 2.
-	self assert: game children first equals: game board.
-	self assert: game children second equals: game controlPanel.
+	self assert: game children first equals: game controlPanel.
+	self assert: game children second equals: game board.
 	self assert: game board class equals: LaserGameBoardElement.
 	self assert: game layout class equals: BlLinearLayout
 ]
@@ -69,7 +107,7 @@ LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel [
 { #category : 'tests' }
 LaserGameElementTestCase >> testGameTakesTheExtentItCalculates [
 	"The game asks for exactly the size its own arithmetic gives, and the margin around its two
-	children is padding, so the window color shows through it."
+	children is padding, so the window ramp shows through it."
 
 	| grid game |
 	grid := GridFactory demoGrid.
@@ -80,10 +118,7 @@ LaserGameElementTestCase >> testGameTakesTheExtentItCalculates [
 	self
 		assert: game constraints vertical resizer size
 		equals: (LaserGameElement extentForGrid: grid) y.
-	self assert: game padding equals: (BlInsets all: LaserGameElement gameMargin).
-	self
-		assert: game background paint color
-		equals: LaserGameColors gameWindowColor
+	self assert: game padding equals: (BlInsets all: LaserGameElement gameMargin)
 ]
 
 { #category : 'tests' }
@@ -139,4 +174,18 @@ LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain [
 		assert: (game board cellElementAt: 5 @ 1) children fourth background paint color
 		equals: LaserGameColors targetCenterColorIdle.
 	self assert: game controlPanel fireButton labelText asString equals: 'Fire'
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testWindowIsFilledWithTheColorRamp [
+	"Page 140 fills the window with a ramp of two colors rather than one flat color, running the
+	fraction of the way across and down that the page orients it by."
+
+	| game paint |
+	game := LaserGameElement on: GridFactory demoGrid.
+	paint := game background paint.
+	self assert: paint class equals: BlLinearGradientPaint.
+	self assert: paint stops equals: LaserGameColors windowColorRamp.
+	self assert: paint start equals: 0 @ 0.
+	self assert: paint end equals: LaserGameColors windowColorRampDirection
 ]

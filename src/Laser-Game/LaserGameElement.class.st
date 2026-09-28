@@ -1,7 +1,7 @@
 "
-I am the whole game on the screen: a board on the left, a control panel on the right, and a margin around both.
+I am the whole game on the screen: a control panel on the left, a board on the right, and a margin around both.
 
-I replace the 2007 `LaserGame` morph of pages 065 to 067, which held a `SketchMorph` over a board form and a white rectangle for the panel. I hold a `LaserGameBoardElement` and a plain element instead, and I take my size from them, the panel width and the margin, the way the original's `calculatedExtent` did.
+I replace the 2007 `LaserGame` morph of pages 065 to 067, which held a `SketchMorph` over a board form and a white rectangle for the panel. I hold a `LaserGameBoardElement` and a `LaserGameControlPanelElement` instead, and I take my size from them, the panel width and the margin, the way the original's `calculatedExtent` did. Page 139 puts the panel on the left, and page 140 fills me with the colour ramp of `LaserGameColors windowColorRamp`.
 
 ```
 LaserGameElement openExample
@@ -10,9 +10,10 @@ LaserGameElement openExample
 Instance variables:
 - `grid`: the grid played on. Setting it rebuilds what I hold.
 - `board`: the `LaserGameBoardElement` showing that grid.
-- `controlPanel`: the panel beside it, empty until the controls arrive.
+- `controlPanel`: the panel beside it, holding the buttons and the counters.
 
 I know nothing about the rules. The grid answers those, and the model-side `LaserGame` of the later sections will own the moves, the counters and the undo stack.
+
 "
 Class {
 	#name : 'LaserGameElement',
@@ -88,6 +89,20 @@ LaserGameElement class >> panelWidth [
 ]
 
 { #category : 'accessing' }
+LaserGameElement class >> windowBackgroundPaint [
+	"Answer the paint behind the whole game: page 140's ramp, running in the direction that page
+	orients its fill in. The original sets a flat window color and then fills the morph with the
+	ramp on top of it; an element takes one paint, so only the ramp is left, and the flat color
+	stays as LaserGameColors gameWindowColor for whatever needs a single color."
+
+	^ BlLinearGradientPaint new
+		  stops: LaserGameColors windowColorRamp;
+		  start: 0 @ 0;
+		  end: LaserGameColors windowColorRampDirection;
+		  yourself
+]
+
+{ #category : 'accessing' }
 LaserGameElement >> board [
 	"Answer the element showing the board."
 
@@ -119,11 +134,11 @@ LaserGameElement >> grid: aGrid [
 
 { #category : 'initialization' }
 LaserGameElement >> initialize [
-	"A game is a row of two: the board, and the control panel beside it. The margin around both is
-	padding, and the color behind them shows through it."
+	"A game is a row of two: the control panel, and the board beside it. The margin around both is
+	padding, and the ramp behind them shows through it."
 
 	super initialize.
-	self background: LaserGameColors gameWindowColor.
+	self background: self class windowBackgroundPaint.
 	self layout: BlLinearLayout horizontal.
 	self padding: (BlInsets all: self class gameMargin)
 ]
@@ -151,24 +166,29 @@ LaserGameElement >> quit [
 
 { #category : 'initialization' }
 LaserGameElement >> rebuild [
-	"Replace what I hold with a board showing my grid and a control panel beside it, and take the
-	size the two of them and my margins need."
+	"Replace what I hold with a control panel for me and a board showing my grid beside it, and
+	take the size the two of them and my margins need. Page 139 moves the panel to the left of the
+	board, which here is the order the two are added in. The board tells the panel when a move
+	changed the grid, so the counters follow a click as well as the fire button."
 
 	self removeChildren.
 	board := LaserGameBoardElement on: self grid.
 	controlPanel := self newControlPanel.
-	self addChild: board.
 	self addChild: controlPanel.
+	self addChild: board.
+	board whenMoveMadeDo: [ self controlPanel updateCounters ].
 	self extent: (self class extentForGrid: self grid)
 ]
 
 { #category : 'updating' }
 LaserGameElement >> refresh [
-	"Show what the model says now: redraw the cells and put the right label on the fire button.
-	This is the original's #updateGameBoardAndControls, without the counters it does not have yet."
+	"Show what the model says now: redraw the cells, put the right label on the fire button and
+	set the counters. This is the original's #updateGameBoardAndControls, and page 142 adds the
+	counters to it."
 
 	self board rebuildCells.
-	self controlPanel updateFireButtonLabel
+	self controlPanel updateFireButtonLabel.
+	self controlPanel updateCounters
 ]
 
 { #category : 'actions' }

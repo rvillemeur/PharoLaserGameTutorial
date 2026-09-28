@@ -29,10 +29,42 @@ LaserGameColors class >> cellBorderColor [
 
 { #category : 'colors' }
 LaserGameColors class >> controlPanelColor [
-	"Answer the color of the control panel beside the board. The original starts with a blank white
-	rectangle there, and the buttons come later."
+	"Answer the color of the control panel beside the board. Page 140 paints it transparent, so
+	the ramp behind the whole window shows through it; the white of page 068 was only a
+	placeholder."
 
-	^ Color white
+	^ Color transparent
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> counterBorderColor [
+	"Answer the color of the frame around a counter. Page 141 asks for a two pixel
+	#complexAltInset border, a bevel drawn in two shades of the color behind it; Bloc draws a
+	border in one paint, so the frame is flat and takes the color of the label beside it."
+
+	^ Color veryVeryLightGray
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> counterDigitColor [
+	"Answer the color a counter lights its segments in. Page 141's color for the LED."
+
+	^ Color r: 0.674 g: 0.674 b: 0.96
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> counterDigitOffColor [
+	"Answer the color of a segment that is not lit. The original's LedMorph draws those in a
+	darkened version of its own color, which is what this is."
+
+	^ self counterDigitColor muchDarker
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> counterLabelColor [
+	"Answer the color of the text under a counter. Page 141's color for the label."
+
+	^ Color veryVeryLightGray
 ]
 
 { #category : 'colors' }
@@ -81,4 +113,24 @@ LaserGameColors class >> targetCenterColorActive [
 { #category : 'colors' }
 LaserGameColors class >> targetCenterColorIdle [
 	^Color r: 0.313 g: 0.753 b: 0.976
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> windowColorRamp [
+	"Answer the ramp the window is filled with: page 140's two stops, each a fraction of the way
+	along the fill paired with the color there. The original hands the same array of associations
+	to #fillWithRamp:oriented:, and Bloc calls them the stops of a gradient paint."
+
+	^ {
+		  (0.0 -> (Color r: 0.3 g: 0.8 b: 0.9)).
+		  (1.0 -> (Color r: 0.2 g: 0.1 b: 0.7)) }
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> windowColorRampDirection [
+	"Answer the direction the window ramp runs in, as a fraction of the window in each direction:
+	page 140's #oriented: argument. The first stop sits at the top left corner and the last one
+	that fraction of the way across and down."
+
+	^ 0.3 @ 0.8
 ]

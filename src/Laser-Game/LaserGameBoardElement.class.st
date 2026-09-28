@@ -5,7 +5,9 @@ I hold a grid and one child element per cell of it, built by the CellRenderer of
 
 The original tutorial computed the extent of that shared Form from the cell size, the border width and the grid dimensions. I keep the arithmetic as `LaserGameBoardElement class >> extentForGrid:`, because a window still has to be given a size, but nothing depends on it internally: I take the size of my cells through fitContent constraints, and cell borders are painted inside the cells, so they cost no space.
 
-I also hold what the mouse is doing to my cells. Each cell element handles its own mouse events and tells me: `hoverCellElement:` and `unhoverCellElement:` keep `hoveredCellElement` current, and `clickCellElement:` records `clickedCell`. So `hoveredCell` answers the cell under the pointer, which the original had to compute from the hand position, the board offset and the cell size, and printed to the Transcript on page 078.
+I also hold what the mouse is doing to my cells. Each cell element handles its own mouse events and tells me: `hoverCellElement:` and `unhoverCellElement:` keep `hoveredCellElement` current, `clickCellElement:` records `clickedCell`, and `moveMade` says that a click changed the grid. So `hoveredCell` answers the cell under the pointer, which the original had to compute from the hand position, the board offset and the cell size, and printed to the Transcript on page 078.
+
+`moveMade` draws my cells again and then evaluates `moveAction`, which is how the game hears that its counters are out of date. Nothing is registered there when I am opened on my own.
 
 `LaserGameBoardElement openExample` opens the demo grid in a space.
 
@@ -13,6 +15,7 @@ Instance variables:
 	grid	<Grid>	the model I show; setting it rebuilds my children
 	hoveredCellElement	<LaserGameCellElement>	the cell element under the pointer, nil when the pointer is off the board
 	clickedCell	<Cell>	the cell of the last click, nil until a cell is clicked
+	moveAction	<BlockClosure>	evaluated after a move, nil when nobody listens
 
 "
 Class {
@@ -21,7 +24,8 @@ Class {
 	#instVars : [
 		'grid',
 		'hoveredCellElement',
-		'clickedCell'
+		'clickedCell',
+		'moveAction'
 	],
 	#category : 'Laser-Game-Graphics',
 	#package : 'Laser-Game',
@@ -170,6 +174,17 @@ LaserGameBoardElement >> initialize [
 		aConstraints vertical fitContent ]
 ]
 
+{ #category : 'interaction' }
+LaserGameBoardElement >> moveMade [
+	"A move was made on one of my cells. Every cell is drawn again, and whoever asked to hear
+	about moves is told. Page 142 ends its mouse up handler with #updateCounters; the counters
+	belong to the panel and not to me, so I announce the move instead of reaching for them, and a
+	board opened on its own still works."
+
+	self redrawCells.
+	moveAction ifNotNil: [ :anAction | anAction value ]
+]
+
 { #category : 'private' }
 LaserGameBoardElement >> rebuildCells [
 	"Replace my children with one element per cell of my grid, row by row. The grid layout
@@ -201,4 +216,11 @@ LaserGameBoardElement >> unhoverCellElement: aCellElement [
 	one cell to the next can deliver the enter of the new cell before the leave of the old one."
 
 	hoveredCellElement == aCellElement ifTrue: [ hoveredCellElement := nil ]
+]
+
+{ #category : 'interaction' }
+LaserGameBoardElement >> whenMoveMadeDo: aBlock [
+	"Evaluate aBlock after every move made on one of my cells."
+
+	moveAction := aBlock
 ]
