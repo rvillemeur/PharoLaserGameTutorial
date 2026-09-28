@@ -95,27 +95,6 @@ TargetCellRenderer >> radius [
 	^(self class cellExtent x // 2 - 8) min: 10
 ]
 
-{ #category : 'rendering' }
-TargetCellRenderer >> renderBeamOn: anElement [
-	"The target swallows the light, so the beam stops in the middle of my cell: half a beam,
-	running from the side the light arrives by. Page 162 asks whether east or west is lit to choose
-	between the two drawings, and pages 160 and 161 cut the other half off with a mask; the side
-	the light comes from answers both questions at once."
-
-	| side |
-	side := #( #west #east #north #south ) detect: [ :each |
-		        self cell isSegmentOnFor: each ].
-	anElement addChild: ((#( #west #east ) includes: side)
-			 ifTrue: [
-				 LaserGameShapes
-					 horizontalLaserBeamElementOfExtent: self class cellExtent
-					 enteringFrom: side ]
-			 ifFalse: [
-				 LaserGameShapes
-					 verticalLaserBeamElementOfExtent: self class cellExtent
-					 enteringFrom: side ])
-]
-
 { #category : 'drawing' }
 TargetCellRenderer >> renderCenterOn: anElement [
 	"The filled disc inside the ring. Its color is the whole of what the target says about the

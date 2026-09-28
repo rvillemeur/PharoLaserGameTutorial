@@ -144,6 +144,17 @@ Cell >> laserEntersFrom: aSymbol [
 	self activeSegments at: exit put: true.
 ]
 
+{ #category : 'accessing' }
+Cell >> litSides [
+	"Answer the sides of me that carry light, in a fixed order. A cell the beam crosses is lit on
+	the side it arrives by and on the side it leaves by, a cell that swallows the light is lit on
+	one side, and a cell the beam crosses twice is lit on all four. Nothing else is needed to draw
+	the beam, which is why the renderers ask this and nothing else."
+
+	^ #( #north #east #south #west ) select: [ :each |
+		  self isSegmentOnFor: each ]
+]
+
 { #category : 'printing' }
 Cell >> printDetailsOn: aStream [
 	"Print what distinguishes me from another cell of my kind at the same place. There is nothing

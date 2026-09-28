@@ -253,14 +253,6 @@ CellRenderer >> offsetWithinGridForm [
 	^offset
 ]
 
-{ #category : 'drawing' }
-CellRenderer >> render [
-	self
-		renderBorder;
-		renderContents.
-	self grid laserIsActive ifTrue: [self renderLaser]
-]
-
 { #category : 'rendering' }
 CellRenderer >> renderBackgroundOn: anElement [
 	"Paint the cell background. Every cell shares the game board background color."
@@ -270,9 +262,15 @@ CellRenderer >> renderBackgroundOn: anElement [
 
 { #category : 'rendering' }
 CellRenderer >> renderBeamOn: anElement [
-	"Draw the beam my lit cell shows, as children of anElement. Empty here: a cell whose kind has
-	not learned to draw the beam yet shows none, which is how Section 4 adds the three kinds one
-	at a time."
+	"Draw the beam my lit cell shows, as one child of anElement. The sides of my cell that carry
+	light say the whole of what is drawn, so every kind of cell is drawn here: a blank cell the
+	beam crosses, the target it ends in, the mirror it turns at, and any of them crossed twice.
+	Pages 156 to 172 of the original need three renderers and a dozen masks for that, because it
+	paints whole beams onto one shared form and then blacks out what does not belong."
+
+	anElement addChild: (LaserGameShapes
+			 laserBeamElementOfExtent: self class cellExtent
+			 fromSides: self cell litSides)
 ]
 
 { #category : 'drawing' }
@@ -377,109 +375,16 @@ CellRenderer >> renderContentsOn: anElement [
 	contents."
 ]
 
-{ #category : 'drawing' }
-CellRenderer >> renderLaser [
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderLaserHorizontal [
-	self renderLaserHorizontalSplatter.
-	self renderLaserHorizontalCenter.
-	
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderLaserHorizontalCenter [
-	self
-		renderLaserHorizontalMask: LaserGameForms centerBeamMask 
-		color: LaserGameColors laserBeamCenterColor
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderLaserHorizontalMask: aMaskForm color: aColor [
-	| cellPosn scaledBeam scale trimmedBeam offset masked |
-	cellPosn := self offsetWithinGridForm.
-	scale := CellRenderer cellExtent * 6.
-	scaledBeam := aMaskForm scaledToSize: scale.
-	trimmedBeam := Form extent: (CellRenderer cellExtent x)@(scaledBeam height) depth: scaledBeam depth.
-	scaledBeam
-		displayOn: trimmedBeam
-		at: 0@0
-		clippingBox: trimmedBeam boundingBox
-		rule: Form paint
-		fillColor: nil.
-	offset := 0@(5 + (CellRenderer cellExtent y - trimmedBeam height) // 2).
-	masked := self maskOffHorizontalOn: trimmedBeam.
-	masked
-		displayOn: self targetForm
-		at: (cellPosn + offset)
-		clippingBox: self targetForm boundingBox
-		rule: Form oldPaint
-		fillColor: aColor
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderLaserHorizontalSplatter [
-	self
-		renderLaserHorizontalMask: LaserGameForms splatterBeamMask 
-		color: LaserGameColors laserBeamSplatterColor
-]
-
 { #category : 'rendering' }
 CellRenderer >> renderLaserOn: anElement [
 	"Draw the beam where it crosses my cell, as children of anElement. Nothing is drawn while the
 	laser is off or while no light reaches my cell: the original asks the first question in
 	#render, before it sends #renderLaser at all, and the second at the head of every #renderLaser.
-	What a lit cell draws is the business of my subclasses, so #renderBeamOn: is theirs."
+	What a lit cell draws is #renderBeamOn:, which is the same for every kind of cell."
 
 	self grid laserIsActive ifFalse: [ ^ self ].
 	self cell isOff ifTrue: [ ^ self ].
 	self renderBeamOn: anElement
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderLaserVertical [
-	self renderLaserVerticalSplatter.
-	self renderLaserVerticalCenter.
-	
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderLaserVerticalCenter [
-	self
-		renderLaserVerticalMask: LaserGameForms centerBeamMask 
-		color: LaserGameColors laserBeamCenterColor
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderLaserVerticalMask: aMaskForm color: aColor [
-	| cellPosn scaledBeam scale trimmedBeam offset rotatedBeam masked |
-	cellPosn := self offsetWithinGridForm.
-	scale := CellRenderer cellExtent * 6.
-	scaledBeam := aMaskForm scaledToSize: scale.
-	trimmedBeam := Form extent: (CellRenderer cellExtent x)@(scaledBeam height) depth: scaledBeam depth.
-	scaledBeam
-		displayOn: trimmedBeam
-		at: 0@0
-		clippingBox: trimmedBeam boundingBox
-		rule: Form paint
-		fillColor: nil.
-	rotatedBeam := trimmedBeam rotateBy: 90.
-	offset := (-3 + (CellRenderer cellExtent x - rotatedBeam width) // 2)@(3 + (CellRenderer cellExtent y // 2) negated).
-	masked := self maskOffVerticalOn: rotatedBeam.
-	masked
-		displayOn: self targetForm
-		at: (cellPosn + offset)
-		clippingBox: self targetForm boundingBox
-		rule: Form oldPaint
-		fillColor: aColor
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderLaserVerticalSplatter [
-	self
-		renderLaserVerticalMask: LaserGameForms splatterBeamMask 
-		color: LaserGameColors laserBeamSplatterColor
 ]
 
 { #category : 'accessing' }

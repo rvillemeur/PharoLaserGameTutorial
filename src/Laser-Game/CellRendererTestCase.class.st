@@ -16,6 +16,33 @@ CellRendererTestCase >> requestedExtentOf: anElement [
 ]
 
 { #category : 'tests' }
+CellRendererTestCase >> testABlankCellCrossedTwiceShowsBothBeams [
+	"Page 173 finds the same on a blank cell: the beam can cross its own path there too, and the
+	original then draws the vertical beam when north is lit, the horizontal one when west is lit,
+	and the vertical core once more so that the crossing looks right. The port asks nothing extra:
+	the cell is lit on four sides, so both bands are drawn and both cores go over them."
+
+	| grid cell element beam extent |
+	grid := Grid new.
+	cell := BlankCell new.
+	grid at: 1 @ 1 put: cell.
+	cell laserEntersFrom: #west.
+	cell laserEntersFrom: #north.
+	grid laserIsActive: true.
+	extent := CellRenderer cellExtent.
+	element := (CellRenderer rendererFor: cell grid: grid) newElement.
+	beam := element children first.
+	self assert: beam children size equals: 4.
+	beam children do: [ :bar |
+		self
+			assert: ((self requestedExtentOf: bar) x max: (self requestedExtentOf: bar) y)
+			equals: extent x ].
+	self
+		assert: beam children last background paint color
+		equals: LaserGameColors laserBeamCenterColor
+]
+
+{ #category : 'tests' }
 CellRendererTestCase >> testABlankCellDrawsNoBeamUnlessTheLaserReachesIt [
 	"A cell draws a beam only while the laser is firing and only where the beam runs. The original
 	asks the first question in #render and the second at the head of #renderLaser."

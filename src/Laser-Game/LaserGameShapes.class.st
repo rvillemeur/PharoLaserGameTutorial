@@ -152,61 +152,24 @@ LaserGameShapes class >> eastArrowPoints [
 	^ { 0 @ 80. 150 @ 80. 150 @ 0. 260 @ 100. 150 @ 200. 150 @ 120. 0 @ 120 }
 ]
 
-{ #category : 'shapes' }
-LaserGameShapes class >> horizontalLaserBeamElementOfExtent: anExtent [
-	"Answer an element of anExtent drawing the beam where it crosses a cell from side to side: a
-	pale band the whole way across, and a brighter, thinner bar along its middle. Pages 149 to 152
-	paint the same picture by hand in a paint tool, store the form in a class method and reload it
-	from a workspace; page 153 pulls the bright part out of it again as a mask so that the two can
-	be painted in different colours. Two rectangles and two colours say all of that, and they join
-	without a seam where one cell meets the next, which the painted form does not."
-
-	| splatter centre |
-	splatter := self
-		            laserBeamBarOfExtent:
-		            anExtent x @ (self laserBeamSplatterThicknessFor: anExtent)
-		            within: anExtent
-		            color: LaserGameColors laserBeamSplatterColor.
-	centre := self
-		          laserBeamBarOfExtent:
-		          anExtent x @ (self laserBeamCenterThicknessFor: anExtent)
-		          within: anExtent
-		          color: LaserGameColors laserBeamCenterColor.
-	^ BlElement new
-		  extent: anExtent;
-		  background: Color transparent;
-		  addChild: splatter;
-		  addChild: centre;
-		  yourself
-]
-
 { #category : 'building' }
-LaserGameShapes class >> horizontalLaserBeamElementOfExtent: anExtent enteringFrom: aSymbol [
-	"Answer an element of anExtent drawing the beam where it enters a cell from the side aSymbol
-	names, west or east, and stops in the middle of it, which is what a cell that swallows the
-	light shows. Pages 160 and 162 of the original draw the whole beam and then black out the half
-	the light never reaches, with a mask built for the purpose; half a bar needs no mask. The bars
-	are as thick as the ones of a whole beam, since the cell they cross is the same size."
+LaserGameShapes class >> horizontalLaserBeamBarOfExtent: anExtent sides: aCollection thickness: aThickness color: aColor [
+	"Answer the bar of a beam that runs across a cell of anExtent, as thick as aThickness and
+	painted in aColor. It runs the whole way when both the west and the east side of the cell are
+	lit, and half the way, from the lit side to the middle, when only one of them is."
 
-	| length left splatter centre |
-	length := anExtent x // 2.
-	left := aSymbol = #west
+	| length left |
+	length := ((aCollection includes: #west) and: [
+		           aCollection includes: #east ])
+		          ifTrue: [ anExtent x ]
+		          ifFalse: [ anExtent x // 2 ].
+	left := (aCollection includes: #west)
 		        ifTrue: [ 0 ]
 		        ifFalse: [ anExtent x - length ].
-	splatter := self laserBeamSplatterThicknessFor: anExtent.
-	centre := self laserBeamCenterThicknessFor: anExtent.
-	^ BlElement new
-		  extent: anExtent;
-		  background: Color transparent;
-		  addChild: (self
-				   laserBeamBarOfExtent: length @ splatter
-				   at: left @ ((anExtent y - splatter) / 2)
-				   color: LaserGameColors laserBeamSplatterColor);
-		  addChild: (self
-				   laserBeamBarOfExtent: length @ centre
-				   at: left @ ((anExtent y - centre) / 2)
-				   color: LaserGameColors laserBeamCenterColor);
-		  yourself
+	^ self
+		  laserBeamBarOfExtent: length @ aThickness
+		  at: left @ ((anExtent y - aThickness) / 2)
+		  color: aColor
 ]
 
 { #category : 'building' }
@@ -220,22 +183,49 @@ LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent at: aPoint color: aCol
 		  yourself
 ]
 
-{ #category : 'building' }
-LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent within: anExtent color: aColor [
-	"Answer one bar of a beam, of aBarExtent and painted in aColor, centred in a cell of anExtent."
-
-	^ self
-		  laserBeamBarOfExtent: aBarExtent
-		  at: (anExtent - aBarExtent) / 2
-		  color: aColor
-]
-
 { #category : 'beam geometry' }
 LaserGameShapes class >> laserBeamCenterThicknessFor: anExtent [
 	"Answer how thick the bright core of the beam is in a cell of anExtent: half the pale band it
 	sits on. Page 153 pulls the same core out of the painted beam as a mask of its own."
 
 	^ ((anExtent x min: anExtent y) // 6) max: 1
+]
+
+{ #category : 'building' }
+LaserGameShapes class >> laserBeamElementOfExtent: anExtent fromSides: aCollection [
+	"Answer an element of anExtent drawing the beam of a cell lit on the sides aCollection names.
+	One bar is drawn for each of the two axes light runs along: the whole way across when both
+	sides of that axis are lit, and from the lit side to the middle otherwise. Two opposite sides
+	are a cell the beam goes straight through, two sides at a right angle are the turn at a mirror,
+	one side is the half beam a cell that swallows the light shows, and four sides are a beam that
+	crosses its own path. The pale bands are drawn first and the bright cores over them, so a
+	crossing shows both cores; page 167 of the original reaches that by painting one core twice."
+
+	| element across down |
+	across := aCollection select: [ :each | #( #west #east ) includes: each ].
+	down := aCollection select: [ :each | #( #north #south ) includes: each ].
+	element := BlElement new
+		           extent: anExtent;
+		           background: Color transparent;
+		           yourself.
+	{
+		(self laserBeamSplatterThicknessFor: anExtent)
+		-> LaserGameColors laserBeamSplatterColor.
+		(self laserBeamCenterThicknessFor: anExtent)
+		-> LaserGameColors laserBeamCenterColor } do: [ :each |
+		across ifNotEmpty: [
+			element addChild: (self
+					 horizontalLaserBeamBarOfExtent: anExtent
+					 sides: across
+					 thickness: each key
+					 color: each value) ].
+		down ifNotEmpty: [
+			element addChild: (self
+					 verticalLaserBeamBarOfExtent: anExtent
+					 sides: down
+					 thickness: each key
+					 color: each value) ] ].
+	^ element
 ]
 
 { #category : 'beam geometry' }
@@ -345,56 +335,24 @@ LaserGameShapes class >> southArrowPoints [
 	^ { 100 @ 260. 0 @ 150. 80 @ 150. 80 @ 0. 120 @ 0. 120 @ 150. 200 @ 150 }
 ]
 
-{ #category : 'shapes' }
-LaserGameShapes class >> verticalLaserBeamElementOfExtent: anExtent [
-	"Answer an element of anExtent drawing the beam where it crosses a cell from top to bottom: the
-	horizontal beam with its sides exchanged. The original has one painted beam and asks its mask
-	for a vertical strip of it."
-
-	| splatter centre |
-	splatter := self
-		            laserBeamBarOfExtent:
-		            (self laserBeamSplatterThicknessFor: anExtent) @ anExtent y
-		            within: anExtent
-		            color: LaserGameColors laserBeamSplatterColor.
-	centre := self
-		          laserBeamBarOfExtent:
-		          (self laserBeamCenterThicknessFor: anExtent) @ anExtent y
-		          within: anExtent
-		          color: LaserGameColors laserBeamCenterColor.
-	^ BlElement new
-		  extent: anExtent;
-		  background: Color transparent;
-		  addChild: splatter;
-		  addChild: centre;
-		  yourself
-]
-
 { #category : 'building' }
-LaserGameShapes class >> verticalLaserBeamElementOfExtent: anExtent enteringFrom: aSymbol [
-	"Answer an element of anExtent drawing the beam where it enters a cell from the side aSymbol
-	names, north or south, and stops in the middle of it. Page 161 is the same picture turned a
-	quarter, and asks one question, the south segment, to choose which half it keeps."
+LaserGameShapes class >> verticalLaserBeamBarOfExtent: anExtent sides: aCollection thickness: aThickness color: aColor [
+	"Answer the bar of a beam that runs up and down a cell of anExtent, as thick as aThickness and
+	painted in aColor. It runs the whole way when both the north and the south side of the cell are
+	lit, and half the way, from the lit side to the middle, when only one of them is."
 
-	| length top splatter centre |
-	length := anExtent y // 2.
-	top := aSymbol = #north
+	| length top |
+	length := ((aCollection includes: #north) and: [
+		           aCollection includes: #south ])
+		          ifTrue: [ anExtent y ]
+		          ifFalse: [ anExtent y // 2 ].
+	top := (aCollection includes: #north)
 		       ifTrue: [ 0 ]
 		       ifFalse: [ anExtent y - length ].
-	splatter := self laserBeamSplatterThicknessFor: anExtent.
-	centre := self laserBeamCenterThicknessFor: anExtent.
-	^ BlElement new
-		  extent: anExtent;
-		  background: Color transparent;
-		  addChild: (self
-				   laserBeamBarOfExtent: splatter @ length
-				   at: (anExtent x - splatter) / 2 @ top
-				   color: LaserGameColors laserBeamSplatterColor);
-		  addChild: (self
-				   laserBeamBarOfExtent: centre @ length
-				   at: (anExtent x - centre) / 2 @ top
-				   color: LaserGameColors laserBeamCenterColor);
-		  yourself
+	^ self
+		  laserBeamBarOfExtent: aThickness @ length
+		  at: (anExtent x - aThickness) / 2 @ top
+		  color: aColor
 ]
 
 { #category : 'building' }

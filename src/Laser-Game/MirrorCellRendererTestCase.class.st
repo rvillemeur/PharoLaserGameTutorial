@@ -28,6 +28,15 @@ MirrorCellRendererTestCase >> rendererLeaning: aSymbol [
 	^ CellRenderer rendererFor: cell grid: grid
 ]
 
+{ #category : 'support' }
+MirrorCellRendererTestCase >> requestedExtentOf: anElement [
+	"Answer the extent anElement was built with, read from its resizers. An element measures
+	itself only in a layout pass, so its extent is zero until it is laid out."
+
+	^ anElement constraints horizontal resizer size
+	  @ anElement constraints vertical resizer size
+]
+
 { #category : 'tests' }
 MirrorCellRendererTestCase >> testAMirrorAnswersThePushRegionOfAPointInsideIt [
 	"A mirror asks the region of a point what hint applies there, so a point in the inside region
@@ -47,6 +56,30 @@ MirrorCellRendererTestCase >> testAMirrorAnswersThePushRegionOfAPointInsideIt [
 		assert: (renderer hintRegionAt: CellClickRegionOutside regionRectangle topLeft)
 		equals: CellClickRegionRotateClockwise.
 	self assert: (renderer hintRegionAt: 0 @ 0) equals: CellClickRegionIgnore
+]
+
+{ #category : 'tests' }
+MirrorCellRendererTestCase >> testAMirrorCrossedTwiceShowsBothBeamsWhole [
+	"Page 170 finds a mirror on the board both sides of which are active: the beam crosses its own
+	path there. All four segments are lit, so both beams run the whole way across, and the original
+	says of that case that the drawing is already correct."
+
+	| grid cell element beam extent |
+	grid := Grid new.
+	cell := MirrorCell new.
+	cell leanLeft.
+	grid at: 1 @ 1 put: cell.
+	cell laserEntersFrom: #west.
+	cell laserEntersFrom: #north.
+	grid laserIsActive: true.
+	extent := CellRenderer cellExtent.
+	element := (CellRenderer rendererFor: cell grid: grid) newElement.
+	beam := element children first.
+	self assert: beam children size equals: 4.
+	beam children do: [ :bar |
+		self
+			assert: ((self requestedExtentOf: bar) x max: (self requestedExtentOf: bar) y)
+			equals: extent x ]
 ]
 
 { #category : 'tests' }
@@ -130,4 +163,42 @@ MirrorCellRendererTestCase >> testRotatingTheCellTurnsTheMirrorOver [
 	self assert: after to y equals: before to y.
 	self assert: after from x equals: before to x.
 	self assert: after to x equals: before from x
+]
+
+{ #category : 'tests' }
+MirrorCellRendererTestCase >> testTheBeamTurnsAtAMirror [
+	"The demo grid turns the beam north at the mirror of 4@5, which is lit on its west side, where
+	the light arrives, and on its north side, where it leaves. The cell shows two half beams, and
+	nothing at all in the two quadrants pages 171 and 172 have to black out."
+
+	| grid element beam half extent |
+	grid := GridFactory demoGrid.
+	grid fireLaser.
+	element := (CellRenderer rendererFor: (grid at: 4 @ 5) grid: grid)
+		           newElement.
+	extent := CellRenderer cellExtent.
+	half := extent x // 2.
+	beam := element children first.
+	self assert: beam children size equals: 4.
+	self assert: (self requestedExtentOf: beam children first) x equals: half.
+	self assert: beam children first constraints position x equals: 0.
+	self assert: (self requestedExtentOf: beam children second) y equals: half.
+	self assert: beam children second constraints position y equals: 0
+]
+
+{ #category : 'tests' }
+MirrorCellRendererTestCase >> testTheMirrorIsDrawnOverTheBeam [
+	"Page 166 draws the mirror again after the beam, so the light does not hide the thing that
+	turns it. Here the beam is the first child and the mirror is the last."
+
+	| grid element |
+	grid := GridFactory demoGrid.
+	grid fireLaser.
+	element := (CellRenderer rendererFor: (grid at: 4 @ 5) grid: grid)
+		           newElement.
+	self assert: element children size equals: 2.
+	self assert: element children first children size equals: 4.
+	self
+		assert: element children last geometry class
+		equals: BlLineGeometry
 ]

@@ -24,7 +24,7 @@ LaserGameShapesTestCase >> testABeamIsAPaleBandWithABrightCentreOnIt [
 
 	| extent element splatter centre |
 	extent := 50 @ 50.
-	element := LaserGameShapes horizontalLaserBeamElementOfExtent: extent.
+	element := LaserGameShapes laserBeamElementOfExtent: extent fromSides: #( #west #east ).
 	self assert: (self requestedExtentOf: element) equals: extent.
 	self assert: element children size equals: 2.
 	splatter := element children first.
@@ -44,6 +44,61 @@ LaserGameShapesTestCase >> testABeamIsAPaleBandWithABrightCentreOnIt [
 		self
 			assert: each constraints position + ((self requestedExtentOf: each) / 2)
 			equals: extent / 2 ]
+]
+
+{ #category : 'tests' }
+LaserGameShapesTestCase >> testABeamThatArrivesFromTwoSidesTurnsInTheMiddle [
+	"A mirror sends the beam on by another side, so two half beams meet in the middle of the cell:
+	one from the side the light arrives by, one to the side it leaves by. Pages 166 to 172 of the
+	original draw two whole beams instead and then black out the two quadrants of the cell the
+	light never reaches."
+
+	| extent beam half |
+	extent := 40 @ 40.
+	half := extent x // 2.
+	beam := LaserGameShapes
+		        laserBeamElementOfExtent: extent
+		        fromSides: #( #west #north ).
+	self assert: beam children size equals: 4.
+	self assert: (self requestedExtentOf: beam children first) x equals: half.
+	self assert: beam children first constraints position x equals: 0.
+	self assert: (self requestedExtentOf: beam children second) y equals: half.
+	self assert: beam children second constraints position y equals: 0.
+	(beam children asArray first: 2) do: [ :bar |
+		self
+			assert: bar background paint color
+			equals: LaserGameColors laserBeamSplatterColor ].
+	(beam children asArray last: 2) do: [ :bar |
+		self
+			assert: bar background paint color
+			equals: LaserGameColors laserBeamCenterColor ]
+]
+
+{ #category : 'tests' }
+LaserGameShapesTestCase >> testABeamThatCrossesItsOwnPathDrawsBothCoresOverBothBands [
+	"A cell all four sides of which are lit is crossed twice, which page 170 finds on the board and
+	page 173 fixes for the blank cell. Both bands run the whole way across, and both bright cores
+	are drawn after them, so neither core is buried under the other band. Page 167 arrives at the
+	same order by painting one of the cores a second time."
+
+	| extent beam |
+	extent := 40 @ 40.
+	beam := LaserGameShapes
+		        laserBeamElementOfExtent: extent
+		        fromSides: #( #north #east #south #west ).
+	self assert: beam children size equals: 4.
+	beam children do: [ :bar |
+		self
+			assert: ((self requestedExtentOf: bar) x max: (self requestedExtentOf: bar) y)
+			equals: extent x ].
+	(beam children asArray first: 2) do: [ :bar |
+		self
+			assert: bar background paint color
+			equals: LaserGameColors laserBeamSplatterColor ].
+	(beam children asArray last: 2) do: [ :bar |
+		self
+			assert: bar background paint color
+			equals: LaserGameColors laserBeamCenterColor ]
 ]
 
 { #category : 'tests' }
@@ -84,8 +139,8 @@ LaserGameShapesTestCase >> testAHalfBeamCrossesHalfTheCellFromTheSideItComesFrom
 	{ #west -> 0. #east -> half } do: [ :each |
 		| beam |
 		beam := LaserGameShapes
-			        horizontalLaserBeamElementOfExtent: extent
-			        enteringFrom: each key.
+			        laserBeamElementOfExtent: extent
+			        fromSides: { each key }.
 		self assert: (self requestedExtentOf: beam) equals: extent.
 		self assert: beam children size equals: 2.
 		beam children do: [ :bar |
@@ -107,8 +162,8 @@ LaserGameShapesTestCase >> testAHalfBeamGoingUpOrDownKeepsTheHalfTheLightComesFr
 	{ #north -> 0. #south -> half } do: [ :each |
 		| beam |
 		beam := LaserGameShapes
-			        verticalLaserBeamElementOfExtent: extent
-			        enteringFrom: each key.
+			        laserBeamElementOfExtent: extent
+			        fromSides: { each key }.
 		self assert: (self requestedExtentOf: beam) equals: extent.
 		self assert: beam children size equals: 2.
 		beam children do: [ :bar |
@@ -126,12 +181,12 @@ LaserGameShapesTestCase >> testAHalfBeamIsAsThickAsAWholeOne [
 
 	| extent whole |
 	extent := 40 @ 40.
-	whole := LaserGameShapes horizontalLaserBeamElementOfExtent: extent.
+	whole := LaserGameShapes laserBeamElementOfExtent: extent fromSides: #( #west #east ).
 	#( #west #east ) do: [ :side |
 		| half |
 		half := LaserGameShapes
-			        horizontalLaserBeamElementOfExtent: extent
-			        enteringFrom: side.
+			        laserBeamElementOfExtent: extent
+			        fromSides: { side }.
 		half children asArray with: whole children asArray do: [ :bar :wholeBar |
 			self
 				assert: (self requestedExtentOf: bar) y
@@ -150,8 +205,8 @@ LaserGameShapesTestCase >> testAVerticalBeamIsTheHorizontalOneTurned [
 
 	| extent horizontal vertical |
 	extent := 50 @ 50.
-	horizontal := LaserGameShapes horizontalLaserBeamElementOfExtent: extent.
-	vertical := LaserGameShapes verticalLaserBeamElementOfExtent: extent.
+	horizontal := LaserGameShapes laserBeamElementOfExtent: extent fromSides: #( #west #east ).
+	vertical := LaserGameShapes laserBeamElementOfExtent: extent fromSides: #( #north #south ).
 	self assert: (self requestedExtentOf: vertical) equals: extent.
 	self assert: vertical children size equals: 2.
 	vertical children asArray
@@ -269,8 +324,8 @@ LaserGameShapesTestCase >> testTheBeamGetsThickerWithTheCell [
 	comes to the same thing: twice the cell, twice the beam."
 
 	| small large |
-	small := LaserGameShapes horizontalLaserBeamElementOfExtent: 30 @ 30.
-	large := LaserGameShapes horizontalLaserBeamElementOfExtent: 60 @ 60.
+	small := LaserGameShapes laserBeamElementOfExtent: 30 @ 30 fromSides: #( #west #east ).
+	large := LaserGameShapes laserBeamElementOfExtent: 60 @ 60 fromSides: #( #west #east ).
 	self
 		assert: (self requestedExtentOf: large children first) y
 		equals: (self requestedExtentOf: small children first) y * 2.
