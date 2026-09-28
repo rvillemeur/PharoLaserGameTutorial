@@ -15,6 +15,9 @@ Class {
 
 { #category : 'classifying' }
 CellClickRegionRotateCounterClockwise class >> containsPoint: aPoint [
+	"Answer whether aPoint is in the lower half of the cell. My sister takes the line itself, so
+	I ask for a strictly greater y, and the two of us cover the region without overlapping."
+
 	^aPoint y > (CellRenderer cellExtent y // 2)
 ]
 

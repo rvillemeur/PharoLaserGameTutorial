@@ -15,6 +15,10 @@ Class {
 
 { #category : 'classifying' }
 CellClickRegionRotateClockwise class >> containsPoint: aPoint [
+	"Answer whether aPoint is in the upper half of the cell. The line is half the height of the
+	cell rather than a number of pixels, so it follows the cell size of page 138. A point exactly
+	on the line is mine, which is what page 103 asks for."
+
 	^aPoint y <= (CellRenderer cellExtent y // 2)
 ]
 

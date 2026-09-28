@@ -7,6 +7,28 @@ Class {
 }
 
 { #category : 'tests' }
+CellClickRegionTestCase >> testAPointOutsideTheCellIsIgnored [
+	"A point that falls in no region is ignored rather than an error. An element larger than the
+	cell the regions are computed from sends such a point on every mouse move, and what happens
+	there must be nothing at all, not a walkback out of the event handler."
+
+	| beyond |
+	beyond := CellRenderer cellExtent.
+	self
+		assert: (CellClickRegion clickRegionForPoint: beyond)
+		equals: CellClickRegionIgnore.
+	self
+		assert: (CellClickRegion clickRegionForPoint: -1 @ -1)
+		equals: CellClickRegionIgnore.
+	self
+		assert: (CellClickRegion clickRegionForPoint: beyond x @ 0)
+		equals: CellClickRegionIgnore.
+	self
+		assert: (CellClickRegion clickRegionForPoint: 0 @ beyond y)
+		equals: CellClickRegionIgnore
+]
+
+{ #category : 'tests' }
 CellClickRegionTestCase >> testClicksInIgnoreRegion [
 
 	| ignoreRect outsideRect |

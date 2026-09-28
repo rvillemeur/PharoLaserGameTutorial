@@ -85,10 +85,17 @@ CellClickRegionInside class >> sortIndex [
 
 { #category : 'classifying' }
 CellClickRegionInside class >> yForHeadingDownLineWith: x [
+	"Answer the y of the diagonal running from the top right corner of the cell to the bottom
+	left one, at abscissa x. Page 138 of the original writes it against the cell, not against the
+	push region, so the diagonal passes through the corners at any cell size."
+
 	^CellRenderer cellExtent x - x
 ]
 
 { #category : 'classifying' }
 CellClickRegionInside class >> yForHeadingUpLineWith: x [
+	"Answer the y of the diagonal running from the top left corner of the cell to the bottom
+	right one, at abscissa x. This one needs no cell size: the diagonal of a square is y = x."
+
 	^x
 ]

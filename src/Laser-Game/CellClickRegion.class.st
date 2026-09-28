@@ -28,7 +28,16 @@ CellClickRegion class >> canActOnCellAtPoint: aPoint cell: aCell withinGrid: aGr
 
 { #category : 'classifying' }
 CellClickRegion class >> clickRegionForPoint: aPoint [
-	^self sortedSubclasses detect: [:cls | cls regionRectangle containsPoint: aPoint]
+	"Answer the region of a cell aPoint falls in. My subclasses are tried innermost first, and the
+	ignore region covers the whole cell, so any point within a cell finds one. A point outside the
+	cell finds none, and is ignored: a click there can do nothing, which is what the ignore region
+	already means. A mouse event carries such a point whenever the element under the pointer is
+	larger than the cell the regions are computed from, and answering it here keeps the case out of
+	every mouse handler."
+
+	^self sortedSubclasses
+		detect: [ :cls | cls regionRectangle containsPoint: aPoint ]
+		ifNone: [ CellClickRegionIgnore ]
 ]
 
 { #category : 'hints' }

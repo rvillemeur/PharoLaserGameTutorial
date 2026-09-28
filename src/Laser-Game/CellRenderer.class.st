@@ -31,6 +31,13 @@ CellRenderer class >> borderWidth [
 
 { #category : 'constants' }
 CellRenderer class >> cellExtent [
+	"Answer the size, in pixels, of one cell. Every other size in the package is derived from
+	this one, so a cell of another size needs no other change anywhere: page 137 of the original
+	raises it from thirty pixels to forty and then goes looking for the sizes that had been
+	written down instead. The port has been at fifty since Section 3.1, because the source it
+	inherits is the finished game, where the author had already enlarged the cells a second time
+	on page 196."
+
 	^50@50
 ]
 
@@ -62,11 +69,19 @@ CellRenderer class >> hintArrowOffset [
 
 { #category : 'constants' }
 CellRenderer class >> ignoreRegionOffset [
+	"Answer the width, in pixels, of the margin along the edges of a cell where a click does
+	nothing. Page 075 of the original picks four pixels, and four is right at any cell size: the
+	margin is there to keep a click aimed at the neighbouring cell from turning this one."
+
 	^4
 ]
 
 { #category : 'constants' }
 CellRenderer class >> insideRegionExtent [
+	"Answer the size of the square in the middle of a cell where a click asks for a push. Page
+	138 of the original writes it as the cell less twenty pixels, so the ring around it keeps its
+	width while the cell grows."
+
 	^self cellExtent - 20
 ]
 
@@ -97,6 +112,9 @@ CellRenderer class >> openExample [
 
 { #category : 'constants' }
 CellRenderer class >> outsideRegionExtent [
+	"Answer the size of the square where a click asks for a rotation: the cell less the ignore
+	margin on each side. The margin is what is written down, not the region."
+
 	^self cellExtent - (2 * self ignoreRegionOffset)
 ]
 

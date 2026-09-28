@@ -124,8 +124,12 @@ TargetCellRenderer >> newCircleOfRadius: aRadius [
 	^ circle
 ]
 
-{ #category : 'drawing' }
+{ #category : 'accessing' }
 TargetCellRenderer >> radius [
+	"Answer the radius of the ring drawn in a target cell. Page 137 of the original replaces a
+	hard coded seven with this calculation, so that the ring grows with the cell, and clamps the
+	result at ten so that it stops growing once the cell is large enough."
+
 	^(self class cellExtent x // 2 - 8) min: 10
 ]
 
