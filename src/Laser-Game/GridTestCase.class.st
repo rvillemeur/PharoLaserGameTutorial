@@ -368,6 +368,28 @@ GridTestCase >> testStopLaser [
 ]
 
 { #category : 'tests' }
+GridTestCase >> testTheCellsTabListsEveryCellWithItsState [
+	"Page 118 opens an object explorer on the morph and walks down to the cells dictionary to
+	find out that the target at 5@1 is on when it should not be. The same question is one tab
+	away here: one row per cell, with what the cell is and whether it is lit."
+
+	| grid builder table |
+	grid := self generateDemoGrid.
+	grid fireLaser.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := grid inspectionCells: builder.
+	self
+		assert: table items size
+		equals: grid numberOfColumns * grid numberOfRows.
+	self assert: (table items includes: (grid at: 5 @ 1)).
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Cell' 'Lit' )
+]
+
+{ #category : 'tests' }
 GridTestCase >> testTheInspectorTabsOfAGridShowTheBoardAndTheBeam [
 	"Where page 108 improves what a cell prints in a debugger, a grid can show the board itself and
 	the path the laser takes, since Section 2 gave it an element that draws it. One row per step of

@@ -183,6 +183,30 @@ Grid >> inspectionBoard: aBuilder [
 		  yourself
 ]
 
+{ #category : 'inspecting' }
+Grid >> inspectionCells: aBuilder [
+	"Show one row per cell of me, in the order the board lays them out, with what the cell is and
+	whether it is lit. Page 118 of the original reaches the same list through the halos of the
+	morph, an object explorer and two clicks on the arrow beside `cells` — and reads in it that
+	the target is on while nothing lights it."
+
+	<inspectorPresentationOrder: 3 title: 'Cells'>
+	| everyCell |
+	everyCell := OrderedCollection new.
+	1 to: self numberOfRows do: [ :row |
+		1 to: self numberOfColumns do: [ :column |
+			everyCell add: (self at: column @ row) ] ].
+	^ aBuilder newTable
+		  items: everyCell;
+		  addColumn: (SpStringTableColumn title: 'Cell' evaluated: [ :each |
+					   each printString ]);
+		  addColumn: (SpStringTableColumn title: 'Lit' evaluated: [ :each |
+					   each isOn
+						   ifTrue: [ 'yes' ]
+						   ifFalse: [ '' ] ]);
+		  yourself
+]
+
 { #category : 'accessing' }
 Grid >> laserBeamPath [
 	"Answer the value of laserBeamPath"

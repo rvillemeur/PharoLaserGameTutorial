@@ -205,6 +205,36 @@ LaserGameCellElementTestCase >> testEnteringACellElementMakesItTheHoveredCell [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterATurn [
+	"Page 118 asks the question this test answers once and for all: after a mirror is turned while
+	the laser is on, is what the board shows still what the grid holds? The original had to cover
+	its morph with a window, uncover it, and then walk an object explorer down to the cells to
+	find out. Here every cell is asked: the renderer is the one of the cell standing there, and
+	the target is drawn lit exactly when its cell is on."
+
+	| grid board |
+	grid := GridFactory demoGrid.
+	grid fireLaser.
+	board := LaserGameBoardElement on: grid.
+	(board cellElementAt: 4 @ 1) dispatchEvent: (BlClickEvent new
+			 position: CellClickRegionOutside regionRectangle topLeft;
+			 yourself).
+	1 to: grid numberOfRows do: [ :row |
+		1 to: grid numberOfColumns do: [ :column |
+			| location element cell |
+			location := column @ row.
+			cell := grid at: location.
+			element := board cellElementAt: location.
+			self assert: element renderer class modelClass equals: cell class.
+			cell class = TargetCell ifTrue: [
+				self
+					assert: element children fourth background paint color
+					equals: (cell isOn
+							 ifTrue: [ LaserGameColors targetCenterColorActive ]
+							 ifFalse: [ LaserGameColors targetCenterColorIdle ]) ] ] ]
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testEveryChildOfTheBoardIsACellElement [
 	"The board holds one cell element per cell of its grid."
 
