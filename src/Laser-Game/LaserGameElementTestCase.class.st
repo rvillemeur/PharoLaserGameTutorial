@@ -21,6 +21,90 @@ LaserGameElementTestCase >> testAClickThatChangesNothingIsNoMove [
 ]
 
 { #category : 'tests' }
+LaserGameElementTestCase >> testAGameIgnoresAWindowOfNoSize [
+	"A space announces its extent while it is being opened, and that extent can be nothing at all.
+	Scaling by zero would take the game off the screen, so a window of no size is left alone."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	game fitIn: 760 @ 540.
+	game fitIn: 0 @ 0.
+	self assert: game transformation matrix sx equals: 2.0.
+	self assert: game constraints position equals: 0 @ 0
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testAGameKeepsItsShapeInAWindowOfAnotherShape [
+	"A board is as wide and as tall as it is. A window of another shape scales the game by the
+	tighter of the two directions and centres what is left over, so the cells stay square and the
+	game is never stretched."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	game fitIn: 760 @ 270.
+	self assert: (game scaleToFitIn: 760 @ 270) equals: 1.0.
+	self assert: game transformation matrix sx equals: 1.0.
+	self assert: game constraints position equals: 190 @ 0.
+	game fitIn: 380 @ 540.
+	self assert: game transformation matrix sx equals: 1.0.
+	self assert: game constraints position equals: 0 @ 135
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven [
+	"The game is drawn at the size the board asks for and scaled to whatever the window is, so a
+	window of twice the extent shows the same game twice as big, filling it."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	self assert: game naturalExtent equals: 380 @ 270.
+	game fitIn: 760 @ 540.
+	self assert: (game scaleToFitIn: 760 @ 540) equals: 2.0.
+	self assert: game transformation matrix sx equals: 2.0.
+	self assert: game transformation matrix sy equals: 2.0.
+	self assert: game constraints position equals: 0 @ 0
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testAGameShrinksWithASmallerWindow [
+	"A window smaller than the board scales the game down rather than cutting it off, so the whole
+	board is always in view."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	game fitIn: 190 @ 135.
+	self assert: game transformation matrix sx equals: 0.5.
+	self assert: game constraints position equals: 0 @ 0
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testAGameTakesTheSizeOfWhateverBoardItIsGiven [
+	"Page 147 hands the game a grid instead of building one, so the size of the board is the size
+	of the grid. The game is one cell per location, the panel keeps its width and takes the height
+	of the board beside it, and the window is the two of them and the margins. The sizes are read
+	from the layout constraints, since nothing is laid out until a space shows it."
+
+	| game wanted |
+	game := LaserGameElement onRandomOfExtent: 8 @ 10.
+	wanted := LaserGameElement extentForGrid: game grid.
+	self assert: game board children size equals: 80.
+	self
+		assert: wanted
+		equals: (8 * CellRenderer cellExtent x + LaserGameElement panelWidth
+		         + (2 * LaserGameElement gameMargin))
+			        @ (10 * CellRenderer cellExtent y
+				         + (2 * LaserGameElement gameMargin)).
+	self assert: game constraints horizontal resizer size equals: wanted x.
+	self assert: game constraints vertical resizer size equals: wanted y.
+	self
+		assert: game controlPanel constraints horizontal resizer size
+		equals: LaserGameElement panelWidth.
+	self
+		assert: game controlPanel constraints vertical resizer size
+		equals: 10 * CellRenderer cellExtent y
+]
+
+{ #category : 'tests' }
 LaserGameElementTestCase >> testAMoveOnTheBoardSetsTheCounter [
 	"A move changes the path, so it changes the counter too: page 142 adds #updateCounters to the
 	mouse up handler as well. The board says that a move was made and the game asks its panel to
@@ -75,6 +159,21 @@ LaserGameElementTestCase >> testANewGameIsShownOnTheBoard [
 			self
 				assert: (game board cellElementAt: column @ row) renderer cell
 				equals: (game grid at: column @ row) ] ]
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testANewGameKeepsTheSizeOfTheBoard [
+	"New deals the grid the game already plays on, so a bigger board stays bigger: the cells are
+	emptied and dealt again, one target in the corner and the mirrors of that size."
+
+	| game |
+	game := LaserGameElement onRandomOfExtent: 8 @ 10.
+	game newGame.
+	self assert: game grid numberOfColumns equals: 8.
+	self assert: game grid numberOfRows equals: 10.
+	self assert: game grid numberOfMirrors equals: 32.
+	self assert: (game grid at: 8 @ 1) class equals: TargetCell.
+	self assert: game board children size equals: 80
 ]
 
 { #category : 'tests' }
@@ -256,6 +355,24 @@ LaserGameElementTestCase >> testSettingAnotherGridRebuildsTheGame [
 	self
 		assert: game constraints horizontal resizer size
 		equals: (LaserGameElement extentForGrid: smallGrid) x
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testTheCountersStillHoldWhatABiggerBoardProduces [
+	"A bigger board makes a longer beam, and the counter of page 141 has three digits. Eighty
+	cells cannot make a path of a thousand, so the beam counter still shows the whole number the
+	grid answers, whatever board the game was dealt."
+
+	| game |
+	game := LaserGameElement onRandomOfExtent: 8 @ 10.
+	game toggleLaser.
+	self assert: game grid laserBeamPath size < 1000.
+	self
+		assert: game controlPanel laserPathCounter value
+		equals: game grid laserBeamPath size.
+	self
+		assert: game controlPanel laserPathCounter led digitCount
+		equals: 3
 ]
 
 { #category : 'tests' }

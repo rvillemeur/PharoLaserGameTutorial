@@ -5,9 +5,13 @@ I replace the 2007 `LaserGame` morph of pages 065 to 067, which held a `SketchMo
 
 ```
 LaserGameElement openExample
+LaserGameElement openStandardExample
+LaserGameElement openRandomOfExtent: 12@12
 ```
 
 From page 143 I also count the moves the player makes, and from page 146 I can start a new game on a randomized grid. Page 144 asks before quitting, which the original does with `#confirm:`; I lay a `LaserGameConfirmElement` over myself instead, since a Bloc element cannot wait for an answer.
+
+I play on the grid I am given, of any size: page 147 splits the original's `#initialize` into `#initializeForGrid:` for that, and `#on:` is the same split. The board is one element per location, the panel keeps its width and takes the height of the board, and my own size follows both, so nothing but the grid decides how big the game is.
 
 Instance variables:
 - `grid`: the grid played on. Setting it rebuilds what I hold.
@@ -61,6 +65,16 @@ LaserGameElement class >> on: aGrid [
 	^ element
 ]
 
+{ #category : 'instance creation' }
+LaserGameElement class >> onRandomOfExtent: aPoint [
+	"Answer a game on a freshly dealt board of aPoint columns by aPoint rows. This is page 147's
+	LaserGame class >> randomizedGridOfExtent:, which builds the model with #basicNew and hands it
+	the grid through #initializeForGrid:. A game here takes its grid from outside already, so #on:
+	is that method, and this one only deals the board."
+
+	^ self on: (GridFactory randomizedGridOfExtent: aPoint)
+]
+
 { #category : 'examples' }
 LaserGameElement class >> openExample [
 	"Open the demo grid of the tests, as the original opens its morph on the grid of the factory.
@@ -73,17 +87,46 @@ LaserGameElement class >> openExample [
 
 { #category : 'instance creation' }
 LaserGameElement class >> openOn: aGrid [
-	"Open a space showing a game on aGrid and answer it.
+	"Open a space showing a game on aGrid and answer it. The space starts at the size the game is
+	drawn at, and the game follows it from there: a window the player resizes scales the game to
+	match, which the original, a Morph of a fixed size, does not do.
 
 	LaserGameElement openOn: GridFactory demoGrid"
 
-	| space |
+	| space element |
 	space := BlSpace new.
+	element := self on: aGrid.
 	space extent: (self extentForGrid: aGrid).
 	space title: 'Laser Game'.
-	space root addChild: (self on: aGrid).
+	space root addChild: element.
+	space root
+		addEventHandlerOn: BlElementExtentChangedEvent
+		do: [ :anEvent | element fitIn: space root extent ].
+	element fitIn: space extent.
 	space show.
 	^ space
+]
+
+{ #category : 'instance creation' }
+LaserGameElement class >> openRandomOfExtent: aPoint [
+	"Open a game on a freshly dealt board of aPoint columns by aPoint rows and answer the space.
+	Page 148 changes its workspace to this, so that the game opens on a board of the size asked
+	for instead of the demo board.
+
+	LaserGameElement openRandomOfExtent: 8@10"
+
+	^ self openOn: (GridFactory randomizedGridOfExtent: aPoint)
+]
+
+{ #category : 'examples' }
+LaserGameElement class >> openStandardExample [
+	"Open the standard board of page 148: eight columns by ten rows, dealt. The demo board of
+	#openExample is the five by five one the earlier sections play on.
+
+	LaserGameElement openStandardExample"
+
+	<sampleInstance>
+	^ self openOn: GridFactory defaultGrid
 ]
 
 { #category : 'accessing' }
@@ -161,6 +204,21 @@ LaserGameElement >> dismissQuestion [
 	confirmation := nil
 ]
 
+{ #category : 'geometry' }
+LaserGameElement >> fitIn: anExtent [
+	"Scale the game to a window of anExtent and centre it there. The original is a Morph of a
+	fixed size and has nothing like this: it is the port's answer to a window the player can
+	resize, and it costs nothing, because every cell is drawn from geometries rather than from a
+	bitmap. A window of no size is left alone, since a space announces one while it opens."
+
+	(anExtent x > 0 and: [ anExtent y > 0 ]) ifFalse: [ ^ self ].
+	self transformDo: [ :aBuilder |
+		aBuilder
+			topLeftOrigin;
+			scaleBy: (self scaleToFitIn: anExtent) ].
+	self position: (self positionToCenterIn: anExtent)
+]
+
 { #category : 'accessing' }
 LaserGameElement >> grid [
 	"Answer the grid the game plays on."
@@ -227,6 +285,15 @@ LaserGameElement >> moves: anInteger [
 	moves := anInteger
 ]
 
+{ #category : 'geometry' }
+LaserGameElement >> naturalExtent [
+	"Answer the extent the game is drawn at: the board, the panel and the margins, in the pixel
+	sizes every page of the tutorial writes down. The window can be any size; this one is the
+	size the drawing is scaled from."
+
+	^ self class extentForGrid: self grid
+]
+
 { #category : 'initialization' }
 LaserGameElement >> newControlPanel [
 	"Answer the control panel: the fixed-width column of buttons that sits beside the board."
@@ -247,6 +314,14 @@ LaserGameElement >> newGame [
 	self moves: 0.
 	GridFactory randomizeGrid: self grid.
 	self refresh
+]
+
+{ #category : 'geometry' }
+LaserGameElement >> positionToCenterIn: anExtent [
+	"Answer where the scaled game sits in a window of anExtent: in the middle of it, with the
+	leftover of the looser direction split between the two sides."
+
+	^ (anExtent - (self naturalExtent * (self scaleToFitIn: anExtent))) / 2
 ]
 
 { #category : 'actions' }
@@ -285,6 +360,17 @@ LaserGameElement >> refresh [
 	self board rebuildCells.
 	self controlPanel updateFireButtonLabel.
 	self controlPanel updateCounters
+]
+
+{ #category : 'geometry' }
+LaserGameElement >> scaleToFitIn: anExtent [
+	"Answer how much the game has to be scaled by to fill a window of anExtent without changing
+	its shape: the tighter of the two directions, so the whole board stays in view and the cells
+	stay square."
+
+	| natural |
+	natural := self naturalExtent.
+	^ ((anExtent x / natural x) min: (anExtent y / natural y)) asFloat
 ]
 
 { #category : 'actions' }

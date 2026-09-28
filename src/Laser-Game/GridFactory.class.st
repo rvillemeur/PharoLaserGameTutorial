@@ -1,10 +1,12 @@
 "
 I build the grids the game is played on.
 
-`demoGrid` is the hand-made board of Section 1, the one every test and every example uses. `randomizeGrid:` is the random game generator of page 145: it puts a target in the top right corner and deals mirrors onto locations it has not used yet, one for every two and a half cells of the board. It writes onto the grid it is given and clears nothing, which is why `LaserGameElement >> newGame` empties the grid first.
+`demoGrid` is the hand-made board of Section 1, the one the tests and the examples of the earlier sections use. `defaultGrid` is the board of page 148: eight columns by ten rows, dealt. `randomizedGridOfExtent:` deals a board of any size, which is page 147's way of making the game bigger.
+
+`randomizeGrid:` is the random game generator of page 145, and `randomizeGrid:targetAt:` the generalized one of page 147: it puts a target in the corner it is given and deals mirrors onto locations it has not used yet, one for every two and a half cells of the board. It writes onto the grid it is given and clears nothing, which is why `LaserGameElement >> newGame` empties the grid first.
 
 ```
-GridFactory randomizeGrid: (Grid newOfSize: 5@5)
+GridFactory randomizedGridOfExtent: 8@10
 ```
 
 `randomNumberGenerator` holds one seeded `Random` for the whole class, seeded from the clock the first time it is asked for, and `reSeed` puts it back on the clock. A test that wants the same board twice seeds it itself. The original calls `#nextInt:`, which is the Squeak name of Pharo's `#nextInteger:`; that is the only change these methods needed.

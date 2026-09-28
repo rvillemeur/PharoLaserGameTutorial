@@ -39,6 +39,23 @@ GridFactoryTestCase >> tearDown [
 ]
 
 { #category : 'tests' }
+GridFactoryTestCase >> testAGridOfAnyExtentIsDealtReadyToPlay [
+	"Page 147 builds a board of any size and deals it in one message: the grid is made, the target
+	goes in the top right corner of that grid, and the mirrors follow the size of the board.
+	Eight by ten is the board of page 148."
+
+	| grid |
+	grid := GridFactory randomizedGridOfExtent: 8 @ 10.
+	self assert: grid numberOfColumns equals: 8.
+	self assert: grid numberOfRows equals: 10.
+	self assert: (grid at: 8 @ 1) class equals: TargetCell.
+	self assert: grid numberOfMirrors equals: 32.
+	self
+		assert: ((self cellsOf: grid) count: [ :cell | cell isKindOf: TargetCell ])
+		equals: 1
+]
+
+{ #category : 'tests' }
 GridFactoryTestCase >> testARandomizedGridHoldsNothingButBlanksMirrorsAndTheTarget [
 	"Page 145 deals mirrors onto an empty board and puts one target on it."
 
@@ -73,6 +90,19 @@ GridFactoryTestCase >> testBothMirrorsAreDealt [
 		          GridFactory randomizedMirrorCell isLeft ]) asSet.
 	self assert: (leans includes: true).
 	self assert: (leans includes: false)
+]
+
+{ #category : 'tests' }
+GridFactoryTestCase >> testTheDefaultGridIsTheStandardBoard [
+	"The board page 148 plays on is eight columns by ten rows, dealt. That is the board the
+	inherited source calls the default one, and it is what the game opens on from this section."
+
+	| grid |
+	grid := GridFactory defaultGrid.
+	self assert: grid numberOfColumns equals: 8.
+	self assert: grid numberOfRows equals: 10.
+	self assert: (grid at: 8 @ 1) class equals: TargetCell.
+	self assert: grid numberOfMirrors equals: 32
 ]
 
 { #category : 'tests' }
@@ -119,4 +149,20 @@ GridFactoryTestCase >> testTheSameSeedDealsTheSameBoard [
 			self assert: here class equals: there class.
 			here class = MirrorCell ifTrue: [
 				self assert: here isLeft equals: there isLeft ] ] ]
+]
+
+{ #category : 'tests' }
+GridFactoryTestCase >> testTheTargetCornerIsMarkedUsedOnABoardOfAnySize [
+	"Page 147 marks the top right corner of the board used before a single mirror is dealt, so the
+	target keeps its cell whatever the size of the board. The dictionary holds one flag per
+	location, false for the locations still free."
+
+	| grid flags |
+	grid := Grid newOfSize: 8 @ 10.
+	flags := GridFactory emptyRandomLocationsFor: grid.
+	self assert: flags size equals: 80.
+	self assert: (flags at: 8 @ 1).
+	self
+		assert: (flags keys count: [ :each | flags at: each ])
+		equals: 1
 ]
