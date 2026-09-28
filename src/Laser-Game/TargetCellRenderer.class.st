@@ -72,44 +72,6 @@ TargetCellRenderer >> innerRadius [
 ]
 
 { #category : 'drawing' }
-TargetCellRenderer >> maskOffHorizontalOn: aMask [
-	| newMask halfExtent halfRect offset |
-	halfExtent := (aMask width // 2)@(aMask height).
-	newMask := Form extent: aMask extent depth: aMask depth.
-	newMask fillColor: Color white.
-	(self cell activeSegments at: #west)
-		ifTrue: [offset := 0]
-		ifFalse: [offset := halfExtent x].
-	halfRect := (aMask boundingBox origin + (offset@0)) extent: halfExtent.
-	aMask
-		displayOn: newMask
-		at: offset@0
-		clippingBox: halfRect
-		rule: Form paint
-		fillColor: Color black.
-	^newMask
-]
-
-{ #category : 'drawing' }
-TargetCellRenderer >> maskOffVerticalOn: aMask [
-	| newMask halfExtent halfRect offset |
-	newMask := Form extent: aMask extent depth: aMask depth.
-	newMask fillColor: Color white.
-	halfExtent := (aMask width)@(aMask height // 2).
-	(self cell activeSegments at: #south)
-		ifTrue: [offset := halfExtent y]
-		ifFalse: [offset := 0].
-	halfRect := (0@offset) extent: halfExtent.
-	aMask
-		displayOn: newMask
-		at: 0@0
-		clippingBox: halfRect
-		rule: Form paint
-		fillColor: Color black.
-	^newMask
-]
-
-{ #category : 'drawing' }
 TargetCellRenderer >> newCircleOfRadius: aRadius [
 	"Answer a circular element of aRadius, placed around the middle of the cell. A circle geometry
 	inscribes its circle in the bounds of its element, so the element is a square of the diameter
@@ -131,6 +93,27 @@ TargetCellRenderer >> radius [
 	result at ten so that it stops growing once the cell is large enough."
 
 	^(self class cellExtent x // 2 - 8) min: 10
+]
+
+{ #category : 'rendering' }
+TargetCellRenderer >> renderBeamOn: anElement [
+	"The target swallows the light, so the beam stops in the middle of my cell: half a beam,
+	running from the side the light arrives by. Page 162 asks whether east or west is lit to choose
+	between the two drawings, and pages 160 and 161 cut the other half off with a mask; the side
+	the light comes from answers both questions at once."
+
+	| side |
+	side := #( #west #east #north #south ) detect: [ :each |
+		        self cell isSegmentOnFor: each ].
+	anElement addChild: ((#( #west #east ) includes: side)
+			 ifTrue: [
+				 LaserGameShapes
+					 horizontalLaserBeamElementOfExtent: self class cellExtent
+					 enteringFrom: side ]
+			 ifFalse: [
+				 LaserGameShapes
+					 verticalLaserBeamElementOfExtent: self class cellExtent
+					 enteringFrom: side ])
 ]
 
 { #category : 'drawing' }
@@ -170,19 +153,6 @@ TargetCellRenderer >> renderCrossHairsOn: anElement [
 		addOutlineLineFrom: middle x @ inset y
 		to: middle x @ (delta y - inset y)
 		on: anElement
-]
-
-{ #category : 'drawing' }
-TargetCellRenderer >> renderLaser [
-	| horizontal |
-	self cell isOff ifTrue: [^self].
-	horizontal := (self cell activeSegments at: #east) or: [self cell activeSegments at: #west].
-	horizontal
-		ifTrue: [self renderLaserHorizontal]
-		ifFalse: [self renderLaserVertical].
-	self drawTargetOutlines.
-	self renderContentsOn.
-	
 ]
 
 { #category : 'drawing' }

@@ -681,7 +681,8 @@ LaserGameCellElementTestCase >> testTheSameLocalPointMeansTheSameRegionInEveryCe
 LaserGameCellElementTestCase >> testTurningAMirrorOnTheBeamRedrawsTheWholeBoard [
 	"One click changes more than one cell: the mirror at 4@1 sends the beam into the target at
 	5@1, and turning it sends the beam west instead. Every cell is drawn again after an action,
-	so the target goes dark without anything working out which cells the beam left."
+	so the target goes dark without anything working out which cells the beam left. The disc is the
+	last child of the target, since a lit target draws the beam under its picture."
 
 	| grid board target |
 	grid := GridFactory demoGrid.
@@ -689,12 +690,12 @@ LaserGameCellElementTestCase >> testTurningAMirrorOnTheBeamRedrawsTheWholeBoard 
 	board := LaserGameBoardElement on: grid.
 	target := board cellElementAt: 5 @ 1.
 	self
-		assert: target children fourth background paint color
+		assert: target children last background paint color
 		equals: LaserGameColors targetCenterColorActive.
 	(board cellElementAt: 4 @ 1) dispatchEvent: (BlClickEvent new
 			 position: CellClickRegionOutside regionRectangle topLeft;
 			 yourself).
 	self
-		assert: (board cellElementAt: 5 @ 1) children fourth background paint color
+		assert: (board cellElementAt: 5 @ 1) children last background paint color
 		equals: LaserGameColors targetCenterColorIdle
 ]

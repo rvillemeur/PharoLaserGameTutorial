@@ -86,15 +86,15 @@ LaserGameBoardElementTestCase >> testExtentForGridComesFromTheCellSize [
 
 { #category : 'tests' }
 LaserGameBoardElementTestCase >> testFiringTheLaserLightsTheTargetOfANewBoard [
-	"Page 063 of the original: the laser is fired and the target turns on, even though no beam is
-	drawn yet. The cells are built from the model, so a board built after the shot shows the lit
-	target."
+	"Page 063 of the original: the laser is fired and the target turns on. The cells are built from
+	the model, so a board built after the shot shows the lit target. The disc is the last child of
+	the target, since a lit target draws the beam under its picture."
 
 	| grid board center |
 	grid := GridFactory demoGrid.
 	grid fireLaser.
 	board := LaserGameBoardElement on: grid.
-	center := (board cellElementAt: 5 @ 1) children fourth.
+	center := (board cellElementAt: 5 @ 1) children last.
 	self assert: (grid at: 5 @ 1) isOn.
 	self
 		assert: center background paint color

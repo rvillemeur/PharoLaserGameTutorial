@@ -99,7 +99,7 @@ LaserGameLedElementTestCase >> testEveryDigitHoldsOneRectanglePerSegment [
 		self assert: bounds corner <= LaserGameLedElement digitExtent ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tests' }
 LaserGameLedElementTestCase >> testHighlightingBrightensTheLitSegments [
 	"Page 142 highlights the counter while the laser fires. Highlighting changes the color of the
 	segments that are lit and leaves the others alone. The two colors are the ones the screenshot
@@ -126,7 +126,7 @@ LaserGameLedElementTestCase >> testHighlightingBrightensTheLitSegments [
 		equals: LaserGameColors counterDigitOffColor
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tests' }
 LaserGameLedElementTestCase >> testTheDigitsFitInsideTheDisplay [
 	"Every digit has to be inside the display, which clips what sticks out of it. A linear layout
 	adds its cell spacing around the cells as well as between them, so the gap between two digits
@@ -147,7 +147,7 @@ LaserGameLedElementTestCase >> testTheDigitsFitInsideTheDisplay [
 		equals: LaserGameLedElement digitGap
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tests' }
 LaserGameLedElementTestCase >> testUnlitSegmentsVanishIntoTheBody [
 	"The original's display is a dark slab, and a segment that is not lit is the color of that
 	slab, so only the lit ones are seen. The port paints the same two colors, which means the

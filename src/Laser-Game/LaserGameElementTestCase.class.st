@@ -378,7 +378,8 @@ LaserGameElementTestCase >> testTheCountersStillHoldWhatABiggerBoardProduces [
 { #category : 'tests' }
 LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain [
 	"The fire button toggles: the first click fires the laser and lights the target, the second
-	stops it and puts the target out. The board and the button label both follow."
+	stops it and puts the target out. The board and the button label both follow. The disc is the
+	last child of the target, since a lit target draws the beam under its picture."
 
 	| game target |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -387,14 +388,14 @@ LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain [
 	self assert: game laserIsActive.
 	self assert: target isOn.
 	self
-		assert: (game board cellElementAt: 5 @ 1) children fourth background paint color
+		assert: (game board cellElementAt: 5 @ 1) children last background paint color
 		equals: LaserGameColors targetCenterColorActive.
 	self assert: game controlPanel fireButton labelText asString equals: 'Stop'.
 	game toggleLaser.
 	self deny: game laserIsActive.
 	self assert: target isOff.
 	self
-		assert: (game board cellElementAt: 5 @ 1) children fourth background paint color
+		assert: (game board cellElementAt: 5 @ 1) children last background paint color
 		equals: LaserGameColors targetCenterColorIdle.
 	self assert: game controlPanel fireButton labelText asString equals: 'Fire'
 ]

@@ -224,11 +224,12 @@ CellRenderer >> mouseUpAt: aPoint [
 	^ nil
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'rendering' }
 CellRenderer >> newElement [
 	"Answer a new element rendering my cell. The element is square, keeps me as its renderer,
-	carries the cell background and border, and holds whatever my subclass draws as children:
-	the contents of the cell first, then the beam over them, as the original's #render does."
+	carries the cell background and border, and holds whatever my subclass draws as children: the
+	beam first, then the contents of the cell over it, since page 162 draws the target again after
+	the beam so that the light does not hide what it hits."
 
 	| element |
 	element := LaserGameCellElement new.
@@ -237,8 +238,8 @@ CellRenderer >> newElement [
 	element geometry: BlRectangleGeometry new.
 	self renderBackgroundOn: element.
 	self renderBorderOn: element.
-	self renderContentsOn: element.
 	self renderLaserOn: element.
+	self renderContentsOn: element.
 	^ element
 ]
 
@@ -267,7 +268,7 @@ CellRenderer >> renderBackgroundOn: anElement [
 	anElement background: LaserGameColors gameBoardBackgroundColor
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'rendering' }
 CellRenderer >> renderBeamOn: anElement [
 	"Draw the beam my lit cell shows, as children of anElement. Empty here: a cell whose kind has
 	not learned to draw the beam yet shows none, which is how Section 4 adds the three kinds one
@@ -424,7 +425,7 @@ CellRenderer >> renderLaserHorizontalSplatter [
 		color: LaserGameColors laserBeamSplatterColor
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'rendering' }
 CellRenderer >> renderLaserOn: anElement [
 	"Draw the beam where it crosses my cell, as children of anElement. Nothing is drawn while the
 	laser is off or while no light reaches my cell: the original asks the first question in

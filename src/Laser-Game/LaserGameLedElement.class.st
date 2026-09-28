@@ -155,7 +155,7 @@ LaserGameLedElement >> highlighted: aBoolean [
 	self updateDigits
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'initialization' }
 LaserGameLedElement >> initialize [
 	"A display is a dark slab with a row of digits on it, one gap apart. The slab is the color the
 	original's LedMorph draws itself in, and an unlit segment takes it too, so that only the lit
@@ -198,7 +198,7 @@ LaserGameLedElement >> offColor [
 	^ LaserGameColors counterDigitOffColor
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'drawing' }
 LaserGameLedElement >> onColor [
 	"Answer the color of a lit segment: almost white while I am highlighted, the lavender of the
 	LED otherwise."
@@ -208,7 +208,7 @@ LaserGameLedElement >> onColor [
 		  ifFalse: [ LaserGameColors counterDigitColor ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'private' }
 LaserGameLedElement >> rebuildDigits [
 	"Replace my digits with digitCount fresh ones and take the size they need. Every digit but the
 	first carries the gap in front of it as a margin."

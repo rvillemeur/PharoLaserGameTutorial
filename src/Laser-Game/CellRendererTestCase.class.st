@@ -6,7 +6,7 @@ Class {
 	#tag : 'Tests'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'support' }
 CellRendererTestCase >> requestedExtentOf: anElement [
 	"Answer the extent anElement was built with, read from its resizers. An element measures
 	itself only in a layout pass, so its extent is zero until it is laid out."
@@ -15,7 +15,7 @@ CellRendererTestCase >> requestedExtentOf: anElement [
 	  @ anElement constraints vertical resizer size
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tests' }
 CellRendererTestCase >> testABlankCellDrawsNoBeamUnlessTheLaserReachesIt [
 	"A cell draws a beam only while the laser is firing and only where the beam runs. The original
 	asks the first question in #render and the second at the head of #renderLaser."
@@ -174,7 +174,7 @@ CellRendererTestCase >> testRendererSelection [
 	self assert: renderer equals: TargetCellRenderer
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tests' }
 CellRendererTestCase >> testTheBeamCrossesABlankCellFromSideToSide [
 	"Page 156 draws the beam on the blank cells, which is the easiest case: the beam goes straight
 	through, so it is one line. The demo grid sends the beam along the bottom row from west to
@@ -199,7 +199,7 @@ CellRendererTestCase >> testTheBeamCrossesABlankCellFromSideToSide [
 		equals: LaserGameColors laserBeamCenterColor
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tests' }
 CellRendererTestCase >> testTheBeamCrossesABlankCellFromTopToBottom [
 	"Page 157 asks one question to choose between the two drawings: is the south segment lit. The
 	demo grid turns the beam north at 4@5, so the blank cell at 4@4 is crossed from top to bottom."

@@ -15,7 +15,7 @@ LaserGameShapesTestCase >> requestedExtentOf: anElement [
 	  @ anElement constraints vertical resizer size
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tests' }
 LaserGameShapesTestCase >> testABeamIsAPaleBandWithABrightCentreOnIt [
 	"Page 152 takes two masks out of the painted beam, a wide splatter and a narrow centre, and
 	page 153 paints them in two colours. Here the beam is an element holding two bars: the pale
@@ -72,7 +72,76 @@ LaserGameShapesTestCase >> testACrossHairIsTwoBarsCrossingAtTheCentre [
 		equals: (self requestedExtentOf: vertical) y
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tests' }
+LaserGameShapesTestCase >> testAHalfBeamCrossesHalfTheCellFromTheSideItComesFrom [
+	"A cell that swallows the light shows the beam only as far as its middle. Pages 160 and 162 of
+	the original draw the whole beam and then black out the half the light never reaches, keeping
+	the west half when the west segment is lit and the east half otherwise."
+
+	| extent half |
+	extent := 40 @ 40.
+	half := extent x // 2.
+	{ #west -> 0. #east -> half } do: [ :each |
+		| beam |
+		beam := LaserGameShapes
+			        horizontalLaserBeamElementOfExtent: extent
+			        enteringFrom: each key.
+		self assert: (self requestedExtentOf: beam) equals: extent.
+		self assert: beam children size equals: 2.
+		beam children do: [ :bar |
+			self assert: (self requestedExtentOf: bar) x equals: half.
+			self assert: bar constraints position x equals: each value.
+			self
+				assert: bar constraints position y + ((self requestedExtentOf: bar) y / 2)
+				equals: extent y / 2 ] ]
+]
+
+{ #category : 'tests' }
+LaserGameShapesTestCase >> testAHalfBeamGoingUpOrDownKeepsTheHalfTheLightComesFrom [
+	"The same half beam turned a quarter: page 161 keeps the bottom half when the south segment is
+	lit and the top half otherwise."
+
+	| extent half |
+	extent := 40 @ 40.
+	half := extent y // 2.
+	{ #north -> 0. #south -> half } do: [ :each |
+		| beam |
+		beam := LaserGameShapes
+			        verticalLaserBeamElementOfExtent: extent
+			        enteringFrom: each key.
+		self assert: (self requestedExtentOf: beam) equals: extent.
+		self assert: beam children size equals: 2.
+		beam children do: [ :bar |
+			self assert: (self requestedExtentOf: bar) y equals: half.
+			self assert: bar constraints position y equals: each value.
+			self
+				assert: bar constraints position x + ((self requestedExtentOf: bar) x / 2)
+				equals: extent x / 2 ] ]
+]
+
+{ #category : 'tests' }
+LaserGameShapesTestCase >> testAHalfBeamIsAsThickAsAWholeOne [
+	"Half a beam is half as long and no thinner: the original cuts its mask in half and leaves the
+	pixels it keeps alone."
+
+	| extent whole |
+	extent := 40 @ 40.
+	whole := LaserGameShapes horizontalLaserBeamElementOfExtent: extent.
+	#( #west #east ) do: [ :side |
+		| half |
+		half := LaserGameShapes
+			        horizontalLaserBeamElementOfExtent: extent
+			        enteringFrom: side.
+		half children asArray with: whole children asArray do: [ :bar :wholeBar |
+			self
+				assert: (self requestedExtentOf: bar) y
+				equals: (self requestedExtentOf: wholeBar) y.
+			self
+				assert: bar background paint color
+				equals: wholeBar background paint color ] ]
+]
+
+{ #category : 'tests' }
 LaserGameShapesTestCase >> testAVerticalBeamIsTheHorizontalOneTurned [
 	"A beam runs across a cell or down it. The original has one painted form and turns the drawing
 	by asking the mask for a vertical strip instead of a horizontal one; here the two bars are the
@@ -193,7 +262,7 @@ LaserGameShapesTestCase >> testShapesAreBuiltAtWhateverSizeIsAsked [
 			self assert: (self requestedExtentOf: element) equals: extent ] ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tests' }
 LaserGameShapesTestCase >> testTheBeamGetsThickerWithTheCell [
 	"The original paints one beam form of one cell size and scales the bitmap when the cell grows,
 	so the beam keeps its proportions. Here the two thicknesses are computed from the extent, which

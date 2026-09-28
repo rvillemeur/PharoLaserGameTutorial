@@ -16,6 +16,15 @@ TargetCellRendererTestCase >> rendererForTarget: aTargetCell [
 	^ CellRenderer rendererFor: aTargetCell grid: grid
 ]
 
+{ #category : 'support' }
+TargetCellRendererTestCase >> requestedExtentOf: anElement [
+	"Answer the extent anElement was built with, read from its resizers. An element measures
+	itself only in a layout pass, so its extent is zero until it is laid out."
+
+	^ anElement constraints horizontal resizer size
+	  @ anElement constraints vertical resizer size
+]
+
 { #category : 'tests' }
 TargetCellRendererTestCase >> testALitTargetIsFilledWithTheActiveColor [
 	"A target the laser reaches shows the active fill, and rendering the cell again picks the new
@@ -148,4 +157,65 @@ TargetCellRendererTestCase >> testTargetHasCrossHairsARingAndACenter [
 	self assert: (children at: 2) geometry class equals: BlLineGeometry.
 	self assert: (children at: 3) geometry class equals: BlCircleGeometry.
 	self assert: (children at: 4) geometry class equals: BlCircleGeometry
+]
+
+{ #category : 'tests' }
+TargetCellRendererTestCase >> testTheBeamReachesTheTargetFromTheSideItTravelsBy [
+	"Page 163 tests the other ways in by dragging another cell onto the target from an inspector;
+	here the grid is asked to hold a target where the beam runs upwards, and the beam covers the
+	south half of the cell it now ends in."
+
+	| grid element beam half |
+	grid := GridFactory demoGrid.
+	grid at: 4 @ 3 put: TargetCell new.
+	grid fireLaser.
+	element := (CellRenderer rendererFor: (grid at: 4 @ 3) grid: grid)
+		           newElement.
+	beam := element children first.
+	half := CellRenderer cellExtent y // 2.
+	self assert: ((grid at: 4 @ 3) isSegmentOnFor: #south).
+	self assert: beam children size equals: 2.
+	beam children do: [ :bar |
+		self assert: (self requestedExtentOf: bar) y equals: half.
+		self assert: bar constraints position y equals: half ]
+]
+
+{ #category : 'tests' }
+TargetCellRendererTestCase >> testTheBeamStopsInTheMiddleOfTheTargetItReaches [
+	"Page 160 draws the beam on the target the light arrives at, and stops it in the middle of the
+	cell, since the target swallows the light. The demo grid sends the beam into the target at 5@1
+	from the west, so the beam covers the west half of the cell."
+
+	| grid element beam half |
+	grid := GridFactory demoGrid.
+	grid fireLaser.
+	element := (CellRenderer rendererFor: (grid at: 5 @ 1) grid: grid)
+		           newElement.
+	beam := element children first.
+	half := CellRenderer cellExtent x // 2.
+	self assert: (self requestedExtentOf: beam) equals: CellRenderer cellExtent.
+	self assert: beam children size equals: 2.
+	beam children do: [ :bar |
+		self assert: (self requestedExtentOf: bar) x equals: half.
+		self assert: bar constraints position x equals: 0 ]
+]
+
+{ #category : 'tests' }
+TargetCellRendererTestCase >> testTheTargetIsDrawnOverTheBeam [
+	"Page 162 draws the beam and then the ring, the crosshairs and the disc again over it, so that
+	the light does not hide the target it hits. Here the beam is simply the first child and the
+	four pieces of the target come after it."
+
+	| grid element children |
+	grid := GridFactory demoGrid.
+	grid fireLaser.
+	element := (CellRenderer rendererFor: (grid at: 5 @ 1) grid: grid)
+		           newElement.
+	children := element children.
+	self assert: children size equals: 5.
+	self assert: (children at: 1) children size equals: 2.
+	self assert: (children at: 2) geometry class equals: BlLineGeometry.
+	self assert: (children at: 3) geometry class equals: BlLineGeometry.
+	self assert: (children at: 4) geometry class equals: BlCircleGeometry.
+	self assert: (children at: 5) geometry class equals: BlCircleGeometry
 ]

@@ -181,14 +181,53 @@ LaserGameShapes class >> horizontalLaserBeamElementOfExtent: anExtent [
 ]
 
 { #category : 'building' }
-LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent within: anExtent color: aColor [
-	"Answer one bar of a beam, of aBarExtent and painted in aColor, centred in a cell of anExtent."
+LaserGameShapes class >> horizontalLaserBeamElementOfExtent: anExtent enteringFrom: aSymbol [
+	"Answer an element of anExtent drawing the beam where it enters a cell from the side aSymbol
+	names, west or east, and stops in the middle of it, which is what a cell that swallows the
+	light shows. Pages 160 and 162 of the original draw the whole beam and then black out the half
+	the light never reaches, with a mask built for the purpose; half a bar needs no mask. The bars
+	are as thick as the ones of a whole beam, since the cell they cross is the same size."
+
+	| length left splatter centre |
+	length := anExtent x // 2.
+	left := aSymbol = #west
+		        ifTrue: [ 0 ]
+		        ifFalse: [ anExtent x - length ].
+	splatter := self laserBeamSplatterThicknessFor: anExtent.
+	centre := self laserBeamCenterThicknessFor: anExtent.
+	^ BlElement new
+		  extent: anExtent;
+		  background: Color transparent;
+		  addChild: (self
+				   laserBeamBarOfExtent: length @ splatter
+				   at: left @ ((anExtent y - splatter) / 2)
+				   color: LaserGameColors laserBeamSplatterColor);
+		  addChild: (self
+				   laserBeamBarOfExtent: length @ centre
+				   at: left @ ((anExtent y - centre) / 2)
+				   color: LaserGameColors laserBeamCenterColor);
+		  yourself
+]
+
+{ #category : 'building' }
+LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent at: aPoint color: aColor [
+	"Answer one bar of a beam, of aBarExtent and painted in aColor, at aPoint of the cell."
 
 	^ BlElement new
 		  extent: aBarExtent;
-		  position: (anExtent - aBarExtent) / 2;
+		  position: aPoint;
 		  background: aColor;
 		  yourself
+]
+
+{ #category : 'building' }
+LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent within: anExtent color: aColor [
+	"Answer one bar of a beam, of aBarExtent and painted in aColor, centred in a cell of anExtent."
+
+	^ self
+		  laserBeamBarOfExtent: aBarExtent
+		  at: (anExtent - aBarExtent) / 2
+		  color: aColor
 ]
 
 { #category : 'beam geometry' }
@@ -328,6 +367,33 @@ LaserGameShapes class >> verticalLaserBeamElementOfExtent: anExtent [
 		  background: Color transparent;
 		  addChild: splatter;
 		  addChild: centre;
+		  yourself
+]
+
+{ #category : 'building' }
+LaserGameShapes class >> verticalLaserBeamElementOfExtent: anExtent enteringFrom: aSymbol [
+	"Answer an element of anExtent drawing the beam where it enters a cell from the side aSymbol
+	names, north or south, and stops in the middle of it. Page 161 is the same picture turned a
+	quarter, and asks one question, the south segment, to choose which half it keeps."
+
+	| length top splatter centre |
+	length := anExtent y // 2.
+	top := aSymbol = #north
+		       ifTrue: [ 0 ]
+		       ifFalse: [ anExtent y - length ].
+	splatter := self laserBeamSplatterThicknessFor: anExtent.
+	centre := self laserBeamCenterThicknessFor: anExtent.
+	^ BlElement new
+		  extent: anExtent;
+		  background: Color transparent;
+		  addChild: (self
+				   laserBeamBarOfExtent: splatter @ length
+				   at: (anExtent x - splatter) / 2 @ top
+				   color: LaserGameColors laserBeamSplatterColor);
+		  addChild: (self
+				   laserBeamBarOfExtent: centre @ length
+				   at: (anExtent x - centre) / 2 @ top
+				   color: LaserGameColors laserBeamCenterColor);
 		  yourself
 ]
 
