@@ -605,14 +605,17 @@ LaserGameCellElementTestCase >> testTheArrowStaysWhenTheCellUnderThePointerStill
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testTheCrossHairFollowsThePointerWithinOneRegion [
 	"The arrow is built once per region, since it does not change while the pointer stays in one,
-	but the cross hair marks a point and moves with every event."
+	but the cross hair marks a point and moves with every event. The step down is a quarter of the
+	inside region rather than four pixels, so the second point is in the same push region as the
+	first at any cell size."
 
-	| board element first second extent |
+	| board element first second extent step |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
 	element := board cellElementAt: 4 @ 1.
 	extent := CellRenderer crossHairExtent.
+	step := CellClickRegionInside regionRectangle height // 4 max: 1.
 	first := CellClickRegionInside regionRectangle center.
-	second := first + (0 @ 4).
+	second := first + (0 @ step).
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: first;
 			 yourself).

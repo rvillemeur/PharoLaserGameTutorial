@@ -25,9 +25,10 @@ LaserGameElementTestCase >> testAGameIgnoresAWindowOfNoSize [
 	"A space announces its extent while it is being opened, and that extent can be nothing at all.
 	Scaling by zero would take the game off the screen, so a window of no size is left alone."
 
-	| game |
+	| game natural |
 	game := LaserGameElement on: GridFactory demoGrid.
-	game fitIn: 760 @ 540.
+	natural := game naturalExtent.
+	game fitIn: natural * 2.
 	game fitIn: 0 @ 0.
 	self assert: game transformation matrix sx equals: 2.0.
 	self assert: game constraints position equals: 0 @ 0
@@ -37,29 +38,33 @@ LaserGameElementTestCase >> testAGameIgnoresAWindowOfNoSize [
 LaserGameElementTestCase >> testAGameKeepsItsShapeInAWindowOfAnotherShape [
 	"A board is as wide and as tall as it is. A window of another shape scales the game by the
 	tighter of the two directions and centres what is left over, so the cells stay square and the
-	game is never stretched."
+	game is never stretched. The window is twice the natural extent in one direction only, so the
+	scale is one and the leftover is half the other direction, at any cell size."
 
-	| game |
+	| game natural |
 	game := LaserGameElement on: GridFactory demoGrid.
-	game fitIn: 760 @ 270.
-	self assert: (game scaleToFitIn: 760 @ 270) equals: 1.0.
+	natural := game naturalExtent.
+	game fitIn: natural x * 2 @ natural y.
+	self assert: (game scaleToFitIn: natural x * 2 @ natural y) equals: 1.0.
 	self assert: game transformation matrix sx equals: 1.0.
-	self assert: game constraints position equals: 190 @ 0.
-	game fitIn: 380 @ 540.
+	self assert: game constraints position equals: natural x / 2 @ 0.
+	game fitIn: natural x @ (natural y * 2).
 	self assert: game transformation matrix sx equals: 1.0.
-	self assert: game constraints position equals: 0 @ 135
+	self assert: game constraints position equals: 0 @ (natural y / 2)
 ]
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven [
 	"The game is drawn at the size the board asks for and scaled to whatever the window is, so a
-	window of twice the extent shows the same game twice as big, filling it."
+	window of twice that extent shows the same game twice as big, filling it. The extent is read
+	from the game and not written down, because the cell size decides it: pages 174 to 179 of the
+	original are the tale of four tests that had been written down for a cell of thirty pixels."
 
-	| game |
+	| game natural |
 	game := LaserGameElement on: GridFactory demoGrid.
-	self assert: game naturalExtent equals: 380 @ 270.
-	game fitIn: 760 @ 540.
-	self assert: (game scaleToFitIn: 760 @ 540) equals: 2.0.
+	natural := game naturalExtent.
+	game fitIn: natural * 2.
+	self assert: (game scaleToFitIn: natural * 2) equals: 2.0.
 	self assert: game transformation matrix sx equals: 2.0.
 	self assert: game transformation matrix sy equals: 2.0.
 	self assert: game constraints position equals: 0 @ 0
@@ -68,11 +73,12 @@ LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven [
 { #category : 'tests' }
 LaserGameElementTestCase >> testAGameShrinksWithASmallerWindow [
 	"A window smaller than the board scales the game down rather than cutting it off, so the whole
-	board is always in view."
+	board is always in view. Half the natural extent is half the game, whatever a cell measures."
 
-	| game |
+	| game natural |
 	game := LaserGameElement on: GridFactory demoGrid.
-	game fitIn: 190 @ 135.
+	natural := game naturalExtent.
+	game fitIn: natural / 2.
 	self assert: game transformation matrix sx equals: 0.5.
 	self assert: game constraints position equals: 0 @ 0
 ]
