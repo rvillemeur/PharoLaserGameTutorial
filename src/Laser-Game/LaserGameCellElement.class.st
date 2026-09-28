@@ -150,13 +150,14 @@ LaserGameCellElement >> mouseMove: anEvent [
 	self showPositionHintAt: anEvent localPosition
 ]
 
-{ #category : 'drawing' }
+{ #category : 'as yet unclassified' }
 LaserGameCellElement >> redraw [
 	"Draw my cell again after the model changed. The cell standing at my location may be another
 	one than before, since a push swaps two cells, so the renderer is chosen again — and so is
 	the hint, at the point the pointer was last seen at, because page 126 of the original is the
 	tale of a view that went on believing in the cell that had moved away. A blank cell offers no
 	push, so the arrow of the mirror that left goes with it, and the cross hair with the arrow.
+	The beam is drawn here too, since firing the laser changes no cell but lights many of them.
 	The original repainted a rectangle of the board form and called it redrawCell."
 
 	| grid location point |
@@ -171,6 +172,7 @@ LaserGameCellElement >> redraw [
 	self renderer renderBackgroundOn: self.
 	self renderer renderBorderOn: self.
 	self renderer renderContentsOn: self.
+	self renderer renderLaserOn: self.
 	point ifNotNil: [ self showPositionHintAt: point ]
 ]
 

@@ -63,8 +63,9 @@ LaserGameBoardElement class >> openExample [
 
 { #category : 'examples' }
 LaserGameBoardElement class >> openExampleWithLaserFired [
-	"Open the demo grid with the laser already fired, which lights the target. The beam itself is
-	not drawn yet: that is the work of Section 4.
+	"Open the demo grid with the laser already fired, which lights the target and draws the beam
+	over the blank cells it crosses. The mirrors and the target still show no beam of their own:
+	that is the work of the two sections after page 158.
 
 	LaserGameBoardElement openExampleWithLaserFired"
 

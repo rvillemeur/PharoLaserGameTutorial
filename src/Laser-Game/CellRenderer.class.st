@@ -224,10 +224,11 @@ CellRenderer >> mouseUpAt: aPoint [
 	^ nil
 ]
 
-{ #category : 'rendering' }
+{ #category : 'as yet unclassified' }
 CellRenderer >> newElement [
 	"Answer a new element rendering my cell. The element is square, keeps me as its renderer,
-	carries the cell background and border, and holds whatever my subclass draws as children."
+	carries the cell background and border, and holds whatever my subclass draws as children:
+	the contents of the cell first, then the beam over them, as the original's #render does."
 
 	| element |
 	element := LaserGameCellElement new.
@@ -237,6 +238,7 @@ CellRenderer >> newElement [
 	self renderBackgroundOn: element.
 	self renderBorderOn: element.
 	self renderContentsOn: element.
+	self renderLaserOn: element.
 	^ element
 ]
 
@@ -263,6 +265,13 @@ CellRenderer >> renderBackgroundOn: anElement [
 	"Paint the cell background. Every cell shares the game board background color."
 
 	anElement background: LaserGameColors gameBoardBackgroundColor
+]
+
+{ #category : 'as yet unclassified' }
+CellRenderer >> renderBeamOn: anElement [
+	"Draw the beam my lit cell shows, as children of anElement. Empty here: a cell whose kind has
+	not learned to draw the beam yet shows none, which is how Section 4 adds the three kinds one
+	at a time."
 ]
 
 { #category : 'drawing' }
@@ -413,6 +422,18 @@ CellRenderer >> renderLaserHorizontalSplatter [
 	self
 		renderLaserHorizontalMask: LaserGameForms splatterBeamMask 
 		color: LaserGameColors laserBeamSplatterColor
+]
+
+{ #category : 'as yet unclassified' }
+CellRenderer >> renderLaserOn: anElement [
+	"Draw the beam where it crosses my cell, as children of anElement. Nothing is drawn while the
+	laser is off or while no light reaches my cell: the original asks the first question in
+	#render, before it sends #renderLaser at all, and the second at the head of every #renderLaser.
+	What a lit cell draws is the business of my subclasses, so #renderBeamOn: is theirs."
+
+	self grid laserIsActive ifFalse: [ ^ self ].
+	self cell isOff ifTrue: [ ^ self ].
+	self renderBeamOn: anElement
 ]
 
 { #category : 'drawing' }
