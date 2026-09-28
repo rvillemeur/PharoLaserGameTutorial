@@ -14,41 +14,72 @@ LaserGameControlPanelElementTestCase >> newPanel [
 ]
 
 { #category : 'tests' }
-LaserGameControlPanelElementTestCase >> testButtonRowSitsAtTheBottomLeftOneGapIn [
-	"The row is aligned to the bottom left corner of the panel, one gap away from both edges, and
-	the buttons inside it are one gap apart. That is where the original's layout frames put them."
+LaserGameControlPanelElementTestCase >> testARowOfTwoButtonsFitsInsideThePanel [
+	"A row of buttons is as wide as its buttons and the gaps around and between them. Two buttons
+	fill the panel exactly, so the last button of a row stops one gap short of the board beside
+	the panel; a third button in the same row would not fit."
 
-	| panel row |
-	panel := self newPanel.
-	row := panel buttonRow.
+	| widthOfTwo |
+	widthOfTwo := (2 * LaserGameControlPanelElement buttonWidth)
+	              + (3 * LaserGameControlPanelElement buttonGap).
+	self assert: widthOfTwo equals: LaserGameElement panelWidth.
 	self
-		assert: row constraints frame horizontal alignment
+		assert: widthOfTwo + LaserGameControlPanelElement buttonWidth
+			+ LaserGameControlPanelElement buttonGap
+			> LaserGameElement panelWidth
+]
+
+{ #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testButtonColumnSitsAtTheBottomLeftOneGapIn [
+	"The buttons are aligned to the bottom left corner of the panel, one gap away from both edges,
+	and the rows are one gap apart. That is where page 144's layout frames put them, counting rows
+	from the bottom. The cell spacing is the whole of the gap, since a linear layout spaces its
+	cells from its own edges as well as from each other; a margin on top of it would take the
+	bottom row past the right edge of the panel and up against the board."
+
+	| panel column |
+	panel := self newPanel.
+	column := panel buttonColumn.
+	self
+		assert: column constraints frame horizontal alignment
 		equals: BlElementAlignment horizontal start.
 	self
-		assert: row constraints frame vertical alignment
+		assert: column constraints frame vertical alignment
 		equals: BlElementAlignment bottom.
+	self assert: column margin equals: BlInsets empty.
 	self
-		assert: row margin
-		equals: (BlInsets all: LaserGameControlPanelElement buttonGap).
-	self
-		assert: row layout cellSpacing
+		assert: column layout cellSpacing
 		equals: LaserGameControlPanelElement buttonGap
 ]
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testButtonsKeepTheOriginalSize [
-	"Both buttons are the original's forty by twenty. Sizes are read from the layout constraints,
-	since nothing is laid out yet."
+	"All three buttons are the original's forty by twenty. Sizes are read from the layout
+	constraints, since nothing is laid out yet."
 
 	| panel |
 	panel := self newPanel.
-	{ panel quitButton. panel fireButton } do: [ :button |
+	{
+		panel quitButton.
+		panel fireButton.
+		panel newGameButton } do: [ :button |
 		self
 			assert: button constraints horizontal resizer size
 			equals: LaserGameControlPanelElement buttonWidth.
 		self
 			assert: button constraints vertical resizer size
 			equals: LaserGameControlPanelElement buttonHeight ]
+]
+
+{ #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testCounterColumnHoldsTheBeamCounterAboveTheMoveCounter [
+	"Page 143 adds the move counter under the beam counter, one counter lower in the same column."
+
+	| panel |
+	panel := self newPanel.
+	self assert: panel counterColumn children asArray equals: {
+			panel laserPathCounter.
+			panel movesCounter }
 ]
 
 { #category : 'tests' }
@@ -60,7 +91,6 @@ LaserGameControlPanelElementTestCase >> testCounterColumnSitsAtTheTopLeftOneGapI
 	panel := self newPanel.
 	column := panel counterColumn.
 	self assert: (panel children includes: column).
-	self assert: column children asArray equals: { panel laserPathCounter }.
 	self
 		assert: column constraints frame horizontal alignment
 		equals: BlElementAlignment horizontal start.
@@ -121,16 +151,58 @@ LaserGameControlPanelElementTestCase >> testLaserPathCounterIsThreeDigitsCaption
 ]
 
 { #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testMovesCounterIsThreeDigitsCaptionedMoves [
+	"Page 143's counter: the same three digit display as the beam counter, captioned Moves."
+
+	| panel |
+	panel := self newPanel.
+	self assert: panel movesCounter class equals: LaserGameCounterElement.
+	self assert: panel movesCounter led digitCount equals: 3.
+	self assert: panel movesCounter label text asString equals: 'Moves'
+]
+
+{ #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testMovesCounterShowsTheMoveCountAndIsNeverBright [
+	"Page 143 sets the move counter with #highlighted: false every time: only the beam says whether
+	the laser is on."
+
+	| panel |
+	panel := self newPanel.
+	self assert: panel movesCounter value equals: 0.
+	panel game incrementMoves.
+	panel game grid fireLaser.
+	panel updateCounters.
+	self assert: panel movesCounter value equals: 1.
+	self deny: panel movesCounter highlighted.
+	self assert: panel laserPathCounter highlighted
+]
+
+{ #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testNewGameButtonHasTheRowAboveTheOthers [
+	"Page 144 puts New in the second row from the bottom, first column: here the column of rows
+	holds the New row first and the Quit and Fire row last, which is lowest."
+
+	| panel |
+	panel := self newPanel.
+	self assert: panel buttonColumn children asArray equals: {
+			panel newGameRow.
+			panel buttonRow }.
+	self assert: panel newGameRow children asArray equals: { panel newGameButton }.
+	self assert: panel newGameButton labelText asString equals: 'New'
+]
+
+{ #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testPanelHoldsARowOfTwoButtons [
-	"The game's panel is a control panel element. It holds the row of buttons, and the row holds
-	the Quit button then the Fire button. The rest of the original's buttons arrive with their own
-	pages."
+	"The game's panel is a control panel element. It holds the column of button rows, and the
+	bottom row holds the Quit button then the Fire button. The rest of the original's buttons
+	arrive with their own pages."
 
 	| panel row |
 	panel := self newPanel.
 	self assert: panel class equals: LaserGameControlPanelElement.
 	row := panel buttonRow.
-	self assert: (panel children includes: row).
+	self assert: (panel children includes: panel buttonColumn).
+	self assert: (panel buttonColumn children includes: row).
 	self assert: row children asArray
 		equals: { panel quitButton. panel fireButton }.
 	self assert: panel quitButton class equals: ToButton.

@@ -28,6 +28,30 @@ LaserGameColors class >> cellBorderColor [
 ]
 
 { #category : 'colors' }
+LaserGameColors class >> confirmationBackgroundColor [
+	"Answer the color of the box a question is asked in. The original asks with #confirm:, a
+	Morphic dialog painted by the image; a Bloc game asks inside itself, so the box takes the flat
+	window color the ramp of page 140 left unused."
+
+	^ self gameWindowColor
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> confirmationShadeColor [
+	"Answer the color laid over the whole game while it asks a question, so that the board behind
+	it is visibly out of reach."
+
+	^ Color black alpha: 0.6
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> confirmationTextColor [
+	"Answer the color of the text of a question."
+
+	^ Color veryVeryLightGray
+]
+
+{ #category : 'colors' }
 LaserGameColors class >> controlPanelColor [
 	"Answer the color of the control panel beside the board. Page 140 paints it transparent, so
 	the ramp behind the whole window shows through it; the white of page 068 was only a

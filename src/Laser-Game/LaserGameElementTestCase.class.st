@@ -7,6 +7,20 @@ Class {
 }
 
 { #category : 'tests' }
+LaserGameElementTestCase >> testAClickThatChangesNothingIsNoMove [
+	"A click on a blank cell does nothing, so the board is never told and nothing is counted. The
+	original counts every mouse up on the board, whether or not the board changed; the count is
+	what the player is asked to keep down, so only a move that happened counts here."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	self assert: (game grid at: 2 @ 2) class equals: BlankCell.
+	(game board cellElementAt: 2 @ 2) clickAt:
+		CellClickRegionRotateClockwise regionRectangle center.
+	self assert: game moves equals: 0
+]
+
+{ #category : 'tests' }
 LaserGameElementTestCase >> testAMoveOnTheBoardSetsTheCounter [
 	"A move changes the path, so it changes the counter too: page 142 adds #updateCounters to the
 	mouse up handler as well. The board says that a move was made and the game asks its panel to
@@ -24,6 +38,81 @@ LaserGameElementTestCase >> testAMoveOnTheBoardSetsTheCounter [
 		assert: game controlPanel laserPathCounter value
 		equals: game grid laserBeamPath size.
 	self deny: game controlPanel laserPathCounter value equals: before
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testANewGameDealsAFreshBoardAndForgetsTheMoves [
+	"Page 146: a new game clears the cells, stops the laser, sets the count to zero and randomizes
+	the grid. The demo grid holds ten mirrors and so does a randomized five by five board, so the
+	proof that the old cells went first is the count: the randomizer writes onto the board it is
+	given and clears nothing, and ten mirrors is what it deals."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	game grid fireLaser.
+	game incrementMoves.
+	game newGame.
+	self assert: game moves equals: 0.
+	self deny: game grid laserIsActive.
+	self assert: game grid numberOfMirrors equals: 10.
+	self assert: (game grid at: 5 @ 1) class equals: TargetCell.
+	self assert: game controlPanel movesCounter value equals: 0.
+	self assert: game controlPanel laserPathCounter value equals: 0
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testANewGameIsShownOnTheBoard [
+	"Every cell element is built again from the cell that stands at its location now, so a cell
+	that was a mirror and is now blank draws itself blank. Page 146 needs three new rendering
+	methods for that, because its cells paint onto one shared form and a cell used to be able to
+	assume it was blank underneath."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	game newGame.
+	1 to: game grid numberOfRows do: [ :row |
+		1 to: game grid numberOfColumns do: [ :column |
+			self
+				assert: (game board cellElementAt: column @ row) renderer cell
+				equals: (game grid at: column @ row) ] ]
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testANewGameStartsWithNoMoves [
+	"Page 143 sets the count to zero when the game is built."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	self assert: game moves equals: 0.
+	self assert: game controlPanel movesCounter value equals: 0
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testAnsweringNoLeavesTheGameAsItWas [
+	"No takes the question away and does nothing else."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	game quit.
+	game confirmation answer: false.
+	self assert: game confirmation isNil.
+	self assert: game children asArray equals: {
+			game controlPanel.
+			game board }
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testAnsweringYesToAGameThatIsNotOpenIsHarmless [
+	"Yes takes the question away and closes the game. A game that was never opened has no space,
+	and closing it is harmless."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	self assert: game space isNil.
+	game quit.
+	game confirmation answer: true.
+	self assert: game confirmation isNil.
+	self assert: game children size equals: 2
 ]
 
 { #category : 'tests' }
@@ -55,6 +144,19 @@ LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoard [
 	self
 		assert: game controlPanel background paint color
 		equals: LaserGameColors controlPanelColor
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testEveryMoveOnTheBoardCountsOne [
+	"Page 144 counts the click in the mouse up handler of the board. Here the board announces the
+	move and the game counts it, so the count is shown without anything searching for the display."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	(game board cellElementAt: 1 @ 5) clickAt:
+		CellClickRegionRotateClockwise regionRectangle center.
+	self assert: game moves equals: 1.
+	self assert: game controlPanel movesCounter value equals: 1
 ]
 
 { #category : 'tests' }
@@ -122,15 +224,19 @@ LaserGameElementTestCase >> testGameTakesTheExtentItCalculates [
 ]
 
 { #category : 'tests' }
-LaserGameElementTestCase >> testQuittingAGameThatIsNotOpenDoesNothing [
-	"Quit closes the space the game is in. A game that was never opened has no space, and asking it
-	to quit is harmless."
+LaserGameElementTestCase >> testQuittingAsksBeforeItCloses [
+	"Page 144 makes the buttons smaller and puts Quit beside Fire, so #quitGame asks first. The
+	question covers the game and is not one of the two children the game lays out in a row. A
+	second click on Quit while the question stands asks nothing more."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
-	self assert: game space isNil.
 	game quit.
-	self assert: game children size equals: 2
+	self assert: game confirmation class equals: LaserGameConfirmElement.
+	self assert: game children size equals: 3.
+	self assert: game children last equals: game confirmation.
+	game quit.
+	self assert: game children size equals: 3
 ]
 
 { #category : 'tests' }

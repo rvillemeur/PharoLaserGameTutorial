@@ -1,3 +1,14 @@
+"
+I build the grids the game is played on.
+
+`demoGrid` is the hand-made board of Section 1, the one every test and every example uses. `randomizeGrid:` is the random game generator of page 145: it puts a target in the top right corner and deals mirrors onto locations it has not used yet, one for every two and a half cells of the board. It writes onto the grid it is given and clears nothing, which is why `LaserGameElement >> newGame` empties the grid first.
+
+```
+GridFactory randomizeGrid: (Grid newOfSize: 5@5)
+```
+
+`randomNumberGenerator` holds one seeded `Random` for the whole class, seeded from the clock the first time it is asked for, and `reSeed` puts it back on the clock. A test that wants the same board twice seeds it itself. The original calls `#nextInt:`, which is the Squeak name of Pharo's `#nextInteger:`; that is the only change these methods needed.
+"
 Class {
 	#name : 'GridFactory',
 	#superclass : 'Object',
@@ -9,12 +20,12 @@ Class {
 	#tag : 'Model'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 GridFactory class >> defaultGrid [
 	^self randomizedGridOfExtent: 8@10
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 GridFactory class >> demoGrid [
 	| grid |
 	grid := Grid newOfSize: 5@5.
@@ -32,7 +43,7 @@ GridFactory class >> demoGrid [
 	^grid
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'randomizing' }
 GridFactory class >> emptyRandomLocationsFor: aGrid [
 	| dict |
 	dict := Dictionary new.
@@ -45,19 +56,22 @@ GridFactory class >> emptyRandomLocationsFor: aGrid [
 	^dict
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 GridFactory class >> emptyStandardGrid [
 	^Grid newOfSize: 8@10
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'randomizing' }
 GridFactory class >> randomBoolean [
+	"Answer true or false, each as likely as the other. Squeak's Random answers #nextInt:, which
+	Pharo calls #nextInteger:; both answer one of 1 to the number asked for."
+
 	| int |
-	int := self randomNumberGenerator nextInt: 2.
+	int := self randomNumberGenerator nextInteger: 2.
 	^int > 1
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'randomizing' }
 GridFactory class >> randomNumberGenerator [
 	RandomNumberGenerator isNil ifTrue: [
 		RandomNumberGenerator := Random new.
@@ -65,12 +79,12 @@ GridFactory class >> randomNumberGenerator [
 	^RandomNumberGenerator
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'randomizing' }
 GridFactory class >> randomizeGrid: aGrid [
 	self randomizeGrid: aGrid targetAt: (aGrid numberOfColumns@1)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'randomizing' }
 GridFactory class >> randomizeGrid: aGrid targetAt: pt [
 	| emptyList loc howMany |
 	emptyList := self emptyRandomLocationsFor: aGrid.
@@ -81,7 +95,7 @@ GridFactory class >> randomizeGrid: aGrid targetAt: pt [
 		aGrid at: loc put: self randomizedMirrorCell]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 GridFactory class >> randomizedGridOfExtent: ext [
 	| grid |
 	grid := Grid newOfSize: ext.
@@ -89,24 +103,28 @@ GridFactory class >> randomizedGridOfExtent: ext [
 	^grid
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'randomizing' }
 GridFactory class >> randomizedMirrorCell [
 	^self randomBoolean
 		ifTrue: [MirrorCell leanLeft]
 		ifFalse: [MirrorCell leanRight]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'randomizing' }
 GridFactory class >> reSeed [
 	self randomNumberGenerator seed: Time totalSeconds
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'randomizing' }
 GridFactory class >> unusedRandomLocationIn: list forGrid: aGrid [
+	"Answer a location of aGrid that list does not hold yet, and mark it used. Squeak's #nextInt:
+	is Pharo's #nextInteger:; both answer one of 1 to the number asked for, which is a column or a
+	row of the grid."
+
 	| x y pt |
 	[
-	x := self randomNumberGenerator nextInt: aGrid numberOfColumns.
-	y := self randomNumberGenerator nextInt: aGrid numberOfRows.
+	x := self randomNumberGenerator nextInteger: aGrid numberOfColumns.
+	y := self randomNumberGenerator nextInteger: aGrid numberOfRows.
 	pt := x@y.
 	list at: pt
 	] whileTrue: [].

@@ -1,19 +1,18 @@
 "
 I am the control panel of the game: the column beside the board that holds its buttons and its counters.
 
-I replace the panel the 2007 `LaserGame` morph built in `makeControlPanelMorph` and filled through `addButtonsToPanel:` and `addCountersToPanel:`. I hold Toplo buttons instead of `PluggableButtonMorph`s, and I hold everything I show in an instance variable, so nothing has to search the children by name the way `findFireButton` and `findLaserPathCounter` do.
+I replace the panel the 2007 `LaserGame` morph built in `makeControlPanelMorph` and filled through `addButtonsToPanel:` and `addCountersToPanel:`. I hold Toplo buttons instead of `PluggableButtonMorph`s, and I hold what I am asked about in an instance variable, so nothing has to search the children by name the way `findFireButton`, `findLaserPathCounter` and `findMovesCounter` do.
 
-Two buttons so far, both from page 068: Quit, which closes the game, and Fire, whose label says what a click will do — `'Fire'` while the laser is off, `'Stop'` while it fires. One counter, from page 141: the length of the beam, bright while the laser fires and zero while it does not. The buttons sit at my bottom left corner and the counters at my top left corner, which is where the original's layout frames put them. Page 140 paints me transparent, so the window ramp behind me shows through. The divider and the New Game, Undo and Reset buttons come with their own pages.
+Three buttons: Quit, which asks the game to close, and Fire, whose label says what a click will do — `'Fire'` while the laser is off, `'Stop'` while it fires, both from page 068 — and New, from page 144, which deals a new randomized board. Quit and Fire share the bottom row and New has the row above it, which is how page 144 numbers them. Two counters, from pages 141 and 143: the length of the beam, bright while the laser fires, and the number of moves made, never bright. The buttons sit at my bottom left corner and the counters at my top left corner, which is where the original's layout frames put them. Page 140 paints me transparent, so the window ramp behind me shows through. The divider, Undo and Reset come with their own pages.
 
 Instance variables:
 - `game`: the `LaserGameElement` I control. Setting it builds everything I show.
-- `quitButton`, `fireButton`: the two buttons, in the order they sit in the row.
-- `buttonRow`: the row holding them.
-- `laserPathCounter`: the counter showing the length of the beam.
-- `counterColumn`: the column holding the counters.
+- `quitButton`, `fireButton`, `newGameButton`: the three buttons.
+- `buttonColumn`: the column of button rows. `buttonRow` and `newGameRow` read its two rows.
+- `laserPathCounter`, `movesCounter`: the two counters, in the order they are stacked.
+- `counterColumn`: the column holding them.
 
-I ask the game what to display and I tell the game what the player did. The one thing I read from the grid is the length of the beam, which is where page 142 reads it too.
-
+I ask the game what to display and I tell the game what the player did. The one thing I read from the grid is the length of the beam, which is where page 143 reads it too.
 "
 Class {
 	#name : 'LaserGameControlPanelElement',
@@ -22,8 +21,10 @@ Class {
 		'game',
 		'quitButton',
 		'fireButton',
-		'buttonRow',
+		'newGameButton',
+		'buttonColumn',
 		'laserPathCounter',
+		'movesCounter',
 		'counterColumn'
 	],
 	#category : 'Laser-Game-Graphics',
@@ -73,10 +74,18 @@ LaserGameControlPanelElement class >> on: aGame [
 ]
 
 { #category : 'accessing' }
-LaserGameControlPanelElement >> buttonRow [
-	"Answer the row of buttons at the bottom of me."
+LaserGameControlPanelElement >> buttonColumn [
+	"Answer the column of button rows at the bottom of me."
 
-	^ buttonRow
+	^ buttonColumn
+]
+
+{ #category : 'accessing' }
+LaserGameControlPanelElement >> buttonRow [
+	"Answer the bottom row of buttons. Page 144 counts rows from the bottom, so it is the last row
+	of the column."
+
+	^ self buttonColumn children last
 ]
 
 { #category : 'accessing' }
@@ -138,6 +147,15 @@ LaserGameControlPanelElement >> laserPathCounter [
 	^ laserPathCounter
 ]
 
+{ #category : 'accessing' }
+LaserGameControlPanelElement >> movesCounter [
+	"Answer the counter showing how many moves the player has made. I hold it, so nothing has to
+	search for it: page 143 finds it by walking every morph of the game looking for the name
+	'moves'."
+
+	^ movesCounter
+]
+
 { #category : 'initialization' }
 LaserGameControlPanelElement >> newButton: aLabel action: aBlock [
 	"Answer a labelled button of the original's size that evaluates aBlock when it is clicked. The
@@ -152,30 +170,45 @@ LaserGameControlPanelElement >> newButton: aLabel action: aBlock [
 ]
 
 { #category : 'initialization' }
-LaserGameControlPanelElement >> newButtonRow [
-	"Answer the row of buttons: Quit first, then Fire, one gap apart. The original puts these two
-	in the bottom row of its panel, and the rest of its buttons come later."
+LaserGameControlPanelElement >> newButtonColumn [
+	"Answer the column of button rows: the bottom left corner of the panel, one gap from both
+	edges, the rows one gap apart, the last row against the bottom. Page 144 places each button
+	itself with #buttonLayoutFrameForRow:column:, which counts rows from the bottom and columns
+	from the left; a column of rows says the same thing, and the rows of Section 5 fall in above
+	these two. The cell spacing of a linear layout is added around the cells as well as between
+	them, so it is the whole of the gap: a margin here would double the gap on the left and push
+	the last button of the bottom row against the board."
 
-	| row |
-	row := BlElement new.
-	row background: BlTransparentBackground new.
-	row layout: (BlLinearLayout horizontal cellSpacing: self class buttonGap).
-	row constraintsDo: [ :aConstraints |
+	| column |
+	column := BlElement new.
+	column background: BlTransparentBackground new.
+	column layout: (BlLinearLayout vertical cellSpacing: self class buttonGap).
+	column constraintsDo: [ :aConstraints |
 		aConstraints horizontal fitContent.
 		aConstraints vertical fitContent.
 		aConstraints frame horizontal alignLeft.
 		aConstraints frame vertical alignBottom ].
-	row margin: (BlInsets all: self class buttonGap).
-	row addChild: quitButton.
-	row addChild: fireButton.
-	^ row
+	column addChild: self newNewGameRow.
+	column addChild: self newButtonRow.
+	^ column
+]
+
+{ #category : 'initialization' }
+LaserGameControlPanelElement >> newButtonRow [
+	"Answer the bottom row of buttons: Quit first, then Fire. Page 144 calls them row one, columns
+	one and two."
+
+	^ self newRowOfButtons: {
+			  quitButton.
+			  fireButton }
 ]
 
 { #category : 'initialization' }
 LaserGameControlPanelElement >> newCounterColumn [
-	"Answer the column of counters: one so far, at the top left corner of the panel, one gap away
-	from both edges. The original places it with a layout frame of the same offsets, and the
-	counters of page 143 fall in under this one."
+	"Answer the column of counters: the beam length, and the move count under it, at the top left
+	corner of the panel, one gap away from both edges. Page 143 places the second counter with a
+	layout frame forty-four pixels below the first, which is the height of one counter and this
+	gap."
 
 	| column |
 	column := BlElement new.
@@ -188,6 +221,7 @@ LaserGameControlPanelElement >> newCounterColumn [
 		aConstraints frame vertical alignTop ].
 	column margin: (BlInsets all: self class counterGap).
 	column addChild: laserPathCounter.
+	column addChild: movesCounter.
 	^ column
 ]
 
@@ -199,6 +233,21 @@ LaserGameControlPanelElement >> newFireButton [
 	^ self newButton: self fireButtonLabel action: [ self game toggleLaser ]
 ]
 
+{ #category : 'accessing' }
+LaserGameControlPanelElement >> newGameButton [
+	"Answer the button that starts a new game."
+
+	^ newGameButton
+]
+
+{ #category : 'accessing' }
+LaserGameControlPanelElement >> newGameRow [
+	"Answer the row above the buttons, holding the New button. It is the first row of the column,
+	since the column reads from the top and page 144 counts from the bottom."
+
+	^ self buttonColumn children first
+]
+
 { #category : 'initialization' }
 LaserGameControlPanelElement >> newLaserPathCounter [
 	"Answer the counter showing how long the laser beam is: three digits, captioned as on page
@@ -208,10 +257,49 @@ LaserGameControlPanelElement >> newLaserPathCounter [
 ]
 
 { #category : 'initialization' }
+LaserGameControlPanelElement >> newMovesCounter [
+	"Answer the counter showing how many moves the player has made: three digits, captioned as on
+	page 143."
+
+	^ LaserGameCounterElement labelled: 'Moves' digits: 3
+]
+
+{ #category : 'initialization' }
+LaserGameControlPanelElement >> newNewGameButton [
+	"Answer the button that throws the board away and deals a new one: page 144's
+	#makeNewGameButton."
+
+	^ self newButton: 'New' action: [ self game newGame ]
+]
+
+{ #category : 'initialization' }
+LaserGameControlPanelElement >> newNewGameRow [
+	"Answer the row above it, holding the New button on the left. Page 144 calls it row two,
+	column one."
+
+	^ self newRowOfButtons: { newGameButton }
+]
+
+{ #category : 'initialization' }
 LaserGameControlPanelElement >> newQuitButton [
 	"Answer the button that closes the game. The original sends #delete to its morph."
 
 	^ self newButton: 'Quit' action: [ self game quit ]
+]
+
+{ #category : 'initialization' }
+LaserGameControlPanelElement >> newRowOfButtons: aCollection [
+	"Answer a row holding the buttons of aCollection, one gap apart, no wider than they need."
+
+	| row |
+	row := BlElement new.
+	row background: BlTransparentBackground new.
+	row layout: (BlLinearLayout horizontal cellSpacing: self class buttonGap).
+	row constraintsDo: [ :aConstraints |
+		aConstraints horizontal fitContent.
+		aConstraints vertical fitContent ].
+	aCollection do: [ :each | row addChild: each ].
+	^ row
 ]
 
 { #category : 'accessing' }
@@ -229,11 +317,13 @@ LaserGameControlPanelElement >> rebuild [
 	self removeChildren.
 	quitButton := self newQuitButton.
 	fireButton := self newFireButton.
+	newGameButton := self newNewGameButton.
 	laserPathCounter := self newLaserPathCounter.
+	movesCounter := self newMovesCounter.
 	counterColumn := self newCounterColumn.
-	buttonRow := self newButtonRow.
+	buttonColumn := self newButtonColumn.
 	self addChild: counterColumn.
-	self addChild: buttonRow.
+	self addChild: buttonColumn.
 	self extent: LaserGameElement panelWidth
 		@ (LaserGameBoardElement extentForGrid: self game grid) y.
 	self updateCounters
@@ -241,9 +331,10 @@ LaserGameControlPanelElement >> rebuild [
 
 { #category : 'updating' }
 LaserGameControlPanelElement >> updateCounters [
-	"Show how long the beam is while the laser fires, and nothing while it does not. This is page
-	142's #updateCounters, which has to find the LED among the morphs of the game first; I hold
-	it."
+	"Show how long the beam is while the laser fires, and nothing while it does not, and show how
+	many moves have been made. This is page 143's #updateCounters, which has to find each display
+	among the morphs of the game first; I hold both. The move count is never bright: only the beam
+	says whether the laser is on."
 
 	self game laserIsActive
 		ifTrue: [
@@ -253,7 +344,10 @@ LaserGameControlPanelElement >> updateCounters [
 		ifFalse: [
 			self laserPathCounter
 				highlighted: false;
-				value: 0 ]
+				value: 0 ].
+	self movesCounter
+		highlighted: false;
+		value: self game moves
 ]
 
 { #category : 'updating' }
