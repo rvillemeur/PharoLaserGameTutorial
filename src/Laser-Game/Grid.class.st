@@ -284,54 +284,70 @@ Grid >> numberOfRows: anObject [
 
 { #category : 'action' }
 Grid >> pushCell: aGridDirection fromLocation: aPoint [
+	"Push the cell at aPoint one step in aGridDirection and answer the cell that ended up where
+	it started. Page 122: only a mirror cell moves, the target never does, and the move happens
+	only when the neighbour in that direction is a blank cell, which includes there being a
+	neighbour at all. Nothing is really pushed — the mirror and the blank trade places. The beam
+	is taken off the board first and put back afterwards if the laser is on, as in
+	rotateCellClockwiseAt:, so the cells lit before the push go dark and the new path lights up."
+
 	| cell vector swapLoc swapCell |
 	cell := self at: aPoint.
-	cell class = MirrorCell ifFalse: [^cell].
+	cell class = MirrorCell ifFalse: [ ^ cell ].
 	vector := aGridDirection vector.
 	swapLoc := aPoint + vector.
 	swapCell := self at: swapLoc.
-	swapCell isNil ifTrue: [^cell].
-	swapCell class = BlankCell ifFalse: [^cell].
+	swapCell isNil ifTrue: [ ^ cell ].
+	swapCell class = BlankCell ifFalse: [ ^ cell ].
 	self clearCellsInPath.
 	self swapCell: cell with: swapCell.
-	self laserIsActive ifTrue: [self activateCellsInPath].
-	^swapCell
-
+	self laserIsActive ifTrue: [ self activateCellsInPath ].
+	^ swapCell
 ]
 
 { #category : 'action' }
 Grid >> pushCellAction: aDirectionSymbol fromLocation: aPoint [
+	"Push the cell at aPoint towards aDirectionSymbol and record the move for the undo of
+	Section 5. Page 124 turns the four direction methods into one by looking the direction up
+	from its symbol; the undo entry is the port's own addition, and it is written only when the
+	cell really moved, which is what the comparison of the two locations asks."
+
 	| direction cell swappedCell |
 	cell := self at: aPoint.
 	direction := GridDirection directionFor: aDirectionSymbol.
 	swappedCell := self pushCell: direction fromLocation: aPoint.
 	swappedCell gridLocation = cell gridLocation ifFalse: [
-		self stackAction: aDirectionSymbol forCell: cell].
-	^swappedCell 
+		self stackAction: aDirectionSymbol forCell: cell ].
+	^ swappedCell
 ]
 
 { #category : 'action' }
 Grid >> pushCellEastFromLocation: aPoint [
-	^self pushCellAction: #east fromLocation: aPoint
+	"Push the cell at aPoint one column to the right."
 
+	^ self pushCellAction: #east fromLocation: aPoint
 ]
 
 { #category : 'action' }
 Grid >> pushCellNorthFromLocation: aPoint [
-	^self pushCellAction: #north fromLocation: aPoint
+	"Push the cell at aPoint one row up. Page 122 asks for one method per direction, page 124
+	leaves them with nothing to say but their direction."
 
+	^ self pushCellAction: #north fromLocation: aPoint
 ]
 
 { #category : 'action' }
 Grid >> pushCellSouthFromLocation: aPoint [
-	^self pushCellAction: #south fromLocation: aPoint
+	"Push the cell at aPoint one row down."
 
+	^ self pushCellAction: #south fromLocation: aPoint
 ]
 
 { #category : 'action' }
 Grid >> pushCellWestFromLocation: aPoint [
-	^self pushCellAction: #west fromLocation: aPoint
+	"Push the cell at aPoint one column to the left."
 
+	^ self pushCellAction: #west fromLocation: aPoint
 ]
 
 { #category : 'action' }
@@ -387,6 +403,11 @@ Grid >> stopLaser [
 
 { #category : 'action' }
 Grid >> swapCell: aCell with: anotherCell [
+	"Trade the places of two cells. Page 122: a pushed mirror is never moved, it changes places
+	with the blank cell beside it. at:put: writes the new location into the cell, so both cells
+	know where they are afterwards, and the copies are taken before the first write because that
+	write already changes one of the two locations."
+
 	| oldLocation newLocation |
 	oldLocation := aCell gridLocation copy.
 	newLocation := anotherCell gridLocation copy.

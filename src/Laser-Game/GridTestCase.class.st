@@ -13,6 +13,42 @@ GridTestCase >> generateDemoGrid [
 ]
 
 { #category : 'tests' }
+GridTestCase >> testAPushThatMovesNothingRecordsNoMove [
+	"A push that the rules refuse is not a move, so nothing goes on the stack the undo of
+	Section 5 reads. This is what pushCellAction:fromLocation: asks when it compares the two
+	locations."
+
+	| grid |
+	grid := self generateDemoGrid.
+	grid pushCellNorthFromLocation: 1 @ 1.
+	grid pushCellWestFromLocation: 1 @ 2.
+	grid pushCellEastFromLocation: 2 @ 3.
+	grid pushCellSouthFromLocation: 5 @ 1.
+	self assert: grid movesStack isEmpty.
+	grid pushCellNorthFromLocation: 3 @ 3.
+	self assert: grid movesStack size equals: 1
+]
+
+{ #category : 'tests' }
+GridTestCase >> testAPushedMirrorIsTheSameCellInItsNewPlace [
+	"The push tests of page 123 ask which class sits where. That leaves room for a push that
+	builds a fresh mirror: the classes would still be right and the lean of the mirror, or
+	anything else the cell carries, would be lost. Both cells are the ones that were there
+	before, and both know their new location."
+
+	| grid mirror blank |
+	grid := self generateDemoGrid.
+	mirror := grid at: 3 @ 3.
+	blank := grid at: 3 @ 2.
+	grid pushCellNorthFromLocation: 3 @ 3.
+	self assert: (grid at: 3 @ 2) identicalTo: mirror.
+	self assert: (grid at: 3 @ 3) identicalTo: blank.
+	self assert: mirror gridLocation equals: 3 @ 2.
+	self assert: blank gridLocation equals: 3 @ 3.
+	self deny: mirror leansLeft
+]
+
+{ #category : 'tests' }
 GridTestCase >> testCellInteractions [
 
 	| grid cell expectedActiveLocationList foundOn |
@@ -330,6 +366,36 @@ GridTestCase >> testPushTargetCell [
 	grid pushCellEastFromLocation: 5 @ 1.
 	cell := grid at: 5 @ 1.
 	self assert: cell class equals: TargetCell
+]
+
+{ #category : 'tests' }
+GridTestCase >> testPushingAMirrorAgainstANonBlankNeighbourDoesNothing [
+	"Page 122 shows two pictures side by side: a mirror with a blank cell beside it moves, two
+	mirrors beside each other do not move together. The target is no different from a mirror
+	here — it is simply not blank, so a mirror cannot be pushed into it either."
+
+	| grid |
+	grid := self generateDemoGrid.
+	grid pushCellEastFromLocation: 2 @ 3.
+	self assert: (grid at: 2 @ 3) class equals: MirrorCell.
+	self assert: (grid at: 3 @ 3) class equals: MirrorCell.
+	grid pushCellEastFromLocation: 4 @ 1.
+	self assert: (grid at: 4 @ 1) class equals: MirrorCell.
+	self assert: (grid at: 5 @ 1) class equals: TargetCell
+]
+
+{ #category : 'tests' }
+GridTestCase >> testPushingAMirrorOffTheEdgeOfTheGridDoesNothing [
+	"There is no cell beyond the border, so the push finds nothing to trade places with. Page 122
+	states the rule as a rule about the adjacent cell; the demo grid has a mirror on the left
+	edge at 1@2 and one on the bottom edge at 1@5."
+
+	| grid |
+	grid := self generateDemoGrid.
+	grid pushCellWestFromLocation: 1 @ 2.
+	self assert: (grid at: 1 @ 2) class equals: MirrorCell.
+	grid pushCellSouthFromLocation: 1 @ 5.
+	self assert: (grid at: 1 @ 5) class equals: MirrorCell
 ]
 
 { #category : 'tests' }
