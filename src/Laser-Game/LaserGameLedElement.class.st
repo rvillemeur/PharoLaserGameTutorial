@@ -155,17 +155,21 @@ LaserGameLedElement >> highlighted: aBoolean [
 	self updateDigits
 ]
 
-{ #category : 'initialization' }
+{ #category : 'as yet unclassified' }
 LaserGameLedElement >> initialize [
-	"A display is a row of digits, one gap apart, on whatever is behind it."
+	"A display is a dark slab with a row of digits on it, one gap apart. The slab is the color the
+	original's LedMorph draws itself in, and an unlit segment takes it too, so that only the lit
+	segments are seen. The gap is a margin on each digit but the first rather than the cell spacing
+	of the layout, since a linear layout spaces the cells from its own edges as well and the last
+	digit would then be clipped."
 
 	super initialize.
 	value := 0.
 	digitCount := 0.
 	highlighted := false.
 	digitElements := #(  ).
-	self background: BlTransparentBackground new.
-	self layout: (BlLinearLayout horizontal cellSpacing: self class digitGap)
+	self background: LaserGameColors counterBodyColor.
+	self layout: BlLinearLayout horizontal
 ]
 
 { #category : 'private' }
@@ -194,21 +198,25 @@ LaserGameLedElement >> offColor [
 	^ LaserGameColors counterDigitOffColor
 ]
 
-{ #category : 'drawing' }
+{ #category : 'as yet unclassified' }
 LaserGameLedElement >> onColor [
-	"Answer the color of a lit segment: bright while I am highlighted, dim otherwise."
+	"Answer the color of a lit segment: almost white while I am highlighted, the lavender of the
+	LED otherwise."
 
 	^ highlighted
-		  ifTrue: [ LaserGameColors counterDigitColor ]
-		  ifFalse: [ LaserGameColors counterDigitColor darker ]
+		  ifTrue: [ LaserGameColors counterDigitHighlightColor ]
+		  ifFalse: [ LaserGameColors counterDigitColor ]
 ]
 
-{ #category : 'private' }
+{ #category : 'as yet unclassified' }
 LaserGameLedElement >> rebuildDigits [
-	"Replace my digits with digitCount fresh ones and take the size they need."
+	"Replace my digits with digitCount fresh ones and take the size they need. Every digit but the
+	first carries the gap in front of it as a margin."
 
 	self removeChildren.
 	digitElements := (1 to: digitCount) collect: [ :each | self newDigitElement ].
+	digitElements allButFirst do: [ :each |
+		each margin: (BlInsets left: self class digitGap) ].
 	digitElements do: [ :each | self addChild: each ].
 	self extent: (self class extentForDigits: digitCount).
 	self updateDigits

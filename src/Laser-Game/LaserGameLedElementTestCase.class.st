@@ -99,10 +99,12 @@ LaserGameLedElementTestCase >> testEveryDigitHoldsOneRectanglePerSegment [
 		self assert: bounds corner <= LaserGameLedElement digitExtent ]
 ]
 
-{ #category : 'tests' }
+{ #category : 'as yet unclassified' }
 LaserGameLedElementTestCase >> testHighlightingBrightensTheLitSegments [
-	"Page 142 highlights the counter while the laser fires. Highlighting changes the colour of the
-	segments that are lit and leaves the others alone."
+	"Page 142 highlights the counter while the laser fires. Highlighting changes the color of the
+	segments that are lit and leaves the others alone. The two colors are the ones the screenshot
+	of page 148 shows: the counter of the beam is almost white while the laser fires, and the move
+	counter beside it stays the lavender of the LED."
 
 	| led digit lit unlit |
 	led := LaserGameLedElement digits: 1.
@@ -111,11 +113,58 @@ LaserGameLedElementTestCase >> testHighlightingBrightensTheLitSegments [
 	lit := digit children second.
 	unlit := digit children first.
 	self deny: led highlighted.
-	self assert: lit background paint color equals: LaserGameColors counterDigitColor darker.
+	self
+		assert: lit background paint color
+		equals: LaserGameColors counterDigitColor.
 	led highlighted: true.
 	self assert: led highlighted.
-	self assert: lit background paint color equals: LaserGameColors counterDigitColor.
+	self
+		assert: lit background paint color
+		equals: LaserGameColors counterDigitHighlightColor.
 	self
 		assert: unlit background paint color
 		equals: LaserGameColors counterDigitOffColor
+]
+
+{ #category : 'as yet unclassified' }
+LaserGameLedElementTestCase >> testTheDigitsFitInsideTheDisplay [
+	"Every digit has to be inside the display, which clips what sticks out of it. A linear layout
+	adds its cell spacing around the cells as well as between them, so the gap between two digits
+	is a margin on each digit but the first, and the row comes to exactly the width the display
+	takes."
+
+	| led spacing used |
+	led := LaserGameLedElement digits: 3.
+	spacing := led layout cellSpacing.
+	used := (led digitElements size + 1 * spacing)
+	        + (led digitElements inject: 0 into: [ :sum :each |
+			         sum + each constraints horizontal resizer size + each margin left
+			         + each margin right ]).
+	self assert: used equals: (LaserGameLedElement extentForDigits: 3) x.
+	self assert: led digitElements first margin left equals: 0.
+	self
+		assert: led digitElements second margin left
+		equals: LaserGameLedElement digitGap
+]
+
+{ #category : 'as yet unclassified' }
+LaserGameLedElementTestCase >> testUnlitSegmentsVanishIntoTheBody [
+	"The original's display is a dark slab, and a segment that is not lit is the color of that
+	slab, so only the lit ones are seen. The port paints the same two colors, which means the
+	display has to carry the slab as its own background: on the ramp of page 140 an unlit segment
+	would otherwise read as a lit one."
+
+	| led unlit |
+	led := LaserGameLedElement digits: 1.
+	led value: 1.
+	unlit := led digitElements first children first.
+	self
+		assert: led background paint color
+		equals: LaserGameColors counterBodyColor.
+	self
+		assert: unlit background paint color
+		equals: LaserGameColors counterBodyColor.
+	self
+		assert: LaserGameColors counterDigitOffColor
+		equals: LaserGameColors counterBodyColor
 ]

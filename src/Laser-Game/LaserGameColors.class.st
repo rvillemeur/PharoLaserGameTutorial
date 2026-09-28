@@ -61,6 +61,15 @@ LaserGameColors class >> controlPanelColor [
 ]
 
 { #category : 'colors' }
+LaserGameColors class >> counterBodyColor [
+	"Answer the color of the slab a counter shows its digits on. The original's LedMorph draws
+	itself on this dark lavender, and a segment that is not lit is painted the same color, so only
+	the lit segments are seen. Sampled from the screenshot of page 148."
+
+	^ Color r: 0.33 g: 0.33 b: 0.52
+]
+
+{ #category : 'colors' }
 LaserGameColors class >> counterBorderColor [
 	"Answer the color of the frame around a counter. Page 141 asks for a two pixel
 	#complexAltInset border, a bevel drawn in two shades of the color behind it; Bloc draws a
@@ -77,11 +86,20 @@ LaserGameColors class >> counterDigitColor [
 ]
 
 { #category : 'colors' }
-LaserGameColors class >> counterDigitOffColor [
-	"Answer the color of a segment that is not lit. The original's LedMorph draws those in a
-	darkened version of its own color, which is what this is."
+LaserGameColors class >> counterDigitHighlightColor [
+	"Answer the color a counter lights its segments in while it is highlighted. Page 142 brightens
+	the counter of the beam while the laser fires, and the screenshot of page 148 has it almost
+	white, against the lavender of the counter beside it."
 
-	^ self counterDigitColor muchDarker
+	^ Color r: 0.95 g: 1.0 b: 1.0
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> counterDigitOffColor [
+	"Answer the color of a segment that is not lit: the slab behind it, which is how the original
+	hides it."
+
+	^ self counterBodyColor
 ]
 
 { #category : 'colors' }
