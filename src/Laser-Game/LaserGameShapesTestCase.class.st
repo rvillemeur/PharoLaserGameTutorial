@@ -15,6 +15,37 @@ LaserGameShapesTestCase >> requestedExtentOf: anElement [
 	  @ anElement constraints vertical resizer size
 ]
 
+{ #category : 'as yet unclassified' }
+LaserGameShapesTestCase >> testABeamIsAPaleBandWithABrightCentreOnIt [
+	"Page 152 takes two masks out of the painted beam, a wide splatter and a narrow centre, and
+	page 153 paints them in two colours. Here the beam is an element holding two bars: the pale
+	one first, the bright one on top of it, both running the whole length and both centred across
+	it."
+
+	| extent element splatter centre |
+	extent := 50 @ 50.
+	element := LaserGameShapes horizontalLaserBeamElementOfExtent: extent.
+	self assert: (self requestedExtentOf: element) equals: extent.
+	self assert: element children size equals: 2.
+	splatter := element children first.
+	centre := element children second.
+	self
+		assert: splatter background paint color
+		equals: LaserGameColors laserBeamSplatterColor.
+	self
+		assert: centre background paint color
+		equals: LaserGameColors laserBeamCenterColor.
+	self assert: (self requestedExtentOf: splatter) x equals: extent x.
+	self assert: (self requestedExtentOf: centre) x equals: extent x.
+	self
+		assert: (self requestedExtentOf: centre) y
+		< (self requestedExtentOf: splatter) y.
+	element children do: [ :each |
+		self
+			assert: each constraints position + ((self requestedExtentOf: each) / 2)
+			equals: extent / 2 ]
+]
+
 { #category : 'tests' }
 LaserGameShapesTestCase >> testACrossHairIsTwoBarsCrossingAtTheCentre [
 	"The cross hair of page 083 is two crossing lines. Here it is an element holding two bars,
@@ -39,6 +70,33 @@ LaserGameShapesTestCase >> testACrossHairIsTwoBarsCrossingAtTheCentre [
 	self
 		assert: (self requestedExtentOf: horizontal) x
 		equals: (self requestedExtentOf: vertical) y
+]
+
+{ #category : 'as yet unclassified' }
+LaserGameShapesTestCase >> testAVerticalBeamIsTheHorizontalOneTurned [
+	"A beam runs across a cell or down it. The original has one painted form and turns the drawing
+	by asking the mask for a vertical strip instead of a horizontal one; here the two bars are the
+	same two bars with their sides exchanged, so the two beams meet at the same thickness where a
+	path turns."
+
+	| extent horizontal vertical |
+	extent := 50 @ 50.
+	horizontal := LaserGameShapes horizontalLaserBeamElementOfExtent: extent.
+	vertical := LaserGameShapes verticalLaserBeamElementOfExtent: extent.
+	self assert: (self requestedExtentOf: vertical) equals: extent.
+	self assert: vertical children size equals: 2.
+	vertical children asArray
+		with: horizontal children asArray
+		do: [ :down :across |
+			self
+				assert: (self requestedExtentOf: down)
+				equals: (self requestedExtentOf: across) transposed.
+			self
+				assert: down background paint color
+				equals: across background paint color.
+			self
+				assert: down constraints position + ((self requestedExtentOf: down) / 2)
+				equals: extent / 2 ]
 ]
 
 { #category : 'tests' }
@@ -133,6 +191,32 @@ LaserGameShapesTestCase >> testShapesAreBuiltAtWhateverSizeIsAsked [
 		{ LaserGameShapes northArrowElementOfExtent: extent.
 		LaserGameShapes crossHairElementOfExtent: extent } do: [ :element |
 			self assert: (self requestedExtentOf: element) equals: extent ] ]
+]
+
+{ #category : 'as yet unclassified' }
+LaserGameShapesTestCase >> testTheBeamGetsThickerWithTheCell [
+	"The original paints one beam form of one cell size and scales the bitmap when the cell grows,
+	so the beam keeps its proportions. Here the two thicknesses are computed from the extent, which
+	comes to the same thing: twice the cell, twice the beam."
+
+	| small large |
+	small := LaserGameShapes horizontalLaserBeamElementOfExtent: 30 @ 30.
+	large := LaserGameShapes horizontalLaserBeamElementOfExtent: 60 @ 60.
+	self
+		assert: (self requestedExtentOf: large children first) y
+		equals: (self requestedExtentOf: small children first) y * 2.
+	self
+		assert: (self requestedExtentOf: large children second) y
+		equals: (self requestedExtentOf: small children second) y * 2.
+	self
+		assert: (self requestedExtentOf: small children first) y
+		equals: (LaserGameShapes laserBeamSplatterThicknessFor: 30 @ 30).
+	self
+		assert: (self requestedExtentOf: small children second) y
+		equals: (LaserGameShapes laserBeamCenterThicknessFor: 30 @ 30).
+	self
+		assert: (LaserGameShapes laserBeamCenterThicknessFor: 2 @ 2)
+		equals: 1
 ]
 
 { #category : 'tests' }
