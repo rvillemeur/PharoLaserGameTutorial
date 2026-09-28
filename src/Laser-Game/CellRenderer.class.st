@@ -169,6 +169,15 @@ CellRenderer >> grid: anObject [
 ]
 
 { #category : 'interaction' }
+CellRenderer >> hintColorAt: aPoint [
+	"Answer the colour a hint arrow is painted in at aPoint, in the coordinates of my cell. My
+	cell reacts to nothing, so the question does not arise here and the neutral grey of page 081
+	is answered; the mirror renderer asks the click region whether the move is allowed."
+
+	^ LaserGameShapes arrowColor
+]
+
+{ #category : 'interaction' }
 CellRenderer >> hintRegionAt: aPoint [
 	"Answer the click region whose hint applies at aPoint, in the coordinates of my cell, or nil
 	when my cell offers no hint at all. Every renderer is asked, and all but the mirror answer

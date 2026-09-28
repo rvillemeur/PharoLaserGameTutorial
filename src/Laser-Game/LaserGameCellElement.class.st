@@ -197,14 +197,19 @@ LaserGameCellElement >> showPositionHintAt: aPoint [
 
 { #category : 'hints' }
 LaserGameCellElement >> updateHintElement [
-	"Show the picture of the hint I hold, and no other. The original drew its arrow straight onto
-	the board form, which is why page 093 warns that old arrows have to be cleaned off; here the
-	arrow is a child of mine, so the previous one goes when it is removed."
+	"Show the picture of the hint I hold, and no other, in the colour of what a click there would
+	do. The original drew its arrow straight onto the board form, which is why page 093 warns
+	that old arrows have to be cleaned off; here the arrow is a child of mine, so the previous
+	one goes when it is removed. The colour comes from page 130: my renderer answers green when
+	the move is allowed and red when it is refused. A region without a picture, such as the
+	ignore margin, answers nothing and leaves me with no hint at all."
 
 	hintElement ifNotNil: [ :each | self removeChild: each ].
 	hintElement := hintRegion ifNotNil: [ :region |
 		               region hintElementOfExtent: CellRenderer hintArrowExtent ].
 	hintElement ifNotNil: [ :each |
-		each position: CellRenderer hintArrowOffset.
+		each
+			background: (self renderer hintColorAt: hintPosition);
+			position: CellRenderer hintArrowOffset.
 		self addChild: each ]
 ]

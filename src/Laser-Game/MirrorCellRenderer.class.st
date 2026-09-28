@@ -46,17 +46,19 @@ MirrorCellRenderer >> cornerInset [
 	^8@8
 ]
 
-{ #category : 'drawing' }
-MirrorCellRenderer >> hintArrowColorFor: regionClass offset: offsetWithinCell [
-	| permissionToActOnCell arrowColor |
-	permissionToActOnCell := regionClass
-								canActOnCellAtPoint: offsetWithinCell 
-								cell: self cell 
-								withinGrid: self grid.
-	arrowColor := permissionToActOnCell
-		ifTrue: [LaserGameColors allowActionArrowColor]
-		ifFalse: [LaserGameColors denyActionArrowColor].
-	^arrowColor
+{ #category : 'interaction' }
+MirrorCellRenderer >> hintColorAt: aPoint [
+	"Answer the colour of the hint arrow at aPoint, in the coordinates of my cell: page 130 wants
+	the arrow to say whether the move it offers could actually be made. The region the point
+	falls in knows — the outside region always allows a turn, and the inside region asks the
+	push region whether the cell beside mine would let my cell through."
+
+	^ ((CellClickRegion clickRegionForPoint: aPoint)
+		   canActOnCellAtPoint: aPoint
+		   cell: self cell
+		   withinGrid: self grid)
+		  ifTrue: [ LaserGameColors allowActionArrowColor ]
+		  ifFalse: [ LaserGameColors denyActionArrowColor ]
 ]
 
 { #category : 'interaction' }

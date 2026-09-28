@@ -67,6 +67,53 @@ LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testAPushArrowIsColouredByWhetherThePushIsAllowed [
+	"Page 130: the arrow says which way a click would move the cell, and nothing says whether it
+	could. The mirror at 4@1 can be pushed south, where 4@2 is blank, and cannot be pushed east,
+	where the target stands. Same cell, same pointer, two colours."
+
+	| board element |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle topCenter + (0 @ 1);
+			 yourself).
+	self assert: element hintRegion equals: CellClickRegionPushSouth.
+	self
+		assert: element hintElement background paint color
+		equals: LaserGameColors allowActionArrowColor.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle leftCenter + (1 @ 0);
+			 yourself).
+	self assert: element hintRegion equals: CellClickRegionPushEast.
+	self
+		assert: element hintElement background paint color
+		equals: LaserGameColors denyActionArrowColor
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testARotateArrowIsAlwaysColouredAsAllowed [
+	"A mirror can always be turned, in either direction, whatever stands around it. Page 131 says
+	so in one line — the outside region answers true — so both rotate arrows are drawn in the
+	colour of a move that is allowed, even on a mirror that is boxed in."
+
+	| board element |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 3 @ 3.
+	{ (CellClickRegionOutside regionRectangle topLeft
+	  -> CellClickRegionRotateClockwise).
+	(CellClickRegionOutside regionRectangle bottomLeft - (0 @ 1)
+	 -> CellClickRegionRotateCounterClockwise) } do: [ :each |
+		element dispatchEvent: (BlMouseMoveEvent new
+				 position: each key;
+				 yourself).
+		self assert: element hintRegion equals: each value.
+		self
+			assert: element hintElement background paint color
+			equals: LaserGameColors allowActionArrowColor ]
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testClickingACellElementRecordsItsCell [
 	"A click reaches the cell element under the pointer, and the board records the cell that was
 	clicked. The original checked that mouse down and mouse up fell in the same cell itself;
