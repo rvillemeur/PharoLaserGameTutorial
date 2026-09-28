@@ -233,9 +233,11 @@ LaserGameElementTestCase >> testBoardShowsTheGridOfTheGame [
 ]
 
 { #category : 'tests' }
-LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoard [
+LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoardOrItsContents [
 	"The panel keeps the original's width whatever the grid is, and it is as tall as the board
-	beside it. Sizes are read from the layout constraints, since nothing is laid out yet."
+	beside it — or as tall as what it holds, when that is more, which is what a board of five rows
+	comes to once page 181 has added the mirror counters. Sizes are read from the layout
+	constraints, since nothing is laid out yet."
 
 	| grid game |
 	grid := GridFactory demoGrid.
@@ -245,7 +247,7 @@ LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoard [
 		equals: LaserGameElement panelWidth.
 	self
 		assert: game controlPanel constraints vertical resizer size
-		equals: (LaserGameBoardElement extentForGrid: grid) y.
+		equals: (LaserGameControlPanelElement heightForGrid: grid).
 	self
 		assert: game controlPanel background paint color
 		equals: LaserGameColors controlPanelColor
@@ -266,18 +268,23 @@ LaserGameElementTestCase >> testEveryMoveOnTheBoardCountsOne [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins [
-	"The game is as wide as the board, the panel beside it and a margin on each side, and as
-	tall as the board with a margin above and below. This is the original's calculatedExtent."
+	"The game is as wide as the board, the panel beside it and a margin on each side, and as tall
+	as the taller of the board and the panel, with a margin above and below. This is the
+	original's calculatedExtent, which knows only the board height; the demo grid is short enough
+	for the panel to decide instead."
 
 	| grid expected |
 	grid := GridFactory demoGrid.
-	expected := (LaserGameBoardElement extentForGrid: grid)
-	            + (LaserGameElement panelWidth @ 0)
+	expected := (LaserGameBoardElement extentForGrid: grid) x
+	            + LaserGameElement panelWidth
+	            @ (LaserGameControlPanelElement heightForGrid: grid)
 	            + (2 * LaserGameElement gameMargin).
 	self assert: (LaserGameElement extentForGrid: grid) equals: expected.
 	self
 		assert: (LaserGameElement extentForGrid: grid)
-		equals: 5 * CellRenderer cellExtent + (110 @ 0) + 20
+		equals:
+			5 * CellRenderer cellExtent x + 110
+			@ LaserGameControlPanelElement contentHeight + 20
 ]
 
 { #category : 'tests' }

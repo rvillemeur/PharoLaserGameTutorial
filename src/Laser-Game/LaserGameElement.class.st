@@ -41,9 +41,12 @@ Class {
 LaserGameElement class >> extentForGrid: aGrid [
 	"Answer the extent a game showing aGrid occupies: the board, the control panel beside it, and
 	one margin on each side. This is the original's calculatedExtent, with the board element
-	standing in for the board form."
+	standing in for the board form. The height is the taller of the board and the panel, since a
+	board of few rows is shorter than everything the panel holds; the original has no such case
+	and takes the board height alone."
 
-	^ (LaserGameBoardElement extentForGrid: aGrid) + (self panelWidth @ 0)
+	^ (LaserGameBoardElement extentForGrid: aGrid) x + self panelWidth
+	  @ (LaserGameControlPanelElement heightForGrid: aGrid)
 	  + (2 * self gameMargin)
 ]
 

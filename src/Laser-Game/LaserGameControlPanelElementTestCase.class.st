@@ -30,6 +30,20 @@ LaserGameControlPanelElementTestCase >> testARowOfTwoButtonsFitsInsideThePanel [
 ]
 
 { #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testActiveMirrorsCounterIsThreeDigitsCaptionedActiveMirrors [
+	"Page 181's second new counter, captioned Active Mirrors. That caption is the longest of the
+	four, and it is why the original widens its panel on the same page."
+
+	| panel |
+	panel := self newPanel.
+	self assert: panel activeMirrorsCounter class equals: LaserGameCounterElement.
+	self assert: panel activeMirrorsCounter led digitCount equals: 3.
+	self
+		assert: panel activeMirrorsCounter label text asString
+		equals: 'Active Mirrors'
+]
+
+{ #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testButtonColumnSitsAtTheBottomLeftOneGapIn [
 	"The buttons are aligned to the bottom left corner of the panel, one gap away from both edges,
 	and the rows are one gap apart. That is where page 144's layout frames put them, counting rows
@@ -72,14 +86,41 @@ LaserGameControlPanelElementTestCase >> testButtonsKeepTheOriginalSize [
 ]
 
 { #category : 'tests' }
-LaserGameControlPanelElementTestCase >> testCounterColumnHoldsTheBeamCounterAboveTheMoveCounter [
-	"Page 143 adds the move counter under the beam counter, one counter lower in the same column."
+LaserGameControlPanelElementTestCase >> testContentHeightIsWhatTheCountersAndButtonsMeasure [
+	"The height the panel falls back on is stated from the constants, so that it can be asked of
+	the class before a panel exists. Here it is checked against what the two columns actually
+	measure, which is the only thing that keeps the statement true."
+
+	| panel counters buttons |
+	panel := self newPanel.
+	counters := panel counterColumn.
+	buttons := panel buttonColumn.
+	counters measure: BlExtentMeasurementSpec unspecified.
+	buttons measure: BlExtentMeasurementSpec unspecified.
+	self
+		assert: LaserGameControlPanelElement contentHeight
+		equals:
+			counters measuredExtent y
+			+ (2 * LaserGameControlPanelElement counterGap)
+			+ buttons measuredExtent y.
+	self
+		assert: counters children size
+		equals: LaserGameControlPanelElement counterCount
+]
+
+{ #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testCounterColumnHoldsTheFourCountersInOrder [
+	"Page 181 adds the mirror counters under the two the panel already had, in the order the
+	layout frames of that page put them: the beam, the moves, the mirrors, then the active
+	mirrors."
 
 	| panel |
 	panel := self newPanel.
 	self assert: panel counterColumn children asArray equals: {
 			panel laserPathCounter.
-			panel movesCounter }
+			panel movesCounter.
+			panel mirrorsCounter.
+			panel activeMirrorsCounter }
 ]
 
 { #category : 'tests' }
@@ -126,6 +167,25 @@ LaserGameControlPanelElementTestCase >> testCounterShowsTheBeamLengthOnlyWhileTh
 ]
 
 { #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testEveryCounterFitsInsideThePanel [
+	"Page 181 widens the panel because the caption of the active mirrors counter is longer than
+	the ones before it. Here the panel width is the width of a row of two buttons, so the check
+	runs the other way: the widest counter has to fit in the width the buttons ask for, with the
+	gap on both sides. A counter takes the size of its caption, so the column is asked to measure
+	itself first; nothing is laid out, and no element is opened."
+
+	| panel |
+	panel := self newPanel.
+	panel counterColumn measure: BlExtentMeasurementSpec unspecified.
+	panel counterColumn children do: [ :counter |
+		self
+			assert:
+				counter measuredExtent x
+				+ (2 * LaserGameControlPanelElement counterGap)
+			<= LaserGameElement panelWidth ]
+]
+
+{ #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testFireButtonSaysWhatAClickWillDo [
 	"The label names the action, not the state: Fire while the laser is off, Stop while it fires."
 
@@ -148,6 +208,43 @@ LaserGameControlPanelElementTestCase >> testLaserPathCounterIsThreeDigitsCaption
 	self assert: panel laserPathCounter class equals: LaserGameCounterElement.
 	self assert: panel laserPathCounter led digitCount equals: 3.
 	self assert: panel laserPathCounter label text asString equals: 'Laser Path'
+]
+
+{ #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testMirrorCountersShowTheGridCountsAndAreNeverBright [
+	"Page 182 sets both mirror counters from the grid with #highlighted: false, like the move
+	counter: only the beam counter says whether the laser is on. The demo grid holds ten mirrors,
+	of which three are lit once the laser fires; the numbers are read from the grid, since
+	GridTestCase is where they are written down."
+
+	| panel |
+	panel := self newPanel.
+	self
+		assert: panel mirrorsCounter value
+		equals: panel game grid numberOfMirrors.
+	self assert: panel activeMirrorsCounter value equals: 0.
+	panel game grid fireLaser.
+	panel updateCounters.
+	self
+		assert: panel mirrorsCounter value
+		equals: panel game grid numberOfMirrors.
+	self
+		assert: panel activeMirrorsCounter value
+		equals: panel game grid numberOfActiveMirrors.
+	self assert: panel activeMirrorsCounter value > 0.
+	self deny: panel mirrorsCounter highlighted.
+	self deny: panel activeMirrorsCounter highlighted
+]
+
+{ #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testMirrorsCounterIsThreeDigitsCaptionedMirrors [
+	"Page 181's first new counter: the same three digit display as the others, captioned Mirrors."
+
+	| panel |
+	panel := self newPanel.
+	self assert: panel mirrorsCounter class equals: LaserGameCounterElement.
+	self assert: panel mirrorsCounter led digitCount equals: 3.
+	self assert: panel mirrorsCounter label text asString equals: 'Mirrors'
 ]
 
 { #category : 'tests' }
@@ -212,8 +309,11 @@ LaserGameControlPanelElementTestCase >> testPanelHoldsARowOfTwoButtons [
 ]
 
 { #category : 'tests' }
-LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBoard [
-	"The panel sizes itself now: the original's panel width, and the height of the board beside it."
+LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBoardOrItsContents [
+	"The panel sizes itself: the original's panel width, and the height of the board beside it —
+	unless the board is shorter than what the panel holds, which the demo grid of five rows is
+	once page 181 has added the mirror counters. Then the panel keeps the height of its contents,
+	so the counters never reach the buttons."
 
 	| grid panel |
 	grid := GridFactory demoGrid.
@@ -223,7 +323,16 @@ LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBo
 		equals: LaserGameElement panelWidth.
 	self
 		assert: panel constraints vertical resizer size
-		equals: (LaserGameBoardElement extentForGrid: grid) y
+		equals: LaserGameControlPanelElement contentHeight.
+	self
+		assert: LaserGameControlPanelElement contentHeight
+		> (LaserGameBoardElement extentForGrid: grid) y.
+	self
+		assert: (LaserGameControlPanelElement heightForGrid:
+				 (GridFactory randomizedGridOfExtent: 8 @ 10))
+		equals:
+			(LaserGameBoardElement extentForGrid:
+				 (GridFactory randomizedGridOfExtent: 8 @ 10)) y
 ]
 
 { #category : 'tests' }
