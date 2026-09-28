@@ -34,6 +34,16 @@ CellRenderer class >> cellExtent [
 	^50@50
 ]
 
+{ #category : 'constants' }
+CellRenderer class >> crossHairExtent [
+	"Answer the size the cross hair under the pointer is drawn at. Page 134 draws it into a form
+	of one cell, with arms of ten pixels in the thirty pixel cell of the time, and the shape
+	makes its arms a third of what it is given, so a cell is the size that keeps those
+	proportions."
+
+	^ self cellExtent
+]
+
 { #category : 'accessing' }
 CellRenderer class >> hintArrowExtent [
 	"Answer the size a hint arrow is drawn at: a couple of pixels smaller than a cell, which is

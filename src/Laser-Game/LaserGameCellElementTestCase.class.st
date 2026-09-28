@@ -42,10 +42,37 @@ LaserGameCellElementTestCase >> testACellElementKnowsTheCellItShows [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testACrossHairMarksThePointWhereAHintIsShown [
+	"Page 134: the pointer itself gets in the way of the hint it asks for. The port cannot swap
+	the system cursor, since every cursor in the image is a Form, so it draws the cross hair of
+	page 134 in the cell, centred on the point a click would use. An element is measured in a
+	layout pass, so what it was asked for is read from its constraints."
+
+	| board element point extent |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	point := CellClickRegionInside regionRectangle center.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: point;
+			 yourself).
+	extent := CellRenderer crossHairExtent.
+	self assert: element crossHairElement isNotNil.
+	self
+		assert:
+		element crossHairElement constraints horizontal resizer size
+		@ element crossHairElement constraints vertical resizer size
+		equals: extent.
+	self
+		assert: element crossHairElement constraints position + (extent // 2)
+		equals: point
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime [
 	"The fourth design consideration of page 093: old arrows must not clutter the board. The
 	original had to redraw the cell before drawing the new arrow; here the cell has one hint
-	child, and moving to another push region replaces it."
+	child, and moving to another push region replaces it. Two children come with a hint since
+	Section 4.2: the arrow and the cross hair under the pointer."
 
 	| board element rect childCount |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -58,7 +85,7 @@ LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime [
 		element dispatchEvent: (BlMouseMoveEvent new
 				 position: each key;
 				 yourself).
-		self assert: element children size equals: childCount + 1.
+		self assert: element children size equals: childCount + 2.
 		self
 			assert: element hintElement geometry vertices
 			equals: (LaserGameShapes
@@ -554,7 +581,8 @@ LaserGameCellElementTestCase >> testTheArrowGoesWhenThePointerLeavesOrReachesARe
 LaserGameCellElementTestCase >> testTheArrowStaysWhenTheCellUnderThePointerStillOffersIt [
 	"The other half of the same rule: a turn leaves the mirror where it is, so the hint under the
 	pointer is still the right one and the arrow survives the redraw. The hint is read from the
-	cell that stands there after the action, not kept and not dropped."
+	cell that stands there after the action, not kept and not dropped. The cross hair of Section
+	4.2 comes back with it, which is the second of the two children counted here."
 
 	| board element childCount |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -570,7 +598,64 @@ LaserGameCellElementTestCase >> testTheArrowStaysWhenTheCellUnderThePointerStill
 	self assert: element cell class equals: MirrorCell.
 	self assert: element hintRegion equals: CellClickRegionRotateClockwise.
 	self assert: (element children includes: element hintElement).
-	self assert: element children size equals: childCount + 1
+	self assert: (element children includes: element crossHairElement).
+	self assert: element children size equals: childCount + 2
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testTheCrossHairFollowsThePointerWithinOneRegion [
+	"The arrow is built once per region, since it does not change while the pointer stays in one,
+	but the cross hair marks a point and moves with every event."
+
+	| board element first second extent |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	element := board cellElementAt: 4 @ 1.
+	extent := CellRenderer crossHairExtent.
+	first := CellClickRegionInside regionRectangle center.
+	second := first + (0 @ 4).
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: first;
+			 yourself).
+	self assert: element hintRegion equals: CellClickRegionPushNorth.
+	element dispatchEvent: (BlMouseMoveEvent new
+			 position: second;
+			 yourself).
+	self assert: element hintRegion equals: CellClickRegionPushNorth.
+	self
+		assert: element crossHairElement constraints position + (extent // 2)
+		equals: second
+]
+
+{ #category : 'tests' }
+LaserGameCellElementTestCase >> testTheCrossHairIsShownExactlyWhenAHintIs [
+	"Page 135 sets the cursor back to the default in the two places the hint goes: a point that
+	offers no action, and the pointer leaving. A cell that offers nothing, like the blank one at
+	2@2, never shows either."
+
+	| board mirror blank |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	mirror := board cellElementAt: 4 @ 1.
+	blank := board cellElementAt: 2 @ 2.
+	mirror dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle center;
+			 yourself).
+	self assert: mirror crossHairElement isNotNil.
+	mirror dispatchEvent: (BlMouseMoveEvent new
+			 position: 0 @ 0;
+			 yourself).
+	self assert: mirror hintRegion equals: CellClickRegionIgnore.
+	self assert: mirror hintElement isNil.
+	self assert: mirror crossHairElement isNil.
+	mirror dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle center;
+			 yourself).
+	self assert: mirror crossHairElement isNotNil.
+	mirror dispatchEvent: BlMouseLeaveEvent new.
+	self assert: mirror crossHairElement isNil.
+	blank dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle center;
+			 yourself).
+	self assert: blank crossHairElement isNil
 ]
 
 { #category : 'tests' }

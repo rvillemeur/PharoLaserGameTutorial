@@ -19,7 +19,8 @@ Class {
 		'renderer',
 		'hintRegion',
 		'hintElement',
-		'hintPosition'
+		'hintPosition',
+		'crossHairElement'
 	],
 	#category : 'Laser-Game-Graphics',
 	#package : 'Laser-Game',
@@ -79,6 +80,13 @@ LaserGameCellElement >> clickRegionAt: aPoint [
 	Bloc hands to an event handler, so no board offset is subtracted first."
 
 	^ CellClickRegion clickRegionForPoint: aPoint
+]
+
+{ #category : 'hints' }
+LaserGameCellElement >> crossHairElement [
+	"Answer the cross hair I show under the pointer, or nil when I show none."
+
+	^ crossHairElement
 ]
 
 { #category : 'accessing' }
@@ -148,8 +156,8 @@ LaserGameCellElement >> redraw [
 	one than before, since a push swaps two cells, so the renderer is chosen again — and so is
 	the hint, at the point the pointer was last seen at, because page 126 of the original is the
 	tale of a view that went on believing in the cell that had moved away. A blank cell offers no
-	push, so the arrow of the mirror that left goes with it. The original repainted a rectangle
-	of the board form and called it redrawCell."
+	push, so the arrow of the mirror that left goes with it, and the cross hair with the arrow.
+	The original repainted a rectangle of the board form and called it redrawCell."
 
 	| grid location point |
 	grid := self renderer grid.
@@ -158,6 +166,7 @@ LaserGameCellElement >> redraw [
 	self removeChildren.
 	hintElement := nil.
 	hintRegion := nil.
+	crossHairElement := nil.
 	self renderer: (CellRenderer rendererFor: (grid at: location) grid: grid).
 	self renderer renderBackgroundOn: self.
 	self renderer renderBorderOn: self.
@@ -183,16 +192,39 @@ LaserGameCellElement >> renderer: aCellRenderer [
 LaserGameCellElement >> showPositionHintAt: aPoint [
 	"Keep the hint my renderer answers for aPoint, which is in my own coordinates, and show it.
 	My renderer decides: a mirror answers the region the point falls in, every other cell answers
-	nothing. A move within the same region changes nothing, so the arrow is built once. The point
-	itself is kept, because a redraw has to ask the question again for the cell that stands in me
-	then."
+	nothing. A move within the same region changes nothing about the arrow, so it is built once;
+	the cross hair of page 134 marks the point itself and moves with every event. The point is
+	kept, because a redraw has to ask the question again for the cell that stands in me then."
 
 	| region |
 	hintPosition := aPoint.
 	region := self renderer hintRegionAt: aPoint.
-	region = hintRegion ifTrue: [ ^ self ].
+	region = hintRegion ifTrue: [ ^ self updateCrossHairElement ].
 	hintRegion := region.
 	self updateHintElement
+]
+
+{ #category : 'hints' }
+LaserGameCellElement >> updateCrossHairElement [
+	"Mark the point the pointer is at, whenever I show a hint, and mark no point when I show
+	none. Page 134 wants that mark because the pointer hides the arrow it asks for: the original
+	replaces the cursor picture with a cross hair while the pointer is over a hint, and puts the
+	default back when it is not. The port cannot replace the cursor picture, since every cursor
+	in the image is a Form and no class here may depend on one, so the cross hair is drawn in the
+	cell instead, centred on the point a click would use. It is built when the hint is and then
+	only moved, since the pointer sends an event for every pixel it crosses."
+
+	hintElement ifNil: [
+		crossHairElement ifNotNil: [ :each |
+			self removeChild: each.
+			crossHairElement := nil ].
+		^ self ].
+	crossHairElement ifNil: [
+		crossHairElement := LaserGameShapes crossHairElementOfExtent:
+			                    CellRenderer crossHairExtent.
+		self addChild: crossHairElement ].
+	crossHairElement position:
+		hintPosition - (CellRenderer crossHairExtent // 2)
 ]
 
 { #category : 'hints' }
@@ -202,7 +234,9 @@ LaserGameCellElement >> updateHintElement [
 	that old arrows have to be cleaned off; here the arrow is a child of mine, so the previous
 	one goes when it is removed. The colour comes from page 130: my renderer answers green when
 	the move is allowed and red when it is refused. A region without a picture, such as the
-	ignore margin, answers nothing and leaves me with no hint at all."
+	ignore margin, answers nothing and leaves me with no hint at all. The cross hair of page 134
+	is shown exactly when the arrow is, and is dropped here so that it is added after the arrow
+	and stays the child on top of it."
 
 	hintElement ifNotNil: [ :each | self removeChild: each ].
 	hintElement := hintRegion ifNotNil: [ :region |
@@ -211,5 +245,9 @@ LaserGameCellElement >> updateHintElement [
 		each
 			background: (self renderer hintColorAt: hintPosition);
 			position: CellRenderer hintArrowOffset.
-		self addChild: each ]
+		self addChild: each ].
+	crossHairElement ifNotNil: [ :each |
+		self removeChild: each.
+		crossHairElement := nil ].
+	self updateCrossHairElement
 ]

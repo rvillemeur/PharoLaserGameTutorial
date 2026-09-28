@@ -80,13 +80,6 @@ LaserGameForms class >> counterClockwiseArrow [
 ]
 
 { #category : 'as yet unclassified' }
-LaserGameForms class >> crossHair [
-	CachedForms isNil ifTrue: [self initializeCachedForms].
-	^CachedForms at: #crossHair
-
-]
-
-{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawCenterLaserBeamMask [
     ^(Form
 	extent: 736@196
@@ -211,28 +204,6 @@ LaserGameForms class >> drawCounterClockwiseArrowHeadOn: form withPen: penForm [
 ]
 
 { #category : 'as yet unclassified' }
-LaserGameForms class >> drawCrossHair [
-	"LaserGameForms initializeCachedForms"
-	| form pen startPoint endPoint line lineLength inset |
-	lineLength := 10.
-	form := Form extent: CellRenderer cellExtent depth: 32.
-	form fillColor: Color transparent.
-	pen := Form extent: 1@1 depth: 1.
-	pen fillColor: Color black.
-	inset := ((form width - lineLength) // 2)@((form height - lineLength) // 2).
-	startPoint := (inset x)@(form height // 2).
-	endPoint := (form width - (inset x))@(form height // 2).
-	line := Line from: startPoint to: endPoint withForm: pen.
-	line displayOn: form.
-	startPoint := (form width // 2)@(inset y).
-	endPoint := (form width // 2)@(form height - (inset y)).
-	line := Line from: startPoint to: endPoint withForm: pen.
-	line displayOn: form.
-	^form
-
-]
-
-{ #category : 'as yet unclassified' }
 LaserGameForms class >> drawLaserBeamForm [
 	^(Form
 	extent: 368@196
@@ -324,8 +295,6 @@ LaserGameForms class >> initializeCachedForms [
 	CachedForms at: #counterClockwise put: form.
 	form := self drawClockwiseArrow.
 	CachedForms at: #clockwise put: form.
-	form := self drawCrossHair.
-	CachedForms at: #crossHair put: form.
 	form := self drawLaserBeamForm.
 	CachedForms at: #laserBeam put: form.
 	form := self drawCenterLaserBeamMask.

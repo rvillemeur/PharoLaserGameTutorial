@@ -120,11 +120,11 @@ LaserGameShapes class >> crossHairColor [
 	^ Color black
 ]
 
-{ #category : 'building' }
+{ #category : 'shapes' }
 LaserGameShapes class >> crossHairElementOfExtent: anExtent [
 	"Answer a cross hair of anExtent: two bars crossing at the centre. Page 083 drew the same
-	figure as two lines in a form of one cell, and Section 3.6 puts it under the pointer while
-	the pointer is over a mirror."
+	figure as two lines in a form of one cell, and Section 4.2 puts it under the pointer while
+	the pointer is over a hint of a mirror."
 
 	| span thickness |
 	span := (anExtent x min: anExtent y) // 3.
