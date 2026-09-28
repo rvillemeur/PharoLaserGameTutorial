@@ -214,13 +214,6 @@ CellRenderer >> offsetWithinGridForm [
 ]
 
 { #category : 'drawing' }
-CellRenderer >> redrawCell [
-	self fillBackground.
-	self render
-
-]
-
-{ #category : 'drawing' }
 CellRenderer >> render [
 	self
 		renderBorder;

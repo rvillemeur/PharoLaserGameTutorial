@@ -219,6 +219,28 @@ LaserGameCellElementTestCase >> testEveryChildOfTheBoardIsACellElement [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testHoveringAnotherCellClearsTheHintOfTheOneLeftBehind [
+	"Page 116: the pointer moves fast, the mouse moves are sampled, and cells are skipped, so a
+	cell can be left without ever being told. The board hovers one cell at a time, so the cell it
+	hovered before loses its hint when another one takes its place, whatever events were missed."
+
+	| board first second |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	first := board cellElementAt: 4 @ 1.
+	second := board cellElementAt: 1 @ 2.
+	first dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle center;
+			 yourself).
+	self assert: (first children includes: first hintElement).
+	second dispatchEvent: (BlMouseMoveEvent new
+			 position: CellClickRegionInside regionRectangle center;
+			 yourself).
+	self assert: first hintRegion isNil.
+	self assert: first hintElement isNil.
+	self assert: (second children includes: second hintElement)
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testLeavingACellClearsItsHintRegion [
 	"The pointer leaving a cell takes its hint with it, so no cell keeps a hint the pointer is
 	no longer in. The original cleared the temporary cursor at the same moment."

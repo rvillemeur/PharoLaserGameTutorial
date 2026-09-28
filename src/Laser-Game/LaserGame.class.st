@@ -4,7 +4,6 @@ Class {
 	#instVars : [
 		'grid',
 		'boardForm',
-		'dirty',
 		'moves'
 	],
 	#classVars : [
@@ -274,17 +273,6 @@ LaserGame >> calculatedExtent [
 	^pt
 ]
 
-{ #category : 'accessing' }
-LaserGame >> dirty [
-	dirty isNil ifTrue: [self initializeDirty].
-	^dirty
-]
-
-{ #category : 'accessing' }
-LaserGame >> dirty: aDictionary [
-	dirty := aDictionary
-]
-
 { #category : 'drawing' }
 LaserGame >> drawGameBoard [
 	| cell renderer |
@@ -344,11 +332,6 @@ LaserGame >> initialize [
 	self initializeForGrid: GridFactory emptyStandardGrid
 ]
 
-{ #category : 'accessing' }
-LaserGame >> initializeDirty [
-	self dirty: Dictionary new
-]
-
 { #category : 'initialization' }
 LaserGame >> initializeForGrid: aGrid [
 	super initialize.
@@ -363,11 +346,6 @@ LaserGame >> initializeForGrid: aGrid [
 	self setupMorphs.
 	self drawGameBoard.
 	self updateCounters.
-]
-
-{ #category : 'as yet unclassified' }
-LaserGame >> isDirty: aCell [
-	^self dirty at: aCell gridLocation ifAbsent: [false]
 ]
 
 { #category : 'initialization' }
@@ -528,7 +506,6 @@ LaserGame >> newGame [
 	self grid initializeCells.
 	self grid stopLaser.
 	self moves: 0.
-	self initializeDirty.
 	GridFactory randomizeGrid: self grid.
 	self updateGameBoardAndControls
 ]
@@ -544,31 +521,12 @@ LaserGame >> quitGameExitSqueakCheck [
 	Preferences cmdDotEnabled ifFalse: [Smalltalk quitPrimitive]
 ]
 
-{ #category : 'drawing' }
-LaserGame >> redrawCell: aCell [
-	| renderer |
-	renderer := CellRenderer rendererFor: aCell grid: self grid form: self boardForm.
-	renderer redrawCell
-]
-
 { #category : 'actions' }
 LaserGame >> reset [
 	self grid reset.
 	self grid stopLaser.
 	self moves: 0.
-	self initializeDirty.
-	
 	self updateGameBoardAndControls
-]
-
-{ #category : 'as yet unclassified' }
-LaserGame >> setClean: aCell [
-	self dirty removeKey: aCell gridLocation ifAbsent: []
-]
-
-{ #category : 'as yet unclassified' }
-LaserGame >> setDirty: aCell [
-	self dirty at: aCell gridLocation put: true
 ]
 
 { #category : 'initialization' }
@@ -613,19 +571,6 @@ LaserGame >> setupMorphs [
 				fractions: (0 @ 1 corner: 0 @ 1)
 				offsets: ((self gameMargin + self panelWidth + 1)@(self gameMargin negated) 
 					corner: (self gameMargin + self panelWidth + CellRenderer cellExtent x - 2)@(self gameMargin negated + 4))).
-]
-
-{ #category : 'drawing' }
-LaserGame >> sweepDirtyCells [
-	| cell renderer |
-	1 to: self grid numberOfColumns do: [:x |
-		1 to: self grid numberOfRows do: [:y |
-			cell := self grid at: x@y.
-			(self isDirty: cell) ifTrue: [
-				renderer := CellRenderer rendererFor: cell grid: self grid form: self boardForm.
-				renderer redrawCell.
-				self setClean: cell
-				]]].
 ]
 
 { #category : 'as yet unclassified' }

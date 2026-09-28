@@ -130,9 +130,14 @@ LaserGameBoardElement >> grid: aGrid [
 
 { #category : 'interaction' }
 LaserGameBoardElement >> hoverCellElement: aCellElement [
-	"Remember that the pointer is over aCellElement. A cell tells me this when the pointer
-	enters it and while it moves inside it."
+	"Remember that the pointer is over aCellElement. A cell tells me this when the pointer enters
+	it and while it moves inside it. The cell I hovered before loses its hint here: page 116 shows
+	that mouse moves are samples, so cells the pointer crossed quickly are never told they were
+	left, and page 117 answers that with a sweep over the cells marked dirty. One cell can hold a
+	hint at a time, so the sweep is this one line."
 
+	hoveredCellElement == aCellElement ifTrue: [ ^ self ].
+	hoveredCellElement ifNotNil: [ :each | each clearPositionHint ].
 	hoveredCellElement := aCellElement
 ]
 

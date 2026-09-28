@@ -200,18 +200,6 @@ MirrorCellRenderer >> mouseUpAt: aPoint [
 ]
 
 { #category : 'drawing' }
-MirrorCellRenderer >> redrawCell [
-
-	| offset backgroundRect |
-	offset := self offsetWithinGridForm.
-	backgroundRect := offset extent: CellRenderer cellExtent - 2.
-	self targetForm
-		fill: backgroundRect
-		fillColor: LaserGameColors gameBoardBackgroundColor.
-	self render
-]
-
-{ #category : 'drawing' }
 MirrorCellRenderer >> removeLaserFromInactiveLeftSide [
 	(self cell activeSegments at: #west) ifFalse: [self maskForSouthWest].
 	(self cell activeSegments at: #east) ifFalse: [self maskForNorthEast].
