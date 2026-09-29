@@ -144,11 +144,16 @@ LaserGameElement class >> openStandardExample [
 	^ self openOn: GridFactory defaultGrid
 ]
 
-{ #category : 'accessing' }
+{ #category : 'constants' }
 LaserGameElement class >> panelWidth [
-	"Answer the width, in pixels, of the control panel beside the board. The original's number."
+	"Answer the width, in pixels, of the control panel beside the board. The original's number is
+	a hundred and ten, which is exactly two of its forty pixel buttons and the three gaps a row
+	of two stands in; the identity is what makes a row of two fill the panel and a row of three
+	not fit. The buttons are wider here, so that their labels fit inside them, and the panel is
+	stated from them rather than beside them."
 
-	^ 110
+	^ (2 * LaserGameControlPanelElement buttonWidth)
+	  + (3 * LaserGameControlPanelElement buttonGap)
 ]
 
 { #category : 'accessing' }

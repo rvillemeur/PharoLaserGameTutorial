@@ -316,7 +316,10 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins [
 	"The game is as wide as the board, the panel beside it and a margin on each side, and as tall
 	as the taller of the board and the panel, with a margin above and below. This is the
 	original's calculatedExtent, which knows only the board height; the demo grid is short enough
-	for the panel to decide instead."
+	for the panel to decide instead. The second assertion states the numbers rather than the
+	constants: the panel is a hundred and thirty, two fifty pixel buttons and the three gaps a
+	row of two stands in, where the original's panel is a hundred and ten around its forty pixel
+	buttons."
 
 	| grid expected |
 	grid := GridFactory demoGrid.
@@ -328,7 +331,7 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins [
 	self
 		assert: (LaserGameElement extentForGrid: grid)
 		equals:
-			5 * CellRenderer cellExtent x + 110
+			5 * CellRenderer cellExtent x + 130
 			@ LaserGameControlPanelElement contentHeight + 20
 ]
 

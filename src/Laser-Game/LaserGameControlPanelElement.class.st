@@ -49,6 +49,22 @@ LaserGameControlPanelElement class >> buttonHeight [
 ]
 
 { #category : 'constants' }
+LaserGameControlPanelElement class >> buttonLabelMargin [
+	"Answer the space, in pixels, my button width keeps on each side of its longest label. It is
+	what makes the width a statement about the labels rather than a number that happens to fit."
+
+	^ 6
+]
+
+{ #category : 'constants' }
+LaserGameControlPanelElement class >> buttonLabels [
+	"Answer every label a button of mine can show: the five buttons, and the second label the
+	fire button takes while the laser is firing. They are what my button width has to hold."
+
+	^ #( 'Quit' 'Fire' 'Stop' 'New' 'Undo' 'Reset' )
+]
+
+{ #category : 'constants' }
 LaserGameControlPanelElement class >> buttonRowCount [
 	"Answer how many rows of buttons I stack. Page 144 opens with two, and page 188 adds the row
 	Reset has to itself."
@@ -58,9 +74,14 @@ LaserGameControlPanelElement class >> buttonRowCount [
 
 { #category : 'constants' }
 LaserGameControlPanelElement class >> buttonWidth [
-	"Answer the width, in pixels, of a control panel button. The original's number."
+	"Answer the width, in pixels, of a control panel button. Page 144's number is forty, which is
+	three pixels wider than the word Reset and leaves nothing on either side of it; a font a
+	little wider than this one paints the longest labels over the edge of their buttons. Fifty
+	holds every label of #buttonLabels with #buttonLabelMargin to spare on each side, which
+	#testEveryButtonLabelFitsInsideTheButton is what checks. The panel width follows from this
+	number, so widening a button widens the panel and not the space the buttons stand in."
 
-	^ 40
+	^ 50
 ]
 
 { #category : 'constants' }
@@ -135,6 +156,19 @@ LaserGameControlPanelElement class >> on: aGame [
 	panel := self new.
 	panel game: aGame.
 	^ panel
+]
+
+{ #category : 'measuring' }
+LaserGameControlPanelElement class >> widthOfButtonLabel: aString [
+	"Answer the width, in pixels, a button captioned aString needs for its label: a button is
+	built and measured, and nothing is laid out and nothing is opened. Toplo measures the label
+	with the font its theme gives a button, which is the only thing that knows how wide the text
+	is going to be."
+
+	| button |
+	button := ToButton labelText: aString.
+	button measure: BlExtentMeasurementSpec unspecified.
+	^ button measuredExtent x
 ]
 
 { #category : 'accessing' }
@@ -255,10 +289,13 @@ LaserGameControlPanelElement >> newActiveMirrorsCounter [
 LaserGameControlPanelElement >> newButton: aLabel action: aBlock [
 	"Answer a labelled button of the original's size that evaluates aBlock when it is clicked. The
 	original builds a PluggableButtonMorph with a StringMorph label and paints its colors by hand;
-	Toplo gives the look and the click, so only the label, the size and the action are left."
+	Toplo gives the look and the click, so only the label, the size and the action are left. A
+	Toplo button lays its label out with a linear layout, which aligns to the start unless it is
+	told otherwise, so the label is centred here: a button is wider than any of its labels."
 
 	| button |
 	button := ToButton labelText: aLabel.
+	button layout alignCenter.
 	button extent: self class buttonWidth @ self class buttonHeight.
 	button clickAction: aBlock.
 	^ button

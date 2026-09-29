@@ -166,6 +166,39 @@ LaserGameControlPanelElementTestCase >> testCounterShowsTheBeamLengthOnlyWhileTh
 ]
 
 { #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testEveryButtonCentresItsLabel [
+	"A button is wider than any of its labels, so the label has to stand in the middle of it. A
+	Toplo button lays its label container out with a linear layout, and that layout aligns to the
+	start unless it is told otherwise, which leaves every label against the left edge of its
+	button. Where the label lands is Bloc's arithmetic and is not repeated here: nothing is laid
+	out, and no element is opened."
+
+	| panel |
+	panel := self newPanel.
+	panel buttonColumn children do: [ :row |
+		row children do: [ :button |
+			self
+				assert: button layout alignment horizontal
+				equals: BlElementAlignment horizontal center ] ]
+]
+
+{ #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testEveryButtonLabelFitsInsideTheButton [
+	"Page 144 states forty pixels for a button and never asks whether its labels fit; the longest
+	of them, Reset and Undo, fill all but a few pixels of that, and a font a little wider than
+	this one paints them over the edge. The width is stated here too, but the six labels the
+	panel can show are measured against it, with a margin on each side of the longest."
+
+	LaserGameControlPanelElement buttonLabels do: [ :each |
+		self
+			assert:
+				(LaserGameControlPanelElement widthOfButtonLabel: each)
+				+ (2 * LaserGameControlPanelElement buttonLabelMargin)
+			<= LaserGameControlPanelElement buttonWidth
+			description: each , ' does not fit inside a button' ]
+]
+
+{ #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testEveryCounterFitsInsideThePanel [
 	"Page 181 widens the panel because the caption of the active mirrors counter is longer than
 	the ones before it. Here the panel width is the width of a row of two buttons, so the check
