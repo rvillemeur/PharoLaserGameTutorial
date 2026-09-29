@@ -15,9 +15,3 @@ Class {
 BlankCellRenderer class >> modelClass [
 	^ BlankCell
 ]
-
-{ #category : 'drawing' }
-BlankCellRenderer >> renderContents [
-	self fillBackground
-
-]

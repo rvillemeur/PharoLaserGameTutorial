@@ -14,8 +14,7 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'cellLocation',
-		'grid',
-		'targetForm'
+		'grid'
 	],
 	#category : 'Laser-Game-Graphics',
 	#package : 'Laser-Game',
@@ -139,21 +138,6 @@ CellRenderer class >> rendererFor: aCell grid: aGrid [
 	^ renderer
 ]
 
-{ #category : 'instance creation' }
-CellRenderer class >> rendererFor: aCell grid: aGrid form: aForm [
-	| renderer |
-	renderer := self rendererFor: aCell grid: aGrid.
-	renderer targetForm: aForm.
-	^ renderer
-]
-
-{ #category : 'drawing' }
-CellRenderer >> backgroundRectangle [
-	| offset |
-	offset := self offsetWithinGridForm + 1.
-	^offset extent: CellRenderer cellExtent - 2
-]
-
 { #category : 'accessing' }
 CellRenderer >> cell [
 	^self grid at: self cellLocation.
@@ -172,14 +156,6 @@ CellRenderer >> cellLocation: anObject [
 	"Set the value of cellLocation"
 
 	cellLocation := anObject
-]
-
-{ #category : 'drawing' }
-CellRenderer >> fillBackground [
-	| backgroundRect |
-	backgroundRect := self backgroundRectangle.
-	self targetForm fill: backgroundRect fillColor: LaserGameColors gameBoardBackgroundColor.
-
 ]
 
 { #category : 'accessing' }
@@ -243,16 +219,6 @@ CellRenderer >> newElement [
 	^ element
 ]
 
-{ #category : 'accessing' }
-CellRenderer >> offsetWithinGridForm [
-	| delta xCount yCount offset |
-	delta := CellRenderer cellExtent.
-	xCount := (self cellLocation x) - 1.
-	yCount := (self cellLocation y) - 1.
-	offset := delta * (xCount@yCount).
-	^offset
-]
-
 { #category : 'rendering' }
 CellRenderer >> renderBackgroundOn: anElement [
 	"Paint the cell background. Every cell shares the game board background color."
@@ -273,51 +239,6 @@ CellRenderer >> renderBeamOn: anElement [
 			 fromSides: self cell litSides)
 ]
 
-{ #category : 'drawing' }
-CellRenderer >> renderBorder [
-	self
-		renderBorderTop;
-		renderBorderRight;
-		renderBorderBottom;
-		renderBorderLeft
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderBorderBottom [
-	| line delta offset x1 x2 y1 y2 fillForm |
-	delta := CellRenderer cellExtent - 1.
-	offset := self offsetWithinGridForm.
-	x1 := offset x.
-	x2 := x1 + delta x.
-	y1 := offset y + delta y.
-	y2 := y1.
-	fillForm := Form extent: 1@1 depth: 8.
-	fillForm fillColor: LaserGameColors cellBorderColor.
-	line := Line
-			from: x1@y1 
-			to: x2@y2
-			withForm: fillForm.
-	line displayOn: self targetForm
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderBorderLeft [
-	| line delta offset x1 x2 y1 y2 fillForm |
-	delta := CellRenderer cellExtent.
-	offset := self offsetWithinGridForm.
-	x1 := offset x.
-	x2 := x1.
-	y1 := offset y.
-	y2 := y1 + delta y.
-	fillForm := Form extent: 1@1 depth: 8.
-	fillForm fillColor: LaserGameColors cellBorderColor.
-	line := Line
-			from: x1@y1 
-			to: x2@y2
-			withForm: fillForm.
-	line displayOn: self targetForm
-]
-
 { #category : 'rendering' }
 CellRenderer >> renderBorderOn: anElement [
 	"Draw the cell border. Bloc draws a border inside the bounds of the element, so the
@@ -326,46 +247,6 @@ CellRenderer >> renderBorderOn: anElement [
 	anElement border: (BlBorder
 			 paint: LaserGameColors cellBorderColor
 			 width: self class borderWidth)
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderBorderRight [
-	| line delta offset x1 x2 y1 y2 fillForm |
-	delta := CellRenderer cellExtent - 1.
-	offset := self offsetWithinGridForm.
-	x1 := offset x + delta x.
-	x2 := x1.
-	y1 := offset y.
-	y2 := y1 + delta y.
-	fillForm := Form extent: 1@1 depth: 8.
-	fillForm fillColor: LaserGameColors cellBorderColor.
-	line := Line
-			from: x1@y1 
-			to: x2@y2
-			withForm: fillForm.
-	line displayOn: self targetForm
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderBorderTop [
-	| line delta offset x1 x2 y1 y2 fillForm |
-	delta := CellRenderer cellExtent.
-	offset := self offsetWithinGridForm.
-	x1 := offset x.
-	x2 := x1 + delta x.
-	y1 := offset y.
-	y2 := y1.
-	fillForm := Form extent: 1@1 depth: 8.
-	fillForm fillColor: LaserGameColors cellBorderColor.
-	line := Line
-			from: x1@y1 
-			to: x2@y2
-			withForm: fillForm.
-	line displayOn: self targetForm
-]
-
-{ #category : 'drawing' }
-CellRenderer >> renderContents [
 ]
 
 { #category : 'rendering' }
@@ -385,18 +266,4 @@ CellRenderer >> renderLaserOn: anElement [
 	self grid laserIsActive ifFalse: [ ^ self ].
 	self cell isOff ifTrue: [ ^ self ].
 	self renderBeamOn: anElement
-]
-
-{ #category : 'accessing' }
-CellRenderer >> targetForm [
-	"Answer the value of targetForm"
-
-	^ targetForm
-]
-
-{ #category : 'accessing' }
-CellRenderer >> targetForm: anObject [
-	"Set the value of targetForm"
-
-	targetForm := anObject
 ]
