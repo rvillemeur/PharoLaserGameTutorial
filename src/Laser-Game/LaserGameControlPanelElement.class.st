@@ -99,6 +99,16 @@ LaserGameControlPanelElement class >> counterGap [
 ]
 
 { #category : 'constants' }
+LaserGameControlPanelElement class >> counterWidth [
+	"Answer the width, in pixels, of every counter: my own width, less the gap the column of
+	counters stands in on each side. Page 141 gives a counter no width at all and lets it take
+	the size of its caption, which leaves the four boxes of the original four different widths;
+	stating one width for all four lines their edges up under each other and fills the panel."
+
+	^ LaserGameElement panelWidth - (2 * self counterGap)
+]
+
+{ #category : 'constants' }
 LaserGameControlPanelElement class >> dividerHeight [
 	"Answer the height, in pixels, of the bar page 201 draws across me above the buttons. The
 	original states it as the five pixels between the two offsets of the layout frame it places
@@ -235,9 +245,10 @@ LaserGameControlPanelElement >> movesCounter [
 LaserGameControlPanelElement >> newActiveMirrorsCounter [
 	"Answer the counter showing how many mirrors the beam lights: three digits, captioned as on
 	page 181. That caption is the longest of the four, and it is why the original widens its panel
-	on the same page."
+	on the same page; here every counter is the width of the panel less its gaps, so the longest
+	caption decides nothing."
 
-	^ LaserGameCounterElement labelled: 'Active Mirrors' digits: 3
+	^ self newCounterLabelled: 'Active Mirrors' digits: 3
 ]
 
 { #category : 'initialization' }
@@ -317,6 +328,21 @@ LaserGameControlPanelElement >> newCounterColumn [
 ]
 
 { #category : 'initialization' }
+LaserGameControlPanelElement >> newCounterLabelled: aString digits: anInteger [
+	"Answer a counter of anInteger digits captioned aString, as wide as every other counter I
+	hold. A counter takes the size of its caption when it is not told otherwise, which is what
+	page 141 leaves it at, so each of my four counters would be a different width; stating the
+	width here is what lines their edges up, and the counter centres its display and its caption
+	in whatever width it is given."
+
+	| counter |
+	counter := LaserGameCounterElement labelled: aString digits: anInteger.
+	counter constraintsDo: [ :aConstraints |
+		aConstraints horizontal exact: self class counterWidth ].
+	^ counter
+]
+
+{ #category : 'initialization' }
 LaserGameControlPanelElement >> newFireButton [
 	"Answer the button that fires the laser, or stops it if it is already firing. Its label says
 	which of the two a click will do."
@@ -345,15 +371,15 @@ LaserGameControlPanelElement >> newLaserPathCounter [
 	"Answer the counter showing how long the laser beam is: three digits, captioned as on page
 	141. Three digits hold every path a board of this size can produce."
 
-	^ LaserGameCounterElement labelled: 'Laser Path' digits: 3
+	^ self newCounterLabelled: 'Laser Path' digits: 3
 ]
 
 { #category : 'initialization' }
 LaserGameControlPanelElement >> newMirrorsCounter [
-	"Answer the counter showing how many mirrors stand on the board: three digits, captioned as on
-	page 181."
+	"Answer the counter showing how many mirrors stand on the board: three digits, captioned as
+	on page 181."
 
-	^ LaserGameCounterElement labelled: 'Mirrors' digits: 3
+	^ self newCounterLabelled: 'Mirrors' digits: 3
 ]
 
 { #category : 'initialization' }
@@ -361,7 +387,7 @@ LaserGameControlPanelElement >> newMovesCounter [
 	"Answer the counter showing how many moves the player has made: three digits, captioned as on
 	page 143."
 
-	^ LaserGameCounterElement labelled: 'Moves' digits: 3
+	^ self newCounterLabelled: 'Moves' digits: 3
 ]
 
 { #category : 'initialization' }

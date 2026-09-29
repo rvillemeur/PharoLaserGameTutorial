@@ -185,6 +185,29 @@ LaserGameControlPanelElementTestCase >> testEveryCounterFitsInsideThePanel [
 ]
 
 { #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testEveryCounterIsAsWideAsThePanelLessAGapOnEachSide [
+	"Page 141 lets every counter take the width of its own caption, so the four boxes of the
+	original are four different widths with their right edges ragged. Here they are all given the
+	width of the panel less the gap the column stands in, so the four boxes are the same width
+	and their edges line up under each other."
+
+	| panel widths |
+	panel := self newPanel.
+	panel counterColumn measure: BlExtentMeasurementSpec unspecified.
+	widths := (panel counterColumn children collect: [ :each |
+		           each measuredExtent x ]) asSet.
+	self assert: widths size equals: 1.
+	self
+		assert: widths anyOne
+		equals: LaserGameControlPanelElement counterWidth.
+	self
+		assert: LaserGameControlPanelElement counterWidth
+		equals:
+		LaserGameElement panelWidth
+		- (2 * LaserGameControlPanelElement counterGap)
+]
+
+{ #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testFireButtonSaysWhatAClickWillDo [
 	"The label names the action, not the state: Fire while the laser is off, Stop while it fires."
 

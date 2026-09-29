@@ -69,10 +69,14 @@ LaserGameCounterElement class >> labelled: aString digits: anInteger [
 
 { #category : 'accessing' }
 LaserGameCounterElement >> digits: anInteger [
-	"Show anInteger digits."
+	"Show anInteger digits. The display is narrower than I am, since my width is stated for all
+	four counters of the panel and their captions, so it is centred rather than left against my
+	border."
 
 	led ifNotNil: [ :each | self removeChild: each ].
 	led := LaserGameLedElement digits: anInteger.
+	led constraintsDo: [ :aConstraints |
+		aConstraints linear horizontal alignCenter ].
 	self addChild: led
 ]
 
@@ -117,13 +121,17 @@ LaserGameCounterElement >> label [
 
 { #category : 'accessing' }
 LaserGameCounterElement >> labelText: aString [
-	"Caption me aString. The caption is added last, so it is drawn under the display."
+	"Caption me aString. The caption is added last, so it is drawn under the display, and it is
+	centred like the display: every caption is a different length and my width is the same for
+	all four counters of the panel."
 
 	label ifNotNil: [ :each | self removeChild: each ].
 	label := BlTextElement new text: (aString asRopedText
 			         fontSize: self class labelFontSize;
 			         foreground: LaserGameColors counterLabelColor;
 			         yourself).
+	label constraintsDo: [ :aConstraints |
+		aConstraints linear horizontal alignCenter ].
 	self addChild: label
 ]
 

@@ -6,6 +6,26 @@ Class {
 }
 
 { #category : 'tests' }
+LaserGameCounterElementTestCase >> testACounterCentresWhatItHolds [
+	"Every counter of the panel is given the same width, wider than any of the four captions, so
+	what a counter holds has to be centred in it: left against the border, the display of one
+	counter and the display of the next would line up but the captions would not, and every box
+	would have a ragged margin on its right. Both children are aligned to the centre of the
+	column, which is what a linear layout reads to place them across itself. Where they land is
+	Bloc's arithmetic and is not repeated here: nothing is laid out, and no element is opened."
+
+	| counter |
+	counter := LaserGameCounterElement labelled: 'Moves' digits: 3.
+	self assert: counter layout class equals: BlLinearLayout.
+	self
+		assert: counter led constraints linear horizontal alignment
+		equals: BlElementAlignment horizontal center.
+	self
+		assert: counter label constraints linear horizontal alignment
+		equals: BlElementAlignment horizontal center
+]
+
+{ #category : 'tests' }
 LaserGameCounterElementTestCase >> testCounterIsATransparentRoundedFrame [
 	"Page 141 wraps the display in a transparent column with rounded corners, a two pixel border
 	and a five pixel inset, and takes the size of what it holds."
