@@ -489,6 +489,9 @@ GridTestCase >> testToggleLaser [
 
 { #category : 'tests' }
 GridTestCase >> testUndoActions [
+	"Page 184: every action symbol the stack can hold answers the selector that takes it back.
+	The six pairs are the four pushes, each answering the push the other way, and the two
+	rotations, each answering the other turn."
 
 	| undoAction |
 	undoAction := ReverseLaserGameAction reverseActionSymbolFor: #north.
@@ -509,6 +512,8 @@ GridTestCase >> testUndoActions [
 
 { #category : 'tests' }
 GridTestCase >> testUndoStackAfterPush [
+	"Page 186: a push puts one entry on the stack, the undo takes it off and answers true, and a
+	second undo finds the stack empty and answers false."
 
 	| grid |
 	grid := self generateDemoGrid.
@@ -516,5 +521,38 @@ GridTestCase >> testUndoStackAfterPush [
 	grid pushCellEastFromLocation: 1 @ 2.
 	self assert: grid movesStack size equals: 1.
 	self assert: grid undo.
-	self shouldnt: [ grid undo ]
+	self deny: grid undo
+]
+
+{ #category : 'tests' }
+GridTestCase >> testUndoingEveryMoveGivesTheGridBackAsItWas [
+	"Page 185's undo takes one move off the stack and plays its reverse. A run of pushes and turns
+	mixed together, undone one at a time, has to leave every cell of the grid where it was and
+	facing the way it did, and leave the stack empty. The original tests one push and one undo.
+	Only a move that changed something is stacked, so each move is checked to have been recorded
+	before the run is undone."
+
+	| grid before after reading |
+	reading := [ :aGrid |
+	            aGrid cells collect: [ :each |
+		            | lean |
+		            lean := (each isKindOf: MirrorCell)
+			                    ifTrue: [ each leansLeft printString ]
+			                    ifFalse: [ '' ].
+		            each class name , ' ' , each gridLocation printString , ' '
+		            , lean ] ].
+	grid := self generateDemoGrid.
+	before := reading value: grid.
+	{
+		(#pushCellEastFromLocation: -> (1 @ 2)).
+		(#rotateCellClockwiseAt: -> (2 @ 2)).
+		(#pushCellSouthFromLocation: -> (4 @ 1)).
+		(#rotateCellCounterClockwiseAt: -> (3 @ 3)).
+		(#pushCellWestFromLocation: -> (5 @ 3)) } doWithIndex: [ :each :index |
+		grid perform: each key with: each value.
+		self assert: grid movesStack size equals: index ].
+	[ grid undo ] whileTrue.
+	self assert: grid movesStack isEmpty.
+	after := reading value: grid.
+	self assert: after equals: before
 ]

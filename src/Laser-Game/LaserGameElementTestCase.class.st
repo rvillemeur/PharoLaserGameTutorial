@@ -414,6 +414,39 @@ LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain [
 ]
 
 { #category : 'tests' }
+LaserGameElementTestCase >> testUndoOnABoardNobodyHasTouchedDoesNothing [
+	"An empty stack answers false on page 185, and the game does nothing with it: no move is
+	counted and the board is left as it stands."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	self deny: game grid undo.
+	game undo.
+	self assert: game moves equals: 0.
+	self assert: game controlPanel movesCounter value equals: 0
+]
+
+{ #category : 'tests' }
+LaserGameElementTestCase >> testUndoTakesTheLastMoveBackAndCountsAsAMove [
+	"Page 186: the Undo button asks the grid to undo, and when the grid says it did, the game
+	counts a move and draws itself again. The count is not taken back — page 183 says an undo
+	must not remove any count from the player's total — so a move and its undo are two moves."
+
+	| game |
+	game := LaserGameElement on: GridFactory demoGrid.
+	game grid pushCellEastFromLocation: 1 @ 2.
+	game incrementMoves.
+	self assert: (game grid at: 2 @ 2) class equals: MirrorCell.
+	game undo.
+	self assert: (game grid at: 1 @ 2) class equals: MirrorCell.
+	self assert: game grid movesStack isEmpty.
+	self assert: game moves equals: 2.
+	self
+		assert: game controlPanel movesCounter value
+		equals: game moves
+]
+
+{ #category : 'tests' }
 LaserGameElementTestCase >> testWindowIsFilledWithTheColorRamp [
 	"Page 140 fills the window with a ramp of two colors rather than one flat color, running the
 	fraction of the way across and down that the page orients it by."

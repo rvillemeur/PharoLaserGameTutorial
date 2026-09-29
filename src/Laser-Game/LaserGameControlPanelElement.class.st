@@ -3,11 +3,11 @@ I am the control panel of the game: the column beside the board that holds its b
 
 I replace the panel the 2007 `LaserGame` morph built in `makeControlPanelMorph` and filled through `addButtonsToPanel:` and `addCountersToPanel:`. I hold Toplo buttons instead of `PluggableButtonMorph`s, and I hold what I am asked about in an instance variable, so nothing has to search the children by name the way `findFireButton`, `findLaserPathCounter` and `findMovesCounter` do.
 
-Three buttons: Quit, which asks the game to close, and Fire, whose label says what a click will do — `'Fire'` while the laser is off, `'Stop'` while it fires, both from page 068 — and New, from page 144, which deals a new randomized board. Quit and Fire share the bottom row and New has the row above it, which is how page 144 numbers them. Four counters, from pages 141, 143 and 181: the length of the beam, the number of moves made, the number of mirrors standing on the board, and the number of those the beam lights. Only the first is ever bright, since it alone says whether the laser is on. The buttons sit at my bottom left corner and the counters at my top left corner, which is where the original's layout frames put them. Page 140 paints me transparent, so the window ramp behind me shows through. The divider, Undo and Reset come with their own pages.
+Four buttons: Quit, which asks the game to close, and Fire, whose label says what a click will do — `'Fire'` while the laser is off, `'Stop'` while it fires, both from page 068 — New, from page 144, which deals a new randomized board, and Undo, from page 186, which takes the last move back. Quit and Fire share the bottom row and New and Undo the row above it, which is how page 144 numbers them. Four counters, from pages 141, 143 and 181: the length of the beam, the number of moves made, the number of mirrors standing on the board, and the number of those the beam lights. Only the first is ever bright, since it alone says whether the laser is on. The buttons sit at my bottom left corner and the counters at my top left corner, which is where the original's layout frames put them. Page 140 paints me transparent, so the window ramp behind me shows through. The divider and Reset come with their own pages.
 
 Instance variables:
 - `game`: the `LaserGameElement` I control. Setting it builds everything I show.
-- `quitButton`, `fireButton`, `newGameButton`: the three buttons.
+- `quitButton`, `fireButton`, `newGameButton`, `undoButton`: the four buttons.
 - `laserPathCounter`, `movesCounter`, `mirrorsCounter`, `activeMirrorsCounter`: the four counters, in the order they are stacked.
 The two columns I stack are not held: `counterColumn` is my first child and `buttonColumn` my last, and `buttonRow` and `newGameRow` read the two rows of the button column the same way.
 
@@ -24,7 +24,8 @@ Class {
 		'laserPathCounter',
 		'movesCounter',
 		'mirrorsCounter',
-		'activeMirrorsCounter'
+		'activeMirrorsCounter',
+		'undoButton'
 	],
 	#category : 'Laser-Game-Graphics',
 	#package : 'Laser-Game',
@@ -348,10 +349,12 @@ LaserGameControlPanelElement >> newNewGameButton [
 
 { #category : 'initialization' }
 LaserGameControlPanelElement >> newNewGameRow [
-	"Answer the row above it, holding the New button on the left. Page 144 calls it row two,
-	column one."
+	"Answer the row above it, holding the New button on the left and Undo on its right. Page 144
+	calls them row two, column one and page 186 adds row two, column two."
 
-	^ self newRowOfButtons: { newGameButton }
+	^ self newRowOfButtons: {
+			  newGameButton.
+			  undoButton }
 ]
 
 { #category : 'initialization' }
@@ -376,6 +379,15 @@ LaserGameControlPanelElement >> newRowOfButtons: aCollection [
 	^ row
 ]
 
+{ #category : 'initialization' }
+LaserGameControlPanelElement >> newUndoButton [
+	"Answer the button that takes the last move back: page 186's #makeUndoButton. The original
+	passes action: #undo state: nil, the state being the block a toggling button reads its label
+	from; Undo never changes its label, so only the action is left."
+
+	^ self newButton: 'Undo' action: [ self game undo ]
+]
+
 { #category : 'accessing' }
 LaserGameControlPanelElement >> quitButton [
 	"Answer the button that closes the game."
@@ -394,6 +406,7 @@ LaserGameControlPanelElement >> rebuild [
 	quitButton := self newQuitButton.
 	fireButton := self newFireButton.
 	newGameButton := self newNewGameButton.
+	undoButton := self newUndoButton.
 	laserPathCounter := self newLaserPathCounter.
 	movesCounter := self newMovesCounter.
 	mirrorsCounter := self newMirrorsCounter.
@@ -403,6 +416,13 @@ LaserGameControlPanelElement >> rebuild [
 	self extent: LaserGameElement panelWidth
 		@ (self class heightForGrid: self game grid).
 	self updateCounters
+]
+
+{ #category : 'accessing' }
+LaserGameControlPanelElement >> undoButton [
+	"Answer the button that takes the last move back."
+
+	^ undoButton
 ]
 
 { #category : 'updating' }

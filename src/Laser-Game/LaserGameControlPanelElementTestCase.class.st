@@ -277,14 +277,15 @@ LaserGameControlPanelElementTestCase >> testMovesCounterShowsTheMoveCountAndIsNe
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testNewGameButtonHasTheRowAboveTheOthers [
 	"Page 144 puts New in the second row from the bottom, first column: here the column of rows
-	holds the New row first and the Quit and Fire row last, which is lowest."
+	holds the New row first and the Quit and Fire row last, which is lowest. What else stands in
+	that row is page 186's business, and #testUndoButtonSharesTheRowWithNewGame asserts it."
 
 	| panel |
 	panel := self newPanel.
 	self assert: panel buttonColumn children asArray equals: {
 			panel newGameRow.
 			panel buttonRow }.
-	self assert: panel newGameRow children asArray equals: { panel newGameButton }.
+	self assert: panel newGameRow children first equals: panel newGameButton.
 	self assert: panel newGameButton labelText asString equals: 'New'
 ]
 
@@ -333,6 +334,19 @@ LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBo
 		equals:
 			(LaserGameBoardElement extentForGrid:
 				 (GridFactory randomizedGridOfExtent: 8 @ 10)) y
+]
+
+{ #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testUndoButtonSharesTheRowWithNewGame [
+	"Page 186 puts Undo in row two, column two: beside New, above Quit and Fire."
+
+	| panel |
+	panel := self newPanel.
+	self assert: panel newGameRow children asArray equals: {
+			panel newGameButton.
+			panel undoButton }.
+	self assert: panel undoButton class equals: ToButton.
+	self assert: panel undoButton labelText asString equals: 'Undo'
 ]
 
 { #category : 'tests' }

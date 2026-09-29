@@ -386,3 +386,15 @@ LaserGameElement >> toggleLaser [
 		ifFalse: [ self grid fireLaser ].
 	self refresh
 ]
+
+{ #category : 'actions' }
+LaserGameElement >> undo [
+	"Take the last move back, and count the undo as a move of its own: page 183 says an undo must
+	not remove any count from the player's total, so the counter goes up, not down. The grid
+	answers whether it undid anything, and on an empty stack there is nothing to draw again. This
+	is page 186's #undo, with #refresh for #updateGameBoardAndControls."
+
+	self grid undo ifFalse: [ ^ self ].
+	self incrementMoves.
+	self refresh
+]
