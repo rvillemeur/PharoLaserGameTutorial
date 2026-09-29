@@ -238,10 +238,12 @@ The original tutorial reached this point and had to answer two questions. We hav
 
 **How big is a cell?** The original chose 30x30 pixels here, and raised it to 50x50 much later, in Section 5, once its unit tests had stopped depending on the number. We start at 50x50, because the code we inherited already carries that value and because it leaves room for the mirror, the target and the hint arrows to be legible. Nothing in the tests below depends on the number either — each one asks `CellRenderer cellExtent` rather than writing a size down:
 
-```smalltalk
+```
 CellRenderer class >> cellExtent
 	^50@50
 ```
+
+This is the method as this chapter writes it; Section 4.3 gives it the comment that says every other size in the package is derived from it.
 
 **Who pays for the border?** In the original, the border was a pixel drawn along the inside edge of each cell, so that the borders did not add to the size of the board. We get that property from Bloc for free: a Bloc border is painted inside the bounds of its element. A one pixel border changes nothing about the size of the cell or the spacing of the grid.
 
@@ -322,7 +324,7 @@ BlElement << #LaserGameBoardElement
 
 A board lays its cells out in a grid and takes exactly the size of the cells it holds:
 
-```smalltalk
+```
 LaserGameBoardElement >> initialize
 	"A board lays its cells out in a grid, one column per grid column, and takes exactly the
 	size of the cells it holds."
@@ -334,6 +336,7 @@ LaserGameBoardElement >> initialize
 		aConstraints horizontal fitContent.
 		aConstraints vertical fitContent ]
 ```
+> **Note.** *Minor Cosmetic Tweaks*, the ninth chapter of Section 5, gives the board the drop shadow of page 201 here.
 
 `BlGridLayout horizontal` fills row by row, and `fitContent` is what replaces the computed form extent: the board asks its children how big they are instead of being told.
 
@@ -842,10 +845,12 @@ The target has more in it than the mirror: a crosshair, a ring around the middle
 
 Three numbers say where the parts of the target go. Two are new names for numbers the original writes inline, and one, the radius, is the original's method unchanged.
 
-```smalltalk
+```
 TargetCellRenderer >> radius
 	^(self class cellExtent x // 2 - 8) min: 10
 ```
+
+This is the method as this chapter writes it; Section 4.3 gives it the comment that explains the clamp of page 137.
 
 ```smalltalk
 TargetCellRenderer >> crossHairInset
@@ -998,7 +1003,7 @@ Everything the `Form` version of this page needed goes: `renderContents`, `drawT
 
 Page 063 changes the workspace to fire the laser before drawing, and the target lights up although no beam graphics exist yet: the demo grid is built so that the mirrors lead the beam to the target. The same check belongs on the board element.
 
-```smalltalk
+```
 LaserGameBoardElement class >> openExampleWithLaserFired
 	"Open the demo grid with the laser already fired, which lights the target. The beam itself is
 	not drawn yet: that is the work of Section 4.
@@ -1011,6 +1016,8 @@ LaserGameBoardElement class >> openExampleWithLaserFired
 	grid fireLaser.
 	^ self openOn: grid
 ```
+
+> **Note.** *Laser On Blank Cell*, in Section 4, draws the beam over the blank cells the laser crosses, and the comment of this method says so from there on.
 
 ## Tests
 
@@ -1160,7 +1167,7 @@ TargetCellRendererTestCase >> testALitTargetIsFilledWithTheActiveColor
 
 Page 063 gets a test of its own, on the board rather than on the renderer, since it is the whole board that the original looks at.
 
-```smalltalk
+```
 LaserGameBoardElementTestCase >> testFiringTheLaserLightsTheTargetOfANewBoard
 	"Page 063 of the original: the laser is fired and the target turns on, even though no beam is
 	drawn yet. The cells are built from the model, so a board built after the shot shows the lit
@@ -1176,6 +1183,7 @@ LaserGameBoardElementTestCase >> testFiringTheLaserLightsTheTargetOfANewBoard
 		assert: center background paint color
 		equals: LaserGameColors targetCenterColorActive
 ```
+> **Note.** *Laser On Target Cell*, in Section 4, draws the beam under the picture of the target, so this test reads the disc as the last child of the cell and its comment says so.
 
 That test also marks the limit of what the board can do so far. It fires the laser *before* the board is built. A board already on the screen does not notice a change in its model, because nothing tells it to rebuild; the refresh path is a later step, at pages 065 to 067.
 
@@ -1273,7 +1281,9 @@ Three instance variables, and one of them is the original's. Page 065 adds `grid
 
 Page 066 asks for a constant for the width of the control panel, and for the arithmetic that sizes the window, so that we do not get the tiny rectangle again. The original's numbers are `^110` for the panel and `^10` for the margin, and we keep both:
 
-```smalltalk
+> **Note.** The chapter *Buttons Of One Width*, at the end of Section 5, states this width from the buttons rather than beside them, and the number becomes a hundred and thirty. It is quoted here as it read before that.
+
+```
 LaserGameElement class >> panelWidth
 	"Answer the width, in pixels, of the control panel beside the board. The original's number."
 
@@ -1290,7 +1300,7 @@ LaserGameElement class >> gameMargin
 
 They sit on the class side, because the size of a game can be asked for before one exists. The original's `calculatedExtent` reads the extent of the board form, adds the panel width to the horizontal, then adds one margin on each side. Ours reads the extent of the board element instead, and the rest of the sum is the same:
 
-```smalltalk
+```
 LaserGameElement class >> extentForGrid: aGrid
 	"Answer the extent a game showing aGrid occupies: the board, the control panel beside it, and
 	one margin on each side. This is the original's calculatedExtent, with the board element
@@ -1299,6 +1309,7 @@ LaserGameElement class >> extentForGrid: aGrid
 	^ (LaserGameBoardElement extentForGrid: aGrid) + (self panelWidth @ 0)
 	  + (2 * self gameMargin)
 ```
+> **Note.** *Adding More Game Stats*, the second chapter of Section 5, takes the height of the taller of the board and the panel, since four counters can stand taller than a board of few rows.
 
 That is the third time this shape of arithmetic appears — `CellRenderer cellExtent` for a cell, `LaserGameBoardElement extentForGrid:` for the board, `LaserGameElement extentForGrid:` for the window — and each one is written in terms of the one below it. Nobody multiplies a cell size by a grid size twice.
 
@@ -1306,7 +1317,7 @@ That is the third time this shape of arithmetic appears — `CellRenderer cellEx
 
 The original sets a `ProportionalLayout` on the morph and adds its children with layout frames: fractions for the part of the morph each one claims, offsets in pixels for the margins. Bloc says the same thing with a linear layout and padding, and the padding is where the margin lives:
 
-```smalltalk
+```
 LaserGameElement >> initialize
 	"A game is a row of two: the board, and the control panel beside it. The margin around both is
 	padding, and the color behind them shows through it."
@@ -1316,6 +1327,8 @@ LaserGameElement >> initialize
 	self layout: BlLinearLayout horizontal.
 	self padding: (BlInsets all: self class gameMargin)
 ```
+
+This is the method as this chapter writes it; Section 4.4 moves the control panel to the left of the board and fills the window with a colour ramp instead of a flat colour.
 
 Padding is exactly the right tool here. In the original, the margin is spelled out four times over — `gameMargin @ gameMargin`, `gameMargin negated`, and the same again for the second pane — and a change to the constant has to be right in all of them. As padding, the element reserves the margin once and every child is inside it.
 
@@ -1330,7 +1343,7 @@ LaserGameElement >> grid: aGrid
 	self rebuild
 ```
 
-```smalltalk
+```
 LaserGameElement >> rebuild
 	"Replace what I hold with a board showing my grid and a control panel beside it, and take the
 	size the two of them and my margins need."
@@ -1342,6 +1355,8 @@ LaserGameElement >> rebuild
 	self addChild: controlPanel.
 	self extent: (self class extentForGrid: self grid)
 ```
+
+This is the method as this chapter writes it; Section 4.4 adds the panel before the board, since page 139 moves it to the left, and registers the block that keeps the counters current.
 
 Write the three accessors — `grid`, `board` and `controlPanel` — as reading methods; only the grid has a setter, and it is the one above.
 
@@ -1379,13 +1394,15 @@ LaserGameColors class >> gameWindowColor
 	^ Color r: 0.369 g: 0.369 b: 0.505
 ```
 
-```smalltalk
+```
 LaserGameColors class >> controlPanelColor
 	"Answer the color of the control panel beside the board. The original starts with a blank white
 	rectangle there, and the buttons come later."
 
 	^ Color white
 ```
+
+This is the method as this chapter writes it; page 140 paints the panel transparent so that the window ramp runs behind it, and Section 4.4 follows it.
 
 Page 061 asked for every color of the game to be written down in one place, and the rule holds: neither of these two is a `Color` literal anywhere else.
 
@@ -1407,7 +1424,7 @@ LaserGameElement class >> on: aGrid
 	^ element
 ```
 
-```smalltalk
+```
 LaserGameElement class >> openOn: aGrid
 	"Open a space showing a game on aGrid and answer it.
 
@@ -1421,6 +1438,8 @@ LaserGameElement class >> openOn: aGrid
 	space show.
 	^ space
 ```
+
+*A Window The Player Can Resize*, at the end of Section 4, rewrites this method: the space is still opened at the size the game asks for, but the game then follows the window when the player drags its corner. The version above is the one this page leaves in the image.
 
 ```smalltalk
 LaserGameElement class >> openExample
@@ -1462,7 +1481,7 @@ It is called from `grid:` for the same reason `rebuild` is: the cells exist beca
 
 Six tests, and none of them opens a window. The arithmetic first, both as the sum of its parts and as the plain number it comes to for the demo grid:
 
-```smalltalk
+```
 LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins
 	"The game is as wide as the board, the panel beside it and a margin on each side, and as
 	tall as the board with a margin above and below. This is the original's calculatedExtent."
@@ -1477,10 +1496,11 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins
 		assert: (LaserGameElement extentForGrid: grid)
 		equals: 5 * CellRenderer cellExtent + (110 @ 0) + 20
 ```
+> **Note.** *Adding More Game Stats*, the second chapter of Section 5, takes the height of the taller of the board and the panel, since four counters can stand taller than a board of few rows.
 
 Then the two panes, in order:
 
-```smalltalk
+```
 LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
 	"A game is a row of two children: the board first, the control panel beside it."
 
@@ -1493,9 +1513,11 @@ LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
 	self assert: game layout class equals: BlLinearLayout
 ```
 
+This is the test as this chapter writes it; Section 4.4 turns the two children around, since page 139 puts the panel on the left.
+
 The panel keeps its width whatever the grid is, which is the point of a constant:
 
-```smalltalk
+```
 LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoard
 	"The panel keeps the original's width whatever the grid is, and it is as tall as the board
 	beside it. Sizes are read from the layout constraints, since nothing is laid out yet."
@@ -1513,6 +1535,7 @@ LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoard
 		assert: game controlPanel background paint color
 		equals: LaserGameColors controlPanelColor
 ```
+> **Note.** *Adding More Game Stats*, the second chapter of Section 5, replaces this test with `testControlPanelIsAFixedColumnAsTallAsTheBoardOrItsContents`, since the panel keeps the height of what it holds when the board is shorter than that.
 
 And handing the game another grid replaces what it holds, rather than adding to it:
 
@@ -1609,7 +1632,9 @@ LaserGameControlPanelElement >> game: aGame
 
 The original writes `makeButton:action:state:` and builds a `PluggableButtonMorph` with a `StringMorph` label, rounded corners, an on color, an off color, a border width and a border color — nine messages of appearance before the button does anything. Toplo has all of that in its theme, so what is left is the label, the size and the action:
 
-```smalltalk
+> **Note.** The chapter *Buttons Of One Width*, at the end of Section 5, adds a line to this method, so that a button centres its label. It is quoted here as it read before that.
+
+```
 LaserGameControlPanelElement >> newButton: aLabel action: aBlock
 	"Answer a labelled button of the original's size that evaluates aBlock when it is clicked. The
 	original builds a PluggableButtonMorph with a StringMorph label and paints its colors by hand;
@@ -1656,7 +1681,9 @@ The rule in that last method is the one page 069 states: the label names the act
 
 Three numbers, all the original's:
 
-```smalltalk
+> **Note.** The chapter *Buttons Of One Width*, at the end of Section 5, widens a button to fifty pixels, so that its longest labels fit inside it. It is quoted here as it read before that.
+
+```
 LaserGameControlPanelElement class >> buttonWidth
 	"Answer the width, in pixels, of a control panel button. The original's number."
 
@@ -1681,7 +1708,7 @@ LaserGameControlPanelElement class >> buttonGap
 
 The original turns those into a position with `buttonLayoutFrameForRow:column:`, which takes a row counted from the bottom and a column counted from the left and returns a `LayoutFrame`: nine lines of arithmetic, including `xOffset := (self panelWidth - (2 * buttonWidth)) // 3`, which for a panel 110 wide and buttons 40 wide comes to 10 — the same gap it uses vertically. We let a layout do the arithmetic instead. The buttons go in a row, and the row goes in the corner:
 
-```smalltalk
+```
 LaserGameControlPanelElement >> newButtonRow
 	"Answer the row of buttons: Quit first, then Fire, one gap apart. The original puts these two
 	in the bottom row of its panel, and the rest of its buttons come later."
@@ -1701,7 +1728,7 @@ LaserGameControlPanelElement >> newButtonRow
 	^ row
 ```
 
-```smalltalk
+```
 LaserGameControlPanelElement >> rebuild
 	"Replace what I hold with a fresh row of buttons for my game, and take the width of a panel and
 	the height of the board beside me."
@@ -1713,6 +1740,8 @@ LaserGameControlPanelElement >> rebuild
 	self extent: LaserGameElement panelWidth
 		@ (LaserGameBoardElement extentForGrid: self game grid) y
 ```
+
+Both are shown as this chapter writes them. Section 4.4 adds the counter of page 141 above the buttons, and Section 4.5 adds a third button and puts each row of buttons in a column, so the row in the image today is built by `newRowOfButtons:` and `rebuild` fills more variables than these two.
 
 `cellSpacing:` is the gap between the buttons, the margin is the gap between the row and the two edges of the panel it is aligned to, and `alignLeft` with `alignBottom` is the corner. Three numbers in, no offsets computed by hand, and the next three buttons the original adds will be three more `addChild:` sends rather than three more calls into the arithmetic.
 
@@ -1740,14 +1769,16 @@ LaserGameElement >> toggleLaser
 	self refresh
 ```
 
-```smalltalk
+```
 LaserGameElement >> quit
 	"Close the game. The original sends #delete to its morph."
 
 	self space ifNotNil: [ :aSpace | aSpace close ]
 ```
 
-```smalltalk
+Page 144 makes Quit ask before it closes, so from Section 4.5 on this method is called `close` and `quit` is the question.
+
+```
 LaserGameElement >> refresh
 	"Show what the model says now: redraw the cells and put the right label on the fire button.
 	This is the original's #updateGameBoardAndControls, without the counters it does not have yet."
@@ -1755,6 +1786,8 @@ LaserGameElement >> refresh
 	self board rebuildCells.
 	self controlPanel updateFireButtonLabel
 ```
+
+This is the method as this chapter writes it; page 142 adds the counters to it, and Section 4.4 with it.
 
 Page 070 pauses over a design choice in the middle of `toggleLaser`: one method that looks at the state and does one of two things, or a button that is given a different action each time its label changes. It keeps the single method, and so do we — the button asks the game to toggle, and the game is the one place that decides what toggling means. Its name here is `toggleLaser` rather than the original's `fireLaser`, because a method that may stop the laser should not be called firing it, and because `Grid >> fireLaser` already has that name for the thing that really does fire it.
 
@@ -1893,7 +1926,7 @@ LaserGameControlPanelElementTestCase >> newPanel
 	^ (LaserGameElement on: GridFactory demoGrid) controlPanel
 ```
 
-```smalltalk
+```
 LaserGameControlPanelElementTestCase >> testPanelHoldsARowOfTwoButtons
 	"The game's panel is a control panel element. It holds one child, the row, and the row holds the
 	Quit button then the Fire button. The rest of the original's buttons arrive with their own pages."
@@ -1911,7 +1944,9 @@ LaserGameControlPanelElementTestCase >> testPanelHoldsARowOfTwoButtons
 	self assert: panel fireButton labelText asString equals: 'Fire'
 ```
 
-```smalltalk
+This is the test as this chapter writes it; Section 4.4 gives the panel a second child, so the row is read from `buttonRow` rather than from the children.
+
+```
 LaserGameControlPanelElementTestCase >> testButtonRowSitsAtTheBottomLeftOneGapIn
 	"The row is aligned to the bottom left corner of the panel, one gap away from both edges, and
 	the buttons inside it are one gap apart. That is where the original's layout frames put them."
@@ -1932,6 +1967,8 @@ LaserGameControlPanelElementTestCase >> testButtonRowSitsAtTheBottomLeftOneGapIn
 		assert: row layout cellSpacing
 		equals: LaserGameControlPanelElement buttonGap
 ```
+
+This is the test as this chapter writes it; Section 4.4 gives the panel a second child, so the row is read from `buttonRow` rather than from the children.
 
 The label rule gets two tests, one for what it answers and one for it reaching the button. They are separate on purpose: the label follows the grid only when something updates it, and forgetting to update is exactly the mistake of page 071.
 
@@ -1965,7 +2002,7 @@ Two more check the sizes: `testButtonsKeepTheOriginalSize`, for forty by twenty 
 
 On the game side, one test does the whole round trip a player makes — click, look, click again — without a window:
 
-```smalltalk
+```
 LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain
 	"The fire button toggles: the first click fires the laser and lights the target, the second
 	stops it and puts the target out. The board and the button label both follow."
@@ -1988,10 +2025,11 @@ LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain
 		equals: LaserGameColors targetCenterColorIdle.
 	self assert: game controlPanel fireButton labelText asString equals: 'Fire'
 ```
+> **Note.** *Laser On Target Cell*, in Section 4, draws the beam under the picture of the target, so this test reads the disc as the last child of the cell and its comment says so.
 
 That single test is page 069, page 070, page 071 and the check of page 072 together: the model toggles, the drawing follows, the label follows, and the target goes out again when the beam stops. And quitting a game nobody opened is harmless, which is worth one test because `space` is `nil` until a space adopts the element:
 
-```smalltalk
+```
 LaserGameElementTestCase >> testQuittingAGameThatIsNotOpenDoesNothing
 	"Quit closes the space the game is in. A game that was never opened has no space, and asking it
 	to quit is harmless."
@@ -2002,6 +2040,8 @@ LaserGameElementTestCase >> testQuittingAGameThatIsNotOpenDoesNothing
 	game quit.
 	self assert: game children size equals: 2
 ```
+
+Section 4.5 drops this test: once Quit asks first, a game that was never opened answers the question rather than closing, and a test of that answer takes its place.
 
 ## What it looks like
 
