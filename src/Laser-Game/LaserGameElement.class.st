@@ -1,5 +1,5 @@
 "
-I am the whole game on the screen: a control panel on the left, a board on the right, and a margin around both.
+I am the whole game on the screen: a control panel on the left, a board on the right, and a margin around both. Under the board stands a bar the width of one cell, marking the square the laser comes in through.
 
 I replace the 2007 `LaserGame` morph of pages 065 to 067, which held a `SketchMorph` over a board form and a white rectangle for the panel. I hold a `LaserGameBoardElement` and a `LaserGameControlPanelElement` instead, and I take my size from them, the panel width and the margin, the way the original's `calculatedExtent` did. Page 139 puts the panel on the left, and page 140 fills me with the colour ramp of `LaserGameColors windowColorRamp`.
 
@@ -19,6 +19,7 @@ Instance variables:
 - `controlPanel`: the panel beside it, holding the buttons and the counters.
 - `moves`: how many moves have been made on the board.
 - `confirmation`: the question laid over me, nil while none is asked.
+- `laserHome`: the bar under the board marking where the laser enters it.
 
 I know nothing about the rules. The grid answers those, and the model-side `LaserGame` of the later sections will own the moves, the counters and the undo stack.
 "
@@ -30,7 +31,8 @@ Class {
 		'board',
 		'controlPanel',
 		'moves',
-		'confirmation'
+		'confirmation',
+		'laserHome'
 	],
 	#category : 'Laser-Game-Graphics',
 	#package : 'Laser-Game',
@@ -56,6 +58,16 @@ LaserGameElement class >> gameMargin [
 	number."
 
 	^ 10
+]
+
+{ #category : 'constants' }
+LaserGameElement class >> laserHomeExtent [
+	"Answer the size, in pixels, of the bar marking where the laser enters the board: one cell
+	wide and one margin tall. Page 189's Form has the same two numbers, less a pixel on the left
+	and two on the right, which keep it clear of the outline the original draws around its board;
+	nothing is drawn around this one."
+
+	^ CellRenderer cellExtent x @ self gameMargin
 ]
 
 { #category : 'instance creation' }
@@ -248,13 +260,26 @@ LaserGameElement >> incrementMoves [
 { #category : 'initialization' }
 LaserGameElement >> initialize [
 	"A game is a row of two: the control panel, and the board beside it. The margin around both is
-	padding, and the ramp behind them shows through it. No move has been made yet."
+	padding, and the ramp behind them shows through it. There is none at the bottom: page 189 puts
+	the mark of the laser's home in that band, so the bottom margin is the panel's and the board
+	column's own, and they carry it as a margin instead. No move has been made yet."
 
 	super initialize.
 	self background: self class windowBackgroundPaint.
 	self layout: BlLinearLayout horizontal.
-	self padding: (BlInsets all: self class gameMargin).
+	self padding: (BlInsets
+			 top: self class gameMargin
+			 left: self class gameMargin
+			 bottom: 0
+			 right: self class gameMargin).
 	moves := 0
+]
+
+{ #category : 'accessing' }
+LaserGameElement >> laserHome [
+	"Answer the bar that marks where the laser enters the board."
+
+	^ laserHome
 ]
 
 { #category : 'accessing' }
@@ -298,6 +323,26 @@ LaserGameElement >> naturalExtent [
 ]
 
 { #category : 'initialization' }
+LaserGameElement >> newBoardColumn [
+	"Answer the column standing where the board stands: the board itself, and under its first
+	column of cells the bar marking where the laser enters. The bar is the last child, so it
+	falls under the bottom row, and it is as tall as my bottom margin, which is why I have no
+	bottom padding: the column ends where I end and the bar fills the band under the board. The
+	original places the same rectangle with a layout frame pinned to the bottom of the window."
+
+	| column |
+	column := BlElement new.
+	column background: BlTransparentBackground new.
+	column layout: BlLinearLayout vertical.
+	column constraintsDo: [ :aConstraints |
+		aConstraints horizontal fitContent.
+		aConstraints vertical fitContent ].
+	column addChild: board.
+	column addChild: laserHome.
+	^ column
+]
+
+{ #category : 'initialization' }
 LaserGameElement >> newControlPanel [
 	"Answer the control panel: the fixed-width column of buttons that sits beside the board."
 
@@ -317,6 +362,19 @@ LaserGameElement >> newGame [
 	self moves: 0.
 	GridFactory randomizeGrid: self grid.
 	self refresh
+]
+
+{ #category : 'initialization' }
+LaserGameElement >> newLaserHome [
+	"Answer the bar that marks where the laser comes from: one cell wide, one margin tall, in the
+	colour the beam splatters the board with. Page 189 makes a Form of that size, fills it and
+	wraps it in a SketchMorph; an element with a background says the same thing and scales with
+	the rest of the game."
+
+	^ BlElement new
+		  background: LaserGameColors laserBeamSplatterColor;
+		  extent: self class laserHomeExtent;
+		  yourself
 ]
 
 { #category : 'geometry' }
@@ -342,14 +400,18 @@ LaserGameElement >> rebuild [
 	"Replace what I hold with a control panel for me and a board showing my grid beside it, and
 	take the size the two of them and my margins need. Page 139 moves the panel to the left of the
 	board, which here is the order the two are added in. The board tells me when a move changed the
-	grid, so the counters follow a click as well as the fire button."
+	grid, so the counters follow a click as well as the fire button. Since page 189 the board goes
+	in inside a column that also holds the mark of the laser's home, and the panel carries the
+	bottom margin that mark stands in."
 
 	self removeChildren.
 	confirmation := nil.
 	board := LaserGameBoardElement on: self grid.
+	laserHome := self newLaserHome.
 	controlPanel := self newControlPanel.
+	controlPanel margin: (BlInsets bottom: self class gameMargin).
 	self addChild: controlPanel.
-	self addChild: board.
+	self addChild: self newBoardColumn.
 	board whenMoveMadeDo: [ self moveMade ].
 	self extent: (self class extentForGrid: self grid)
 ]
