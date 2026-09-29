@@ -365,6 +365,20 @@ LaserGameElement >> refresh [
 	self controlPanel updateCounters
 ]
 
+{ #category : 'actions' }
+LaserGameElement >> reset [
+	"Put the board back where the game started: page 188 unwinds the whole undo stack, stops the
+	laser and sets the move count to zero. The original's two other lines have no counterpart —
+	#activeCellLocation: nil is the mouse press it remembers by hand, which Bloc delivers instead,
+	and #initializeDirty is the repaint bookkeeping of a shared board form, where every cell here
+	draws itself."
+
+	self grid reset.
+	self grid stopLaser.
+	self moves: 0.
+	self refresh
+]
+
 { #category : 'geometry' }
 LaserGameElement >> scaleToFitIn: anExtent [
 	"Answer how much the game has to be scaled by to fill a window of anExtent without changing
