@@ -248,3 +248,34 @@ CellRendererTestCase >> testTheBeamCrossesABlankCellFromTopToBottom [
 		assert: beam children second background paint color
 		equals: LaserGameColors laserBeamCenterColor
 ]
+
+{ #category : 'tests' }
+CellRendererTestCase >> testTheHintArrowIsCentredInItsCellAtEveryCellSize [
+	"Page 197 complains that the hint arrows are never where the player expects them: the arrow
+	forms were drawn into rectangles big enough to hold them, the black shape sits wherever it
+	landed in that rectangle, and the offset the renderer adds cannot know about the white margin
+	around it. Pages 197 and 198 trim the form to its ink and then centre what is left. In this
+	port an arrow is a polygon scaled onto the rectangle it is given, so its ink is its extent
+	and centring is arithmetic on two constants. Both halves are checked here, at three cell
+	sizes."
+
+	#( 30 40 80 ) do: [ :size |
+		self withCellExtent: size @ size do: [
+			| offset |
+			offset := CellRenderer hintArrowOffset.
+			self
+				assert: (offset * 2) + CellRenderer hintArrowExtent
+				equals: CellRenderer cellExtent.
+			self assert: offset x equals: offset y.
+			#( #northArrowElementOfExtent: #southArrowElementOfExtent:
+			   #eastArrowElementOfExtent: #westArrowElementOfExtent:
+			   #clockwiseArrowElementOfExtent:
+			   #counterClockwiseArrowElementOfExtent: ) do: [ :selector |
+				| element |
+				element := LaserGameShapes
+					           perform: selector
+					           with: CellRenderer hintArrowExtent.
+				self
+					assert: (Rectangle encompassing: element geometry vertices)
+					equals: (0 @ 0 corner: CellRenderer hintArrowExtent) ] ] ]
+]

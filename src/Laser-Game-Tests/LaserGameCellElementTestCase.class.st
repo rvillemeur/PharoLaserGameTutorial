@@ -661,6 +661,32 @@ LaserGameCellElementTestCase >> testTheCrossHairIsShownExactlyWhenAHintIs [
 ]
 
 { #category : 'tests' }
+LaserGameCellElementTestCase >> testTheHintArrowSitsCentredInTheCellAtEveryCellSize [
+	"Page 198 of the original recentres the hint arrow: it cuts the white margin off the cached
+	form and then offsets what is left by half of what the cell has to spare. The port never had
+	a margin, since an arrow is a polygon scaled onto the rectangle it is given, but the second
+	half of the claim still has to hold. A mirror cell is hovered at three cell sizes, and the
+	arrow it shows is measured where it really sits: the space it leaves on the left is the space
+	it leaves on the right, and the space above is the space below."
+
+	#( 30 40 80 ) do: [ :size |
+		LaserGameTestCase withCellExtent: size @ size do: [
+			| element arrow position margin |
+			element := (LaserGameBoardElement on: GridFactory demoGrid)
+				           cellElementAt: 4 @ 1.
+			element dispatchEvent: (BlMouseMoveEvent new
+					 position: CellClickRegionInside regionRectangle center;
+					 yourself).
+			arrow := element hintElement.
+			self deny: arrow isNil.
+			position := arrow constraints position.
+			margin := CellRenderer cellExtent
+			          - CellRenderer hintArrowExtent - position.
+			self assert: margin equals: position.
+			self assert: position x equals: position y ] ]
+]
+
+{ #category : 'tests' }
 LaserGameCellElementTestCase >> testTheSameLocalPointMeansTheSameRegionInEveryCell [
 	"Every cell classifies points in its own coordinates, so the cell in the far corner answers
 	exactly what the cell at the origin answers. The original had to subtract the offset of the

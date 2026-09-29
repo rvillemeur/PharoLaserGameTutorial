@@ -288,6 +288,27 @@ LaserGameShapesTestCase >> testEveryArrowElementUsesTheVerticesOfItsDirection [
 ]
 
 { #category : 'tests' }
+LaserGameShapesTestCase >> testEveryArrowFillsTheRectangleItIsGiven [
+	"Page 197 of the original is about white space: an arrow was drawn into a form big enough to
+	hold it, so the black shape sat somewhere inside a white margin nobody measured, and the seven
+	Form methods of that page go looking for the tight rectangle around the black so page 198 can
+	cut it out. Here an arrow is a polygon whose points are scaled onto the rectangle asked for,
+	so the ink is the rectangle and there is no margin to trim. Six arrows are asked at three
+	sizes and every one of them is checked."
+
+	#( 24 30 48 ) do: [ :size |
+		#( #northArrowElementOfExtent: #southArrowElementOfExtent:
+		   #eastArrowElementOfExtent: #westArrowElementOfExtent:
+		   #clockwiseArrowElementOfExtent:
+		   #counterClockwiseArrowElementOfExtent: ) do: [ :selector |
+			| element |
+			element := LaserGameShapes perform: selector with: size @ size.
+			self
+				assert: (Rectangle encompassing: element geometry vertices)
+				equals: (0 @ 0 corner: size @ size) ] ]
+]
+
+{ #category : 'tests' }
 LaserGameShapesTestCase >> testPointsScaleToFillTheRequestedExtent [
 	"Scaling maps the vertex array onto the rectangle the caller asks for, so the same array
 	serves a 12 pixel hint and a 200 pixel drawing. The original had one fixed 330 pixel form and

@@ -20,12 +20,12 @@ LaserGameTestCase class >> isAbstract [
 ]
 
 { #category : 'support' }
-LaserGameTestCase >> withCellExtent: anExtent do: aBlock [
+LaserGameTestCase class >> withCellExtent: anExtent do: aBlock [
 	"Run aBlock with the cell size of the whole package set to anExtent, and put the old size
-	back afterwards. Page 137 of the original raises the cell size and then looks by eye for the
-	sizes that were written down instead of derived from it; this runs that experiment from the
-	test suite. Pages 190 to 196 ask the same question of the click tables, so the method lives
-	here, where every test that has to ask it can reach it."
+	back afterwards. The method is on the class side as well as on the instance side because a
+	test case that has no reason to inherit from me still has reason to ask this question: page
+	198 of the original moves the hint arrow, and the test that checks where it lands belongs
+	with the other cell element tests."
 
 	| previous |
 	previous := CellRenderer class >> #cellExtent.
@@ -35,4 +35,15 @@ LaserGameTestCase >> withCellExtent: anExtent do: aBlock [
 		classified: 'constants'.
 	aBlock value ] ensure: [
 		CellRenderer class compile: previous sourceCode classified: 'constants' ]
+]
+
+{ #category : 'support' }
+LaserGameTestCase >> withCellExtent: anExtent do: aBlock [
+	"Run aBlock with the cell size of the whole package set to anExtent, and put the old size
+	back afterwards. Page 137 of the original raises the cell size and then looks by eye for the
+	sizes that were written down instead of derived from it; this runs that experiment from the
+	test suite. Pages 190 to 196 ask the same question of the click tables, and page 198 asks it
+	of the hint arrow, so the answer lives on my class side and this method passes it on."
+
+	^ self class withCellExtent: anExtent do: aBlock
 ]
