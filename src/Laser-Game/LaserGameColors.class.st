@@ -23,6 +23,14 @@ LaserGameColors class >> allowActionArrowColor [
 ]
 
 { #category : 'colors' }
+LaserGameColors class >> boardShadowColor [
+	"Answer the colour of the shadow the board casts. Page 201 gives it as the shadow colour of
+	the SketchMorph holding the board form."
+
+	^ Color r: 0.25 g: 0.25 b: 0.254
+]
+
+{ #category : 'colors' }
 LaserGameColors class >> cellBorderColor [
 	^Color white
 ]
@@ -140,6 +148,21 @@ LaserGameColors class >> laserBeamSplatterColor [
 { #category : 'colors' }
 LaserGameColors class >> mirrorColor [
 	^Color blue
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> panelDividerDarkColor [
+	"Answer the darker end of the bar page 201 draws across the control panel above the buttons.
+	The original fills a RectangleMorph with a gradient between two near whites."
+
+	^ Color r: 0.847 g: 0.847 b: 0.85
+]
+
+{ #category : 'colors' }
+LaserGameColors class >> panelDividerLightColor [
+	"Answer the lighter end of the bar page 201 draws across the control panel above the buttons."
+
+	^ Color r: 0.972 g: 0.972 b: 0.976
 ]
 
 { #category : 'colors' }

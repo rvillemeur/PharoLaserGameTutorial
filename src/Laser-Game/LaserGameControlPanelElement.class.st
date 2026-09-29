@@ -66,10 +66,11 @@ LaserGameControlPanelElement class >> buttonWidth [
 { #category : 'constants' }
 LaserGameControlPanelElement class >> contentHeight [
 	"Answer the height, in pixels, of everything I hold: my counters, stacked with a gap between
-	them and a gap above and below, and the rows of buttons under them, spaced the same way. A
-	counter takes the size of its caption, so one is built and measured; nothing is laid out and
-	nothing is opened. The original never needs this number, since it places its counters at fixed
-	offsets from the top of a panel that is always taller than they are."
+	them and a gap above and below, and under them the divider bar and the rows of buttons,
+	spaced the same way. A counter takes the size of its caption, so one is built and measured;
+	nothing is laid out and nothing is opened. The original never needs this number, since it
+	places its counters at fixed offsets from the top of a panel that is always taller than they
+	are, and it hangs the divider of page 201 off the bottom edge at an offset of its own."
 
 	| counter |
 	counter := LaserGameCounterElement labelled: 'Active Mirrors' digits: 3.
@@ -77,7 +78,8 @@ LaserGameControlPanelElement class >> contentHeight [
 	^ ((self counterCount * counter measuredExtent y)
 	   + ((self counterCount + 3) * self counterGap)
 	   + (self buttonRowCount * self buttonHeight)
-	   + ((self buttonRowCount + 1) * self buttonGap)) ceiling
+	   + self dividerHeight
+	   + ((self buttonRowCount + 2) * self buttonGap)) ceiling
 ]
 
 { #category : 'constants' }
@@ -94,6 +96,15 @@ LaserGameControlPanelElement class >> counterGap [
 	insets its counter four pixels from the top and the left of the panel."
 
 	^ 4
+]
+
+{ #category : 'constants' }
+LaserGameControlPanelElement class >> dividerHeight [
+	"Answer the height, in pixels, of the bar page 201 draws across me above the buttons. The
+	original states it as the five pixels between the two offsets of the layout frame it places
+	the RectangleMorph with."
+
+	^ 5
 ]
 
 { #category : 'constants' }
@@ -248,9 +259,11 @@ LaserGameControlPanelElement >> newButtonColumn [
 	edges, the rows one gap apart, the last row against the bottom. Page 144 places each button
 	itself with #buttonLayoutFrameForRow:column:, which counts rows from the bottom and columns
 	from the left; a column of rows says the same thing, and the third row, page 188's, falls in
-	above the other two. The cell spacing of a linear layout is added around the cells as well as
-	between them, so it is the whole of the gap: a margin here would double the gap on the left
-	and push the last button of the bottom row against the board."
+	above the other two. Page 201's divider bar is the first child, so it sits above every row
+	of buttons, which is where the original's offset from the bottom edge puts it. The cell
+	spacing of a linear layout is added around the cells as well as between them, so it is the
+	whole of the gap: a margin here would double the gap on the left and push the last button of
+	the bottom row against the board."
 
 	| column |
 	column := BlElement new.
@@ -261,6 +274,7 @@ LaserGameControlPanelElement >> newButtonColumn [
 		aConstraints vertical fitContent.
 		aConstraints frame horizontal alignLeft.
 		aConstraints frame vertical alignBottom ].
+	column addChild: self newPanelDivider.
 	column addChild: self newResetRow.
 	column addChild: self newNewGameRow.
 	column addChild: self newButtonRow.
@@ -320,9 +334,10 @@ LaserGameControlPanelElement >> newGameButton [
 { #category : 'accessing' }
 LaserGameControlPanelElement >> newGameRow [
 	"Answer the middle row of buttons, holding New and Undo. Page 144 calls it row two, so it is
-	the second child of the column, which reads from the top."
+	the third child of the column, which reads from the top and starts with page 201's divider
+	bar."
 
-	^ self buttonColumn children second
+	^ self buttonColumn children third
 ]
 
 { #category : 'initialization' }
@@ -365,6 +380,26 @@ LaserGameControlPanelElement >> newNewGameRow [
 	^ self newRowOfButtons: {
 			  newGameButton.
 			  undoButton }
+]
+
+{ #category : 'initialization' }
+LaserGameControlPanelElement >> newPanelDivider [
+	"Answer the bar that separates my counters from my buttons: as wide as I am but for a gap on
+	each side, five pixels tall, filled with the gradient of page 201. The original builds a
+	RectangleMorph with a raised border and a GradientFillStyle, and hangs it off the bottom edge
+	of the panel at an offset counted in pixels from there; here it is a child of the button
+	column, so it stands above the buttons wherever they end up."
+
+	| divider |
+	divider := BlElement new.
+	divider background: (BlLinearGradientPaint vertical stops: {
+					 (0 -> LaserGameColors panelDividerDarkColor).
+					 (1 -> LaserGameColors panelDividerLightColor) }).
+	divider constraintsDo: [ :aConstraints |
+		aConstraints horizontal exact:
+			LaserGameElement panelWidth - (2 * self class buttonGap).
+		aConstraints vertical exact: self class dividerHeight ].
+	^ divider
 ]
 
 { #category : 'initialization' }
@@ -417,6 +452,14 @@ LaserGameControlPanelElement >> newUndoButton [
 ]
 
 { #category : 'accessing' }
+LaserGameControlPanelElement >> panelDivider [
+	"Answer the bar page 201 draws across me above the buttons. It is the first child of the
+	button column, which reads from the top."
+
+	^ self buttonColumn children first
+]
+
+{ #category : 'accessing' }
 LaserGameControlPanelElement >> quitButton [
 	"Answer the button that closes the game."
 
@@ -457,9 +500,10 @@ LaserGameControlPanelElement >> resetButton [
 { #category : 'accessing' }
 LaserGameControlPanelElement >> resetRow [
 	"Answer the top row of buttons. Page 144 counts rows from the bottom and this is the third of
-	them, so it is the first child of the column, which reads from the top."
+	them, so it is the second child of the column, which reads from the top and starts with page
+	201's divider bar."
 
-	^ self buttonColumn children first
+	^ self buttonColumn children second
 ]
 
 { #category : 'accessing' }

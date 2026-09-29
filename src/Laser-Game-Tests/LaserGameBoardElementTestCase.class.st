@@ -117,3 +117,25 @@ LaserGameBoardElementTestCase >> testSettingAnotherGridRebuildsTheCells [
 		assert: (board cellElementAt: 1 @ 1)
 		equals: board children first
 ]
+
+{ #category : 'tests' }
+LaserGameBoardElementTestCase >> testTheBoardCastsADropShadow [
+	"Page 201 gives the board a drop shadow: three pixels down and to the right, in a dark grey.
+	The original asks the SketchMorph holding the board form for it; here it is an element
+	effect, so the shadow is drawn under the board and the board keeps the size its cells give
+	it, which is what the game's arithmetic counts on."
+
+	| board |
+	board := LaserGameBoardElement on: GridFactory demoGrid.
+	self assert: board effect class equals: BlSimpleShadowEffect.
+	self
+		assert: board effect color
+		equals: LaserGameColors boardShadowColor.
+	self
+		assert: board effect offset
+		equals: LaserGameBoardElement shadowOffset.
+	board measure: BlExtentMeasurementSpec unspecified.
+	self
+		assert: board measuredExtent
+		equals: (LaserGameBoardElement extentForGrid: GridFactory demoGrid)
+]

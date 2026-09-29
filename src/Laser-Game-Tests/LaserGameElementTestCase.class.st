@@ -53,6 +53,29 @@ LaserGameElementTestCase >> testAGameKeepsItsShapeInAWindowOfAnotherShape [
 ]
 
 { #category : 'tests' }
+LaserGameElementTestCase >> testAGameMadeWithNoGridPlaysTheStandardBoard [
+	"Page 203 opens a LaserGame from the world menu and finds it too small to play: the menu
+	sends #new, and #initialize builds the five by five demo board. Page 204 answers with
+	GridFactory defaultGrid, eight columns by ten rows, dealt. Here a game takes its grid from
+	outside, so the default is what it falls back on when nobody gave it one, and it is dealt
+	when it is first asked for rather than in #initialize, so a game that is given a grid deals
+	no board it would throw away."
+
+	| game |
+	game := LaserGameElement new.
+	self assert: game grid numberOfColumns equals: 8.
+	self assert: game grid numberOfRows equals: 10.
+	self assert: game board grid equals: game grid.
+	self
+		assert: game constraints horizontal resizer size
+			@ game constraints vertical resizer size
+		equals: (LaserGameElement extentForGrid: game grid).
+	self
+		assert: (LaserGameElement on: GridFactory demoGrid) grid numberOfColumns
+		equals: 5
+]
+
+{ #category : 'tests' }
 LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven [
 	"The game is drawn at the size the board asks for and scaled to whatever the window is, so a
 	window of twice that extent shows the same game twice as big, filling it. The extent is read

@@ -236,9 +236,16 @@ LaserGameElement >> fitIn: anExtent [
 
 { #category : 'accessing' }
 LaserGameElement >> grid [
-	"Answer the grid the game plays on."
+	"Answer the grid the game plays on. A game built with no grid at all plays the standard
+	board, which is page 204: the world menu opens a morph by sending #new, so #new has to answer
+	something worth looking at, and the original changes LaserGame >> initialize to ask
+	GridFactory for a defaultGrid of eight columns by ten rows instead of the five by five demo
+	board. The board is dealt when it is first asked for, so a game that is given a grid never
+	deals one it would throw away."
 
-	^ grid
+	^ grid ifNil: [
+		  self grid: GridFactory defaultGrid.
+		  grid ]
 ]
 
 { #category : 'accessing' }

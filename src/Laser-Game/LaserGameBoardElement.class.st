@@ -93,6 +93,14 @@ LaserGameBoardElement class >> openOn: aGrid [
 	^ space
 ]
 
+{ #category : 'constants' }
+LaserGameBoardElement class >> shadowOffset [
+	"Answer how far the board casts its shadow, in pixels. Page 201 gives the SketchMorph holding
+	the board form a shadow offset of three pixels down and to the right."
+
+	^ 3 @ 3
+]
+
 { #category : 'accessing' }
 LaserGameBoardElement >> cellElementAt: aPoint [
 	"Answer the element showing the cell at aPoint, x being the column and y the row."
@@ -165,10 +173,15 @@ LaserGameBoardElement >> hoveredCellElement [
 { #category : 'initialization' }
 LaserGameBoardElement >> initialize [
 	"A board lays its cells out in a grid, one column per grid column, and takes exactly the
-	size of the cells it holds."
+	size of the cells it holds. It casts a shadow down and to the right, which is page 201's
+	drop shadow: the original asks its SketchMorph for one, and here it is an element effect,
+	drawn under the board by Alexandrie and costing no layout space."
 
 	super initialize.
 	self background: LaserGameColors gameBoardBackgroundColor.
+	self effect: (BlSimpleShadowEffect
+			 color: LaserGameColors boardShadowColor
+			 offset: self class shadowOffset).
 	self layout: BlGridLayout horizontal.
 	self constraintsDo: [ :aConstraints |
 		aConstraints horizontal fitContent.

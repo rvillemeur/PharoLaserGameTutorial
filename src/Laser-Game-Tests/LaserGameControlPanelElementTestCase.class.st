@@ -342,17 +342,47 @@ LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBo
 LaserGameControlPanelElementTestCase >> testResetButtonHasTheTopRowToItself [
 	"Page 188 puts Reset in row three, column one, which is the row above New and Undo and the
 	topmost of the three. Its button is the one thing the panel does not hold in an instance
-	variable, so it is read from its row."
+	variable, so it is read from its row. Since page 201 the column starts with the divider bar,
+	so the three rows follow it."
 
 	| panel |
 	panel := self newPanel.
 	self assert: panel buttonColumn children asArray equals: {
+			panel panelDivider.
 			panel resetRow.
 			panel newGameRow.
 			panel buttonRow }.
 	self assert: panel resetRow children asArray equals: { panel resetButton }.
 	self assert: panel resetButton class equals: ToButton.
 	self assert: panel resetButton labelText asString equals: 'Reset'
+]
+
+{ #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testThePanelShowsADividerAboveItsButtons [
+	"Page 201 draws a bar across the panel above the buttons, a gap in from each edge and five
+	pixels tall. The original hangs it off the bottom edge of the panel at a fixed offset, which
+	is a number that has to be found again whenever a row of buttons is added; here it is the
+	first child of the column of button rows, so it stands above them wherever they stand."
+
+	| panel divider |
+	panel := self newPanel.
+	divider := panel panelDivider.
+	self assert: (panel buttonColumn children includes: divider).
+	self assert: panel buttonColumn children first equals: divider.
+	self
+		assert: divider constraints horizontal resizer size
+		equals:
+		LaserGameElement panelWidth
+		- (2 * LaserGameControlPanelElement buttonGap).
+	self
+		assert: divider constraints vertical resizer size
+		equals: LaserGameControlPanelElement dividerHeight.
+	self
+		assert: divider background paint stops first value
+		equals: LaserGameColors panelDividerDarkColor.
+	self
+		assert: divider background paint stops last value
+		equals: LaserGameColors panelDividerLightColor
 ]
 
 { #category : 'tests' }
