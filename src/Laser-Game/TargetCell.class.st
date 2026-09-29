@@ -1,3 +1,8 @@
+"
+I am the `Cell` the beam is aimed at. Every side of me leaves by nothing, so a beam that enters lights the side it arrived by and stops there. Reaching me is how the game is won.
+
+Like `BlankCell` I add no state to `Cell`; `initializeExitSides` fills `exitSides` with nil for all four sides. `Grid` puts exactly one of me on the board.
+"
 Class {
 	#name : 'TargetCell',
 	#superclass : 'Cell',
