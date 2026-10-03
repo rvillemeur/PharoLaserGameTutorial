@@ -1,15 +1,14 @@
 # Adding more game stats
 
-Two more numbers for the player: how many mirrors stand on the board, and how many of them the beam
-lights. The model can answer both already, so we do all of the work in the panel — which turns out
-to be a good thing, because the panel does not fit.
+Two more numbers for the player: how many mirrors stand on the board, and how many of them the beam lights.
+The model can answer both already, so we do all of the work in the panel — which turns out to be a good thing, because the panel does not fit.
 
-This chapter adds the two counts to the grid, hangs two more counters off the panel, and then makes
-the panel tall enough and wide enough for the captions it now carries.
+This chapter adds the two counts to the grid, hangs two more counters off the panel, and then makes the panel tall enough and wide enough for the captions it now carries.
 
-There are three lessons in this chapter. An object that holds something can answer for it, so
-nothing has to go looking. A size you need before the thing exists has to be stated, and a stated
-size needs a test. And a class that collects instance variables is telling you something.
+There are three lessons in this chapter.
+An object that holds something can answer for it, so nothing has to go looking.
+A size you need before the thing exists has to be stated, and a stated size needs a test.
+And a class that collects instance variables is telling you something.
 
 ## The grid can already count
 
@@ -30,13 +29,13 @@ Grid >> numberOfActiveMirrors
 	^(self cells select: [:each | (each class = MirrorCell) and: [each isOn]]) size
 ```
 
-`self cells` answers every cell of the board as a flat collection. `select:` keeps the ones the
-block answers true for, and `size` counts what is left. Reading those two lines aloud gives you the
-sentence in the comment, which is what you want from a method this small.
+`self cells` answers every cell of the board as a flat collection.
+`select:` keeps the ones the block answers true for, and `size` counts what is left.
+Reading those two lines aloud gives you the sentence in the comment, which is what you want from a method this small.
 
-The second one asks each mirror `isOn`. A cell knows whether the beam is in it, because the beam was
-traced through the grid and each cell it crossed was told so. The counter does not re-trace
-anything; it asks.
+The second one asks each mirror `isOn`.
+A cell knows whether the beam is in it, because the beam was traced through the grid and each cell it crossed was told so.
+The counter does not re-trace anything; it asks.
 
 We test both on the demo board, where the answers are known:
 
@@ -63,22 +62,19 @@ GridTestCase >> testNumberOfActiveMirrorsCounter
 	self assert: count equals: 3
 ```
 
-The second test is two tests in one body, and we did that deliberately: it checks the count before
-the laser fires and again after, which is the only way we can see that firing is what changed it. A
-test that only asserted `3` after firing would pass just as well on a method that always answered
-three.
+The second test is two tests in one body, and we did that deliberately: it checks the count before the laser fires and again after, which is the only way we can see that firing is what changed it.
+A test that only asserted `3` after firing would pass just as well on a method that always answered three.
 
-Both use `assert:equals:` rather than `assert:`. Prefer it everywhere you can. `self assert: count
-= 10` tells you, when it fails, that something was false; `self assert: count equals: 10` tells you
-it got 7 and wanted 10, and that difference is most of the time you will spend reading failures.
+Both use `assert:equals:` rather than `assert:`.
+Prefer it everywhere you can.
+`self assert: count = 10` tells you, when it fails, that something was false; `self assert: count equals: 10` tells you it got 7 and wanted 10, and that difference is most of the time you will spend reading failures.
 
-> **Assert the value, not a true-or-false.** A failure message that carries both numbers is worth
-> more than a shorter line of code.
+> **Assert the value, not a true-or-false.** A failure message that carries both numbers is worth more than a shorter line of code.
 
 ## Two more counters in the panel
 
-The panel already shows the beam length and the move count, so the new ones are the same thing
-again. We write the tests first — they say what the panel is going to be asked for:
+The panel already shows the beam length and the move count, so the new ones are the same thing again.
+We write the tests first — they say what the panel is going to be asked for:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testMirrorsCounterIsThreeDigitsCaptionedMirrors
@@ -105,8 +101,8 @@ LaserGameControlPanelElementTestCase >> testActiveMirrorsCounterIsThreeDigitsCap
 		equals: 'Active Mirrors'
 ```
 
-`self newPanel` is a helper we have had on the test class since the panel appeared. It is one line,
-and it is the reason these tests are three lines each:
+`self newPanel` is a helper we have had on the test class since the panel appeared.
+It is one line, and it is the reason these tests are three lines each:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> newPanel
@@ -115,11 +111,10 @@ LaserGameControlPanelElementTestCase >> newPanel
 	^ (LaserGameElement on: GridFactory demoGrid) controlPanel
 ```
 
-Write that helper the second time you need its two lines, not the fifth. A test reads better when
-its first line is the thing it is about.
+Write that helper the second time you need its two lines, not the fifth.
+A test reads better when its first line is the thing it is about.
 
-The column holds four counters now instead of two, so we rewrite the test that listed them rather
-than add to it:
+The column holds four counters now instead of two, so we rewrite the test that listed them rather than add to it:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testCounterColumnHoldsTheFourCountersInOrder
@@ -135,11 +130,10 @@ LaserGameControlPanelElementTestCase >> testCounterColumnHoldsTheFourCountersInO
 			panel activeMirrorsCounter }
 ```
 
-We compare the children against an array of the four accessors, which says two things at once: that
-all four are in the column, and in which order they are drawn.
+We compare the children against an array of the four accessors, which says two things at once: that all four are in the column, and in which order they are drawn.
 
-Nothing in the test mentions a pixel. The column stacks its children, so their order *is* their
-position, and a test that measured offsets would be testing the layout instead of the panel.
+Nothing in the test mentions a pixel.
+The column stacks its children, so their order *is* their position, and a test that measured offsets would be testing the layout instead of the panel.
 
 The last test we write is the one about behaviour:
 
@@ -169,20 +163,17 @@ LaserGameControlPanelElementTestCase >> testMirrorCountersShowTheGridCountsAndAr
 	self deny: panel activeMirrorsCounter highlighted
 ```
 
-The counts are read from the grid and not written down: the ten and the three live in
-`GridTestCase`, where they are what is being tested, and here the claim is only that the display
-agrees with the model.
+The counts are read from the grid and not written down: the ten and the three live in `GridTestCase`, where they are what is being tested, and here the claim is only that the display agrees with the model.
 
-But a test that compares two things it did not choose can pass by accident — if both were zero, the
-first assertion would hold and say nothing. That is what `activeMirrorsCounter value > 0` is for.
+But a test that compares two things it did not choose can pass by accident — if both were zero, the first assertion would hold and say nothing.
+That is what `activeMirrorsCounter value > 0` is for.
 One line, and the comparison cannot be vacuous any more.
 
-> **A test that compares two values it did not choose needs one assertion that neither of them is
-> empty.** Otherwise "they agree" and "there is nothing there" look the same.
+> **A test that compares two values it did not choose needs one assertion that neither of them is empty.** Otherwise "they agree" and "there is nothing there" look the same.
 
-The two `deny:` lines are about meaning. The panel has one bright counter, the beam length, and it
-is bright exactly while the laser fires. If the mirror counters lit up as well, brightness would
-stop meaning anything at all.
+The two `deny:` lines are about meaning.
+The panel has one bright counter, the beam length, and it is bright exactly while the laser fires.
+If the mirror counters lit up as well, brightness would stop meaning anything at all.
 
 ## What the panel gains
 
@@ -194,8 +185,7 @@ LaserGameControlPanelElement >> newMirrorsCounter
 
 	^ LaserGameCounterElement labelled: 'Mirrors' digits: 3
 ```
-> **Note.** *Counters of one width*, the last chapter but one, sends `newCounterLabelled:digits:`
-> here instead, which gives every counter of the panel the same width.
+> **Note.** *Counters of one width*, the last chapter but one, sends `newCounterLabelled:digits:` here instead, which gives every counter of the panel the same width.
 
 ```st
 LaserGameControlPanelElement >> newActiveMirrorsCounter
@@ -222,16 +212,14 @@ LaserGameControlPanelElement >> activeMirrorsCounter
 	^ activeMirrorsCounter
 ```
 
-Those four lines are worth a paragraph of your time. The alternative — and it is a common one — is
-to give each display a name when it is built, and to search the element tree for that name when it
-has to be updated.
+Those four lines are worth a paragraph of your time.
+The alternative — and it is a common one — is to give each display a name when it is built, and to search the element tree for that name when it has to be updated.
 
-Then every update walks the whole game, a misspelled name fails silently, and the panel has no idea
-what it contains. Holding the four counters in four variables costs four accessors and removes all
-of that. The panel built them; the panel keeps them.
+Then every update walks the whole game, a misspelled name fails silently, and the panel has no idea what it contains.
+Holding the four counters in four variables costs four accessors and removes all of that.
+The panel built them; the panel keeps them.
 
-> **Keep what you build.** An object that has to search its own children for them has given away
-> something it already had.
+> **Keep what you build.** An object that has to search its own children for them has given away something it already had.
 
 We add the two new ones to the column in order:
 
@@ -258,10 +246,8 @@ LaserGameControlPanelElement >> newCounterColumn
 	^ column
 ```
 
-Adding a counter here is one line. Nothing is positioned, because `BlLinearLayout vertical` stacks
-children in the order they were added and `cellSpacing:` puts the gap between them; nothing is
-measured, because `fitContent` means "be as big as what you hold"; and the whole column is held one
-gap in from the edges of the panel by `margin:`.
+Adding a counter here is one line.
+Nothing is positioned, because `BlLinearLayout vertical` stacks children in the order they were added and `cellSpacing:` puts the gap between them; nothing is measured, because `fitContent` means "be as big as what you hold"; and the whole column is held one gap in from the edges of the panel by `margin:`.
 
 And we set the two new numbers where the two old ones are set:
 
@@ -292,9 +278,9 @@ LaserGameControlPanelElement >> updateCounters
 		value: self game grid numberOfActiveMirrors
 ```
 
-Every counter is set every time, including the ones that cannot have changed. That is on purpose. A
-method that updated only what it thought had changed would need to know what changed, and that is
-exactly the kind of knowledge that goes stale and leaves a stale number on the screen.
+Every counter is set every time, including the ones that cannot have changed.
+That is on purpose.
+A method that updated only what it thought had changed would need to know what changed, and that is exactly the kind of knowledge that goes stale and leaves a stale number on the screen.
 
 Four assignments are cheap; a counter showing yesterday's value is not.
 
@@ -302,16 +288,13 @@ Four assignments are cheap; a counter showing yesterday's value is not.
 
 Run the game now and you get the New button drawn across the caption of the active mirrors counter.
 
-Nothing is broken in the model, and nothing is broken in the counters: the panel is simply not tall
-enough to hold what it holds. It had been given the height of the board beside it, which was always
-more than its two counters and two rows of buttons needed.
+Nothing is broken in the model, and nothing is broken in the counters: the panel is simply not tall enough to hold what it holds.
+It had been given the height of the board beside it, which was always more than its two counters and two rows of buttons needed.
 
-Four counters are two hundred and twenty pixels on their own, and the demo board — five rows of
-fifty pixel cells — is two hundred and fifty tall. The buttons sit at the bottom, the counters grow
-from the top, and they met.
+Four counters are two hundred and twenty pixels on their own, and the demo board — five rows of fifty pixel cells — is two hundred and fifty tall.
+The buttons sit at the bottom, the counters grow from the top, and they met.
 
-The honest fix is to let the panel say how tall it needs to be, so we state the height before any
-panel exists:
+The honest fix is to let the panel say how tall it needs to be, so we state the height before any panel exists:
 
 ```smalltalk
 LaserGameControlPanelElement class >> counterCount
@@ -333,19 +316,15 @@ LaserGameControlPanelElement class >> contentHeight
 	   + ((self counterCount + 3) * self counterGap)
 	   + (2 * self buttonHeight) + (3 * self buttonGap)) ceiling
 ```
-> **Note.** *Reset* states the button part of this over `buttonRowCount`, because it
-> adds a third row, and *Minor cosmetic tweaks* adds the divider above the buttons to the sum.
+> **Note.** *Reset* states the button part of this over `buttonRowCount`, because it adds a third row, and *Minor cosmetic tweaks* adds the divider above the buttons to the sum.
 
-`measure:` is how you ask an element how big it wants to be without opening anything and without a
-layout pass. `BlExtentMeasurementSpec unspecified` means "no constraint, tell me what you would
-like", and `measuredExtent` is the answer.
+`measure:` is how you ask an element how big it wants to be without opening anything and without a layout pass.
+`BlExtentMeasurementSpec unspecified` means "no constraint, tell me what you would like", and `measuredExtent` is the answer.
 
-One counter is built, measured, and thrown away, which is all it takes: the four counters are alike,
-so one of them times four is the stack.
+One counter is built, measured, and thrown away, which is all it takes: the four counters are alike, so one of them times four is the stack.
 
-The height of a counter is not a number you can write down — a counter is as tall as the text in its
-caption, in whatever font the image is using. We have to measure it, and `ceiling` turns the
-measurement into whole pixels, because a window is an integer number of pixels wide and tall.
+The height of a counter is not a number you can write down — a counter is as tall as the text in its caption, in whatever font the image is using.
+We have to measure it, and `ceiling` turns the measurement into whole pixels, because a window is an integer number of pixels wide and tall.
 
 Then we write the rule, with its two cases:
 
@@ -358,11 +337,10 @@ LaserGameControlPanelElement class >> heightForGrid: aGrid
 	^ (LaserGameBoardElement extentForGrid: aGrid) y max: self contentHeight
 ```
 
-`max:` is the whole fix. A big board decides the height, as before; a small board does not get a say
-any more.
+`max:` is the whole fix.
+A big board decides the height, as before; a small board does not get a say any more.
 
-A height stated from constants can drift away from what is really in the panel, so we hold the
-statement to the measurement with a test:
+A height stated from constants can drift away from what is really in the panel, so we hold the statement to the measurement with a test:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testContentHeightIsWhatTheCountersAndButtonsMeasure
@@ -389,15 +367,12 @@ LaserGameControlPanelElementTestCase >> testContentHeightIsWhatTheCountersAndBut
 
 This is the test to copy whenever you state a size in one place and build the thing in another.
 
-The constant and the measurement are computed by different code from different directions, so the
-day somebody adds a fifth counter and forgets `counterCount`, this test says so — and the last
-assertion says it in one line rather than through a difference of pixels.
+The constant and the measurement are computed by different code from different directions, so the day somebody adds a fifth counter and forgets `counterCount`, this test says so — and the last assertion says it in one line rather than through a difference of pixels.
 
-> **Whenever a number describes something that is also built, test the number against the thing.**
-> A constant nobody checks is a comment with worse manners.
+> **Whenever a number describes something that is also built, test the number against the thing.** A constant nobody checks is a comment with worse manners.
 
-The panel takes the new height, and so does the window around it. Two tests that said "as tall as
-the board" now say "as tall as the board, or as tall as what it holds":
+The panel takes the new height, and so does the window around it.
+Two tests that said "as tall as the board" now say "as tall as the board, or as tall as what it holds":
 
 ```st
 LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBoardOrItsContents
@@ -416,8 +391,7 @@ LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBo
 		assert: panel constraints vertical resizer size
 		equals: LaserGameControlPanelElement contentHeight
 ```
-> **Note.** *A missed bug*, the next chapter, rewrites this test: as written here it says which of
-> the two cases the demo board is in, which is true at fifty pixel cells and false at a hundred.
+> **Note.** *A missed bug*, the next chapter, rewrites this test: as written here it says which of the two cases the demo board is in, which is true at fifty pixel cells and false at a hundred.
 
 ```smalltalk
 LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoardOrItsContents
@@ -440,9 +414,8 @@ LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoardOrItsC
 		equals: LaserGameColors controlPanelColor
 ```
 
-That one asks `heightForGrid:` for the expected value, which is the code under test, so it cannot
-catch an error inside the rule — the test above it is what does that. What it does catch is the
-panel being given some *other* height than the rule's.
+That one asks `heightForGrid:` for the expected value, which is the code under test, so it cannot catch an error inside the rule — the test above it is what does that.
+What it does catch is the panel being given some *other* height than the rule's.
 
 The game's own size follows from the panel's:
 
@@ -476,13 +449,10 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins
 			5 * CellRenderer cellExtent x + 110
 			@ LaserGameControlPanelElement contentHeight + 20
 ```
-> **Note.** *A missed bug* rewrites the second assertion so that it does not say which case the
-> board is in, and *Buttons of one width*, the last chapter, changes the `110` to `130` when it
-> widens the buttons.
+> **Note.** *A missed bug* rewrites the second assertion so that it does not say which case the board is in, and *Buttons of one width*, the last chapter, changes the `110` to `130` when it widens the buttons.
 
-The window is taller than it was by the difference, and a strip of it sits under the board where the
-panel goes on. A board of eight by ten is unchanged, because there the board is the taller of the
-two.
+The window is taller than it was by the difference, and a strip of it sits under the board where the panel goes on.
+A board of eight by ten is unchanged, because there the board is the taller of the two.
 
 ## The widest caption still has to fit
 
@@ -498,8 +468,8 @@ LaserGameElement class >> panelWidth
 	  + (3 * LaserGameControlPanelElement buttonGap)
 ```
 
-`Active Mirrors` is the longest caption in the panel, so it is the one that could overflow that
-width. Rather than widening the panel until it looks right, we ask every counter whether it fits:
+`Active Mirrors` is the longest caption in the panel, so it is the one that could overflow that width.
+Rather than widening the panel until it looks right, we ask every counter whether it fits:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testEveryCounterFitsInsideThePanel
@@ -518,23 +488,19 @@ LaserGameControlPanelElementTestCase >> testEveryCounterFitsInsideThePanel
 			<= LaserGameElement panelWidth ]
 ```
 
-The test loops over the children instead of naming the longest caption, so a counter added later is
-checked without your remembering to check it. And it asserts `<=` rather than an exact width: this
-is a constraint, not a measurement, and writing it as an equality would make it fail every time a
-font changed.
+The test loops over the children instead of naming the longest caption, so a counter added later is checked without your remembering to check it.
+And it asserts `<=` rather than an exact width: this is a constraint, not a measurement, and writing it as an equality would make it fail every time a font changed.
 
-> **Test a constraint as a constraint.** `fits inside` is `<=`; turning it into `=` invents a claim
-> the design never made.
+> **Test a constraint as a constraint.** `fits inside` is `<=`; turning it into `=` invents a claim the design never made.
 
 ## Eight variables, not ten
 
-Four counters and three buttons brought the panel to ten instance variables, and Pharo's code
-critic says so: `ReExcessiveVariablesRule` complains at nine. Run the critic on the package from
-time to time — it is quick, and it usually points you at something real.
+Four counters and three buttons brought the panel to ten instance variables, and Pharo's code critic says so: `ReExcessiveVariablesRule` complains at nine.
+Run the critic on the package from time to time — it is quick, and it usually points you at something real.
 
-It was here. Two of the ten were not carrying anything. The counter column and the button column are
-the panel's two children, in the order the panel adds them, so we can read them rather than remember
-them:
+It was here.
+Two of the ten were not carrying anything.
+The counter column and the button column are the panel's two children, in the order the panel adds them, so we can read them rather than remember them:
 
 ```smalltalk
 LaserGameControlPanelElement >> counterColumn
@@ -553,12 +519,10 @@ LaserGameControlPanelElement >> buttonColumn
 	^ self children last
 ```
 
-That is a trade, and we should name it. A variable is a second place where the truth lives, and two
-places can disagree.
+That is a trade, and we should name it.
+A variable is a second place where the truth lives, and two places can disagree.
 
-`self children first` cannot be stale, because there is nothing to keep up to date; in exchange, the
-panel now depends on the order in which it adds its own children, which is why both comments say so
-and why `rebuild` adds them in that order in one place only:
+`self children first` cannot be stale, because there is nothing to keep up to date; in exchange, the panel now depends on the order in which it adds its own children, which is why both comments say so and why `rebuild` adds them in that order in one place only:
 
 ```st
 LaserGameControlPanelElement >> rebuild
@@ -583,15 +547,14 @@ LaserGameControlPanelElement >> rebuild
 ```
 > **Note.** *Undo*, the chapter after the next one, builds an Undo button here as well.
 
-> **A variable that only remembers where something already is, is not state.** Read it from where
-> it is, and say in the comment what the position means.
+> **A variable that only remembers where something already is, is not state.** Read it from where it is, and say in the comment what the position means.
 
 Eight variables, no critic, and every counter and every button still held rather than hunted for.
 
 ## Checking it
 
-Open the game, press Fire, and you get ten and three on the two new counters. Without opening
-anything:
+Open the game, press Fire, and you get ten and three on the two new counters.
+Without opening anything:
 
 ```smalltalk
 | panel |
@@ -601,25 +564,22 @@ panel updateCounters.
 { panel mirrorsCounter value. panel activeMirrorsCounter value }
 ```
 
-You get `#(10 3)`, which is the chapter in one line: the grid counts, the panel shows, and
-nothing in between had to go looking for a display.
+You get `#(10 3)`, which is the chapter in one line: the grid counts, the panel shows, and nothing in between had to go looking for a display.
 
-The suite is green. In the next chapter we ask what that is actually worth.
+The suite is green.
+In the next chapter we ask what that is actually worth.
 
 # A missed bug
 
-We have had a green suite at the end of every chapter so far. That is worth something, but it is
-worth less than you think. Green means the code does what the tests say, and the tests were written
-by the same person, on the same afternoon, against the same board.
+We have had a green suite at the end of every chapter so far.
+That is worth something, but it is worth less than you think.
+Green means the code does what the tests say, and the tests were written by the same person, on the same afternoon, against the same board.
 
-A test can agree with the code and both can be wrong together, so this chapter changes one number
-the whole package rests on, reads the failures that come back, and asks of each one whether it found
-a bug or only noticed that a number moved.
+A test can agree with the code and both can be wrong together, so this chapter changes one number the whole package rests on, reads the failures that come back, and asks of each one whether it found a bug or only noticed that a number moved.
 
 This chapter is about the bug that kind of agreement hides, and about the two habits that find it.
-The first is small: run every test before you save your work. The second is the subject of the
-chapter: once in a while, change something the whole package depends on, run the tests again, and
-read the failures.
+The first is small: run every test before you save your work.
+The second is the subject of the chapter: once in a while, change something the whole package depends on, run the tests again, and read the failures.
 
 ## One number the whole package rests on
 
@@ -633,25 +593,22 @@ CellRenderer class >> cellExtent
 	^50@50
 ```
 
-Read the second sentence of that comment again. It is not a description, it is a claim: change this
-and nothing else needs changing.
+Read the second sentence of that comment again.
+It is not a description, it is a claim: change this and nothing else needs changing.
 
-The board is cells, the panel stands beside the board, the window holds both, the click regions are
-cut out of a cell, the arrows are drawn inside one. If the claim is true, all of that follows one
-number.
+The board is cells, the panel stands beside the board, the window holds both, the click regions are cut out of a cell, the arrows are drawn inside one.
+If the claim is true, all of that follows one number.
 
-Nothing in the suite checks it. Every test so far has run at fifty pixels, because that is what the
-method answers, so the suite says the game works at fifty pixels and says nothing at all about the
-claim.
+Nothing in the suite checks it.
+Every test so far has run at fifty pixels, because that is what the method answers, so the suite says the game works at fifty pixels and says nothing at all about the claim.
 
-> **A claim the design rests on is a claim worth testing.** When a comment says "and nothing else
-> needs changing", that sentence is a test waiting to be written.
+> **A claim the design rests on is a claim worth testing.** When a comment says "and nothing else needs changing", that sentence is a test waiting to be written.
 
 ## The experiment
 
-A test cannot do this one. The cell size is read while the tests run, so a test that changed it
-would be changing the ground under the other tests in the same suite. This is an experiment we run
-by hand, in a playground:
+A test cannot do this one.
+The cell size is read while the tests run, so a test that changed it would be changing the ground under the other tests in the same suite.
+This is an experiment we run by hand, in a playground:
 
 ```smalltalk
 | source classes |
@@ -668,18 +625,15 @@ CellRenderer class
 	CellRenderer class compile: source classified: 'constants' ]
 ```
 
-Three things about that snippet are deliberate. The old source is kept first and put back in an
-`ensure:` block, so a failure in the middle does not leave the image with a thirty pixel cell in it.
+Three things about that snippet are deliberate.
+The old source is kept first and put back in an `ensure:` block, so a failure in the middle does not leave the image with a thirty pixel cell in it.
 
-The test classes are found by asking which classes under `TestCase` belong to a package whose name
-starts with `Laser`, rather than by listing them: a test class added next week is included without
-anyone remembering to add it.
+The test classes are found by asking which classes under `TestCase` belong to a package whose name starts with `Laser`, rather than by listing them: a test class added next week is included without anyone remembering to add it.
 
-And `compile:classified:` is how you change a method from code — the same thing the editor does when
-you accept a method, which means the change is real and the next evaluation sees it.
+And `compile:classified:` is how you change a method from code — the same thing the editor does when you accept a method, which means the change is real and the next evaluation sees it.
 
-Run it, and you no longer have a green suite. The failures come in three kinds, and each kind is a
-lesson.
+Run it, and you no longer have a green suite.
+The failures come in three kinds, and each kind is a lesson.
 
 ## Four tests that wrote the answer down
 
@@ -689,18 +643,15 @@ We wrote lines like this in the window tests of *A window the player can resize*
 self assert: game naturalExtent equals: 380 @ 270.
 game fitIn: 760 @ 540.
 ```
-> **Note.** This is how those tests were written in *A window the player can resize*. The two
-> numbers are the extent of the demo board at the cell size of that chapter, and twice it.
+> **Note.** This is how those tests were written in *A window the player can resize*.
+> The two numbers are the extent of the demo board at the cell size of that chapter, and twice it.
 
-`380 @ 270` is not a fact about scaling. It is the answer the game gave on the day the test was
-written, copied into the test by hand.
+`380 @ 270` is not a fact about scaling.
+It is the answer the game gave on the day the test was written, copied into the test by hand.
 
-The test now says two things at once: that a window of twice the natural extent doubles the game,
-which is what the chapter was about, and that the natural extent is three hundred and eighty by two
-hundred and seventy, which the chapter never meant to claim.
+The test now says two things at once: that a window of twice the natural extent doubles the game, which is what the chapter was about, and that the natural extent is three hundred and eighty by two hundred and seventy, which the chapter never meant to claim.
 
-Change a cell, a margin, a button, or a counter, and the test fails for the second reason while the
-first is still perfectly true.
+Change a cell, a margin, a button, or a counter, and the test fails for the second reason while the first is still perfectly true.
 
 So we ask the game instead:
 
@@ -720,8 +671,8 @@ LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven
 	self assert: game constraints position equals: 0 @ 0
 ```
 
-`natural` is read once and every window in the test is built from it. The assertions are now about
-ratios — twice as big, half as big — and a ratio is what the method under test is for.
+`natural` is read once and every window in the test is built from it.
+The assertions are now about ratios — twice as big, half as big — and a ratio is what the method under test is for.
 
 ```smalltalk
 LaserGameElementTestCase >> testAGameShrinksWithASmallerWindow
@@ -750,8 +701,7 @@ LaserGameElementTestCase >> testAGameIgnoresAWindowOfNoSize
 	self assert: game constraints position equals: 0 @ 0
 ```
 
-The fourth one is the interesting one, because it has a number of its own for you to be careful
-about: the leftover strip the game is centred in.
+The fourth one is the interesting one, because it has a number of its own for you to be careful about: the leftover strip the game is centred in.
 
 ```smalltalk
 LaserGameElementTestCase >> testAGameKeepsItsShapeInAWindowOfAnotherShape
@@ -772,24 +722,19 @@ LaserGameElementTestCase >> testAGameKeepsItsShapeInAWindowOfAnotherShape
 	self assert: game constraints position equals: 0 @ (natural y / 2)
 ```
 
-The window is stretched in one direction only, so the tighter direction is unchanged, the scale is
-one, and the slack is the whole of the stretch. Half of it goes on each side, which is
-`natural x / 2` — a fraction of a measured value, not a measured value.
+The window is stretched in one direction only, so the tighter direction is unchanged, the scale is one, and the slack is the whole of the stretch.
+Half of it goes on each side, which is `natural x / 2` — a fraction of a measured value, not a measured value.
 
-> **Ask the object for the number; never copy it into the test.** A copied number turns into a
-> second claim nobody meant to make, and the test fails for the wrong reason on the day something
-> moves.
+> **Ask the object for the number; never copy it into the test.** A copied number turns into a second claim nobody meant to make, and the test fails for the wrong reason on the day something moves.
 
 ## One test that stepped a fixed number of pixels
 
-The second kind of failure needs a smaller cell to show itself. The cross hair test moves the
-pointer twice and expects both points to land in the same push region, so that the arrow is built
-once and only the cross hair moves. It moved the second point four pixels down.
+The second kind of failure needs a smaller cell to show itself.
+The cross hair test moves the pointer twice and expects both points to land in the same push region, so that the arrow is built once and only the cross hair moves.
+It moved the second point four pixels down.
 
-Four pixels is a short distance in a fifty pixel cell and a long one in a twenty six pixel cell. The
-push region of a small cell is a few pixels across, so four pixels down from its centre is out of
-the north region and into the south one, the arrow is rebuilt, and the test fails — for a reason
-that has nothing to do with cross hairs.
+Four pixels is a short distance in a fifty pixel cell and a long one in a twenty six pixel cell.
+The push region of a small cell is a few pixels across, so four pixels down from its centre is out of the north region and into the south one, the arrow is rebuilt, and the test fails — for a reason that has nothing to do with cross hairs.
 
 So we measure a step inside a region in that region:
 
@@ -820,19 +765,16 @@ LaserGameCellElementTestCase >> testTheCrossHairFollowsThePointerWithinOneRegion
 		equals: second
 ```
 
-A quarter of the region's height, and `max: 1` so that the step is never nothing at all: two points
-one pixel apart are still two points, and a test that stepped zero would pass while testing
-nothing. Integer division rounds the quarter down, which is the safe direction — a shorter step
-stays inside the region.
+A quarter of the region's height, and `max: 1` so that the step is never nothing at all: two points one pixel apart are still two points, and a test that stepped zero would pass while testing nothing.
+Integer division rounds the quarter down, which is the safe direction — a shorter step stays inside the region.
 
-> **A step in a test belongs to the thing it steps through.** Write it as a fraction of that thing,
-> and put a floor under it so it cannot round away to nothing.
+> **A step in a test belongs to the thing it steps through.** Write it as a fraction of that thing, and put a floor under it so it cannot round away to nothing.
 
 ## Two tests that said which of two things is taller
 
-The third kind of failure is the one worth the whole experiment, because it is not a stale number at
-all. These two tests were right, in the sense that every assertion in them was true and remains
-true at fifty pixels. They were right the way a coincidence is right.
+The third kind of failure is the one worth the whole experiment, because it is not a stale number at all.
+These two tests were right, in the sense that every assertion in them was true and remains true at fifty pixels.
+They were right the way a coincidence is right.
 
 We gave the panel beside the board a height rule with two cases in the last chapter:
 
@@ -845,16 +787,13 @@ LaserGameControlPanelElement class >> heightForGrid: aGrid
 	^ (LaserGameBoardElement extentForGrid: aGrid) y max: self contentHeight
 ```
 
-Which case applies depends on the cell size, because the board grows with the cell and the contents
-of the panel do not: a counter is as tall as its caption and a button is as tall as its label.
+Which case applies depends on the cell size, because the board grows with the cell and the contents of the panel do not: a counter is as tall as its caption and a button is as tall as its label.
 
-At fifty pixels the five row demo board is two hundred and fifty tall and the panel holds three
-hundred and thirty five, so the demo grid is the second case. At a hundred pixels the same board is
-five hundred tall, and it is the first case.
+At fifty pixels the five row demo board is two hundred and fifty tall and the panel holds three hundred and thirty five, so the demo grid is the second case.
+At a hundred pixels the same board is five hundred tall, and it is the first case.
 
-The two tests of the last chapter had written down which case they were in. One asserted that the
-panel is exactly as tall as its contents, and another that a ten row board is exactly as tall as the
-panel beside it.
+The two tests of the last chapter had written down which case they were in.
+One asserted that the panel is exactly as tall as its contents, and another that a ten row board is exactly as tall as the panel beside it.
 
 Both are statements about a range of cell sizes, written as if they were statements about the rule.
 
@@ -889,17 +828,12 @@ LaserGameElementTestCase >> testAGameTakesTheSizeOfWhateverBoardItIsGiven
 		equals: panelHeight
 ```
 
-The expected height is now a `max:` of the two candidates, computed in the test from the cell size
-and the panel's own constant.
+The expected height is now a `max:` of the two candidates, computed in the test from the cell size and the panel's own constant.
 
-Notice what did *not* change: the test still spells out the arithmetic — eight columns of cells,
-plus a panel width, plus two margins — rather than calling `extentForGrid:` and comparing it with
-itself. A test that repeats the expression under test passes whatever that expression says,
-including nonsense.
+Notice what did *not* change: the test still spells out the arithmetic — eight columns of cells, plus a panel width, plus two margins — rather than calling `extentForGrid:` and comparing it with itself.
+A test that repeats the expression under test passes whatever that expression says, including nonsense.
 
-> **State the expected value in different terms from the code that produces it.** `max:` of two
-> measured heights is a different sentence from `heightForGrid:`; copying `heightForGrid:` into the
-> test would be the same sentence twice.
+> **State the expected value in different terms from the code that produces it.** `max:` of two measured heights is a different sentence from `heightForGrid:`; copying `heightForGrid:` into the test would be the same sentence twice.
 
 We give the game's own extent the same treatment, and keep one line of plain numbers on purpose:
 
@@ -924,13 +858,10 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins
 				 max: LaserGameControlPanelElement contentHeight) + 20
 ```
 
-The `130` and the `20` are the panel width and the margins, written out. They are numbers that do
-not follow the cell size, so writing them down costs nothing and buys something: if the panel were
-ever widened by accident, the first assertion would still pass — it is the code's own expression —
-and this one would fail.
+The `130` and the `20` are the panel width and the margins, written out.
+They are numbers that do not follow the cell size, so writing them down costs nothing and buys something: if the panel were ever widened by accident, the first assertion would still pass — it is the code's own expression — and this one would fail.
 
-The panel's own test has the more interesting repair, because its subject is the two cases
-themselves, and a test about two cases has to be in both of them:
+The panel's own test has the more interesting repair, because its subject is the two cases themselves, and a test about two cases has to be in both of them:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBoardOrItsContents
@@ -963,26 +894,21 @@ LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBo
 		> LaserGameControlPanelElement contentHeight
 ```
 
-Instead of hoping that the grid it had was a short board, the test builds one: a single row is
-shorter than the panel's contents at any cell size the game supports.
+Instead of hoping that the grid it had was a short board, the test builds one: a single row is shorter than the panel's contents at any cell size the game supports.
 
-And instead of hoping some other grid is a tall board, it computes the number of rows that makes it
-one — the panel's contents divided by a cell, plus two for safety. Then the rule is asserted once,
-in a loop over the two grids.
+And instead of hoping some other grid is a tall board, it computes the number of rows that makes it one — the panel's contents divided by a cell, plus two for safety.
+Then the rule is asserted once, in a loop over the two grids.
 
-The last two assertions are the ones that keep the test honest. They say the two grids really are
-on opposite sides of the line. Without them the loop would still pass if both grids landed in the
-same case, and the second half of the rule would go untested while the test's name claimed
-otherwise.
+The last two assertions are the ones that keep the test honest.
+They say the two grids really are on opposite sides of the line.
+Without them the loop would still pass if both grids landed in the same case, and the second half of the rule would go untested while the test's name claimed otherwise.
 
-> **A test that depends on which of two values is bigger has a range, not a value.** Either write
-> the rule that covers both cases, or build the inputs that put you in the case you mean — and
-> assert that they did.
+> **A test that depends on which of two values is bigger has a range, not a value.** Either write the rule that covers both cases, or build the inputs that put you in the case you mean — and assert that they did.
 
 ## Where the floor is
 
-With those seven repairs we get a green suite at twenty six, thirty, forty, fifty, sixty four, and a
-hundred pixels. Below twenty six it is not, and the reason is not a test:
+With those seven repairs we get a green suite at twenty six, thirty, forty, fifty, sixty four, and a hundred pixels.
+Below twenty six it is not, and the reason is not a test:
 
 ```smalltalk
 CellRenderer class >> insideRegionExtent
@@ -992,28 +918,23 @@ CellRenderer class >> insideRegionExtent
 	^self cellExtent - 20
 ```
 
-Twenty pixels of every cell belong to the ring where a click rotates the mirror, so the square where
-a click pushes it is the cell less twenty, whatever the cell is. At twenty six pixels that square is
-six pixels across.
+Twenty pixels of every cell belong to the ring where a click rotates the mirror, so the square where a click pushes it is the cell less twenty, whatever the cell is.
+At twenty six pixels that square is six pixels across.
 
-At twenty four it is four, its centre and its corners are two pixels apart, and the nine points the
-push table samples stop being nine different points: one test fails. At twenty the square is nothing
-at all and twenty six tests fail together.
+At twenty four it is four, its centre and its corners are two pixels apart, and the nine points the push table samples stop being nine different points: one test fails.
+At twenty the square is nothing at all and twenty six tests fail together.
 
-That is a limit of the design, not a bug in it. A cell has to be big enough to hold a ring and a
-square, and the ring was given a fixed width on purpose so that it stays easy to hit as the board
-grows.
+That is a limit of the design, not a bug in it.
+A cell has to be big enough to hold a ring and a square, and the ring was given a fixed width on purpose so that it stays easy to hit as the board grows.
 
-The game supports cells of twenty six pixels and up, and now that is a sentence we have checked
-rather than a sentence somebody wrote.
+The game supports cells of twenty six pixels and up, and now that is a sentence we have checked rather than a sentence somebody wrote.
 
-> **When a design has a limit, find it on purpose.** A limit you measured is documentation; a limit
-> you have not measured is a bug report waiting to arrive.
+> **When a design has a limit, find it on purpose.** A limit you measured is documentation; a limit you have not measured is a bug report waiting to arrive.
 
 ## Checking it
 
-Keep the experiment as a habit. Run it whenever a size, a margin, or a constant changes, and read
-the failures before fixing them — each one is telling you where a number was written down:
+Keep the experiment as a habit.
+Run it whenever a size, a margin, or a constant changes, and read the failures before fixing them — each one is telling you where a number was written down:
 
 ```smalltalk
 | source classes report |
@@ -1039,34 +960,30 @@ report := WriteStream on: String new.
 report contents
 ```
 
-Two hundred and eighty tests, five cell sizes, all green. The habit costs you a minute and it is the
-cheapest test in the book: it checks a claim no single test can reach, by changing the one thing the
-whole package agrees about.
+Two hundred and eighty tests, five cell sizes, all green.
+The habit costs you a minute and it is the cheapest test in the book: it checks a claim no single test can reach, by changing the one thing the whole package agrees about.
 
 In the next chapter we let the player take a move back.
 
 # Undo
 
-A button that takes the last move back. Two rules decide what it means, and we agree on them before
-writing any code.
+A button that takes the last move back.
+Two rules decide what it means, and we agree on them before writing any code.
 
-There is no limit on how far back it goes: every move of a game can be taken back, one at a time,
-down to the board the player started with. And an undo takes nothing off the move counter — taking a
-move back is itself work, and the statistics are meant to stay honest.
+There is no limit on how far back it goes: every move of a game can be taken back, one at a time, down to the board the player started with.
+And an undo takes nothing off the move counter — taking a move back is itself work, and the statistics are meant to stay honest.
 
-The code that follows is a class per reversible move, a stack on the grid, and a fourth button on
-the panel.
+The code that follows is a class per reversible move, a stack on the grid, and a fourth button on the panel.
 
-The second rule is the one people argue about, so notice what it buys you. A counter that went down
-would let a player push a mirror back and forth forever and finish with a move count of one. A
-counter that only goes up measures the game that was actually played.
+The second rule is the one people argue about, so notice what it buys you.
+A counter that went down would let a player push a mirror back and forth forever and finish with a move count of one.
+A counter that only goes up measures the game that was actually played.
 
 ## A class for every move that can be taken back
 
-A move is recorded as a symbol: `#north`, `#east`, `#south`, `#west`, `#clockwise`,
-`#counterClockwise`. To take one back, the grid has to know which move reverses it. That is a
-question with six answers, which by now has a familiar shape — the answers become classes, and the
-question is asked of the superclass:
+A move is recorded as a symbol: `#north`, `#east`, `#south`, `#west`, `#clockwise`, `#counterClockwise`.
+To take one back, the grid has to know which move reverses it.
+That is a question with six answers, which by now has a familiar shape — the answers become classes, and the question is asked of the superclass:
 
 ```smalltalk
 ReverseLaserGameAction class >> reverseActionClassFor: aSymbol
@@ -1119,24 +1036,19 @@ We write the other four subclasses as those same two methods with the other four
 | `#clockwise` | `#rotateCellCounterClockwiseAt:` |
 | `#counterClockwise` | `#rotateCellClockwiseAt:` |
 
-That table could have been a `Dictionary` built once somewhere, and it is instructive to see why it
-is not. `self subclasses` is answered by the system: nothing registers, nothing is listed, and there
-is no place where the table could be half updated.
+That table could have been a `Dictionary` built once somewhere, and it is instructive to see why it is not.
+`self subclasses` is answered by the system: nothing registers, nothing is listed, and there is no place where the table could be half updated.
 
-A seventh kind of move means a seventh subclass and no other edit anywhere — and if you forget to
-give it a `reverseActionSymbol`, the failure is a loud `doesNotUnderstand`, not a missing dictionary
-key answering `nil`.
+A seventh kind of move means a seventh subclass and no other edit anywhere — and if you forget to give it a `reverseActionSymbol`, the failure is a loud `doesNotUnderstand`, not a missing dictionary key answering `nil`.
 
-`detect:` here has no `ifNone:` block, so a symbol no subclass claims raises an error rather than
-answering `nil`.
+`detect:` here has no `ifNone:` block, so a symbol no subclass claims raises an error rather than answering `nil`.
 
-That is the right choice for this method. The only symbols that ever reach it are the ones the grid
-itself wrote on the stack, so an unclaimed symbol is a bug in the game, and the sooner it says so
-the better.
+That is the right choice for this method.
+The only symbols that ever reach it are the ones the grid itself wrote on the stack, so an unclaimed symbol is a bug in the game, and the sooner it says so the better.
 
-What is new, compared with the direction and click-region hierarchies of the earlier sections, is
-that these classes answer *selectors*. `#pushCellWestFromLocation:` is the name of a method, carried
-around as a value, and the grid will send it by name. That is worth a paragraph of its own.
+What is new, compared with the direction and click-region hierarchies of the earlier sections, is that these classes answer *selectors*.
+`#pushCellWestFromLocation:` is the name of a method, carried around as a value, and the grid will send it by name.
+That is worth a paragraph of its own.
 
 ## Sending a message by its name
 
@@ -1159,35 +1071,29 @@ Grid >> undo
 	^true
 ```
 
-`self perform: reverseAction withArguments: arguments` sends the grid the message whose name is in
-`reverseAction`, with the arguments in `arguments`. It is an ordinary message send, decided while
-the program runs rather than while it is compiled. Six methods become one line.
+`self perform: reverseAction withArguments: arguments` sends the grid the message whose name is in `reverseAction`, with the arguments in `arguments`.
+It is an ordinary message send, decided while the program runs rather than while it is compiled.
+Six methods become one line.
 
-Everything you give up by writing it is about tools. The browser cannot show you that `undo` calls
-`pushCellWestFromLocation:`, so a rename of that method will not find this call site; the compiler
-cannot tell you that you spelled it wrong.
+Everything you give up by writing it is about tools.
+The browser cannot show you that `undo` calls `pushCellWestFromLocation:`, so a rename of that method will not find this call site; the compiler cannot tell you that you spelled it wrong.
 
-Use `perform:` when the set of messages is a set the program itself owns — six symbols, listed in
-six classes, all written by the same package — and reach for it rarely. And when you do, let the
-tests cover what the compiler no longer can, which is exactly what `testUndoActions` below is for.
+Use `perform:` when the set of messages is a set the program itself owns — six symbols, listed in six classes, all written by the same package — and reach for it rarely.
+And when you do, let the tests cover what the compiler no longer can, which is exactly what `testUndoActions` below is for.
 
-Two more things about that method. It answers `true` or `false`, because the caller has a real
-decision to make: an undo that did nothing must not count a move. And the second `removeLast` is the
-line that will surprise you, including the one who wrote it.
+Two more things about that method.
+It answers `true` or `false`, because the caller has a real decision to make: an undo that did nothing must not count a move.
+And the second `removeLast` is the line that will surprise you, including the one who wrote it.
 
-Playing the reverse move goes through the grid's ordinary push and rotate methods — the same ones a
-player's click goes through — and those methods record what they do. So the undo pushes an entry of
-its own onto the stack, and the second `removeLast` takes it straight off again.
+Playing the reverse move goes through the grid's ordinary push and rotate methods — the same ones a player's click goes through — and those methods record what they do.
+So the undo pushes an entry of its own onto the stack, and the second `removeLast` takes it straight off again.
 
-That is a load-bearing assumption, not an invariant: it is right only as long as every reverse move
-records exactly one entry.
+That is a load-bearing assumption, not an invariant: it is right only as long as every reverse move records exactly one entry.
 
-It does, for all six — a reverse push is a push the rules allow, since it puts the cell back where
-it just came from, and a rotation always records. But nothing in the code *says* so, which is the
-kind of thing to hold with a test rather than with hope.
+It does, for all six — a reverse push is a push the rules allow, since it puts the cell back where it just came from, and a rotation always records.
+But nothing in the code *says* so, which is the kind of thing to hold with a test rather than with hope.
 
-> **When a method depends on something it cannot check, write the test that checks it.** Comments
-> describe an assumption; a test defends it.
+> **When a method depends on something it cannot check, write the test that checks it.** Comments describe an assumption; a test defends it.
 
 ## The stack
 
@@ -1218,25 +1124,19 @@ Grid >> stackAction: aSymbol forCell: aCell
 	self movesStack add: aSymbol->(aCell gridLocation)
 ```
 
-The getter builds the collection the first time it is asked for. That pattern is called lazy
-initialization, and the thing you should notice is that every reader goes through the getter —
-`movesStack isEmpty`, `self movesStack add:`, never the bare variable — which is what makes it safe.
+The getter builds the collection the first time it is asked for.
+That pattern is called lazy initialization, and the thing you should notice is that every reader goes through the getter — `movesStack isEmpty`, `self movesStack add:`, never the bare variable — which is what makes it safe.
 
-A grid that was never played on has an empty stack rather than `nil`, and no caller has to know
-which.
+A grid that was never played on has an empty stack rather than `nil`, and no caller has to know which.
 
-An entry is an `Association`, written with `->`: a key and a value in one object, here the symbol of
-the move and a `Point`. `OrderedCollection` is used as a stack, with `add:` to push and `removeLast`
-to pop, so the youngest move is the one at the end.
+An entry is an `Association`, written with `->`: a key and a value in one object, here the symbol of the move and a `Point`.
+`OrderedCollection` is used as a stack, with `add:` to push and `removeLast` to pop, so the youngest move is the one at the end.
 
-The location stored is where the cell is *after* the move, which is the only one that can be used to
-undo it: to take an eastward push back you push the cell west from where it now stands. Reading that
-comment carefully is faster than working it out from the four push methods, which is what comments
-are for.
+The location stored is where the cell is *after* the move, which is the only one that can be used to undo it: to take an eastward push back you push the cell west from where it now stands.
+Reading that comment carefully is faster than working it out from the four push methods, which is what comments are for.
 
-Nothing on this page is new to the game, by the way. The push and rotate methods have been recording
-their moves since the section where pushing was written — that is what the `stackAction:forCell:`
-line in each of them does — and a push the rules refuse records nothing, because it changed nothing.
+Nothing on this page is new to the game, by the way.
+The push and rotate methods have been recording their moves since the section where pushing was written — that is what the `stackAction:forCell:` line in each of them does — and a push the rules refuse records nothing, because it changed nothing.
 
 The undo button is the first thing to read what was being written all along.
 
@@ -1267,9 +1167,9 @@ GridTestCase >> testUndoActions
 	self assert: undoAction equals: #rotateCellClockwiseAt:
 ```
 
-Six pairs, written out, no loop. A loop here would need a table of the six pairs to loop over, and
-that table is the thing under test — it would be the same list twice, agreeing with itself. Written
-out, the expectations are stated by hand and a mistake in the hierarchy cannot hide.
+Six pairs, written out, no loop.
+A loop here would need a table of the six pairs to loop over, and that table is the thing under test — it would be the same list twice, agreeing with itself.
+Written out, the expectations are stated by hand and a mistake in the hierarchy cannot hide.
 
 The next one we write is the shape of a single undo:
 
@@ -1287,12 +1187,9 @@ GridTestCase >> testUndoStackAfterPush
 	self deny: grid undo
 ```
 
-Four assertions, and each one is a different claim: an untouched grid has nothing to undo, a push
-records exactly one entry, an undo reports that it did something, and a second undo reports that it
-did not.
+Four assertions, and each one is a different claim: an untouched grid has nothing to undo, a push records exactly one entry, an undo reports that it did something, and a second undo reports that it did not.
 
-`self assert: grid undo` works because `undo` answers a boolean — a method with a useful answer is a
-method that is easy to test.
+`self assert: grid undo` works because `undo` answers a boolean — a method with a useful answer is a method that is easy to test.
 
 And then we test the rule, which is stronger than any single example of it:
 
@@ -1330,28 +1227,22 @@ GridTestCase >> testUndoingEveryMoveGivesTheGridBackAsItWas
 
 This is the test that defends the whole design, and three things in it are habits you should copy.
 
-We compare the grid by *reading* it into something comparable. `Cell` has no `=`, so two grids
-cannot be compared directly, and writing one would mean deciding what equality of cells means for
-the rest of the program.
+We compare the grid by *reading* it into something comparable.
+`Cell` has no `=`, so two grids cannot be compared directly, and writing one would mean deciding what equality of cells means for the rest of the program.
 
-Instead the block collects, for every cell, its class, the location it says it sits at, and which
-way it leans if it is a mirror — which is the whole of what a move can change. Comparing those two
-collections is comparing the boards.
+Instead the block collects, for every cell, its class, the location it says it sits at, and which way it leans if it is a mirror — which is the whole of what a move can change.
+Comparing those two collections is comparing the boards.
 
-The undoing is `[ grid undo ] whileTrue`, which keeps undoing while the grid reports that it did
-something. That is the first rule of the chapter — any number of moves, back to the start — written
-as a loop, and it is why `undo` answers a boolean rather than nothing.
+The undoing is `[ grid undo ] whileTrue`, which keeps undoing while the grid reports that it did something.
+That is the first rule of the chapter — any number of moves, back to the start — written as a loop, and it is why `undo` answers a boolean rather than nothing.
 
-And the assertion inside the loop that makes the moves is not decoration. A push is refused unless
-the cell is a mirror and its neighbour in that direction is blank, and a refused push records
-nothing.
+And the assertion inside the loop that makes the moves is not decoration.
+A push is refused unless the cell is a mirror and its neighbour in that direction is blank, and a refused push records nothing.
 
-The first version of this test picked five moves of which the demo board refused two; it undid three
-moves, got the board back, and passed, while testing a third of what it claimed to. The assertion
-`grid movesStack size equals: index` fails immediately when a chosen move did not happen.
+The first version of this test picked five moves of which the demo board refused two; it undid three moves, got the board back, and passed, while testing a third of what it claimed to.
+The assertion `grid movesStack size equals: index` fails immediately when a chosen move did not happen.
 
-> **When a test builds a scenario, assert that the scenario got built.** A test that quietly does
-> less than it says is worse than no test, because it reports green while it does it.
+> **When a test builds a scenario, assert that the scenario got built.** A test that quietly does less than it says is worse than no test, because it reports green while it does it.
 
 ## The button
 
@@ -1372,12 +1263,11 @@ LaserGameControlPanelElement >> undoButton
 	^ undoButton
 ```
 
-The action is a block, and the block says `self game undo` — the panel does not undo anything
-itself. A button's job is to name a message and send it when clicked; the decisions belong to the
-object that owns them.
+The action is a block, and the block says `self game undo` — the panel does not undo anything itself.
+A button's job is to name a message and send it when clicked; the decisions belong to the object that owns them.
 
-Nothing is positioned. The panel has had two rows of buttons since the panel was written, and a row
-lays its children out side by side, so Undo is one more element in the row the New button stands in:
+Nothing is positioned.
+The panel has had two rows of buttons since the panel was written, and a row lays its children out side by side, so Undo is one more element in the row the New button stands in:
 
 ```smalltalk
 LaserGameControlPanelElement >> newNewGameRow
@@ -1411,9 +1301,8 @@ LaserGameControlPanelElement >> rebuild
 	self updateCounters
 ```
 
-That is the ninth instance variable of the panel, and the ninth is only available because we stopped
-keeping two of them in the last chapter. `ReExcessiveVariablesRule` draws its line at ten, so the
-room was made just in time — which is the usual way that kind of tidying pays off.
+That is the ninth instance variable of the panel, and the ninth is only available because we stopped keeping two of them in the last chapter.
+`ReExcessiveVariablesRule` draws its line at ten, so the room was made just in time — which is the usual way that kind of tidying pays off.
 
 We write two tests to say where the button stands:
 
@@ -1430,9 +1319,8 @@ LaserGameControlPanelElementTestCase >> testUndoButtonSharesTheRowWithNewGame
 	self assert: panel undoButton labelText asString equals: 'Undo'
 ```
 
-The test that was written when New was alone in its row claimed two things: that the row held New,
-and that it held nothing else. The second half is not true any more, so we give it up and keep the
-half that is the test's own business, sharpened — which rows stand where:
+The test that was written when New was alone in its row claimed two things: that the row held New, and that it held nothing else.
+The second half is not true any more, so we give it up and keep the half that is the test's own business, sharpened — which rows stand where:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testNewGameButtonHasTheRowAboveTheOthers
@@ -1452,13 +1340,10 @@ LaserGameControlPanelElementTestCase >> testNewGameButtonHasTheRowAboveTheOthers
 	self assert: panel newGameButton labelText asString equals: 'New'
 ```
 
-Its assertions are about *relative* position — the lowest row, and the row directly above it — so a
-row added above them later leaves this test alone. The comment names the two tests that own what it
-gave up, one of which belongs to a chapter still to come; that is cheap to write and it saves the
-next reader the search.
+Its assertions are about *relative* position — the lowest row, and the row directly above it — so a row added above them later leaves this test alone.
+The comment names the two tests that own what it gave up, one of which belongs to a chapter still to come; that is cheap to write and it saves the next reader the search.
 
-> **When a test stops being true, work out which half of it stopped.** Delete that half, keep the
-> rest, and say in the comment who owns the part you dropped.
+> **When a test stops being true, work out which half of it stopped.** Delete that half, keep the rest, and say in the comment who owns the part you dropped.
 
 ## What the game does with it
 
@@ -1473,9 +1358,8 @@ LaserGameElement >> undo
 	self refresh
 ```
 
-Three lines, and the first is a guard: ask the model whether anything happened, and leave if it did
-not. Without it, a click on Undo with nothing to undo would count a move and redraw a board that
-had not changed.
+Three lines, and the first is a guard: ask the model whether anything happened, and leave if it did not.
+Without it, a click on Undo with nothing to undo would count a move and redraw a board that had not changed.
 
 ```smalltalk
 LaserGameElement >> incrementMoves
@@ -1494,10 +1378,8 @@ LaserGameElement >> refresh
 	self controlPanel updateCounters
 ```
 
-`refresh` is the one method the whole game uses to catch the display up with the model, and every
-action ends by calling it. Having exactly one of those is what keeps a display honest: there is no
-path through the code that changes the model and forgets to redraw a part of the screen, because
-nobody redraws parts.
+`refresh` is the one method the whole game uses to catch the display up with the model, and every action ends by calling it.
+Having exactly one of those is what keeps a display honest: there is no path through the code that changes the model and forgets to redraw a part of the screen, because nobody redraws parts.
 
 The two tests we write are the two rules of the chapter:
 
@@ -1534,14 +1416,14 @@ LaserGameElementTestCase >> testUndoOnABoardNobodyHasTouchedDoesNothing
 	self assert: game controlPanel movesCounter value equals: 0
 ```
 
-The first checks the mirror came home, the stack is empty, the counter reads two for one move and
-one undo, and the display agrees with the counter. The second is the guard: nothing clicked on an
-untouched board costs a move.
+The first checks the mirror came home, the stack is empty, the counter reads two for one move and one undo, and the display agrees with the counter.
+The second is the guard: nothing clicked on an untouched board costs a move.
 
 ## Checking it
 
-Open the game, push a few mirrors around, and press Undo until nothing more happens. You get the
-board walking back to where it started while the moves counter keeps climbing. Without a window:
+Open the game, push a few mirrors around, and press Undo until nothing more happens.
+You get the board walking back to where it started while the moves counter keeps climbing.
+Without a window:
 
 ```smalltalk
 | game |
@@ -1554,63 +1436,55 @@ game undo.
   game moves }
 ```
 
-You get `#('MirrorCell' 0 2)`: the mirror is back where it was, nothing is left on the stack,
-and the player is charged for both moves.
+You get `#('MirrorCell' 0 2)`: the mirror is back where it was, nothing is left on the stack, and the player is charged for both moves.
 
 In the next chapter we move the tests into a package of their own.
 
 # Tests in their own package
 
-This chapter changes no code. It changes where the code lives, which matters the first time somebody
-other than you loads it: a person who wants to play the game should not have to take the tests with
-it.
+This chapter changes no code.
+It changes where the code lives, which matters the first time somebody other than you loads it: a person who wants to play the game should not have to take the tests with it.
 
-Moving the test classes into a package of their own means a baseline that says what loads with what,
-and it uncovers a bug that the single package had been hiding.
+Moving the test classes into a package of their own means a baseline that says what loads with what, and it uncovers a bug that the single package had been hiding.
 
-Until now we have kept everything in one package, `Laser-Game`, with the test classes gathered under
-a tag called `Tests`. That reads tidily in the browser and does nothing at all for a loader, which
-is the difference this chapter is about.
+Until now we have kept everything in one package, `Laser-Game`, with the test classes gathered under a tag called `Tests`.
+That reads tidily in the browser and does nothing at all for a loader, which is the difference this chapter is about.
 
 ## A tag is not a package
 
-Pharo has two levels of grouping, and you can easily confuse them, because the browser shows them
-side by side.
+Pharo has two levels of grouping, and you can easily confuse them, because the browser shows them side by side.
 
-A **package** is the unit that gets loaded, committed, and versioned. It is what a baseline names,
-what Iceberg writes to disk as a directory, and what somebody else asks for by name.
+A **package** is the unit that gets loaded, committed, and versioned.
+It is what a baseline names, what Iceberg writes to disk as a directory, and what somebody else asks for by name.
 
-A **tag** groups classes inside one package. It is a label for reading. A tag cannot be loaded on
-its own, cannot be left out of a load, and cannot be named in a baseline.
+A **tag** groups classes inside one package.
+It is a label for reading.
+A tag cannot be loaded on its own, cannot be left out of a load, and cannot be named in a baseline.
 
-So `Model`, `Graphics` and `Tests` kept the three concerns apart for the reader and left them welded
-together for everyone else. Anybody loading the game got 23 test classes and a dependency on SUnit
-whether they wanted them or not.
+So `Model`, `Graphics` and `Tests` kept the three concerns apart for the reader and left them welded together for everyone else.
+Anybody loading the game got 23 test classes and a dependency on SUnit whether they wanted them or not.
 
-The fix is to make the tests a package. We do it in the image, one line per class:
+The fix is to make the tests a package.
+We do it in the image, one line per class:
 
 ```smalltalk
 aClass package: (Smalltalk packageOrganizer ensurePackage: 'Laser-Game-Tests')
 ```
 
-and the `Tests` tag disappears along with its last class. On disk the Tonel files move from
-`src/Laser-Game/` to `src/Laser-Game-Tests/`, and that is the whole of the change.
+and the `Tests` tag disappears along with its last class.
+On disk the Tonel files move from `src/Laser-Game/` to `src/Laser-Game-Tests/`, and that is the whole of the change.
 
-The name is not free choice. Pharo's convention is the package name with `-Tests` appended, and the
-tools rely on it: the browser offers to jump between a class and its tests, the test runner finds
-the suite, and a baseline group called `tests` is what people expect to be able to ask for.
+The name is not free choice.
+Pharo's convention is the package name with `-Tests` appended, and the tools rely on it: the browser offers to jump between a class and its tests, the test runner finds the suite, and a baseline group called `tests` is what people expect to be able to ask for.
 
-A package called `LaserGameTests` or `Tests-LaserGame` would work and would quietly cost you all of
-that.
+A package called `LaserGameTests` or `Tests-LaserGame` would work and would quietly cost you all of that.
 
-> **Follow a naming convention even when nothing enforces it.** A convention is what the tools
-> guess with.
+> **Follow a naming convention even when nothing enforces it.** A convention is what the tools guess with.
 
 ## The baseline says what loads with what
 
-The baseline is the method that describes the project to a loader: which packages it has, what each
-one needs, and which sets of them somebody can ask for. This is where we say the split out loud, or
-nothing outside the image knows about it:
+The baseline is the method that describes the project to a loader: which packages it has, what each one needs, and which sets of them somebody can ask for.
+This is where we say the split out loud, or nothing outside the image knows about it:
 
 ```smalltalk
 BaselineOfLaserGame >> baseline: spec
@@ -1632,15 +1506,12 @@ BaselineOfLaserGame >> baseline: spec
 		spec group: 'default' with: #( 'core' 'tests' ) ]
 ```
 
-We declare two packages, and the tests require the game while the game requires nothing of the
-tests.
+We declare two packages, and the tests require the game while the game requires nothing of the tests.
 
-Then three groups, which are the names a loader can ask for: `core` loads the game alone — the point
-of the chapter — `tests` loads the tests, and `default` is what a load with no group named takes,
-which here means both. Somebody who only wants to play writes `load: 'core'`.
+Then three groups, which are the names a loader can ask for: `core` loads the game alone — the point of the chapter — `tests` loads the tests, and `default` is what a load with no group named takes, which here means both.
+Somebody who only wants to play writes `load: 'core'`.
 
-We can check the baseline without a network and without loading anything, by asking Metacello to
-work out the order it would load in:
+We can check the baseline without a network and without loading anything, by asking Metacello to work out the order it would load in:
 
 ```smalltalk
 BaselineOfLaserGame project version spec packageSpecsInLoadOrder
@@ -1649,22 +1520,18 @@ BaselineOfLaserGame project version spec packageSpecsInLoadOrder
 
 ## The bug that was hiding in it
 
-Look at the first `spec package:` line again. It requires both Bloc and Toplo, and Toplo had no
-business being a surprise: the panel's buttons are `ToButton`s, and `ToButton` is a Toplo class.
+Look at the first `spec package:` line again.
+It requires both Bloc and Toplo, and Toplo had no business being a surprise: the panel's buttons are `ToButton`s, and `ToButton` is a Toplo class.
 
-Only Bloc was declared. For several chapters the baseline described a project that could not
-possibly compile — load it into a fresh Pharo and the control panel would be compiled against a
-class the image did not have — and nothing ever complained, because the image this game was written
-in had Toplo loaded before the first line of it was typed.
+Only Bloc was declared.
+For several chapters the baseline described a project that could not possibly compile — load it into a fresh Pharo and the control panel would be compiled against a class the image did not have — and nothing ever complained, because the image this game was written in had Toplo loaded before the first line of it was typed.
 
-That is the shape of a whole family of bugs, and you want to recognise it early. The code was right,
-the tests were green, and the *description* of what the code needs was wrong.
+That is the shape of a whole family of bugs, and you want to recognise it early.
+The code was right, the tests were green, and the *description* of what the code needs was wrong.
 
-Nothing you can run in your own image will tell you, because your image is exactly the one place
-where the missing piece is already present.
+Nothing you can run in your own image will tell you, because your image is exactly the one place where the missing piece is already present.
 
-> **A dependency you did not declare is invisible from inside your own image.** Every time you use a
-> class from a library, check that the baseline names it.
+> **A dependency you did not declare is invisible from inside your own image.** Every time you use a class from a library, check that the baseline names it.
 
 ## A critic that went quiet
 
@@ -1678,13 +1545,11 @@ Test class not in a package with name ending with '-Tests'
 Twenty-three classes, twenty-three critiques, noted as pre-existing and ignored after every chapter.
 They are all gone now, because the package the rule wanted is the package we made in this chapter.
 
-You should sit with that for a moment. The rule was right the whole time, and the reason it
-gives is the reason this chapter gives: what you ship and what you test it with are two different
-things. A linter complaint that will not go away is sometimes a design decision you have not made
-yet.
+You should sit with that for a moment.
+The rule was right the whole time, and the reason it gives is the reason this chapter gives: what you ship and what you test it with are two different things.
+A linter complaint that will not go away is sometimes a design decision you have not made yet.
 
-> **Before dismissing a critique as noise, read what it is actually claiming.** Some of them are
-> waiting for you to understand them.
+> **Before dismissing a critique as noise, read what it is actually claiming.** Some of them are waiting for you to understand them.
 
 ## Checking it
 
@@ -1695,40 +1560,35 @@ We run the suite on the test package now, and it answers what it answered before
 0 failures, 0 errors, 0 unexpected passes
 ```
 
-`Laser-Game` holds 42 classes and `Laser-Game-Tests` 23. Nothing was renamed, nothing was deleted,
-and no method changed: the game the last chapter left running is the same game.
+`Laser-Game` holds 42 classes and `Laser-Game-Tests` 23.
+Nothing was renamed, nothing was deleted, and no method changed: the game the last chapter left running is the same game.
 
 In the next chapter we give the player a Reset button, and turn up a bug on the way.
 
 # Reset
 
-Reset puts the board back the way it was dealt. After the last chapter it is almost free: Reset is
-Undo, repeated until there is nothing left to undo.
+Reset puts the board back the way it was dealt.
+After the last chapter it is almost free: Reset is Undo, repeated until there is nothing left to undo.
 
-The work left is a fifth button, a third row of buttons on a panel that has to grow again, and a
-test that had been reading the counters before anything happened.
+The work left is a fifth button, a third row of buttons on a panel that has to grow again, and a test that had been reading the counters before anything happened.
 
 Before that, a test we should have had for several chapters and did not.
 
 ## The state before anything happens
 
-Every counter test so far has made a move first. Push a mirror, then look at the counter; fire the
-laser, then look at the counter.
+Every counter test so far has made a move first.
+Push a mirror, then look at the counter; fire the laser, then look at the counter.
 
-None of them ever looked at a game that had just been opened and not touched, and that is a real
-gap, because a counter that is only written when something happens reads zero until something
-happens. A player opening the game would see a board full of mirrors and a Mirrors counter saying
-none.
+None of them ever looked at a game that had just been opened and not touched, and that is a real gap, because a counter that is only written when something happens reads zero until something happens.
+A player opening the game would see a board full of mirrors and a Mirrors counter saying none.
 
-That bug cannot occur here, and we should know why. The counters are written at the end of
-`rebuild`, the method that builds the panel's children, so a panel that exists has already counted.
+That bug cannot occur here, and we should know why.
+The counters are written at the end of `rebuild`, the method that builds the panel's children, so a panel that exists has already counted.
 
-That was not foresight: the call went there because `rebuild` runs again whenever the game is
-refreshed, and a panel rebuilt mid-game would otherwise show the counts of the game before it. The
-placement that was chosen for one reason happens to cover the other.
+That was not foresight: the call went there because `rebuild` runs again whenever the game is refreshed, and a panel rebuilt mid-game would otherwise show the counts of the game before it.
+The placement that was chosen for one reason happens to cover the other.
 
-A claim like that still deserves a test rather than an argument, so we write one that makes no move
-at all:
+A claim like that still deserves a test rather than an argument, so we write one that makes no move at all:
 
 ```smalltalk
 LaserGameElementTestCase >> testAGameShowsItsCountsBeforeAnythingHappens
@@ -1752,17 +1612,15 @@ LaserGameElementTestCase >> testAGameShowsItsCountsBeforeAnythingHappens
 	self assert: game controlPanel mirrorsCounter value > 0
 ```
 
-It passed the first time it ran, which is the answer we wanted. Note its second half: `newGame`
-deals a fresh board, and that is the other way a game arrives in front of a player with counts that
-nothing has yet updated. One gap found means we look for the others of the same shape.
+It passed the first time it ran, which is the answer we wanted.
+Note its second half: `newGame` deals a fresh board, and that is the other way a game arrives in front of a player with counts that nothing has yet updated.
+One gap found means we look for the others of the same shape.
 
-Note too the assertion `mirrorsCounter value > 0`. The first assertion compares the counter with the
-grid, and two zeroes would satisfy it. That is the lesson of the counter tests two chapters back,
-and it applies here more sharply than anywhere: this test exists precisely because zero is the wrong
-answer that looks plausible.
+Note too the assertion `mirrorsCounter value > 0`.
+The first assertion compares the counter with the grid, and two zeroes would satisfy it.
+That is the lesson of the counter tests two chapters back, and it applies here more sharply than anywhere: this test exists precisely because zero is the wrong answer that looks plausible.
 
-> **Test the state an object is in before anything is done to it.** It is the state every user sees
-> first and the one tests reach last.
+> **Test the state an object is in before anything is done to it.** It is the state every user sees first and the one tests reach last.
 
 ## Reset on the grid
 
@@ -1775,21 +1633,17 @@ Grid >> reset
 	[self undo] whileTrue: []
 ```
 
-One line, and every part of it is working. `undo` answers whether it undid anything, so `[self undo]
-whileTrue: []` is a loop with its work in the *condition* and nothing in the body: undo, ask whether
-there was something to undo, go round again while the answer is yes.
+One line, and every part of it is working.
+`undo` answers whether it undid anything, so `[self undo] whileTrue: []` is a loop with its work in the *condition* and nothing in the body: undo, ask whether there was something to undo, go round again while the answer is yes.
 
 On an empty stack `undo` answers `false` without touching anything, and the loop stops.
 
-That shape reads strangely the first time you meet it. The usual loop puts a question in the
-condition and work in the body; this one puts a method that both acts and reports in the condition,
-which is only possible because `undo` was written to answer something useful.
+That shape reads strangely the first time you meet it.
+The usual loop puts a question in the condition and work in the body; this one puts a method that both acts and reports in the condition, which is only possible because `undo` was written to answer something useful.
 
-Had it answered nothing, `reset` would need to ask the stack about its size and the two methods
-would both know how moves are stored.
+Had it answered nothing, `reset` would need to ask the stack about its size and the two methods would both know how moves are stored.
 
-> **A method that does something and reports whether it did can be driven by a loop.** That is worth
-> remembering when choosing what a method answers.
+> **A method that does something and reports whether it did can be driven by a loop.** That is worth remembering when choosing what a method answers.
 
 We test it with two pushes, a reset, and the cell that moved back where it started:
 
@@ -1818,13 +1672,11 @@ GridTestCase >> testResetGrid
 	self assert: grid movesStack isEmpty
 ```
 
-It checks the board before the moves, after the moves, and after the reset, which is more than it
-strictly needs and exactly what makes it readable: a failure tells you *which* of the three states
-was wrong.
+It checks the board before the moves, after the moves, and after the reset, which is more than it strictly needs and exactly what makes it readable: a failure tells you *which* of the three states was wrong.
 
-The stronger claim — any run of moves, undone, gives the board back — is the test of the last
-chapter, and this one is the same rule stated at one remove. Both are worth having. The general test
-catches the design, the specific one is what a reader learns from.
+The stronger claim — any run of moves, undone, gives the board back — is the test of the last chapter, and this one is the same rule stated at one remove.
+Both are worth having.
+The general test catches the design, the specific one is what a reader learns from.
 
 ## The fifth button
 
@@ -1835,7 +1687,8 @@ LaserGameControlPanelElement >> newResetButton
 	^ self newButton: 'Reset' action: [ self game reset ]
 ```
 
-Nothing new. Then we add its row, at the top of the column of rows:
+Nothing new.
+Then we add its row, at the top of the column of rows:
 
 ```smalltalk
 LaserGameControlPanelElement >> newResetRow
@@ -1869,20 +1722,16 @@ LaserGameControlPanelElement >> newButtonColumn
 	column addChild: self newButtonRow.
 	^ column
 ```
-> **Note.** *Minor cosmetic tweaks* puts a divider bar in front of the three rows, as the first
-> child of this column.
+> **Note.** *Minor cosmetic tweaks* puts a divider bar in front of the three rows, as the first child of this column.
 
-A row added to a column is the whole of the layout work. The column lays its children out one above
-another and takes its size from them, so a third row needs no coordinates, no offsets, and no
-rearranging of the other two.
+A row added to a column is the whole of the layout work.
+The column lays its children out one above another and takes its size from them, so a third row needs no coordinates, no offsets, and no rearranging of the other two.
 
-That is what a layout is for, and it is the reason this chapter's geometry section is three methods
-long instead of thirty.
+That is what a layout is for, and it is the reason this chapter's geometry section is three methods long instead of thirty.
 
-Reset is also the first button the panel does not keep in an instance variable. Two chapters ago we
-got the panel down to eight by giving up the two it did not need, and `undoButton` made nine;
-`ReExcessiveVariablesRule` allows ten. A tenth would be legal and pointless, because the row Reset
-is the only button of can answer it:
+Reset is also the first button the panel does not keep in an instance variable.
+Two chapters ago we got the panel down to eight by giving up the two it did not need, and `undoButton` made nine; `ReExcessiveVariablesRule` allows ten.
+A tenth would be legal and pointless, because the row Reset is the only button of can answer it:
 
 ```st
 LaserGameControlPanelElement >> resetRow
@@ -1891,8 +1740,7 @@ LaserGameControlPanelElement >> resetRow
 
 	^ self buttonColumn children first
 ```
-> **Note.** *Minor cosmetic tweaks* puts the divider bar in front of the rows, so this row becomes
-> the second child.
+> **Note.** *Minor cosmetic tweaks* puts the divider bar in front of the rows, so this row becomes the second child.
 
 ```smalltalk
 LaserGameControlPanelElement >> resetButton
@@ -1902,15 +1750,13 @@ LaserGameControlPanelElement >> resetButton
 	^ self resetRow children first
 ```
 
-Two methods instead of one instance variable, and they read from the thing that already holds the
-answer. This is the same argument as the counter column two chapters ago: a variable that remembers
-where something already is, is not state.
+Two methods instead of one instance variable, and they read from the thing that already holds the answer.
+This is the same argument as the counter column two chapters ago: a variable that remembers where something already is, is not state.
 
 ## A third row makes the panel taller
 
 The panel has had a height of its own to fall back on since the counters outgrew the demo board.
-That arithmetic assumed two rows of buttons, and now there are three, so we make the number of rows
-something the class says rather than something the sum assumes:
+That arithmetic assumed two rows of buttons, and now there are three, so we make the number of rows something the class says rather than something the sum assumes:
 
 ```smalltalk
 LaserGameControlPanelElement class >> buttonRowCount
@@ -1936,21 +1782,15 @@ LaserGameControlPanelElement class >> contentHeight
 ```
 > **Note.** *Minor cosmetic tweaks* adds the divider bar to this sum.
 
-The two literals that were there — `2 * self buttonHeight` and `3 * self buttonGap` — have become
-`buttonRowCount` and `buttonRowCount + 1`, and that second one is worth your attention.
+The two literals that were there — `2 * self buttonHeight` and `3 * self buttonGap` — have become `buttonRowCount` and `buttonRowCount + 1`, and that second one is worth your attention.
 
-A column of *n* rows with a gap around and between them has *n + 1* gaps, which is a relation and
-not a number.
+A column of *n* rows with a gap around and between them has *n + 1* gaps, which is a relation and not a number.
 
-Write it as a relation and the method stays right at four rows; write it as `4` and the next row is
-a bug that nothing announces, because an answer 30 pixels too small still looks like a plausible
-height.
+Write it as a relation and the method stays right at four rows; write it as `4` and the next row is a bug that nothing announces, because an answer 30 pixels too small still looks like a plausible height.
 
-> **Replace a literal with the expression that produced it.** The literal is right once; the
-> expression is right every time.
+> **Replace a literal with the expression that produced it.** The literal is right once; the expression is right every time.
 
-The third row adds a button's height and a gap, 30 pixels, to the number — enough that the panel is
-taller than the demo board, so the panel decides the height of the window:
+The third row adds a button's height and a gap, 30 pixels, to the number — enough that the panel is taller than the demo board, so the panel decides the height of the window:
 
 ```smalltalk
 LaserGameControlPanelElement class >> heightForGrid: aGrid
@@ -1961,12 +1801,10 @@ LaserGameControlPanelElement class >> heightForGrid: aGrid
 	^ (LaserGameBoardElement extentForGrid: aGrid) y max: self contentHeight
 ```
 
-Nothing else had to change. The height rule was written against `contentHeight` rather than against
-the number `contentHeight` answered, so a taller panel is a taller window and a taller board is
-still a taller window, with no edit anywhere.
+Nothing else had to change.
+The height rule was written against `contentHeight` rather than against the number `contentHeight` answered, so a taller panel is a taller window and a taller board is still a taller window, with no edit anywhere.
 
-The test that holds the arithmetic honest did not change either, which is the whole point of having
-written it against the columns:
+The test that holds the arithmetic honest did not change either, which is the whole point of having written it against the columns:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testContentHeightIsWhatTheCountersAndButtonsMeasure
@@ -1991,16 +1829,15 @@ LaserGameControlPanelElementTestCase >> testContentHeightIsWhatTheCountersAndBut
 		equals: LaserGameControlPanelElement counterCount
 ```
 
-A test written against a measurement rather than against a number survives the change that made the
-number different. That is the second time in three chapters that this one method has paid for
-itself.
+A test written against a measurement rather than against a number survives the change that made the number different.
+That is the second time in three chapters that this one method has paid for itself.
 
 ## A test that had to be narrowed again
 
 Adding the row broke a test for the second chapter running.
-`testNewGameButtonHasTheRowAboveTheOthers` was written when New was alone in the top row of two, and
-said so. The last chapter put Undo beside New, and the test gave up the half about being alone. Now
-the row is not the top one either:
+`testNewGameButtonHasTheRowAboveTheOthers` was written when New was alone in the top row of two, and said so.
+The last chapter put Undo beside New, and the test gave up the half about being alone.
+Now the row is not the top one either:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testNewGameButtonHasTheRowAboveTheOthers
@@ -2020,18 +1857,15 @@ LaserGameControlPanelElementTestCase >> testNewGameButtonHasTheRowAboveTheOthers
 	self assert: panel newGameButton labelText asString equals: 'New'
 ```
 
-It reads the rows by index now: the button row is the last of them, and the New row is the one
-directly before it. Both claims are about *relative* position, so anything stacked above leaves this
-test alone — and something is stacked above it four chapters from now.
+It reads the rows by index now: the button row is the last of them, and the New row is the one directly before it.
+Both claims are about *relative* position, so anything stacked above leaves this test alone — and something is stacked above it four chapters from now.
 
 A test rewritten twice for the same reason is a signal, and the signal is not "tests are fragile".
 It is that the first two versions asserted more than they were about.
 
-The question to ask of an assertion is what the test is *for*: this one is for where New stands
-relative to Quit and Fire, and every sentence of it should be about that.
+The question to ask of an assertion is what the test is *for*: this one is for where New stands relative to Quit and Fire, and every sentence of it should be about that.
 
-> **When a test breaks because the world grew around it, narrow it to its own claim.** Then it
-> breaks only when its claim is wrong.
+> **When a test breaks because the world grew around it, narrow it to its own claim.** Then it breaks only when its claim is wrong.
 
 We give the new row the test that owns the rest:
 
@@ -2053,9 +1887,8 @@ LaserGameControlPanelElementTestCase >> testResetButtonHasTheTopRowToItself
 ```
 > **Note.** *Minor cosmetic tweaks* adds the divider bar to the column this test reads back.
 
-Somebody has to assert how many rows there are and in what order, and this is now the test that
-does. Giving up a claim in one test means we find it a home in another; dropped claims are how a
-suite goes quietly green.
+Somebody has to assert how many rows there are and in what order, and this is now the test that does.
+Giving up a claim in one test means we find it a home in another; dropped claims are how a suite goes quietly green.
 
 ## What the game does with it
 
@@ -2084,15 +1917,14 @@ LaserGameElement >> newGame
 	self refresh
 ```
 
-Both stop the laser, both zero the move count, both refresh. They differ in one thing: New deals a
-fresh random board and leaves the stack of moves where it finds it, while Reset unwinds the stack
-and so keeps the board it was dealt.
+Both stop the laser, both zero the move count, both refresh.
+They differ in one thing: New deals a fresh random board and leaves the stack of moves where it finds it, while Reset unwinds the stack and so keeps the board it was dealt.
 
 A player who wants this board again presses Reset; a player who wants another one presses New.
 
-Notice that the move count goes to zero in both, while an undo pushes it up. That is not an
-inconsistency. Undo is a move in a game being played, and Reset ends that game — there is nothing
-left to be honest about.
+Notice that the move count goes to zero in both, while an undo pushes it up.
+That is not an inconsistency.
+Undo is a move in a game being played, and Reset ends that game — there is nothing left to be honest about.
 
 In the test we make two moves of different kinds, fire the laser, and ask for all of it back:
 
@@ -2118,14 +1950,14 @@ LaserGameElementTestCase >> testResetPutsEveryCellBackAndZeroesTheMoves
 	self assert: game controlPanel laserPathCounter value equals: 0
 ```
 
-The last two assertions read the panel, not the game: `refresh` has to have carried the zeroes out
-to the counters. A counter the model has moved past is exactly the bug this chapter opened with, so
-it is a fitting thing to assert in the chapter that went looking for it.
+The last two assertions read the panel, not the game: `refresh` has to have carried the zeroes out to the counters.
+A counter the model has moved past is exactly the bug this chapter opened with, so it is a fitting thing to assert in the chapter that went looking for it.
 
 ## Checking it
 
-Five buttons in three rows. Push some mirrors, fire the laser, press Reset: you get the board back,
-the beam stops, and the counter reads zero. Without a window:
+Five buttons in three rows.
+Push some mirrors, fire the laser, press Reset: you get the board back, the beam stops, and the counter reads zero.
+Without a window:
 
 ```smalltalk
 | game |
@@ -2140,22 +1972,19 @@ game reset.
     > (LaserGameBoardElement extentForGrid: game grid) y }
 ```
 
-You get nothing moved, no moves counted, three rows of buttons, and a panel that is now the taller
-of the two things in the window.
+You get nothing moved, no moves counted, three rows of buttons, and a panel that is now the taller of the two things in the window.
 
 In the next chapter we give the laser's home cell something to show for itself.
 
 # Showing where the laser comes from
 
-A small chapter. The beam has been drawn for several chapters now, and it appears at the bottom of
-the first column as though out of nowhere.
+A small chapter.
+The beam has been drawn for several chapters now, and it appears at the bottom of the first column as though out of nowhere.
 
-We add a mark saying the laser lives there: the grid answers its starting cell, the board goes into
-a column of its own so there is a margin to draw in, and the mark costs the game no size.
+We add a mark saying the laser lives there: the grid answers its starting cell, the board goes into a column of its own so there is a margin to draw in, and the mark costs the game no size.
 
-It is small and it is not trivial, because the mark has to go in a band of the window that no
-element occupies, and a layout places the children it is given. Getting something into empty space
-is a layout problem, and a good one for you to meet on something this harmless.
+It is small and it is not trivial, because the mark has to go in a band of the window that no element occupies, and a layout places the children it is given.
+Getting something into empty space is a layout problem, and a good one for you to meet on something this harmless.
 
 ## Where the laser comes from
 
@@ -2171,20 +2000,17 @@ Grid >> startingCell
 	^self at: pt
 ```
 
-Column one, last row, entered from the south — `calculatePath` starts the beam with `#south` as the
-side it comes in by. So the beam arrives through the bottom edge of the bottom left cell, and the
-mark goes directly under that edge, in the margin between the last row of cells and the bottom of
-the window.
+Column one, last row, entered from the south — `calculatePath` starts the beam with `#south` as the side it comes in by.
+So the beam arrives through the bottom edge of the bottom left cell, and the mark goes directly under that edge, in the margin between the last row of cells and the bottom of the window.
 
 ## A column for the board
 
-Here is the problem. A game is a horizontal row of two children, the panel and the board, with the
-margin around them as padding. Padding is not a place to put things: a linear layout lays out every
-child it is given, and a third child would be laid out *beside* the other two, not underneath one of
-them.
+Here is the problem.
+A game is a horizontal row of two children, the panel and the board, with the margin around them as padding.
+Padding is not a place to put things: a linear layout lays out every child it is given, and a third child would be laid out *beside* the other two, not underneath one of them.
 
-The move is to stop thinking about where to put the mark and change what stands where the board
-stands. We give the board a column of its own, with the mark as its second child:
+The move is to stop thinking about where to put the mark and change what stands where the board stands.
+We give the board a column of its own, with the mark as its second child:
 
 ```smalltalk
 LaserGameElement >> newBoardColumn
@@ -2205,15 +2031,12 @@ LaserGameElement >> newBoardColumn
 	^ column
 ```
 
-`fitContent` on both axes means the column is exactly as big as what it holds, so it is the board's
-size plus the height of the mark. A child that is laid out below another child needs no coordinates:
-it is the second child of a vertical column, and that is the whole of the positioning.
+`fitContent` on both axes means the column is exactly as big as what it holds, so it is the board's size plus the height of the mark.
+A child that is laid out below another child needs no coordinates: it is the second child of a vertical column, and that is the whole of the positioning.
 
-> **To place something a layout has no room for, change the thing that holds it.** Wrapping a child
-> in a container of its own is cheaper than stepping outside the layout.
+> **To place something a layout has no room for, change the thing that holds it.** Wrapping a child in a container of its own is cheaper than stepping outside the layout.
 
-Then we take the bottom margin out of the padding, so the column ends where the game ends and the
-mark fills the band:
+Then we take the bottom margin out of the padding, so the column ends where the game ends and the mark fills the band:
 
 ```smalltalk
 LaserGameElement >> initialize
@@ -2233,8 +2056,8 @@ LaserGameElement >> initialize
 	moves := 0
 ```
 
-The margin has not disappeared. It has moved from the game to the two things standing in it: the
-board column carries it as the mark, and the panel carries it as a margin of its own.
+The margin has not disappeared.
+It has moved from the game to the two things standing in it: the board column carries it as the mark, and the panel carries it as a margin of its own.
 
 ```smalltalk
 LaserGameElement >> rebuild
@@ -2256,17 +2079,14 @@ LaserGameElement >> rebuild
 	self extent: (self class extentForGrid: self grid)
 ```
 
-Padding and margin are easy to mix up, and this method has one of each. **Padding** is space a
-parent keeps inside itself, around all of its children at once. **Margin** is space a child asks for
-around itself.
+Padding and margin are easy to mix up, and this method has one of each.
+**Padding** is space a parent keeps inside itself, around all of its children at once.
+**Margin** is space a child asks for around itself.
 
-The game had padding on four sides; now it has padding on three, and the fourth side's worth of
-space is asked for by each child separately — the panel with `margin:`, the board column with a mark
-that happens to be exactly that tall.
+The game had padding on four sides; now it has padding on three, and the fourth side's worth of space is asked for by each child separately — the panel with `margin:`, the board column with a mark that happens to be exactly that tall.
 
-And the size of the window did not change at all. `extentForGrid:` was not touched: the game is one
-margin, then the taller of (panel plus its margin) and (board plus its mark), and both of those grew
-by the same ten pixels that the padding lost.
+And the size of the window did not change at all.
+`extentForGrid:` was not touched: the game is one margin, then the taller of (panel plus its margin) and (board plus its mark), and both of those grew by the same ten pixels that the padding lost.
 
 ## The mark
 
@@ -2290,9 +2110,8 @@ LaserGameElement class >> laserHomeExtent
 	^ CellRenderer cellExtent x @ self gameMargin
 ```
 
-A `BlElement` with a background and an extent. No drawing, no image, no subclass: a coloured
-rectangle is an element whose background is that colour, and it scales with the cell size like
-everything else because its size is stated in terms of `cellExtent`.
+A `BlElement` with a background and an extent.
+No drawing, no image, no subclass: a coloured rectangle is an element whose background is that colour, and it scales with the cell size like everything else because its size is stated in terms of `cellExtent`.
 
 ```smalltalk
 LaserGameElement >> laserHome
@@ -2301,9 +2120,8 @@ LaserGameElement >> laserHome
 	^ laserHome
 ```
 
-That is the sixth instance variable of the game, four below the limit the panel ran into two
-chapters ago. It is held rather than read back from the column because the game builds it, and
-`rebuild` builds the column from it.
+That is the sixth instance variable of the game, four below the limit the panel ran into two chapters ago.
+It is held rather than read back from the column because the game builds it, and `rebuild` builds the column from it.
 
 ## The tests
 
@@ -2334,15 +2152,12 @@ LaserGameElementTestCase >> testGameShowsWhereTheLaserComesFrom
 		equals: LaserGameColors laserBeamSplatterColor
 ```
 
-`constraints horizontal resizer size` is where `extent:` ends up. Asking an element for its `extent`
-before it has been laid out answers the size it currently has, which is nothing; asking its
-constraints answers the size it was *told* to have, which is what this test is about.
+`constraints horizontal resizer size` is where `extent:` ends up.
+Asking an element for its `extent` before it has been laid out answers the size it currently has, which is nothing; asking its constraints answers the size it was *told* to have, which is what this test is about.
 
-That is the same reading used for the game's own size several chapters ago, and it is the reason
-these tests need no window.
+That is the same reading used for the game's own size several chapters ago, and it is the reason these tests need no window.
 
-The second test is the one that matters, because the whole chapter is an arrangement whose job is to
-leave the size alone:
+The second test is the one that matters, because the whole chapter is an arrangement whose job is to leave the size alone:
 
 ```smalltalk
 LaserGameElementTestCase >> testTheLaserHomeSitsInTheMarginAndCostsNoSize
@@ -2377,24 +2192,20 @@ LaserGameElementTestCase >> testTheLaserHomeSitsInTheMarginAndCostsNoSize
 		equals: (LaserGameElement extentForGrid: game grid) y
 ```
 
-Four assertions, and together they are an argument rather than a list. The column is the board plus
-one margin; the game's padding is open at the bottom; the panel asks for that margin itself; and
-therefore the height the game claims is one margin plus the taller of the two things inside it.
+Four assertions, and together they are an argument rather than a list.
+The column is the board plus one margin; the game's padding is open at the bottom; the panel asks for that margin itself; and therefore the height the game claims is one margin plus the taller of the two things inside it.
 
-If any one of those four changes, the mark either overlaps the cells or makes the window taller, and
-the test says which of the four went wrong.
+If any one of those four changes, the mark either overlaps the cells or makes the window taller, and the test says which of the four went wrong.
 
-Writing the last assertion as the *same addition the method does* would be a mistake — it would pass
-whatever the method answered. It is written from the measurement instead: `column measuredExtent y`
-is what Bloc says the column is, not what the arithmetic predicted.
+Writing the last assertion as the *same addition the method does* would be a mistake — it would pass whatever the method answered.
+It is written from the measurement instead: `column measuredExtent y` is what Bloc says the column is, not what the arithmetic predicted.
 
-> **An assertion that re-states the code it is checking checks nothing.** Get one side of it from
-> somewhere else: a measurement, a constant, a count.
+> **An assertion that re-states the code it is checking checks nothing.** Get one side of it from somewhere else: a measurement, a constant, a count.
 
 ## Three tests that learned about one more level
 
-The board is still reached through `board`, but it is no longer the game's second child — the column
-is. Three existing tests had to say the same thing about a tree one element deeper:
+The board is still reached through `board`, but it is no longer the game's second child — the column is.
+Three existing tests had to say the same thing about a tree one element deeper:
 
 ```smalltalk
 LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
@@ -2411,13 +2222,10 @@ LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
 	self assert: game layout class equals: BlLinearLayout
 ```
 
-`game children second equals: game board parent` is the honest way to write it. The test is about
-the game holding two children, one of which is where the board is; it is not about how many
-containers deep the board sits, and writing `children second children first` would make it about
-that.
+`game children second equals: game board parent` is the honest way to write it.
+The test is about the game holding two children, one of which is where the board is; it is not about how many containers deep the board sits, and writing `children second children first` would make it about that.
 
-`testAnsweringNoLeavesTheGameAsItWas` changed in the same way, and the padding assertion of the
-extent test moved to the three sides that still have padding:
+`testAnsweringNoLeavesTheGameAsItWas` changed in the same way, and the padding assertion of the extent test moved to the three sides that still have padding:
 
 ```smalltalk
 LaserGameElementTestCase >> testGameTakesTheExtentItCalculates
@@ -2440,19 +2248,15 @@ LaserGameElementTestCase >> testGameTakesTheExtentItCalculates
 	self assert: game padding right equals: LaserGameElement gameMargin
 ```
 
-Three existing tests editing their expectations is a cost, and you should be honest about which kind
-of cost it is. None of them was wrong about the game; all three were specific about a tree that
-changed shape.
+Three existing tests editing their expectations is a cost, and you should be honest about which kind of cost it is.
+None of them was wrong about the game; all three were specific about a tree that changed shape.
 
-Tests that read a tree pay a little whenever the tree moves, and the way to keep the bill small is
-the one used here: name what you are reaching for — `game board`, `game controlPanel` — rather than
-counting your way to it.
+Tests that read a tree pay a little whenever the tree moves, and the way to keep the bill small is the one used here: name what you are reaching for — `game board`, `game controlPanel` — rather than counting your way to it.
 
 ## Checking it
 
-Open the game and look under the bottom left cell: you get a short bar in the colour of the beam's
-splatter, filling the margin, exactly one cell wide. Fire the laser and it lines up with where the
-beam comes in.
+Open the game and look under the bottom left cell: you get a short bar in the colour of the beam's splatter, filling the margin, exactly one cell wide.
+Fire the laser and it lines up with where the beam comes in.
 
 Without a window:
 
@@ -2465,32 +2269,26 @@ game := LaserGameElement on: GridFactory demoGrid.
   game padding bottom }
 ```
 
-You get two children in the board column, the mark being the lower of them, a bar one cell wide and
-one margin tall, and no padding at the bottom for it to sit outside of.
+You get two children in the board column, the mark being the lower of them, a bar one cell wide and one margin tall, and no padding at the bottom for it to sit outside of.
 
-In the next chapter we turn the cell-size experiment of *A missed bug* into something the suite runs
-by itself.
+In the next chapter we turn the cell-size experiment of *A missed bug* into something the suite runs by itself.
 
 # A less brittle test design
 
-In *A missed bug* we ran an experiment by hand: recompile `cellExtent`, run everything, read the
-failures, put the method back. It found three brittle tests and a design floor, which was worth the
-trouble.
+In *A missed bug* we ran an experiment by hand: recompile `cellExtent`, run everything, read the failures, put the method back.
+It found three brittle tests and a design floor, which was worth the trouble.
 
-In this chapter we turn the experiment into a harness any test case can inherit, and then rewrites
-the push, rotate and boundary tests as tables that have to hold at every cell size.
+In this chapter we turn the experiment into a harness any test case can inherit, and then rewrites the push, rotate and boundary tests as tables that have to hold at every cell size.
 
-An experiment you run by hand is one you run when you remember to. This chapter turns it into
-something the suite does by itself, and then uses it on the part of the game that has the most
-numbers in it: the click tables.
+An experiment you run by hand is one you run when you remember to.
+This chapter turns it into something the suite does by itself, and then uses it on the part of the game that has the most numbers in it: the click tables.
 
 No code outside the test package changes anywhere in this chapter.
 
 ## The harness
 
-The playground version we ran was six lines, of which four were bookkeeping: keep the old
-source, compile the new one, run the block, put the old one back whatever happens. That belongs in a
-method:
+The playground version we ran was six lines, of which four were bookkeeping: keep the old source, compile the new one, run the block, put the old one back whatever happens.
+That belongs in a method:
 
 ```smalltalk
 LaserGameTestCase class >> withCellExtent: anExtent do: aBlock
@@ -2509,19 +2307,16 @@ LaserGameTestCase class >> withCellExtent: anExtent do: aBlock
 		CellRenderer class compile: previous sourceCode classified: 'constants' ]
 ```
 
-`previous` holds the `CompiledMethod`, not its text, and the `ensure:` block recompiles it from
-`previous sourceCode`. Keeping the method object is the easy way for you to get the source back
-exactly as it was, comment and all.
+`previous` holds the `CompiledMethod`, not its text, and the `ensure:` block recompiles it from `previous sourceCode`.
+Keeping the method object is the easy way for you to get the source back exactly as it was, comment and all.
 
-The `ensure:` is the whole point of writing this as a method. A failed assertion inside the block
-raises an exception, and without `ensure:` that exception would leave the image with whatever cell
-size the test was using — every later test in the run would be testing a game nobody plays, and the
-failures would be nonsense.
+The `ensure:` is the whole point of writing this as a method.
+A failed assertion inside the block raises an exception, and without `ensure:` that exception would leave the image with whatever cell size the test was using — every later test in the run would be testing a game nobody plays, and the failures would be nonsense.
 
 `ensure:` runs its block on the way out whether the way out is a return or an exception.
 
-> **Anything that changes shared state for the duration of a block puts it back in an `ensure:`.**
-> Tests fail; that is their job. They must not leave wreckage when they do.
+> **Anything that changes shared state for the duration of a block puts it back in an `ensure:`.** Tests fail; that is their job.
+> They must not leave wreckage when they do.
 
 ```smalltalk
 LaserGameTestCase >> withCellExtent: anExtent do: aBlock
@@ -2533,10 +2328,12 @@ LaserGameTestCase >> withCellExtent: anExtent do: aBlock
 	^ self class withCellExtent: anExtent do: aBlock
 ```
 
-We put the work on the class side and the instance side passes it on, so a test writes
-`self withCellExtent: ... do: [ ... ]` and a test case that does not inherit from
-`LaserGameTestCase` can still write `LaserGameTestCase withCellExtent: ... do: [ ... ]`. One
-implementation, reachable from both.
+We put the work on the class side and the instance side passes it on, so a test writes `self withCellExtent: ...
+do: [ ...
+]` and a test case that does not inherit from `LaserGameTestCase` can still write `LaserGameTestCase withCellExtent: ...
+do: [ ...
+]`.
+One implementation, reachable from both.
 
 ## An abstract test case
 
@@ -2557,25 +2354,23 @@ LaserGameTestCase class >> isAbstract
 	^ self = LaserGameTestCase
 ```
 
-`isAbstract` is how a test case tells the runner it has no tests of its own. Written as
-`^ self = LaserGameTestCase` rather than `^ true`, so that the subclasses — which inherit the
-method — answer `false` without having to override it. A plain `^ true` would make the whole
-hierarchy abstract and nothing would run.
+`isAbstract` is how a test case tells the runner it has no tests of its own.
+Written as `^ self = LaserGameTestCase` rather than `^ true`, so that the subclasses — which inherit the method — answer `false` without having to override it.
+A plain `^ true` would make the whole hierarchy abstract and nothing would run.
 
-We put nothing else in this class. A test that never asks about a cell size has no reason to inherit
-from it, and a superclass that collects everything shared by anything is how test suites become
-impossible to read.
+We put nothing else in this class.
+A test that never asks about a cell size has no reason to inherit from it, and a superclass that collects everything shared by anything is how test suites become impossible to read.
 
-There is one consequence we should name, because it shows up in the numbers. Pharo builds the suite
-of a test case out of its own test methods *and* those of its subclasses, so running the whole
-package runs these four classes twice: once from their own suites and once through their superclass.
+There is one consequence we should name, because it shows up in the numbers.
+Pharo builds the suite of a test case out of its own test methods *and* those of its subclasses, so running the whole package runs these four classes twice: once from their own suites and once through their superclass.
 
-The count of tests reported is larger than the count of test methods. They are the same tests and
-they pass either way.
+The count of tests reported is larger than the count of test methods.
+They are the same tests and they pass either way.
 
 ## The push table
 
-Here is the table we write for what a click inside a mirror asks for. Read the points:
+Here is the table we write for what a click inside a mirror asks for.
+Read the points:
 
 ```smalltalk
 CellClickInsideRegionPushTestCase >> assertPushRegionTable
@@ -2606,27 +2401,21 @@ CellClickInsideRegionPushTestCase >> assertPushRegionTable
 		self assert: pushRegion equals: cls ]
 ```
 
-Not one pixel number names a position. `rect topLeft`, `rect center`, `rect bottomRight`: every row
-names a *landmark* of the rectangle the region answers, and the only literals are small nudges away
-from a landmark — `+ (1 @ 3)` is "just inside this corner", which is a statement about the corner
-and not about the cell.
+Not one pixel number names a position.
+`rect topLeft`, `rect center`, `rect bottomRight`: every row names a *landmark* of the rectangle the region answers, and the only literals are small nudges away from a landmark — `+ (1 @ 3)` is "just inside this corner", which is a statement about the corner and not about the cell.
 
-Written the other way, with the nine points as the pixel pairs they come out to, the table would
-tell you two things at once: that a point in this part of the cell asks for an eastward push, which
-is what the test is for, and that the inside region's corner is at a particular pixel, which the
-test never meant to claim.
+Written the other way, with the nine points as the pixel pairs they come out to, the table would tell you two things at once: that a point in this part of the cell asks for an eastward push, which is what the test is for, and that the inside region's corner is at a particular pixel, which the test never meant to claim.
 
-The second claim is already made, correctly, by the method that answers `regionRectangle` — and a
-test that repeats a fact it is not testing fails for reasons that have nothing to do with it.
+The second claim is already made, correctly, by the method that answers `regionRectangle` — and a test that repeats a fact it is not testing fails for reasons that have nothing to do with it.
 
-> **In a test, write every position relative to the thing that defines it.** Then the test fails
-> only when the thing it is about is wrong.
+> **In a test, write every position relative to the thing that defines it.** Then the test fails only when the thing it is about is wrong.
 
-Notice also that we wrote the table as a `do:` over an array of associations, with the assertion
-written once. Nine rows in nine lines, with the checking in one place. Adding a tenth row means
-adding a row.
+Notice also that we wrote the table as a `do:` over an array of associations, with the assertion written once.
+Nine rows in nine lines, with the checking in one place.
+Adding a tenth row means adding a row.
 
-We write two tests against the table. The first runs it at the size the game is actually played at:
+We write two tests against the table.
+The first runs it at the size the game is actually played at:
 
 ```smalltalk
 CellClickInsideRegionPushTestCase >> testClicksInPushRegions
@@ -2647,23 +2436,21 @@ CellClickInsideRegionPushTestCase >> testThePushRegionTableHoldsAtEveryCellSize
 		self withCellExtent: size @ size do: [ self assertPushRegionTable ] ]
 ```
 
-Thirty, forty, and eighty, and we did not choose them arbitrarily. Thirty is near the floor *A
-missed bug* measured, where the inside region is only ten pixels square — small enough that a row
-nudged `+ (1 @ 3)` from a corner has to land in the right triangle by geometry rather than by luck.
+Thirty, forty, and eighty, and we did not choose them arbitrarily.
+Thirty is near the floor *A missed bug* measured, where the inside region is only ten pixels square — small enough that a row nudged `+ (1 @ 3)` from a corner has to land in the right triangle by geometry rather than by luck.
 
-Eighty is a size nobody has opened the game at. If the table holds at both ends it holds in between.
+Eighty is a size nobody has opened the game at.
+If the table holds at both ends it holds in between.
 
-The two tests also show what a shared helper is for. The helper holds the claim; the tests say under
-what conditions the claim must hold. Put the table in the test method and you have to copy it to run
-it at a second size, and from then on there are two tables that must agree.
+The two tests also show what a shared helper is for.
+The helper holds the claim; the tests say under what conditions the claim must hold.
+Put the table in the test method and you have to copy it to run it at a second size, and from then on there are two tables that must agree.
 
-> **When the same assertions must run under different conditions, name the assertions once.** The
-> tests become one line each, and the conditions are what you read.
+> **When the same assertions must run under different conditions, name the assertions once.** The tests become one line each, and the conditions are what you read.
 
 ## The rotate table
 
-We write the same shape, with fifteen rows and two rectangles, because the rotate regions are the
-ring between the inside region and the outside one:
+We write the same shape, with fifteen rows and two rectangles, because the rotate regions are the ring between the inside region and the outside one:
 
 ```smalltalk
 CellClickOutsideRegionRotateTestCase >> assertRotateRegionTable
@@ -2713,12 +2500,11 @@ We should stop at one row:
 (outRect topLeft x + 2 @ inRect topLeft y -> CellClickRegionRotateClockwise)
 ```
 
-Its x comes from the outer rectangle and its y from the inner one. That is a point in the left arm
-of the ring, level with the top of the inside region, and there is no landmark for it because it is
-not a landmark of either rectangle — it is the intersection of two of them.
+Its x comes from the outer rectangle and its y from the inner one.
+That is a point in the left arm of the ring, level with the top of the inside region, and there is no landmark for it because it is not a landmark of either rectangle — it is the intersection of two of them.
 
-Writing it as a pixel pair would be shorter and would tell you nothing. Written this way the row
-explains itself, which is what you want from the one row in fifteen that needs explaining.
+Writing it as a pixel pair would be shorter and would tell you nothing.
+Written this way the row explains itself, which is what you want from the one row in fifteen that needs explaining.
 
 ```smalltalk
 CellClickOutsideRegionRotateTestCase >> testClicksInRotateRegions
@@ -2739,8 +2525,8 @@ CellClickOutsideRegionRotateTestCase >> testTheRotateRegionTableHoldsAtEveryCell
 
 ## The boundaries
 
-Three more tests we write say where one region stops and the next begins. They are blunter than the
-tables and they are the ones most tempted by pixel numbers, because a boundary *is* a number:
+Three more tests we write say where one region stops and the next begins.
+They are blunter than the tables and they are the ones most tempted by pixel numbers, because a boundary *is* a number:
 
 ```smalltalk
 CellClickRegionTestCase >> assertIgnoreRegionBoundaries
@@ -2766,16 +2552,13 @@ CellClickRegionTestCase >> assertIgnoreRegionBoundaries
 		equals: CellClickRegionIgnore
 ```
 
-`outsideRect topLeft - (1 @ 1)` is the interesting one: the pixel diagonally outside the corner of
-the outside region, which must belong to the ignore margin.
+`outsideRect topLeft - (1 @ 1)` is the interesting one: the pixel diagonally outside the corner of the outside region, which must belong to the ignore margin.
 
-That is a statement about a boundary written entirely in terms of the rectangle that defines it, and
-it is right at any cell size and any margin width. The same point as a pixel pair would be right
-until somebody changed either.
+That is a statement about a boundary written entirely in terms of the rectangle that defines it, and it is right at any cell size and any margin width.
+The same point as a pixel pair would be right until somebody changed either.
 
-The last line uses `deny:equals:`, which asserts that two things *differ*. The centre of the inside
-region must not be ignored — a boundary test needs a point on each side of the boundary, or it only
-proves the region is not empty.
+The last line uses `deny:equals:`, which asserts that two things *differ*.
+The centre of the inside region must not be ignored — a boundary test needs a point on each side of the boundary, or it only proves the region is not empty.
 
 ```smalltalk
 CellClickRegionTestCase >> testClicksInIgnoreRegion
@@ -2784,8 +2567,7 @@ CellClickRegionTestCase >> testClicksInIgnoreRegion
 	self assertIgnoreRegionBoundaries
 ```
 
-We give the inside and outside regions the same pair — a helper and a one-line test — and one test
-runs all three helpers at all three sizes:
+We give the inside and outside regions the same pair — a helper and a one-line test — and one test runs all three helpers at all three sizes:
 
 ```smalltalk
 CellClickRegionTestCase >> testTheRegionBoundariesHoldAtEveryCellSize
@@ -2801,15 +2583,13 @@ CellClickRegionTestCase >> testTheRegionBoundariesHoldAtEveryCellSize
 			self assertOutsideRegionBoundaries ] ]
 ```
 
-The smallest size is the one that can break: the ignore margin is four pixels at every cell size and
-the outside ring is ten, so a thirty pixel cell is a ten pixel inside region, inside a twenty-two
-pixel outside region, inside a thirty pixel cell. Three squares with nothing to spare, and no pixel
-changes hands.
+The smallest size is the one that can break: the ignore margin is four pixels at every cell size and the outside ring is ten, so a thirty pixel cell is a ten pixel inside region, inside a twenty-two pixel outside region, inside a thirty pixel cell.
+Three squares with nothing to spare, and no pixel changes hands.
 
 ## And the renderer
 
-We had already written the test that sweeps the renderer's geometry. It now reads the harness from
-its superclass instead of holding its own copy, and it is the widest claim in the suite:
+We had already written the test that sweeps the renderer's geometry.
+It now reads the harness from its superclass instead of holding its own copy, and it is the widest claim in the suite:
 
 ```smalltalk
 CellRendererTestCase >> testEverySizeInACellFollowsTheCellSize
@@ -2858,25 +2638,21 @@ CellRendererTestCase >> testEverySizeInACellFollowsTheCellSize
 				equals: side * grid numberOfColumns @ (side * grid numberOfRows) ] ]
 ```
 
-Three of its claims are the kind that no example can make. Every point of the cell falls in some
-region — that is a loop over every pixel of the cell, and at eighty pixels it is six thousand four
-hundred assertions.
+Three of its claims are the kind that no example can make.
+Every point of the cell falls in some region — that is a loop over every pixel of the cell, and at eighty pixels it is six thousand four hundred assertions.
 
-Every point of the inside region falls in exactly *one* push region, counted by asking how many of
-the four subclasses contain it: not none, which would leave a dead patch, and not two, which would
-make a click ambiguous. And the two nested regions stay centred.
+Every point of the inside region falls in exactly *one* push region, counted by asking how many of the four subclasses contain it: not none, which would leave a dead patch, and not two, which would make a click ambiguous.
+And the two nested regions stay centred.
 
-A loop over every pixel is a crude test and a good one. The clever version would reason about the
-diagonals; this one checks them all, runs in milliseconds, and cannot be wrong about a corner case
-because it has no notion of a corner case.
+A loop over every pixel is a crude test and a good one.
+The clever version would reason about the diagonals; this one checks them all, runs in milliseconds, and cannot be wrong about a corner case because it has no notion of a corner case.
 
-> **When the input space is small, test all of it.** Exhaustiveness is worth more than cleverness
-> when you can afford it.
+> **When the input space is small, test all of it.** Exhaustiveness is worth more than cleverness when you can afford it.
 
 ## Checking it
 
-Nothing a player can see changed in this chapter. What changed is that the claim "every size follows
-the cell size" is now checked by the suite at three sizes instead of being argued for in comments:
+Nothing a player can see changed in this chapter.
+What changed is that the claim "every size follows the cell size" is now checked by the suite at three sizes instead of being argued for in comments:
 
 ```smalltalk
 | game |
@@ -2885,38 +2661,30 @@ LaserGameTestCase withCellExtent: 30 @ 30 do: [
 	CellClickRegionInside regionRectangle extent ]
 ```
 
-You get `10@10`, the inside region of a thirty pixel cell, and the method is back to fifty
-pixels the moment the block ends. The suite is green, and green now means something it did not mean
-two chapters ago.
+You get `10@10`, the inside region of a thirty pixel cell, and the method is back to fifty pixels the moment the block ends.
+The suite is green, and green now means something it did not mean two chapters ago.
 
 In the next chapter we go back to the hint arrows and put them where they belong.
 
 # Centring the hint arrows
 
-A hint arrow has to sit in the middle of the cell it belongs to. That sounds like a sentence nobody
-needs to write a chapter about, and it is the kind of thing that goes wrong quietly: an arrow a few
-pixels off centre looks like a mistake in the drawing rather than a mistake in the arithmetic, and
-you cannot tell which from looking.
+A hint arrow has to sit in the middle of the cell it belongs to.
+That sounds like a sentence nobody needs to write a chapter about, and it is the kind of thing that goes wrong quietly: an arrow a few pixels off centre looks like a mistake in the drawing rather than a mistake in the arithmetic, and you cannot tell which from looking.
 
-So this chapter states the rule as two tests, one on the shape and one on the cell, and gives the
-renderer an arrow extent and an offset that hold at every cell size.
+So this chapter states the rule as two tests, one on the shape and one on the cell, and gives the renderer an arrow extent and an offset that hold at every cell size.
 
-So we do two things in this chapter. We say where the arrow goes, in two constants, and we write the
-tests that measure where the arrow actually landed — at three cell sizes, using the harness of the
-last chapter.
+So we do two things in this chapter.
+We say where the arrow goes, in two constants, and we write the tests that measure where the arrow actually landed — at three cell sizes, using the harness of the last chapter.
 
 ## Why there is nothing to trim
 
-The natural way to make six arrows is to draw each one into a picture and keep the picture. It is
-also where the trouble starts: a picture has to be big enough to hold the shape, the shape ends up
-somewhere inside it, and the space around it is now part of the arrow as far as any later arithmetic
-is concerned.
+The natural way to make six arrows is to draw each one into a picture and keep the picture.
+It is also where the trouble starts: a picture has to be big enough to hold the shape, the shape ends up somewhere inside it, and the space around it is now part of the arrow as far as any later arithmetic is concerned.
 
-Centring the picture does not centre the arrow, and finding out how far off it is means searching
-the pixels for the edge of the ink.
+Centring the picture does not centre the arrow, and finding out how far off it is means searching the pixels for the edge of the ink.
 
-So we do not draw an arrow into a picture here. It is a polygon, and its vertices are scaled onto
-the rectangle the caller asks for:
+So we do not draw an arrow into a picture here.
+It is a polygon, and its vertices are scaled onto the rectangle the caller asks for:
 
 ```smalltalk
 LaserGameShapes class >> pointsOf: anArrayOfPoints scaledToExtent: anExtent
@@ -2932,9 +2700,8 @@ LaserGameShapes class >> pointsOf: anArrayOfPoints scaledToExtent: anExtent
 		  ((each - bounds origin) * scale) asFloatPoint ]
 ```
 
-`Rectangle encompassing:` is the tight rectangle around the vertices — four points for you to look
-at, not a hundred thousand pixels to search. Subtracting `bounds origin` moves the shape to `0@0`,
-and the scale factor stretches it to exactly the extent asked for.
+`Rectangle encompassing:` is the tight rectangle around the vertices — four points for you to look at, not a hundred thousand pixels to search.
+Subtracting `bounds origin` moves the shape to `0@0`, and the scale factor stretches it to exactly the extent asked for.
 
 Every arrow reaches its element through that method:
 
@@ -2945,8 +2712,8 @@ LaserGameShapes class >> eastArrowElementOfExtent: anExtent
 	^ self arrowElementFromPoints: self eastArrowPoints ofExtent: anExtent
 ```
 
-So the ink of an arrow *is* the rectangle it was asked for, at every size, and there is nothing left
-over. That is a claim, and we give a claim a test:
+So the ink of an arrow *is* the rectangle it was asked for, at every size, and there is nothing left over.
+That is a claim, and we give a claim a test:
 
 ```smalltalk
 LaserGameShapesTestCase >> testEveryArrowFillsTheRectangleItIsGiven
@@ -2966,15 +2733,11 @@ LaserGameShapesTestCase >> testEveryArrowFillsTheRectangleItIsGiven
 				equals: (0 @ 0 corner: size @ size) ] ]
 ```
 
-Eighteen checks from eight lines, and the two loops are the two things you could get wrong: an arrow
-that does not fill its rectangle, and a size at which one of them does not.
+Eighteen checks from eight lines, and the two loops are the two things you could get wrong: an arrow that does not fill its rectangle, and a size at which one of them does not.
 
-The arrows are named in an array of selectors and sent with `perform:with:`, which is the right use
-of that message — six methods with one shape, listed in the test that covers all six, so a seventh
-arrow is one more line.
+The arrows are named in an array of selectors and sent with `perform:with:`, which is the right use of that message — six methods with one shape, listed in the test that covers all six, so a seventh arrow is one more line.
 
-> **Prefer a shape you can scale to a picture you have to measure.** The arithmetic that follows is
-> then about the shape and not about its packaging.
+> **Prefer a shape you can scale to a picture you have to measure.** The arithmetic that follows is then about the shape and not about its packaging.
 
 ## Where the arrow goes
 
@@ -2996,12 +2759,10 @@ CellRenderer class >> hintArrowOffset
 	^ (self cellExtent - self hintArrowExtent) // 2
 ```
 
-Read the second one as the definition of centred: take what the cell has over the arrow, and give
-half of it to each side. Written that way it is right for any cell size and any arrow size, and it
-stays right if either changes.
+Read the second one as the definition of centred: take what the cell has over the arrow, and give half of it to each side.
+Written that way it is right for any cell size and any arrow size, and it stays right if either changes.
 
-Written as `^ 1 @ 1` it would be right today and silently wrong the first time `hintArrowExtent`
-changed — and one pixel off centre is exactly the error nobody notices.
+Written as `^ 1 @ 1` it would be right today and silently wrong the first time `hintArrowExtent` changed — and one pixel off centre is exactly the error nobody notices.
 
 The cell puts them together:
 
@@ -3028,15 +2789,13 @@ LaserGameCellElement >> updateHintElement
 	self updateCrossHairElement
 ```
 
-Three `ifNotNil:` in one method looks like a lot, and each one is a different question: is there an
-old arrow to take away, does this region offer a picture at all, and did we get one.
+Three `ifNotNil:` in one method looks like a lot, and each one is a different question: is there an old arrow to take away, does this region offer a picture at all, and did we get one.
 
-The middle one answers `nil` for the ignore margin, which has no hint, and the method flows through
-to leaving the cell with no arrow — no special case, no `ifTrue:` about which region we are in.
+The middle one answers `nil` for the ignore margin, which has no hint, and the method flows through to leaving the cell with no arrow — no special case, no `ifTrue:` about which region we are in.
 
-The arrow is a *child* of the cell, which is what makes the cleanup trivial. Remove the child and
-the old arrow is gone; there is no painting over and no record of what was drawn where. State that
-lives in the element tree is state you can delete.
+The arrow is a *child* of the cell, which is what makes the cleanup trivial.
+Remove the child and the old arrow is gone; there is no painting over and no record of what was drawn where.
+State that lives in the element tree is state you can delete.
 
 And the colour comes from the renderer, so the arrow says whether the move it offers is legal:
 
@@ -3057,8 +2816,7 @@ MirrorCellRenderer >> hintColorAt: aPoint
 
 ## Two tests, at two levels
 
-The first test we write checks the arithmetic, at three cell sizes, with the harness from the last
-chapter:
+The first test we write checks the arithmetic, at three cell sizes, with the harness from the last chapter:
 
 ```smalltalk
 CellRendererTestCase >> testTheHintArrowIsCentredInItsCellAtEveryCellSize
@@ -3088,13 +2846,11 @@ CellRendererTestCase >> testTheHintArrowIsCentredInItsCellAtEveryCellSize
 					equals: (0 @ 0 corner: CellRenderer hintArrowExtent) ] ] ]
 ```
 
-`(offset * 2) + hintArrowExtent equals: cellExtent` is the definition of centred stated backwards,
-which is why we assert it. The method computes the offset from the two extents; the test
-puts the offset back together with the arrow and asks whether it fills the cell. Neither side is a
-copy of the other.
+`(offset * 2) + hintArrowExtent equals: cellExtent` is the definition of centred stated backwards, which is why we assert it.
+The method computes the offset from the two extents; the test puts the offset back together with the arrow and asks whether it fills the cell.
+Neither side is a copy of the other.
 
-The second test we write is the one that would catch a real mistake, because it measures the arrow
-where it actually sits:
+The second test we write is the one that would catch a real mistake, because it measures the arrow where it actually sits:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testTheHintArrowSitsCentredInTheCellAtEveryCellSize
@@ -3120,35 +2876,27 @@ LaserGameCellElementTestCase >> testTheHintArrowSitsCentredInTheCellAtEveryCellS
 			self assert: position x equals: position y ] ]
 ```
 
-This one goes through the whole chain: we hover a mirror with a real mouse event, find the arrow the
-cell added, and measure the space left on each side of it.
+This one goes through the whole chain: we hover a mirror with a real mouse event, find the arrow the cell added, and measure the space left on each side of it.
 
-`margin` is what remains of the cell once the arrow and its offset are taken off, so `margin equals:
-position` says the space after is the space before. Centred, measured on the thing the player sees.
+`margin` is what remains of the cell once the arrow and its offset are taken off, so `margin equals: position` says the space after is the space before.
+Centred, measured on the thing the player sees.
 
-`self deny: arrow isNil` is not padding. Without it, a cell that showed no arrow at all would leave
-`position` as nil, the subtraction would fail with a `doesNotUnderstand`, and the test would report
-an error in the arithmetic rather than the actual fault, which is that there is no arrow.
+`self deny: arrow isNil` is not padding.
+Without it, a cell that showed no arrow at all would leave `position` as nil, the subtraction would fail with a `doesNotUnderstand`, and the test would report an error in the arithmetic rather than the actual fault, which is that there is no arrow.
 
-Assert that the thing exists before measuring it, and the failure tells you which of the two went
-wrong.
+Assert that the thing exists before measuring it, and the failure tells you which of the two went wrong.
 
-> **Check the arithmetic and then check the result.** A test on the constants proves the formula; a
-> test on the element proves the formula is the one being used.
+> **Check the arithmetic and then check the result.** A test on the constants proves the formula; a test on the element proves the formula is the one being used.
 
-Note the one asymmetry in these two tests: the renderer test writes `self withCellExtent:`,
-inherited from `LaserGameTestCase`, and the cell element test writes `LaserGameTestCase
-withCellExtent:`.
+Note the one asymmetry in these two tests: the renderer test writes `self withCellExtent:`, inherited from `LaserGameTestCase`, and the cell element test writes `LaserGameTestCase withCellExtent:`.
 
-`LaserGameCellElementTestCase` has no reason to inherit from the cell-size test case — it has one
-test out of many that asks about sizes — so it asks the class directly. That is what the class-side
-copy of the harness is for: needing one method is not a reason to move a class under a superclass.
+`LaserGameCellElementTestCase` has no reason to inherit from the cell-size test case — it has one test out of many that asks about sizes — so it asks the class directly.
+That is what the class-side copy of the harness is for: needing one method is not a reason to move a class under a superclass.
 
 ## Checking it
 
-Open the game and move the pointer slowly across a mirror. You get a new arrow as the pointer
-crosses from one region into the next, and it stays in the middle of the cell the whole time — one
-pixel of clearance on every side, whatever the cell size.
+Open the game and move the pointer slowly across a mirror.
+You get a new arrow as the pointer crosses from one region into the next, and it stays in the middle of the cell the whole time — one pixel of clearance on every side, whatever the cell size.
 
 Without a window:
 
@@ -3158,29 +2906,26 @@ LaserGameTestCase withCellExtent: 80 @ 80 do: [
 	  CellRenderer hintArrowOffset } ]
 ```
 
-You get `{78@78. 1@1}`: an arrow one pixel in from each side of an eighty pixel cell, which is
-the same one pixel it is in from a fifty pixel cell, because it is the arrow that grew and not the
-margin.
+You get `{78@78.
+1@1}`: an arrow one pixel in from each side of an eighty pixel cell, which is the same one pixel it is in from a fifty pixel cell, because it is the arrow that grew and not the margin.
 
-In the next chapter we make a handful of small visual repairs, the kind that only become visible
-once everything else is right.
+In the next chapter we make a handful of small visual repairs, the kind that only become visible once everything else is right.
 
 # Minor cosmetic tweaks
 
-Everything works. In this chapter we change three things that only make a difference to the look of
-the game: a shadow under the board, a bar across the control panel above the buttons, and a board
-worth playing on when nobody said which board to play.
+Everything works.
+In this chapter we change three things that only make a difference to the look of the game: a shadow under the board, a bar across the control panel above the buttons, and a board worth playing on when nobody said which board to play.
 
 Small changes, each with a test, and the last of them changes what `LaserGameElement new` opens on.
 
-They are small, and that is the point. Each one is a change to a finished program, and each one has
-to be made without breaking the arithmetic the rest of the game is built on. The tests are what say
-whether that happened.
+They are small, and that is the point.
+Each one is a change to a finished program, and each one has to be made without breaking the arithmetic the rest of the game is built on.
+The tests are what say whether that happened.
 
 ## A shadow under the board
 
-The board is a flat rectangle of cells. A shadow under it, down and to the right, is enough to make
-you read it as a thing lying on the window rather than a pattern painted on it.
+The board is a flat rectangle of cells.
+A shadow under it, down and to the right, is enough to make you read it as a thing lying on the window rather than a pattern painted on it.
 
 ```smalltalk
 LaserGameColors class >> boardShadowColor
@@ -3196,8 +2941,8 @@ LaserGameBoardElement class >> shadowOffset
 	^ 3 @ 3
 ```
 
-We write both as named numbers on the class side, like every other number in this game. The shadow
-is then one more line in the board's `initialize`:
+We write both as named numbers on the class side, like every other number in this game.
+The shadow is then one more line in the board's `initialize`:
 
 ```smalltalk
 LaserGameBoardElement >> initialize
@@ -3216,19 +2961,16 @@ LaserGameBoardElement >> initialize
 		aConstraints vertical fitContent ]
 ```
 
-An *effect* in Bloc is something drawn around or behind an element without being part of it. It is
-not a child, it is not a border, and it is not a bigger background: it has no extent of its own, so
-the layout never sees it.
+An *effect* in Bloc is something drawn around or behind an element without being part of it.
+It is not a child, it is not a border, and it is not a bigger background: it has no extent of its own, so the layout never sees it.
 
-Alexandrie, the drawing back end, paints the shadow under the board and then paints the board on
-top.
+Alexandrie, the drawing back end, paints the shadow under the board and then paints the board on top.
 
-That is the whole reason the shadow is an effect here. The board's size is the sum of its cells, and
-the game's geometry is written from that sum: the window's extent, the position of the control panel
-and the place the laser's home mark goes all count on it.
+That is the whole reason the shadow is an effect here.
+The board's size is the sum of its cells, and the game's geometry is written from that sum: the window's extent, the position of the control panel and the place the laser's home mark goes all count on it.
 
-A shadow drawn as a child element, or as three pixels of extra padding, would have added three
-pixels to the board and moved every one of those. An effect adds nothing.
+A shadow drawn as a child element, or as three pixels of extra padding, would have added three pixels to the board and moved every one of those.
+An effect adds nothing.
 
 So the test we write for the shadow asserts two things, and the second is the interesting one:
 
@@ -3253,19 +2995,16 @@ LaserGameBoardElementTestCase >> testTheBoardCastsADropShadow
 		equals: (LaserGameBoardElement extentForGrid: GridFactory demoGrid)
 ```
 
-The first three assertions say the shadow is there and is the one we asked for. The last says
-the board still measures what it measured before the shadow existed. `measure:` is how an element is
-asked for its size without being laid out or opened: give it a measurement specification, here an
-unspecified one, and read `measuredExtent` back.
+The first three assertions say the shadow is there and is the one we asked for.
+The last says the board still measures what it measured before the shadow existed.
+`measure:` is how an element is asked for its size without being laid out or opened: give it a measurement specification, here an unspecified one, and read `measuredExtent` back.
 
-> **When a change is meant to be invisible to everything else, assert the invisibility.** Half of
-> this test is about what the shadow looks like; the other half is about what it must not have
-> touched.
+> **When a change is meant to be invisible to everything else, assert the invisibility.** Half of this test is about what the shadow looks like; the other half is about what it must not have touched.
 
 ## A bar across the panel
 
-The control panel holds its counters at the top and its three rows of buttons at the bottom. We put
-a thin bar between the two groups to separate them.
+The control panel holds its counters at the top and its three rows of buttons at the bottom.
+We put a thin bar between the two groups to separate them.
 
 ```smalltalk
 LaserGameColors class >> panelDividerDarkColor
@@ -3289,8 +3028,8 @@ LaserGameControlPanelElement class >> dividerHeight
 	^ 5
 ```
 
-Two near whites, five pixels apart, darker at the top. A bar that shallow with a gradient that
-slight reads as a groove pressed into the panel, which is what it is for.
+Two near whites, five pixels apart, darker at the top.
+A bar that shallow with a gradient that slight reads as a groove pressed into the panel, which is what it is for.
 
 We write the bar itself as an element with no children, a fixed height, and a fixed width:
 
@@ -3312,27 +3051,25 @@ LaserGameControlPanelElement >> newPanelDivider
 	^ divider
 ```
 
-A `BlLinearGradientPaint` is a background that changes colour across the element. `vertical` says
-which way, and `stops:` is a collection of associations from a position between zero and one to the
-colour at that position: `0` is the top, `1` is the bottom. Two stops make the simplest gradient
-there is.
+A `BlLinearGradientPaint` is a background that changes colour across the element.
+`vertical` says which way, and `stops:` is a collection of associations from a position between zero and one to the colour at that position: `0` is the top, `1` is the bottom.
+Two stops make the simplest gradient there is.
 
-The width is `panelWidth - (2 * buttonGap)`: the panel's whole width, less one gap at each end, so
-the bar lines up with the buttons underneath it rather than running edge to edge. Written that way
-it is still right if either number changes.
+The width is `panelWidth - (2 * buttonGap)`: the panel's whole width, less one gap at each end, so the bar lines up with the buttons underneath it rather than running edge to edge.
+Written that way it is still right if either number changes.
 
 ### Where the bar goes
 
-Now the question we came for. The bar belongs above the buttons. Where is that?
+Now the question we came for.
+The bar belongs above the buttons.
+Where is that?
 
-The tempting answer is for you to measure it: the panel is so many pixels tall, three rows of
-buttons take so many from the bottom, so the bar goes at that many pixels up from the bottom edge.
-That is a number found by eye, and it is a number that stops being right the moment a fourth row of
-buttons appears — the rows would move up through the bar.
+The tempting answer is for you to measure it: the panel is so many pixels tall, three rows of buttons take so many from the bottom, so the bar goes at that many pixels up from the bottom edge.
+That is a number found by eye, and it is a number that stops being right the moment a fourth row of buttons appears — the rows would move up through the bar.
 
-The arrangement the panel already has gives a better answer. The buttons are rows in a vertical
-column element, and a vertical layout draws its children in order from the top. So we make the bar
-the column's first child:
+The arrangement the panel already has gives a better answer.
+The buttons are rows in a vertical column element, and a vertical layout draws its children in order from the top.
+So we make the bar the column's first child:
 
 ```smalltalk
 LaserGameControlPanelElement >> newButtonColumn
@@ -3358,19 +3095,18 @@ LaserGameControlPanelElement >> newButtonColumn
 	^ column
 ```
 
-One added line, and no number anywhere. The bar is above the buttons because it is in front of them
-in a column that reads downwards, and it stays above them however many rows are added later.
+One added line, and no number anywhere.
+The bar is above the buttons because it is in front of them in a column that reads downwards, and it stays above them however many rows are added later.
 
-> **Position a thing against the things it belongs with, not against an edge it happens to be
-> near.** An offset from an edge has to be found again every time anything between them changes.
+> **Position a thing against the things it belongs with, not against an edge it happens to be near.** An offset from an edge has to be found again every time anything between them changes.
 
 ### What the extra child cost
 
 Two costs, and the suite found both.
 
-The first is height. The panel states its own height, because the board beside it can be shorter
-than the panel's contents — that was the bug in *Adding more game stats*, where a counter was drawn
-over a button. A new child in the column means a new term in that sum:
+The first is height.
+The panel states its own height, because the board beside it can be shorter than the panel's contents — that was the bug in *Adding more game stats*, where a counter was drawn over a button.
+A new child in the column means a new term in that sum:
 
 ```smalltalk
 LaserGameControlPanelElement class >> contentHeight
@@ -3389,23 +3125,20 @@ LaserGameControlPanelElement class >> contentHeight
 	   + ((self buttonRowCount + 2) * self buttonGap)) ceiling
 ```
 
-Two changes: the bar's own five pixels, and one more gap. The gap term was `buttonRowCount + 1`,
-which is the number of gaps around and between three rows; with the bar in the column there are four
-children, so there are five gaps, and `buttonRowCount + 2` says that.
+Two changes: the bar's own five pixels, and one more gap.
+The gap term was `buttonRowCount + 1`, which is the number of gaps around and between three rows; with the bar in the column there are four children, so there are five gaps, and `buttonRowCount + 2` says that.
 
 Both terms are relations rather than measurements, so neither has to be touched when a row is added.
 
-The panel's content height goes from 320 to 335, and the window of a game on the demo board from 380
-by 340 to 380 by 355. The eight by ten board is taller than the panel either way, so a standard game
-stays 530 by 520.
+The panel's content height goes from 320 to 335, and the window of a game on the demo board from 380 by 340 to 380 by 355.
+The eight by ten board is taller than the panel either way, so a standard game stays 530 by 520.
 
-> **Note.** *Buttons of one width*, the last chapter, widens the buttons and the panel with them, so
-> those two windows end the book twenty pixels wider: 400 by 355 and 550 by 520. The heights are this
-> chapter's.
+> **Note.** *Buttons of one width*, the last chapter, widens the buttons and the panel with them, so those two windows end the book twenty pixels wider: 400 by 355 and 550 by 520.
+> The heights are this chapter's.
 
-The second cost is the row accessors. The panel does not keep its rows of buttons in instance
-variables; it reads them back out of the column by position, which keeps the column as the one place
-that knows the order. A new first child shifts all three:
+The second cost is the row accessors.
+The panel does not keep its rows of buttons in instance variables; it reads them back out of the column by position, which keeps the column as the one place that knows the order.
+A new first child shifts all three:
 
 ```smalltalk
 LaserGameControlPanelElement >> panelDivider
@@ -3431,14 +3164,12 @@ LaserGameControlPanelElement >> newGameRow
 	^ self buttonColumn children third
 ```
 
-This is the price of reading children by position, and we should be honest about it: adding a child
-renumbered three methods. The alternative — three instance variables — has a worse price, because
-then the column and the variables can disagree, and nothing would say which of them is wrong.
+This is the price of reading children by position, and we should be honest about it: adding a child renumbered three methods.
+The alternative — three instance variables — has a worse price, because then the column and the variables can disagree, and nothing would say which of them is wrong.
 
-What makes the position version safe is that you cannot miss the renumbering. `resetRow` answering
-the divider is not a subtle wrong answer; it is an element with no buttons in it, and every test
-that goes through that row fails at once. A design where a mistake is loud is better than a design
-where a mistake is unlikely.
+What makes the position version safe is that you cannot miss the renumbering.
+`resetRow` answering the divider is not a subtle wrong answer; it is an element with no buttons in it, and every test that goes through that row fails at once.
+A design where a mistake is loud is better than a design where a mistake is unlikely.
 
 ## The tests for the bar
 
@@ -3472,13 +3203,10 @@ LaserGameControlPanelElementTestCase >> testThePanelShowsADividerAboveItsButtons
 		equals: LaserGameColors panelDividerLightColor
 ```
 
-The claim being tested is *first child of the button column*, not *five pixels from some edge*, and
-that is the claim the code makes. The size assertions read the constraints back rather than the
-element's extent, because a constraint is what was asked for and an extent is what a layout
-produced; this test is about the asking.
+The claim being tested is *first child of the button column*, not *five pixels from some edge*, and that is the claim the code makes.
+The size assertions read the constraints back rather than the element's extent, because a constraint is what was asked for and an extent is what a layout produced; this test is about the asking.
 
-And the test we wrote to read the whole column back gains the bar, as its note in *Reset* said it
-would:
+And the test we wrote to read the whole column back gains the bar, as its note in *Reset* said it would:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testResetButtonHasTheTopRowToItself
@@ -3498,29 +3226,25 @@ LaserGameControlPanelElementTestCase >> testResetButtonHasTheTopRowToItself
 	self assert: panel resetButton labelText asString equals: 'Reset'
 ```
 
-One test, in the whole suite, says how many children the column has and in what order. That is the
-test that had to change, and it is the only one. Everything else about the buttons goes through
-`resetRow`, `newGameRow` and `buttonRow`, which now answer the same rows they answered before.
+One test, in the whole suite, says how many children the column has and in what order.
+That is the test that had to change, and it is the only one.
+Everything else about the buttons goes through `resetRow`, `newGameRow` and `buttonRow`, which now answer the same rows they answered before.
 
-> **Let one test own the shape of a structure, and let every other test ask that structure by
-> name.** Then a change to the shape breaks one test, which is a change, instead of twenty, which is
-> a day.
+> **Let one test own the shape of a structure, and let every other test ask that structure by name.** Then a change to the shape breaks one test, which is a change, instead of twenty, which is a day.
 
 ## A board worth playing on
 
 Last of the three, and the only one that is not about looks.
 
-A game is built on a grid: `LaserGameElement on: aGrid`. But `LaserGameElement new` is also legal —
-it is legal for every object in the image — and until now it answered a game whose grid was nil and
-whose board was empty. Anybody who met the class for the first time and sent it `new` would see
-nothing.
+A game is built on a grid: `LaserGameElement on: aGrid`.
+But `LaserGameElement new` is also legal — it is legal for every object in the image — and until now it answered a game whose grid was nil and whose board was empty.
+Anybody who met the class for the first time and sent it `new` would see nothing.
 
-The board a new game should be dealt on already has a name, from the very first section:
-`GridFactory defaultGrid`, eight columns by ten rows, randomized.
+The board a new game should be dealt on already has a name, from the very first section: `GridFactory defaultGrid`, eight columns by ten rows, randomized.
 
-The only question we have left is where the fallback goes. Not in `initialize`, which would deal a
-board for every game, including the ones that are handed a grid a moment later and would throw the
-dealt one away. It goes in the accessor:
+The only question we have left is where the fallback goes.
+Not in `initialize`, which would deal a board for every game, including the ones that are handed a grid a moment later and would throw the dealt one away.
+It goes in the accessor:
 
 ```smalltalk
 LaserGameElement >> grid
@@ -3534,13 +3258,10 @@ LaserGameElement >> grid
 		  grid ]
 ```
 
-This is *lazy initialization*, and the game has used it before — the counters in *Adding more game
-stats* were built the same way. `ifNil:` takes a block that is evaluated only when the receiver is
-nil, and the block's value is the value of the whole expression.
+This is *lazy initialization*, and the game has used it before — the counters in *Adding more game stats* were built the same way.
+`ifNil:` takes a block that is evaluated only when the receiver is nil, and the block's value is the value of the whole expression.
 
-Note that it stores the grid through `grid:` rather than assigning the variable directly: `grid:` is
-the setter that rebuilds the board for the new grid, so the lazy default goes through exactly the
-path a grid given from outside goes through.
+Note that it stores the grid through `grid:` rather than assigning the variable directly: `grid:` is the setter that rebuilds the board for the new grid, so the lazy default goes through exactly the path a grid given from outside goes through.
 
 ```smalltalk
 LaserGameElementTestCase >> testAGameMadeWithNoGridPlaysTheStandardBoard
@@ -3563,18 +3284,15 @@ LaserGameElementTestCase >> testAGameMadeWithNoGridPlaysTheStandardBoard
 		equals: 5
 ```
 
-Five assertions, and you should read them one at a time. The first two say the default board is the
-eight by ten one.
+Five assertions, and you should read them one at a time.
+The first two say the default board is the eight by ten one.
 
-The third says the board element is showing that same grid and not some other one, which is the part
-that would break if the lazy default assigned the variable instead of going through the setter.
+The third says the board element is showing that same grid and not some other one, which is the part that would break if the lazy default assigned the variable instead of going through the setter.
 
-The fourth says the window took the extent that grid calls for, so the game is not merely holding a
-board but is sized for it. And the fifth says the default stayed a default: a game given the demo
-grid still plays the demo grid.
+The fourth says the window took the extent that grid calls for, so the game is not merely holding a board but is sized for it.
+And the fifth says the default stayed a default: a game given the demo grid still plays the demo grid.
 
-> **A test for a fallback has to check the case where the fallback must not fire.** Without the last
-> assertion, a `grid` method that ignored its argument entirely would pass.
+> **A test for a fallback has to check the case where the fallback must not fire.** Without the last assertion, a `grid` method that ignored its argument entirely would pass.
 
 ## Checking it
 
@@ -3584,8 +3302,8 @@ Open the standard board, which is what a player would see:
 LaserGameElement openStandardExample
 ```
 
-You get eight columns by ten rows, a shadow under the board, and a groove across the panel above
-Reset. Then the same thing from the other end, with no grid named at all:
+You get eight columns by ten rows, a shadow under the board, and a groove across the panel above Reset.
+Then the same thing from the other end, with no grid named at all:
 
 ```smalltalk
 | game |
@@ -3594,8 +3312,8 @@ game := LaserGameElement new.
   LaserGameControlPanelElement contentHeight }
 ```
 
-You get `{8@10. 335}`: the standard board, and a panel fifteen pixels taller than it was before
-the bar.
+You get `{8@10.
+335}`: the standard board, and a panel fifteen pixels taller than it was before the bar.
 
 The suite we have is still green, at 280 runs:
 
@@ -3608,22 +3326,20 @@ In the next chapter we go back to the counters and make them agree about how wid
 
 # Counters of one width
 
-The game is finished and it works. Then somebody looks at it properly, and says: the four counter
-boxes are not the same width, their right edges are ragged, and the words inside them sit against
-the left border.
+The game is finished and it works.
+Then somebody looks at it properly, and says: the four counter boxes are not the same width, their right edges are ragged, and the words inside them sit against the left border.
 
-In this chapter we find out what the panel had actually been measuring, states one counter width in
-one place, and centres the caption instead of leaving it against the left edge.
+In this chapter we find out what the panel had actually been measuring, states one counter width in one place, and centres the caption instead of leaving it against the left edge.
 
-That is a bug report, and it is the kind this chapter is about. Nothing is broken, no test is red,
-and nothing in the code is obviously wrong. We have to find out which decision produced the picture,
-and then change the decision rather than the picture.
+That is a bug report, and it is the kind this chapter is about.
+Nothing is broken, no test is red, and nothing in the code is obviously wrong.
+We have to find out which decision produced the picture, and then change the decision rather than the picture.
 
 ## What the panel actually measured
 
-Start by measuring, not by guessing. A counter is a frame around a column of two children, a display
-of digits and a caption, and it was never told how wide to be, so it takes the width of what it
-holds. Ask each of the four to measure itself and you can see the cause in the numbers:
+Start by measuring, not by guessing.
+A counter is a frame around a column of two children, a display of digits and a caption, and it was never told how wide to be, so it takes the width of what it holds.
+Ask each of the four to measure itself and you can see the cause in the numbers:
 
 ```text
 Laser Path      counter 53   display 34   caption 43
@@ -3632,28 +3348,23 @@ Mirrors         counter 44   display 34   caption 27
 Active Mirrors  counter 64   display 34   caption 54
 ```
 
-The display is three digits in every counter, thirty four pixels, always the same. The captions are
-four strings of four different lengths, and the widest of them decides the box. Four boxes, three
-widths, all starting at the same left edge because they are children of one column, and none of them
-ending at the same right edge.
+The display is three digits in every counter, thirty four pixels, always the same.
+The captions are four strings of four different lengths, and the widest of them decides the box.
+Four boxes, three widths, all starting at the same left edge because they are children of one column, and none of them ending at the same right edge.
 
-The second half of the report follows from the same cause. A vertical linear layout places its
-children across its cross axis — here the horizontal one — wherever their own constraints say, and
-the default is the start of that axis, which is the left.
+The second half of the report follows from the same cause.
+A vertical linear layout places its children across its cross axis — here the horizontal one — wherever their own constraints say, and the default is the start of that axis, which is the left.
 
-So the display and the caption both stand against the left border, and the slack is all on the
-right, and the slack is a different size in every box.
+So the display and the caption both stand against the left border, and the slack is all on the right, and the slack is a different size in every box.
 
-> **Measure before you change anything.** "The boxes are ragged" is a symptom; "a box takes the
-> width of its own caption" is a cause, and only the second one tells you which method to open.
+> **Measure before you change anything.** "The boxes are ragged" is a symptom; "a box takes the width of its own caption" is a cause, and only the second one tells you which method to open.
 
 ## One width, stated once
 
-Who should decide how wide a counter is? Not the counter: it has no idea how many others there are
-or what they are standing in.
+Who should decide how wide a counter is?
+Not the counter: it has no idea how many others there are or what they are standing in.
 
-The panel holds all four, so the panel states the width, and it states it from what it knows — its
-own width, less the gap the column of counters stands in on each side:
+The panel holds all four, so the panel states the width, and it states it from what it knows — its own width, less the gap the column of counters stands in on each side:
 
 ```smalltalk
 LaserGameControlPanelElement class >> counterWidth
@@ -3665,11 +3376,11 @@ LaserGameControlPanelElement class >> counterWidth
 	^ LaserGameElement panelWidth - (2 * self counterGap)
 ```
 
-An expression, not a number. The four boxes fill the panel between its gaps, and they go on doing
-that if either the panel width or the gap is ever changed.
+An expression, not a number.
+The four boxes fill the panel between its gaps, and they go on doing that if either the panel width or the gap is ever changed.
 
-The width has to reach all four counters, and until now each one was built by its own call to
-`LaserGameCounterElement labelled:digits:`. So we put one builder in front of those four calls:
+The width has to reach all four counters, and until now each one was built by its own call to `LaserGameCounterElement labelled:digits:`.
+So we put one builder in front of those four calls:
 
 ```smalltalk
 LaserGameControlPanelElement >> newCounterLabelled: aString digits: anInteger
@@ -3685,9 +3396,8 @@ LaserGameControlPanelElement >> newCounterLabelled: aString digits: anInteger
 	^ counter
 ```
 
-`horizontal exact:` is the constraint that says *be this wide*, as against `fitContent`, which says
-*be as wide as your children*. A counter with an exact width stops asking its caption how wide it
-is.
+`horizontal exact:` is the constraint that says *be this wide*, as against `fitContent`, which says *be as wide as your children*.
+A counter with an exact width stops asking its caption how wide it is.
 
 We cut the four builders to one line each:
 
@@ -3710,17 +3420,15 @@ LaserGameControlPanelElement >> newLaserPathCounter
 
 `newMovesCounter` and `newMirrorsCounter` are the same line with their own captions.
 
-> **When several objects have to agree about a number, the thing that holds them states it.** A rule
-> that lives in one method cannot be half-applied.
+> **When several objects have to agree about a number, the thing that holds them states it.** A rule that lives in one method cannot be half-applied.
 
 ## Centred, not left
 
 A box wider than its caption is only an improvement if the caption moves to the middle of it.
 Otherwise the raggedness simply moves inside the boxes.
 
-A linear layout reads each child's own constraints to place it across the layout's cross axis, so
-the display and the caption each have to ask for the centre. The counter does the asking where it
-builds them, which is also where either of them can be replaced later:
+A linear layout reads each child's own constraints to place it across the layout's cross axis, so the display and the caption each have to ask for the centre.
+The counter does the asking where it builds them, which is also where either of them can be replaced later:
 
 ```smalltalk
 LaserGameCounterElement >> digits: anInteger
@@ -3751,23 +3459,17 @@ LaserGameCounterElement >> labelText: aString
 	self addChild: label
 ```
 
-Note `aConstraints linear horizontal alignCenter`, with `linear` in it. A Bloc element's constraints
-have one part for its own size, which is the `horizontal exact:` of the last section, and one part
-per kind of layout it might find itself in.
+Note `aConstraints linear horizontal alignCenter`, with `linear` in it.
+A Bloc element's constraints have one part for its own size, which is the `horizontal exact:` of the last section, and one part per kind of layout it might find itself in.
 
-`linear` is the part a `BlLinearLayout` reads; `frame`, which the panel uses elsewhere, is the part
-a frame layout reads. An alignment is advice to whatever is laying the element out, so it has to be
-filed under the layout that will read it.
+`linear` is the part a `BlLinearLayout` reads; `frame`, which the panel uses elsewhere, is the part a frame layout reads.
+An alignment is advice to whatever is laying the element out, so it has to be filed under the layout that will read it.
 
-Both methods also begin by removing the child they are about to replace. That line is not
-decoration: `digits:` and `labelText:` are setters that can be sent again at any time, and an
-element whose old display is still a child would draw two.
+Both methods also begin by removing the child they are about to replace.
+That line is not decoration: `digits:` and `labelText:` are setters that can be sent again at any time, and an element whose old display is still a child would draw two.
 
-Nothing else about a counter changes. It is still a transparent rounded frame with a two pixel
-border and a five pixel inset, it still fits its content vertically, and it still takes the width of
-its caption when nobody states one — which is what `LaserGameCounterElement labelled:digits:`
-answers on its own, and what `contentHeight` relies on when it builds one counter to ask how tall a
-counter is.
+Nothing else about a counter changes.
+It is still a transparent rounded frame with a two pixel border and a five pixel inset, it still fits its content vertically, and it still takes the width of its caption when nobody states one — which is what `LaserGameCounterElement labelled:digits:` answers on its own, and what `contentHeight` relies on when it builds one counter to ask how tall a counter is.
 
 Laid out in the finished panel, the four boxes now read:
 
@@ -3778,17 +3480,16 @@ Mirrors         (0.0@108.0) corner: (102.0@156.0)   display and caption centred 
 Active Mirrors  (0.0@160.0) corner: (102.0@208.0)   display and caption centred on 51.0
 ```
 
-You get one width, one left edge, one right edge, everything centred on the middle. No size of the
-game changed: a counter's height is what it always was, and the panel's height counts heights.
+You get one width, one left edge, one right edge, everything centred on the middle.
+No size of the game changed: a counter's height is what it always was, and the panel's height counts heights.
 
-> **Note.** *Buttons of one width*, the next chapter, widens the panel from a hundred and ten pixels
-> to a hundred and thirty, so a counter ends the book a hundred and twenty two wide. It is the same
-> expression answering a bigger number, which is the whole point of writing it as one.
+> **Note.** *Buttons of one width*, the next chapter, widens the panel from a hundred and ten pixels to a hundred and thirty, so a counter ends the book a hundred and twenty two wide.
+> It is the same expression answering a bigger number, which is the whole point of writing it as one.
 
 ## The tests
 
-We write two tests, one on each side of the decision. The panel's says that the four boxes are one
-width, and says where that width comes from:
+We write two tests, one on each side of the decision.
+The panel's says that the four boxes are one width, and says where that width comes from:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testEveryCounterIsAsWideAsThePanelLessAGapOnEachSide
@@ -3813,15 +3514,14 @@ LaserGameControlPanelElementTestCase >> testEveryCounterIsAsWideAsThePanelLessAG
 		- (2 * LaserGameControlPanelElement counterGap)
 ```
 
-The first assertion is the report, turned round. We collect the width of every counter into a `Set`,
-which keeps one copy of each distinct value, and assert that the set has one element.
+The first assertion is the report, turned round.
+We collect the width of every counter into a `Set`, which keeps one copy of each distinct value, and assert that the set has one element.
 
-It does not matter which width they share; what the eye saw was that they did not share one. A set
-of measured values with `size equals: 1` is the short way to write *all of these agree*.
+It does not matter which width they share; what the eye saw was that they did not share one.
+A set of measured values with `size equals: 1` is the short way to write *all of these agree*.
 
-The second assertion we write says they agree on the stated width, and the third says the stated
-width is the panel less its two gaps. Three assertions, three separate claims, and a failure in any
-one of them points at a different method.
+The second assertion we write says they agree on the stated width, and the third says the stated width is the panel less its two gaps.
+Three assertions, three separate claims, and a failure in any one of them points at a different method.
 
 The test we write for the counter says that what a box holds is centred in it:
 
@@ -3845,25 +3545,18 @@ LaserGameCounterElementTestCase >> testACounterCentresWhatItHolds
 		equals: BlElementAlignment horizontal center
 ```
 
-This one asserts the constraint rather than the position, and that is a compromise you should
-understand, because the honest assertion would be the position: *the display's centre falls on the
-middle of the box*.
+This one asserts the constraint rather than the position, and that is a compromise you should understand, because the honest assertion would be the position: *the display's centre falls on the middle of the box*.
 
-Getting a position out of an element means running a layout, and a layout runs when an element is in
-a space that draws it. There is a method that forces one without a space, and the critics rule
-`ReBlocDoNotSendForceLayoutRule` reports every send of it, for the good reason that a forced layout
-is a layout run at a moment Bloc did not choose.
+Getting a position out of an element means running a layout, and a layout runs when an element is in a space that draws it.
+There is a method that forces one without a space, and the critics rule `ReBlocDoNotSendForceLayoutRule` reports every send of it, for the good reason that a forced layout is a layout run at a moment Bloc did not choose.
 
-This package keeps the critics clean on what it writes, so the layout was run by hand in a
-playground instead, and the positions printed above are from that run.
+This package keeps the critics clean on what it writes, so the layout was run by hand in a playground instead, and the positions printed above are from that run.
 
-What is left in the test is the part this package actually decided: both children ask for the
-centre, and the layout that will read that request is a linear one. Bloc's arithmetic is Bloc's to
-test.
+What is left in the test is the part this package actually decided: both children ask for the centre, and the layout that will read that request is a linear one.
+Bloc's arithmetic is Bloc's to test.
 
-> **When the assertion you want costs more than it is worth, assert the decision you made.** Say in
-> the comment what you checked by hand. A test that states a smaller claim honestly is better than
-> one that states a big claim by cheating.
+> **When the assertion you want costs more than it is worth, assert the decision you made.** Say in the comment what you checked by hand.
+> A test that states a smaller claim honestly is better than one that states a big claim by cheating.
 
 ## Checking it
 
@@ -3876,35 +3569,31 @@ panel counterColumn measure: BlExtentMeasurementSpec unspecified.
 (panel counterColumn children collect: [ :each | each measuredExtent ]) asArray
 ```
 
-You get four extents, all the same width, that width being `LaserGameControlPanelElement
-counterWidth`. Then open the game and look: you get four boxes in a column, left edges and right
-edges lined up, every word in the middle of its box.
+You get four extents, all the same width, that width being `LaserGameControlPanelElement counterWidth`.
+Then open the game and look: you get four boxes in a column, left edges and right edges lined up, every word in the middle of its box.
 
 In the next chapter we take the same report's second half, which is about the buttons.
 
 # Buttons of one width
 
-The same look at the finished game that found the ragged counters found something about the buttons:
-the words *Reset* and *Undo* run into the right edge of the buttons they are painted in. A label
-should stand in the middle of its button, and it should fit inside it with room to spare.
+The same look at the finished game that found the ragged counters found something about the buttons: the words *Reset* and *Undo* run into the right edge of the buttons they are painted in.
+A label should stand in the middle of its button, and it should fit inside it with room to spare.
 
-This chapter measures the widest label the game has, derives one button width from it, and lets the
-panel take its own width from the buttons rather than the other way round.
+This chapter measures the widest label the game has, derives one button width from it, and lets the panel take its own width from the buttons rather than the other way round.
 
 Three complaints were made, and we start by finding out how many faults there are.
 
 ## What a button actually measured
 
-The third complaint — that the buttons are not all the same width — turned out to be wrong. Every
-button is built by one method, and that method gives every one of them the same extent, so they
-were already identical. A report is evidence, not a diagnosis.
+The third complaint — that the buttons are not all the same width — turned out to be wrong.
+Every button is built by one method, and that method gives every one of them the same extent, so they were already identical.
+A report is evidence, not a diagnosis.
 
-The other two are one fault, and it is in the label rather than the button. A `ToButton` keeps its
-label in a container, and lays that container out with a linear layout.
+The other two are one fault, and it is in the label rather than the button.
+A `ToButton` keeps its label in a container, and lays that container out with a linear layout.
 
-A linear layout puts its children at the start of its axis unless it is told otherwise, and the
-start of the horizontal axis is the left. So every label stood against the left border of its button
-with all of the slack on the right.
+A linear layout puts its children at the start of its axis unless it is told otherwise, and the start of the horizontal axis is the left.
+So every label stood against the left border of its button with all of the slack on the right.
 
 We measure the six labels the panel can show, against the forty pixels a button was then:
 
@@ -3913,22 +3602,19 @@ Quit    25      Fire    22      Stop    28
 New     26      Undo    33      Reset   33
 ```
 
-Six labels for five buttons: the fire button shows *Fire* or *Stop* depending on what a click will
-do, so both of its labels have to fit.
+Six labels for five buttons: the fire button shows *Fire* or *Stop* depending on what a click will do, so both of its labels have to fit.
 
-Thirty three pixels of word in a forty pixel button, hard against the left border, leaves you seven
-pixels of nothing on the right and a word ending a hair before the edge it is painted against.
+Thirty three pixels of word in a forty pixel button, hard against the left border, leaves you seven pixels of nothing on the right and a word ending a hair before the edge it is painted against.
 
-That is what the eye saw. And it is fragile in a way that has nothing to do with alignment: a theme
-whose button font is a little wider would paint those two labels straight over the border.
+That is what the eye saw.
+And it is fragile in a way that has nothing to do with alignment: a theme whose button font is a little wider would paint those two labels straight over the border.
 
-> **A bug report describes a picture.** Count the faults behind it before fixing any of them: here
-> three complaints were one fault, one non-fault, and one thing nobody had noticed.
+> **A bug report describes a picture.** Count the faults behind it before fixing any of them: here three complaints were one fault, one non-fault, and one thing nobody had noticed.
 
 ## Centred, not left
 
-The fix is one line, and we had to look for a while to find which line. A `ToButton` has three
-things that sound as though they would centre a label, and two of them do nothing:
+The fix is one line, and we had to look for a while to find which line.
+A `ToButton` has three things that sound as though they would centre a label, and two of them do nothing:
 
 ```text
 button alignCenter                                   label container still at x 0
@@ -3937,12 +3623,11 @@ button labelContainer constraintsDo: [ :c | ... ]    label container still at x 
 button layout alignCenter                            label container at 3.5 .. 36.5
 ```
 
-The reason the first three do nothing is the rule from the counters chapter, seen from the other
-side: a child's alignment constraints are *read by the layout of whatever holds it*.
+The reason the first three do nothing is the rule from the counters chapter, seen from the other side: a child's alignment constraints are *read by the layout of whatever holds it*.
 
-The label and its container already ask to be centred. What holds the container is the button's own
-layout, and that layout had no alignment of its own, so nothing read the request. Telling that
-layout to centre is what moves the label:
+The label and its container already ask to be centred.
+What holds the container is the button's own layout, and that layout had no alignment of its own, so nothing read the request.
+Telling that layout to centre is what moves the label:
 
 ```smalltalk
 LaserGameControlPanelElement >> newButton: aLabel action: aBlock
@@ -3959,16 +3644,16 @@ LaserGameControlPanelElement >> newButton: aLabel action: aBlock
 	^ button
 ```
 
-> **When a setting has no effect, the question is not whether it is spelled right but who was
-> supposed to read it.** In a layout, a child states a wish and its parent's layout grants it.
+> **When a setting has no effect, the question is not whether it is spelled right but who was supposed to read it.** In a layout, a child states a wish and its parent's layout grants it.
 
 ## A width stated from its labels
 
-Centring a label does not make it fit. Forty pixels holds thirty three with three and a half on each
-side, and half the report was that a word is too close to its border, so the button has to grow. The
-question is to what, and the answer should not be a number that happens to look right.
+Centring a label does not make it fit.
+Forty pixels holds thirty three with three and a half on each side, and half the report was that a word is too close to its border, so the button has to grow.
+The question is to what, and the answer should not be a number that happens to look right.
 
-We say it in three methods instead. First, what the labels are:
+We say it in three methods instead.
+First, what the labels are:
 
 ```smalltalk
 LaserGameControlPanelElement class >> buttonLabels
@@ -4000,14 +3685,14 @@ LaserGameControlPanelElement class >> buttonWidth
 	^ 50
 ```
 
-Fifty is still a literal. What has changed is that it is now a literal with a stated meaning — the
-longest label plus two margins — and with a test that checks the meaning. Thirty three and twelve
-make forty five, so fifty passes with five pixels to spare.
+Fifty is still a literal.
+What has changed is that it is now a literal with a stated meaning — the longest label plus two margins — and with a test that checks the meaning.
+Thirty three and twelve make forty five, so fifty passes with five pixels to spare.
 
 ### Why not measure it
 
-We could have computed the width: ask every label of `buttonLabels` how wide it is, take the widest,
-add two margins. The measuring method exists anyway, because the test needs it:
+We could have computed the width: ask every label of `buttonLabels` how wide it is, take the widest, add two margins.
+The measuring method exists anyway, because the test needs it:
 
 ```smalltalk
 LaserGameControlPanelElement class >> widthOfButtonLabel: aString
@@ -4022,29 +3707,23 @@ LaserGameControlPanelElement class >> widthOfButtonLabel: aString
 	^ button measuredExtent x
 ```
 
-Only a button can answer this. The width of a piece of text depends on the font, the font depends on
-the theme, and the theme is the button's business, so the honest way for you to measure a label is
-to build a button, measure it and throw it away.
+Only a button can answer this.
+The width of a piece of text depends on the font, the font depends on the theme, and the theme is the button's business, so the honest way for you to measure a label is to build a button, measure it and throw it away.
 
-That is also the reason not to do it inside `buttonWidth`. Building and measuring six buttons costs
-about a millisecond and a half, and `panelWidth` — which is about to be stated from `buttonWidth` —
-has a dozen senders, several of them in the arithmetic that sizes a window. A number read that often
-should not build anything.
+That is also the reason not to do it inside `buttonWidth`.
+Building and measuring six buttons costs about a millisecond and a half, and `panelWidth` — which is about to be stated from `buttonWidth` — has a dozen senders, several of them in the arithmetic that sizes a window.
+A number read that often should not build anything.
 
-> **A constant with a test that checks what it claims is as good as a computed value and cheaper.**
-> The measurement belongs in the test, which runs when you change the code, rather than in the
-> method, which runs whenever anything asks.
+> **A constant with a test that checks what it claims is as good as a computed value and cheaper.** The measurement belongs in the test, which runs when you change the code, rather than in the method, which runs whenever anything asks.
 
 ## The panel follows the buttons
 
 One more thing has to move, and it is the interesting half of the chapter.
 
-The panel was a hundred and ten pixels wide and a button was forty. Those two numbers were never
-independent: two buttons and the three gaps a row of two stands in come to exactly a hundred and
-ten.
+The panel was a hundred and ten pixels wide and a button was forty.
+Those two numbers were never independent: two buttons and the three gaps a row of two stands in come to exactly a hundred and ten.
 
-That identity is why a row of two buttons fills the panel and a row of three does not fit, and there
-is a test that says so:
+That identity is why a row of two buttons fills the panel and a row of three does not fit, and there is a test that says so:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testARowOfTwoButtonsFitsInsideThePanel
@@ -4062,9 +3741,9 @@ LaserGameControlPanelElementTestCase >> testARowOfTwoButtonsFitsInsideThePanel
 			> LaserGameElement panelWidth
 ```
 
-Widening a button and leaving the panel alone would have broken that test, and rightly: the buttons
-would no longer fill the panel. The repair is not to adjust the panel's number to match. We stop the
-panel having a number of its own:
+Widening a button and leaving the panel alone would have broken that test, and rightly: the buttons would no longer fill the panel.
+The repair is not to adjust the panel's number to match.
+We stop the panel having a number of its own:
 
 ```smalltalk
 LaserGameElement class >> panelWidth
@@ -4076,12 +3755,11 @@ LaserGameElement class >> panelWidth
 	  + (3 * LaserGameControlPanelElement buttonGap)
 ```
 
-The test and the method now say the same thing, which is a fair question to raise: does the test
-still test anything? It does, but less than it did.
+The test and the method now say the same thing, which is a fair question to raise: does the test still test anything?
+It does, but less than it did.
 
-It was the only statement of the identity, and now it is a second copy of it. What it still catches
-is a change to the panel width made anywhere else — and what it mainly does now is document, in the
-suite, a relation that two methods depend on.
+It was the only statement of the identity, and now it is a second copy of it.
+What it still catches is a change to the panel width made anywhere else — and what it mainly does now is document, in the suite, a relation that two methods depend on.
 
 Four numbers move, and all four are the window twenty pixels wider:
 
@@ -4092,19 +3770,16 @@ demo game        380@355  ->  400@355
 eight by ten     530@520  ->  550@520
 ```
 
-The counters need no change at all. Their width is the panel less a gap on each side, stated as that
-expression in the previous chapter, so they widened with the panel and stayed flush with each other.
-That is what writing a number as the expression that produced it buys, and this is the chapter where
-it gets paid.
+The counters need no change at all.
+Their width is the panel less a gap on each side, stated as that expression in the previous chapter, so they widened with the panel and stayed flush with each other.
+That is what writing a number as the expression that produced it buys, and this is the chapter where it gets paid.
 
-Measure afterwards and you get every button fifty wide with its label in the middle: the longest of
-them, *Reset*, lands at `(8.5@1.0) corner: (41.5@19.0)`, which is eight and a half pixels of margin
-on each side instead of three and a half.
+Measure afterwards and you get every button fifty wide with its label in the middle: the longest of them, *Reset*, lands at `(8.5@1.0) corner: (41.5@19.0)`, which is eight and a half pixels of margin on each side instead of three and a half.
 
 ## The tests
 
-We wrote both tests before the fix, and both were red when written. The first measures the
-labels against the width:
+We wrote both tests before the fix, and both were red when written.
+The first measures the labels against the width:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testEveryButtonLabelFitsInsideTheButton
@@ -4122,16 +3797,12 @@ LaserGameControlPanelElementTestCase >> testEveryButtonLabelFitsInsideTheButton
 			description: each , ' does not fit inside a button' ]
 ```
 
-Two things for you to notice. `assert:<=` is `assert:description:` with a comparison in it: the
-first argument is a boolean expression, not a value to compare, so any expression that answers true
-or false can be asserted.
+Two things for you to notice.
+`assert:<=` is `assert:description:` with a comparison in it: the first argument is a boolean expression, not a value to compare, so any expression that answers true or false can be asserted.
 
-And `description:` is what the suite prints when the assertion fails, which is why it names the
-label: a failure says *Reset does not fit inside a button*, and you do not have to work out which
-pass of the loop went wrong.
+And `description:` is what the suite prints when the assertion fails, which is why it names the label: a failure says *Reset does not fit inside a button*, and you do not have to work out which pass of the loop went wrong.
 
-> **In a test that loops, put the loop variable in the failure description.** Six assertions that
-> all read the same are six assertions you cannot tell apart from the report.
+> **In a test that loops, put the loop variable in the failure description.** Six assertions that all read the same are six assertions you cannot tell apart from the report.
 
 The second test we write says every button centres its label:
 
@@ -4152,18 +3823,12 @@ LaserGameControlPanelElementTestCase >> testEveryButtonCentresItsLabel
 				equals: BlElementAlignment horizontal center ] ]
 ```
 
-It asserts the alignment and not the position, for the reason the counters chapter gave: getting a
-position without opening a space means forcing a layout, which the critics rule
-`ReBlocDoNotSendForceLayoutRule` reports, so the positions quoted above were read by hand in a
-playground.
+It asserts the alignment and not the position, for the reason the counters chapter gave: getting a position without opening a space means forcing a layout, which the critics rule `ReBlocDoNotSendForceLayoutRule` reports, so the positions quoted above were read by hand in a playground.
 
-The loop is worth your attention, because of what it does not say. It walks every row of the button
-column and every button of every row, so it covers the five buttons without naming any of them, and
-it covers the sixth if a sixth is ever added.
+The loop is worth your attention, because of what it does not say.
+It walks every row of the button column and every button of every row, so it covers the five buttons without naming any of them, and it covers the sixth if a sixth is ever added.
 
-Note that it also walks the divider bar, which has no children, so the inner loop simply does
-nothing for it — a row with nothing in it asserts nothing, and that is the right answer rather than
-a special case.
+Note that it also walks the divider bar, which has no children, so the inner loop simply does nothing for it — a row with nothing in it asserts nothing, and that is the right answer rather than a special case.
 
 Finally, one older test knew the panel's width as a literal, and the literal changed:
 
@@ -4175,15 +3840,12 @@ Finally, one older test knew the panel's width as a literal, and the literal cha
 			~T> max: LaserGameControlPanelElement contentHeight) + 20
 ```
 
-That is `testExtentIsTheBoardPlusThePanelPlusTheMargins`, from *A missed bug*, and the `110` in it
-became `130`.
+That is `testExtentIsTheBoardPlusThePanelPlusTheMargins`, from *A missed bug*, and the `110` in it became `130`.
 
-A literal in a test is a decision to be told when something changes, and this is the telling: the
-test went red, the number was read, the new number was understood and written down. A test that had
-used `panelWidth` there would have stayed green and said nothing.
+A literal in a test is a decision to be told when something changes, and this is the telling: the test went red, the number was read, the new number was understood and written down.
+A test that had used `panelWidth` there would have stayed green and said nothing.
 
-> **Expressions in the code, literals in the tests.** The code says how the number is arrived at;
-> the test says what the number was when somebody last looked.
+> **Expressions in the code, literals in the tests.** The code says how the number is arrived at; the test says what the number was when somebody last looked.
 
 ## Checking it
 
@@ -4194,9 +3856,8 @@ LaserGameControlPanelElement buttonLabels collect: [ :each |
 	each -> (LaserGameControlPanelElement widthOfButtonLabel: each) ]
 ```
 
-You get `Quit` 25, `Fire` 22, `Stop` 28, `New` 26, `Undo` 33, `Reset` 33 — the widest of them
-thirty three, in a button of fifty, with a stated margin of six on each side. Then the panel and the
-window:
+You get `Quit` 25, `Fire` 22, `Stop` 28, `New` 26, `Undo` 33, `Reset` 33 — the widest of them thirty three, in a button of fifty, with a stated margin of six on each side.
+Then the panel and the window:
 
 ```smalltalk
 { LaserGameElement panelWidth.
@@ -4205,7 +3866,10 @@ window:
   LaserGameElement extentForGrid: GridFactory defaultGrid }
 ```
 
-You get `{130. 122. 400@355. 550@520}`.
+You get `{130.
+122.
+400@355.
+550@520}`.
 
 And then the whole suite, which is where we end the book:
 
@@ -4214,5 +3878,4 @@ And then the whole suite, which is where we end the book:
 0 failures, 0 errors, 0 unexpected passes
 ```
 
-That is the game: a board of cells that knows nothing about how it is drawn, a beam that walks it, a
-window built out of named numbers, and two hundred and eighty tests that will say so again tomorrow.
+That is the game: a board of cells that knows nothing about how it is drawn, a beam that walks it, a window built out of named numbers, and two hundred and eighty tests that will say so again tomorrow.
