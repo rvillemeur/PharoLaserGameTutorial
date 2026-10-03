@@ -1,34 +1,43 @@
-<!-- Tutorial Section 2 covers pages 035B to 073 of tut2007/html.
-     Pages 035B-048A (the beam path work) are not ported into this file yet;
-     their text lives in SectionOne/11-BeamPath.pier.
-     This file starts at page 049. -->
-
 # Game Graphics
 
-<!-- http://squeak.preeminent.org/tut2007/html/049.html
-     http://squeak.preeminent.org/tut2007/html/050.html -->
+The model of the game is written, and every part of it has a test. Nothing of it is visible yet.
+This section draws the board on the screen. Clicking on it comes in the next one.
 
-A lot of our basic model is coded, so we can take a crack at the graphics now. To keep things simple we focus on the two dimensional graphics for the game grid and its cells. User interaction comes later.
+> **A word on frameworks.** Pharo has drawn its windows and widgets with Morphic for many years,
+> so you will meet Morphic in older books and in older parts of the image. This book uses Bloc,
+> the current graphics framework, and nothing in the game needs Morphic.
 
-A good place to start is working out how we draw a cell. What do we know about it? It is square. We have not decided on its size yet. It has a border, and a background color we can pick freely.
+A good place to start is a single cell. What do we already know about one? It is square. It has a
+border. It has a background colour we may choose. We have not decided how big it is.
 
-## A decision the original tutorial made differently
+## One element per cell
 
-The original tutorial was written for Squeak 3.9 and used Morphic. It considered two designs. The first was one graphical object for the board and one for each cell. The second was a single `SketchMorph` for the whole board, holding one `Form` — a bitmap — with every cell drawing its borders and contents directly into that shared bitmap at a computed offset. The tutorial chose the second design.
+A Bloc interface is a tree of elements. An element is a rectangle that can draw itself, hold
+children, and answer clicks. So we have a choice to make: does the whole board draw itself as one
+big element, or does every cell get an element of its own?
 
-We take the first one, and we use Bloc instead of Morphic.
+We give every cell its own element. That costs one object per cell, and it buys three things:
 
-The reason is not fashion. A cell that owns its own element gets three things for free that the shared bitmap design has to compute by hand:
+- **Clicks land in the right place.** Bloc delivers a click to the element under the pointer. The
+  cell under the pointer is the element that hears about it, so no arithmetic turns a point on the
+  board into a row and a column.
+- **Redrawing is cheap and local.** When one cell changes, that one element is redrawn. The rest of
+  the board is untouched.
+- **Things can be laid on top.** The hint arrows of the next section are child elements. They are
+  added when the pointer arrives and removed when it leaves, and nothing has to repair the pixels
+  underneath them.
 
-- **Hit testing.** Bloc delivers a click to the element under the pointer. With one bitmap for the whole board, every click has to be turned into a board offset and then into a cell location by arithmetic. Section 3 of the original tutorial spends several pages on that arithmetic.
-- **Redrawing.** Changing one cell means marking one element as dirty. In the bitmap design the cell has to redraw itself into the board form, and the board has to be told it changed.
-- **Overlays.** The hint arrows of Section 3 become child elements that are added and removed. In the bitmap design they are pixels that have to be painted, remembered and painted over again.
-
-Bloc draws with Alexandrie, a vector engine. That has a second consequence we will use repeatedly: shapes are described by geometry, not by pixels. The mirror is a line, the target is a circle, the hint arrows are polygons. None of them needs a bitmap, and none of them needs the flood fill the original tutorial used to make its arrow masks — which is just as well, since `Form >> floodFill:at:` no longer exists in Pharo.
+Bloc draws through Alexandrie, a vector engine. That gives us a second thing we will use over and
+over: a shape is described by its geometry, not by its pixels. The mirror is a line, the target is
+a circle, the hint arrows are polygons. Nothing in this game is a bitmap, and nothing has to be
+painted pixel by pixel.
 
 ## The rendering class
 
-What we keep from the original is the idea of a renderer: an object that knows how to represent one cell. It holds the location of the cell inside the grid, and the grid itself, so it can always ask the model for the cell it represents.
+The model knows the rules of the game. It should not also know how thick a mirror is drawn. So the
+drawing goes in a class of its own: a *renderer*, which knows how to show one cell.
+
+A renderer holds the location of its cell inside the grid, and the grid itself:
 
 ```smalltalk
 Object << #CellRenderer
@@ -37,27 +46,38 @@ Object << #CellRenderer
 	package: 'Laser-Game'
 ```
 
-Note what is *not* there: the original had a third instance variable for the board form. We do not need it. A renderer answers its own element, and the board holds those elements as children.
-
-> **Porting note.** If you are reading the code of this project rather than typing it yourself, the class still carries a third instance variable `targetForm` and the `Form` based drawing methods of the 2007 version. They are dead ends on the new stack and they disappear step by step, as each one gets its Bloc replacement. Nothing new uses them.
-
-Create the accessors for the two instance variables before continuing. The cell itself is not stored, it is read from the model:
+Note that it does not hold the cell. It holds where the cell is, and asks the grid for the cell
+whenever it needs it:
 
 ```smalltalk
 CellRenderer >> cell
-	^self grid at: self cellLocation.
+	"Answer the cell I render, read from the grid every time. I hold a location and not a cell, so
+	a cell that is replaced in the grid does not leave me showing the old one."
+
+	^ self grid at: self cellLocation
 ```
+
+That is worth a moment. Pushing a mirror replaces cells in the grid; it does not change their
+contents. A renderer that had kept the cell it was given would go on showing a mirror that has
+moved away. Holding the location instead makes that bug impossible.
+
+Write the accessors for the two instance variables before going on.
 
 ## A rendering hierarchy
 
-Just as we did with the grid direction hierarchy, each subclass says how it is selected. Create three subclasses of `CellRenderer`: `BlankCellRenderer`, `MirrorCellRenderer` and `TargetCellRenderer`. Each one answers the model class it renders:
+There are three kinds of cell, so there are three kinds of renderer. Create three subclasses of
+`CellRenderer`: `BlankCellRenderer`, `MirrorCellRenderer` and `TargetCellRenderer`.
+
+Each one answers the model class it draws, the same way the directions of the previous section
+each answered their own vector:
 
 ```smalltalk
 BlankCellRenderer class >> modelClass
 	^ BlankCell
 ```
 
-The mirror and target renderers do the same thing with their own model class. On the superclass side, the method is left to the subclasses:
+The mirror and the target renderers do the same with their own model class. The superclass has
+nothing to answer, and says so:
 
 ```smalltalk
 CellRenderer class >> modelClass
@@ -66,9 +86,14 @@ CellRenderer class >> modelClass
 	^ self subclassResponsibility
 ```
 
+`subclassResponsibility` is how a Pharo class says *my subclasses must answer this, I cannot*. If a
+subclass forgets, the error names the method and the class, which is far easier to read than
+whatever the missing answer would have broken later.
+
 ## Finding the right renderer
 
-The technique for finding the renderer of a cell is the one we met before: no case statement, just ask the subclasses.
+Now, given a cell, which renderer draws it? The answer is the pattern we have already used for the
+directions: do not write a case statement, ask the subclasses.
 
 ```smalltalk
 CellRenderer class >> rendererFor: aCell
@@ -79,11 +104,18 @@ CellRenderer class >> rendererFor: aCell
 		  ifNone: [ self error: 'No renderer for ' , aCell class name ]
 ```
 
-And a renderer is created for a cell within its grid:
+A fourth kind of cell will need a fourth renderer, and this method will find it without being
+edited. That is the whole point of writing it this way.
+
+`detect:ifNone:` takes two blocks. The first says what we are looking for. The second says what to
+do when nothing matches — here, fail loudly. An error that names the cell class is a bug report;
+silently answering some other renderer would be a mystery.
+
+The method above answers a renderer *class*. One more method answers a renderer ready to use:
 
 ```smalltalk
 CellRenderer class >> rendererFor: aCell grid: aGrid
-	"Answer a renderer for aCell positioned within aGrid. Cell geometry needs no target form."
+	"Answer a renderer for aCell, which stands at its own location within aGrid."
 
 	| renderer |
 	renderer := (self rendererFor: aCell) new.
@@ -95,7 +127,8 @@ CellRenderer class >> rendererFor: aCell grid: aGrid
 
 ## Unit tests
 
-We can write tests to validate that renderer selection works as we expect. The first is the test from the original tutorial:
+Create a test case class `CellRendererTestCase` and let us check that the selection works. The
+first test states the three pairs by hand:
 
 ```smalltalk
 CellRendererTestCase >> testRendererSelection
@@ -115,7 +148,9 @@ CellRendererTestCase >> testRendererSelection
 	self assert: renderer equals: TargetCellRenderer
 ```
 
-That test names the three pairs by hand, so it stops telling the truth the day we add a fourth cell kind and forget its renderer. This one does not:
+That test does its job today, and it stops telling the truth the day we add a fourth kind of cell
+and forget its renderer: it only knows the three pairs we typed into it. This one does not have
+that weakness, because it asks the image what the kinds of cell are:
 
 ```smalltalk
 CellRendererTestCase >> testEveryCellClassHasExactlyOneRenderer
@@ -130,7 +165,12 @@ CellRendererTestCase >> testEveryCellClassHasExactlyOneRenderer
 				, renderers size printString ]
 ```
 
-And selection has to fail loudly for anything that is not a cell, rather than answering some arbitrary renderer:
+A test like that is worth looking at twice. `Cell allSubclasses` is the list of cell kinds *as the
+image has them now*, so adding a cell kind adds a case to the test by itself. The `description:`
+argument is the message you will read when it fails, and a failure that says which class has no
+renderer saves you the hunt.
+
+The last test checks the loud failure:
 
 ```smalltalk
 CellRendererTestCase >> testRendererForUnsupportedModelIsAnError
@@ -138,29 +178,37 @@ CellRendererTestCase >> testRendererForUnsupportedModelIsAnError
 	self should: [ CellRenderer rendererFor: 42 ] raise: Error
 ```
 
-Run the unit tests and check the results. Make sure the new test case is included in the tests you run. Everything should be green before going on.
+`should:raise:` passes when the block raises the error, and fails when it does not. It is how you
+test that something is refused.
 
-We have the hierarchy and the selection. What a renderer actually draws is the subject of the next pages.
+Run the tests. Make sure the new test case is among the ones you run. Everything should be green
+before going on.
+
+We can now say which renderer draws a cell. What a renderer actually draws is the next chapter.
 
 # Rendering The Cells
 
-<!-- http://squeak.preeminent.org/tut2007/html/051.html
-     http://squeak.preeminent.org/tut2007/html/052.html -->
+What should these renderer classes do? Draw a cell. We start with the blank cell, because it is the
+one with nothing inside it. Once a blank cell is drawn we have the background and the border, and
+every other cell is that plus its own contents.
 
-What do we want these new renderer classes to do? Draw a cell. We begin with the blank cell, because it is the one with nothing inside it: if we can draw a blank cell we have the background and the border, and every other cell is that plus its own contents.
-
-When it comes to graphics, my own style of work is to get something visual quickly and then find out what is right and what is wrong by changing the code and looking again. Pharo is an excellent environment for that, and it is normal to throw code away as we learn.
+Graphics work differently from model work. With the model, you write a test, you make it pass, and
+the test tells you the answer is right. With graphics, some of the answer is *does that look
+right*, and the only way to find out is to put it on the screen and look. So the habit in this
+section is: get something visible quickly, then change it and look again. Expect to throw a little
+code away while you learn what the drawing should be.
 
 ## Something on the screen first
 
-The original tutorial opened a workspace, made a grid and a `Form`, and displayed that form near the corner of the World. There is no World on the new stack, and no form. The equivalent is a `BlSpace`: a window with a root element we can add children to.
+Bloc draws into a `BlSpace`: a window with a root element you can add children to. A space of our
+own, holding one cell, is enough to look at.
 
-We put the experiment in a method rather than a workspace, so that it stays with the code and keeps working:
+Put the experiment in a method rather than in a Playground. A method stays with the code, it can be
+run again a month later, and if a change breaks it you find out:
 
 ```smalltalk
 CellRenderer class >> openExample
 	"Open one blank cell in a space of its own, to look at it and change it.
-	This is the Bloc equivalent of the workspace experiment of the original tutorial.
 
 	CellRenderer openExample"
 
@@ -175,13 +223,19 @@ CellRenderer class >> openExample
 	^ space
 ```
 
-The default grid is full of blank cells, so an arbitrary location gives us a blank cell to draw without any setup. The space is three cells wide and three cells tall, so that the single cell we draw sits inside it with room around it and we can see its edges.
+A new grid is full of blank cells, so any location at all gives us a blank cell to draw with no
+setup. The space is three cells wide and three cells tall, so the one cell we draw has room around
+it and we can see its edges.
 
-Evaluate `CellRenderer openExample`. It fails, because `newElement` does not exist yet. Let us write it.
+The comment holds the expression that runs the method. That is a Pharo habit worth picking up: a
+comment you can select and evaluate is a comment that does not go stale.
+
+Evaluate `CellRenderer openExample`. It fails, because `newElement` does not exist yet. Write it.
 
 ## One element per cell
 
-Every cell has a background and a border, and every cell kind has its own contents. That is exactly the split the original tutorial made, and we keep it: the abstract class draws what all cells share, and each subclass draws its own contents.
+Every cell has a background and a border, and every kind of cell has its own contents. That is the
+split: the abstract renderer draws what all cells share, and each subclass draws its own contents.
 
 ```
 CellRenderer >> newElement
@@ -198,9 +252,13 @@ CellRenderer >> newElement
 	^ element
 ```
 
-That is the method as this chapter writes it. Section 3 changes its second line: a cell element becomes an object of its own, `LaserGameCellElement`, so that a click can be answered by the cell it landed on. Everything else about the method stays as it is here, and the block above is shown untagged because it is no longer what the image holds.
+That is the first version. Later, in *The cell becomes the thing you click*, the second line
+changes: a cell element becomes a class of its own, so that a click can be answered by the cell it
+landed on. The shape of the method stays exactly as it is here.
 
-A cell is a square, so the geometry is a rectangle and the size is the cell extent. The three `render...On:` messages are the three things worth varying. The first two are the same for every cell:
+A cell is a square, so the geometry is a rectangle and the size is the cell extent. The three
+`render...On:` messages are the three things worth varying. The first two are the same for every
+cell:
 
 ```smalltalk
 CellRenderer >> renderBackgroundOn: anElement
@@ -219,7 +277,8 @@ CellRenderer >> renderBorderOn: anElement
 			 width: self class borderWidth)
 ```
 
-The third does nothing here. A blank cell has nothing inside it, so the method that draws the contents is an empty hook that the other renderers override:
+The third does nothing here. A blank cell has nothing inside it, so the method that draws the
+contents is an empty hook for the other renderers to override:
 
 ```smalltalk
 CellRenderer >> renderContentsOn: anElement
@@ -228,24 +287,34 @@ CellRenderer >> renderContentsOn: anElement
 	contents."
 ```
 
-An empty method is a deliberate statement here, not an oversight: it says a blank cell is complete. Do not give `BlankCellRenderer` its own empty override — a method identical to the one it inherits is a defect the code critic reports, and rightly.
+An empty method with a comment is a statement, not an oversight: it says *a blank cell is
+complete*. And do not give `BlankCellRenderer` an empty override of its own. A method identical to
+the one it inherits says nothing, and the code critic reports it, rightly.
 
-Evaluate `CellRenderer openExample` again. A grey square with a thin border appears in a small window. That is the first cell of the game.
+Evaluate `CellRenderer openExample` again. A grey square with a thin border appears in a small
+window. That is the first cell of the game.
 
-## Two decisions that came from the pixels
+## Two numbers to decide
 
-The original tutorial reached this point and had to answer two questions. We have to answer them too, and the answers are different because the drawing is different.
+**How big is a cell?** Fifty pixels square. It leaves room for the mirror, the target and the hint
+arrows to be legible, and it is small enough that a board of them fits on a screen.
 
-**How big is a cell?** The original chose 30x30 pixels here, and raised it to 50x50 much later, in Section 5, once its unit tests had stopped depending on the number. We start at 50x50, because the code we inherited already carries that value and because it leaves room for the mirror, the target and the hint arrows to be legible. Nothing in the tests below depends on the number either — each one asks `CellRenderer cellExtent` rather than writing a size down:
-
-```
+```smalltalk
 CellRenderer class >> cellExtent
+	"Answer the size, in pixels, of one cell. Every other size in the package is derived from
+	this one, so a cell of another size needs no other change anywhere."
+
 	^50@50
 ```
 
-This is the method as this chapter writes it; Section 4.3 gives it the comment that says every other size in the package is derived from it.
+The comment makes a promise, and it is a promise worth keeping from the start: nothing anywhere
+else writes a cell size down. Everything asks this method, or asks something that asks this method.
+The tests below do the same. Changing fifty to sixty should change the game and break nothing, and
+much later in the book we check exactly that.
 
-**Who pays for the border?** In the original, the border was a pixel drawn along the inside edge of each cell, so that the borders did not add to the size of the board. We get that property from Bloc for free: a Bloc border is painted inside the bounds of its element. A one pixel border changes nothing about the size of the cell or the spacing of the grid.
+**Who pays for the border?** Nobody. A Bloc border is painted *inside* the bounds of its element, so
+a one pixel border changes nothing about the size of a cell or the spacing of the grid. Borders that
+grow an element are a common source of layouts that are a few pixels off; Bloc spares us that.
 
 ```smalltalk
 CellRenderer class >> borderWidth
@@ -254,11 +323,10 @@ CellRenderer class >> borderWidth
 	^ 1
 ```
 
-That is also the end of a whole computation the original needed. Its next step was a class method to work out how large the target form must be, from the cell size, the border width and the grid dimensions. We never allocate a bitmap for the board, so there is no size to compute: the board will be a Bloc layout holding one element per cell, and the layout works out its own extent. The page of the original tutorial that adds `formExtentForGrid:` has no counterpart on this stack.
-
 ## A test for a blank cell
 
-The experiment is a method, but it is not a test — it proves nothing without a pair of eyes. This does:
+The experiment is a method, but it is not a test: it proves nothing without a pair of eyes. This
+does:
 
 ```smalltalk
 CellRendererTestCase >> testBlankCellElement
@@ -288,30 +356,41 @@ CellRendererTestCase >> testBlankCellElement
 	self assertEmpty: element children
 ```
 
-The comment at the top of that test is worth expanding on, because it is the first Bloc trap we walk into. Setting the extent of a fresh element does not give it bounds. It records a layout constraint, and the extent stays `0@0` until a layout pass runs. Asking a fresh element for its extent answers zero, which makes for a confusing failure.
+The comment at the top of that test deserves unpacking, because it is the first Bloc trap we walk
+into, and it will catch you again later.
+
+**Setting the extent of a fresh element does not give it bounds.** `element extent: 50@50` records a
+layout constraint. The extent itself stays `0@0` until a layout pass runs, and a fresh element that
+is in no space is never laid out. So asking a new element for its extent answers zero, and a test
+that asserts on it fails with a message that tells you nothing about what is wrong.
 
 There are three ways out, and only one of them is right here.
 
-- Send `forceLayout`. It works on an unattached element, and it is forbidden: Bloc ships a code critic rule, `ReBlocDoNotSendForceLayoutRule`, that reports it. Laying out by hand is how Bloc code ends up fighting the space it lives in.
-- Put the element in a space and settle the space. That is the sanctioned way to get a laid out element, and it is what we do when we check the rendering by hand. In a unit test it is a heavy way to find out whether we typed `50@50`.
-- Read the constraint we set, which is what the test above does. No layout, no space, and the assertion is about the thing the method under test actually decided.
+- **Send `forceLayout`.** It works, and it is forbidden. Bloc ships a code critic rule,
+  `ReBlocDoNotSendForceLayoutRule`, that reports it. Laying out by hand is how Bloc code ends up
+  fighting the space it lives in.
+- **Put the element in a space and settle the space.** That is the proper way to get a laid out
+  element, and it is what we do when we want to look at the drawing. In a unit test it is a heavy
+  way to find out whether we typed `50@50`.
+- **Read the constraint we set**, which is what the test above does. No layout, no space, and the
+  assertion is about the thing the method under test actually decided.
 
-Run the tests. All green, and the code critic on the new methods is quiet.
+That last point is the general lesson. A test is clearest when it asks about the decision the code
+made, not about a consequence that something else has to compute first.
 
-The next pages give the blank cells a board to sit on.
+Run the tests. All green, and the code critic quiet on the new methods.
+
+The next chapter gives these blank cells a board to sit on.
 
 # The Game Board
 
-<!-- http://squeak.preeminent.org/tut2007/html/053.html
-     http://squeak.preeminent.org/tut2007/html/054.html -->
+One cell is drawn. A game needs twenty-five of them, in rows and columns, and something has to hold
+them. That something is the board.
 
-The original tutorial creates its game class here, `LaserGame`, as a subclass of `Morph`. It holds the grid in an instance variable, and it carries a class method that computes how large the target form has to be, from the cell size, the border width and the grid dimensions.
-
-We create the same thing on the new stack, and the differences are worth naming before the code.
-
-- There is no `Morph`. A board is a `BlElement`, and the board element *is* the thing that shows the cells; it does not own a bitmap that cells draw into.
-- The cells are children of the board, placed by a layout. The original had to translate each grid location into a form-relative offset, which is what page 054 sets out to do. We do not compute offsets at all.
-- The extent of the board is still worth a method, because a window has to be given a size, but nothing inside the board depends on it.
+The board is a `BlElement` with the cells as its children, and a *layout* puts the children in
+their places. This is the moment to say what a layout is, because the rest of the section leans on
+it: a layout is an object you give to an element, and it decides where that element's children go
+and how big they are. The element does not place its children itself, and neither do we.
 
 ## The board element
 
@@ -336,13 +415,22 @@ LaserGameBoardElement >> initialize
 		aConstraints horizontal fitContent.
 		aConstraints vertical fitContent ]
 ```
-> **Note.** *Minor Cosmetic Tweaks*, the ninth chapter of Section 5, gives the board the drop shadow of page 201 here.
 
-`BlGridLayout horizontal` fills row by row, and `fitContent` is what replaces the computed form extent: the board asks its children how big they are instead of being told.
+That is the first version; *Minor Cosmetic Tweaks*, near the end of the book, adds a drop shadow
+here.
+
+`BlGridLayout horizontal` fills the grid row by row: you add children one after another, and the
+layout starts a new row every time it has as many as the column count. So the order in which we add
+the cells is the order they appear on the screen, and no cell is ever told where it is.
+
+`fitContent` is the other half. It tells the board to take the size of its children instead of
+being given a size. We never compute how wide the board is; we ask the cells, and they already
+know.
 
 ## The grid, and rebuilding from it
 
-Create the accessor pair for the instance variable. Setting the grid is not a plain store: a board that shows another grid has to show another set of cells.
+Create the accessor pair for the instance variable. Setting the grid is not a plain store, though: a
+board that shows another grid has to show another set of cells.
 
 ```smalltalk
 LaserGameBoardElement >> grid: aGrid
@@ -368,7 +456,12 @@ LaserGameBoardElement >> rebuildCells
 					 grid: self grid) newElement ] ]
 ```
 
-And a board is built on a grid in one message:
+Read the two loops once more. They walk the grid row by row, and for each cell they ask
+`CellRenderer` for the right renderer and the renderer for an element. That is the pattern of the
+previous chapter paying off: the board does not know that there are three kinds of cell, and it
+will not have to be edited when there is a fourth.
+
+A board is built on a grid in one message:
 
 ```smalltalk
 LaserGameBoardElement class >> on: aGrid
@@ -380,9 +473,8 @@ LaserGameBoardElement class >> on: aGrid
 	^ element
 ```
 
-That method is the whole answer to page 054 of the original. The question there was how a cell finds its place on the board; here the cells are added in row-major order and `BlGridLayout` places them. There is no offset arithmetic to write and none to test.
-
-Finding the element of a location is then arithmetic on the child list:
+Because the cells are added in row order, the element of a location is found by arithmetic rather
+than by searching:
 
 ```smalltalk
 LaserGameBoardElement >> cellElementAt: aPoint
@@ -393,7 +485,9 @@ LaserGameBoardElement >> cellElementAt: aPoint
 	^ self children at: index
 ```
 
-## The extent, which survives as a convenience
+## How big the board is
+
+A window has to be given a size, so the board answers one. Nothing inside the board depends on it:
 
 ```smalltalk
 LaserGameBoardElement class >> extentForGrid: aGrid
@@ -404,17 +498,19 @@ LaserGameBoardElement class >> extentForGrid: aGrid
 	  * (aGrid numberOfColumns @ aGrid numberOfRows)
 ```
 
-This is the original's form extent calculation, minus the border term. In the original, borders were drawn along the inside edges of cells and therefore added nothing to the total; on Bloc a border is painted inside the bounds of its element, so the same is true for the same reason.
+Two things in three lines. Multiplying two points multiplies them coordinate by coordinate, so
+`50@50 * (5@5)` is `250@250`. And the borders are not in the sum, because a Bloc border is painted
+inside the element that carries it.
 
-The original put that method on its game morph rather than on the grid, to keep display concerns off the model. We keep that choice: the grid still knows nothing about pixels.
+Note where this method lives: on the board element, not on the grid. The grid is the model, and the
+model knows nothing about pixels. Keeping it that way is what lets the whole model be tested without
+a screen.
 
 ## Opening it
 
 ```smalltalk
 LaserGameBoardElement class >> openOn: aGrid
-
-	"Open a space showing aGrid and answer it. The space is sized from the grid, which is the
-	whole of what the original tutorial computed a target form extent for.
+	"Open a space showing aGrid and answer it. The space is sized from the grid.
 
 	LaserGameBoardElement openOn: GridFactory demoGrid"
 
@@ -437,11 +533,17 @@ LaserGameBoardElement class >> openExample
 	^ self openOn: GridFactory demoGrid
 ```
 
-Evaluate `LaserGameBoardElement openExample`. A board of 25 bordered squares appears. The mirror and the target of the demo grid are there in the model, but they are still drawn as blank cells: `renderContentsOn:` is only implemented on the abstract class so far. Their contents come next.
+The `<sampleInstance>` line is a *pragma*: a mark on the method that tools look for. It tells Pharo
+that this method opens an example, so the browser offers to run it for you.
+
+Evaluate `LaserGameBoardElement openExample`. A board of twenty-five bordered squares appears. The
+demo grid holds a mirror and a target, and the model knows it, but they are still drawn as blank
+cells: only the abstract renderer implements `renderContentsOn:` so far. Their contents come next.
 
 ## Tests
 
-The board is tested without opening a window. Every assertion is about structure, and none of it needs a layout pass:
+The board is tested without opening a window. Every assertion is about structure, and none of it
+needs a layout pass:
 
 ```smalltalk
 LaserGameBoardElementTestCase >> testBoardHasOneElementPerCell
@@ -478,6 +580,10 @@ LaserGameBoardElementTestCase >> testCellElementsAreInRowMajorOrder
 	self assert: elements size equals: board children size
 ```
 
+The last four lines of that test are a trick worth keeping. Collecting every answer into an
+`IdentitySet` and checking its size proves that no two locations answer the *same* element — which
+is the way an off-by-one in `cellElementAt:` would show up.
+
 ```smalltalk
 LaserGameBoardElementTestCase >> testExtentForGridComesFromTheCellSize
 	"The board extent is the cell extent times the grid dimensions. Borders are painted inside
@@ -510,7 +616,11 @@ LaserGameBoardElementTestCase >> testSettingAnotherGridRebuildsTheCells
 		equals: board children first
 ```
 
-One thing is deliberately not asserted. `BlGridLayout` takes its column count through `columnCount:` and keeps it privately, with no reader, so a test cannot ask a layout how many columns it has. Reaching into its instance variables to find out would be testing Bloc, not the game. The placement it produces is checked by opening the example instead: with the 5x5 demo grid, the board settles at 250x250 and the cell at 5@5 sits at 200@200.
+One thing is deliberately not asserted. `BlGridLayout` takes its column count through
+`columnCount:` and keeps it to itself, with no reader, so a test cannot ask a layout how many
+columns it has. Reaching into its instance variables to find out would be testing Bloc, not the
+game. The placement it produces is checked by opening the example instead: with the five by five
+demo grid, the board settles at 250x250 and the cell at 5@5 sits at 200@200.
 
 ```smalltalk
 LaserGameBoardElementTestCase >> testBoardLaysCellsOutInAGridAndFitsThem
@@ -530,20 +640,26 @@ LaserGameBoardElementTestCase >> testBoardLaysCellsOutInAGridAndFitsThem
 		equals: BlLayoutFitContentResizer
 ```
 
-One test of the previous pages goes away with this step: `testCellOffsetCalculations`, which checked that a renderer computed the right offset for its cell inside the board form. There is no board form and there are no offsets, so the test has nothing to say. The board tests above cover what replaced it.
-
-> **Porting note.** The 2007 `LaserGame` class, a `Morph` with 884 lines covering the control panel, the counters, the undo stack and the mouse handling of Sections 3 to 5, is still in the package, untouched and unused. It is the source we port from, page by page, and it goes away when the last of its pages has a Bloc counterpart.
+Knowing what *not* to assert is part of writing tests. A test that asserts on the private state of
+a framework fails the day the framework is tidied up, and it never told you anything about your own
+code in the first place.
 
 # Drawing The Mirror
 
-*Pages 055 to 060 of the 2007 tutorial.*
+Twenty-five bordered squares are a board, but they are not a game. The mirrors have to be visible.
+A mirror is a diagonal line across its cell, and this chapter draws it.
 
-## The factory that is already there
+## A board to look at
 
-The original writes `GridFactory` on page 055, by moving the grid that `GridTestCase` built by hand into a class of its own, so that both the tests and the game can ask for a board to work with. That class is part of the code we inherited, so nothing has to be written here. Two of its methods carry the whole chapter:
+Before drawing anything, we need a board worth drawing. Building one by hand in every test and
+every example would be tiresome, so the grids the game and the tests work with come from one place,
+`GridFactory`:
 
 ```smalltalk
 GridFactory class >> demoGrid
+	"Answer a five by five grid holding ten mirrors and one target, always the same ones. The
+	tests use it whenever a board with something on it is needed, and so do the examples."
+
 	| grid |
 	grid := Grid newOfSize: 5@5.
 	grid at: 4@1 put: MirrorCell leanRight.
@@ -562,43 +678,44 @@ GridFactory class >> demoGrid
 
 ```smalltalk
 GridFactory class >> defaultGrid
+	"Answer the board a new game is dealt on: eight columns by ten rows, randomized."
+
 	^self randomizedGridOfExtent: 8@10
 ```
 
-`demoGrid` is a 5 by 5 board holding ten mirrors and one target, which is exactly what this chapter needs: every mirror leans one way or the other, and the target is the one cell that will still be blank when the chapter ends.
-
-> **Porting note.** These methods are quoted as the captured image has them, in the 2007 formatting, without the blank line and the leading space that Pharo's formatter would add today. Code that the port rewrites is shown in the new style; code that the port only reads keeps its original shape.
-
-## Three pages that dissolve
-
-Pages 056 to 059 are about offsets on a shared bitmap. Page 056 finishes `testCellOffsetCalculations` and adds `offsetWithinGridForm` so that a renderer can find its own square on the board form. Pages 057 and 058 draw the four borders at those offsets, then correct the arithmetic of the right and bottom sides, because adjacent cells each painted their own edge and the shared edges came out one pixel thick instead of two. Page 059 points the drawing code at `GridFactory demoGrid` and observes that the mirror and target cells already have their borders, since they inherit them.
-
-None of that has any work left in it here. There is no board form, so there is no offset to compute, and the offset test went away with the previous chapter. Each cell is its own element and its border belongs to it, so the correction of pages 057 and 058 has no subject: `BlGridLayout` places the cells edge to edge, and every cell paints its border inside its own square. What page 059 checks by eye we have already had on the screen since the board element existed.
-
-So the work of this chapter is the one thing pages 056 to 059 were clearing the way for: the contents of a mirror cell.
+`demoGrid` is worth the few lines it costs. It always holds the same ten mirrors and the same
+target, so a test that asserts something about it keeps asserting the same thing next year, and a
+drawing that looks wrong looks wrong in the same place twice. A randomized grid cannot do either,
+which is why `defaultGrid` is for playing and `demoGrid` is for working.
 
 ## How thick, and how far in
 
-A mirror is a diagonal line across its cell, not touching the corners. Two numbers say where it goes and how heavy it is, and both get a name.
+A mirror is a diagonal across its cell that does not reach the corners. Two numbers say where it
+goes and how heavy it is, and both get a name of their own rather than being typed into the drawing
+code:
 
 ```smalltalk
 MirrorCellRenderer >> cornerInset
+	"Answer how far, in pixels, the ends of the mirror stay clear of the corners of the cell."
+
 	^8@8
 ```
 
 ```smalltalk
 MirrorCellRenderer class >> mirrorWidth
-	"Answer the thickness, in pixels, of the mirror. The original drew its diagonal with a two
-	pixel pen, and this is that pen."
+	"Answer the thickness, in pixels, of the mirror: a two pixel stroke."
 
 	^ 2
 ```
 
-`cornerInset` is the original's, unchanged: the mirror starts eight pixels in from the corner it points at and stops eight pixels short of the opposite one. `mirrorWidth` is new only as a name — the 2007 code drew its diagonal with a two pixel pen, and this is that pen.
+Naming a number is not ceremony. It gives you one place to change, a word to search for, and a
+comment that says what the number means — three things a literal `8` buried in a method does not
+give you.
 
 ## Two leans, one line
 
-`renderContentsOn:` is the hook `newElement` already calls. A mirror asks its cell which way it leans and draws accordingly.
+`renderContentsOn:` is the hook `newElement` already calls, and that the blank renderer leaves
+empty. A mirror asks its cell which way it leans and draws accordingly:
 
 ```smalltalk
 MirrorCellRenderer >> renderContentsOn: anElement
@@ -637,11 +754,17 @@ MirrorCellRenderer >> renderContentsLeanRightOn: anElement
 		on: anElement
 ```
 
-`delta` is the last pixel of the cell, one less than the extent, so a 50 by 50 cell runs from 0@0 to 49@49. With an inset of 8@8, a left leaning mirror runs from 8@8 to 41@41, and a right leaning one from 41@8 to 8@41. Those are the original's numbers. What changed is that they are coordinates inside the cell, not inside a board form, so they say the same thing for every cell of the grid.
+Work the numbers through once. `delta` is the last pixel of the cell, one less than the extent,
+because a fifty pixel cell runs from 0@0 to 49@49. With an inset of 8@8, a left leaning mirror runs
+from 8@8 to 41@41, and a right leaning one from 41@8 to 8@41.
+
+Those coordinates are *inside the cell*. Every cell element has its own origin at its own top left
+corner, so the same two points describe the mirror in the first cell of the board and in the last
+one. Nothing has to know where on the board the cell ended up.
 
 ## Adding the stroke
 
-Both methods end in one place, which is the only method here that knows anything about Bloc.
+Both methods end in one place, and it is the only method in the chapter that mentions Bloc:
 
 ```smalltalk
 MirrorCellRenderer >> addMirrorFrom: aPoint to: anotherPoint on: anElement
@@ -662,19 +785,24 @@ MirrorCellRenderer >> addMirrorFrom: aPoint to: anotherPoint on: anElement
 
 Three things in there are worth a sentence each.
 
-A line has no inside, so nothing about it is filled: the visible mirror is entirely its border. `BlBorder paint:width:` is what makes it blue and two pixels heavy.
+**A line has no inside.** Nothing about it is filled, so the visible mirror is entirely its border.
+`BlBorder paint:width:` is what makes it blue and two pixels heavy. If you ever draw a line and see
+nothing, check that you gave it a border and not only a background.
 
-`BlOutskirts centered` puts the stroke half on each side of the line. Bloc's default, `BlOutskirtsInside`, would push the whole two pixels to one side, and the mirror would sit off the diagonal by a pixel — the same complaint the original makes on page 060, that the mirror does not look quite centred in its cell.
+**`BlOutskirts centered` puts the stroke half on each side of the line.** Bloc's default,
+`BlOutskirtsInside`, would push the whole two pixels to one side, and the mirror would sit a pixel
+off its own diagonal. On a two pixel line in a fifty pixel cell, that is the difference between a
+drawing that looks right and one you keep squinting at.
 
-The child is given the full cell extent rather than the bounding box of the line. Bloc positions a child by its own origin, so a child the size of the cell lets `aPoint` and `anotherPoint` be read straight off the cell, with no offset arithmetic anywhere. That is the last trace of pages 056 to 058 gone.
-
-## Four methods leave
-
-The `Form` versions of this drawing go with the step, since their replacements are in place: `renderContents`, `renderContentsLeanLeft`, `renderContentsLeanRight` and `renderMirror`. `MirrorCellRenderer` keeps its laser masks for now, because the laser is a later chapter.
+**The child is given the whole cell extent**, not the bounding box of the line. Bloc positions a
+child by its own origin, so a child the size of the cell lets both end points be read straight off
+the cell. A tighter child would be correct too, and every coordinate in the two methods above would
+have to be shifted by the offset of its corner. One of those two is easier to get right.
 
 ## Tests
 
-The tests build one mirror cell in a one by one grid, render it, and look at the child.
+The tests build one mirror cell in a one by one grid, render it, and look at the child. Two helper
+methods keep the rest short:
 
 ```smalltalk
 MirrorCellRendererTestCase >> rendererLeaning: aSymbol
@@ -697,6 +825,9 @@ MirrorCellRendererTestCase >> mirrorElementLeaning: aSymbol
 
 	^ (self rendererLeaning: aSymbol) newElement children first
 ```
+
+Helper methods in a test case are not clutter; they are what keeps the tests readable. A test whose
+first six lines are setup hides what it is actually asserting.
 
 ```smalltalk
 MirrorCellRendererTestCase >> testMirrorCellHoldsOneMirror
@@ -781,21 +912,34 @@ MirrorCellRendererTestCase >> testRotatingTheCellTurnsTheMirrorOver
 	self assert: after to x equals: before from x
 ```
 
-No test writes 8, 41 or 49 down. Every expected point is built from `cornerInset` and `cellExtent`, so raising the cell size, as the original does much later on page 196, moves the mirrors without touching a test.
+Look at what none of those tests contains: the numbers 8, 41 and 49. Every expected point is built
+from `cornerInset` and `cellExtent`. That is deliberate, and it is the second half of the promise
+`cellExtent` made in the last chapter: when the cell grows, the mirrors move with it and no test has
+to be edited. A test that writes `8@8` down would have to be.
 
-The last test is the one the original could not easily write: the renderer reads the cell every time it renders, so rotating the cell and rendering again gives the other diagonal, with the ends swapped along x and left where they were along y.
+The last test is the one that pays for the design of the first chapter. The renderer reads its cell
+from the grid every time it renders, so rotating the cell and rendering again draws the other
+diagonal — the ends swapped along x, left where they were along y. A renderer that had cached the
+cell, or cached its element, would fail this test, and the game would be unplayable in a way that is
+hard to see.
 
-Opening the example shows it: the demo grid renders as 25 cells, ten of which hold one line each, which is the ten mirrors of `GridFactory demoGrid`. The target at 5@1 is still an empty bordered square, because its contents are the next chapter.
+Open the example:
 
 ```smalltalk
 LaserGameBoardElement openExample
 ```
 
+Twenty-five cells, ten of them with a diagonal across them: the ten mirrors of `demoGrid`. The
+target at 5@1 is still an empty bordered square. It is the next chapter.
+
 # Management of Colors
 
-*Page 061 of the 2007 tutorial.*
+Three colours have been chosen so far: a grey board background, a white cell border, a blue mirror.
+Each was picked where it was needed. That is how colours always get chosen, and it is how a program
+ends up with the same grey written down in nine places and a tenth that is almost the same grey.
 
-The original spends this page gathering the colors it has been choosing as it went — the arbitrary board background from the workspace, the black border, the black mirror — into one class, so that they can be tweaked later, or one day chosen by the player. `LaserGameColors` is that class, and it came with the code we inherited:
+So the colours live in one class, `LaserGameColors`, with one method each, and every element asks
+for its paint by name:
 
 ```smalltalk
 LaserGameColors class >> gameBoardBackgroundColor
@@ -827,30 +971,42 @@ LaserGameColors class >> targetCenterColorActive
 	^Color r: 1.0 g: 1.0 b: 0.634
 ```
 
-Three more are there for later pages: `laserBeamCenterColor` and `laserBeamSplatterColor` for the beam of Section 4, and `allowActionArrowColor` and `denyActionArrowColor` for the push hints of Section 3.
+The last three are the target: the colour of its outline, and the two fills that say whether the
+laser reaches it. We use them in the next chapter.
 
-Nothing has to be written, then, but the page is still worth a step, because it states a rule that the port has to keep. The colors live in one place, and every element asks for its paint by name. That rule holds on the Bloc side as it stood: the board background, the cell border, the mirror and now the target all name a `LaserGameColors` method, and no `Color` literal appears in any of the new code. The literals that remain in the package are all inside the `Form` and `Morph` methods that have not been ported yet, and they go with them.
+The rule this class exists to enforce is short: **no `Color` literal anywhere else in the game.**
+Grep the package for `Color r:` when you think you have finished a drawing, and if you find one
+outside this class, move it here and give it a name. The payoff arrives later in the book, when the
+game grows a window, a control panel and a counter, and every one of them has to look like it
+belongs to the same program.
 
-What did change is that these answers are handed to Bloc rather than to a `Form`. `LaserGameColors` answers plain `Color` instances, and Bloc wraps them itself: `BlBorder paint:width:` makes a paint out of one, `BlElement >> background:` makes a background out of one. So the class needs no Bloc knowledge at all, and the ten methods were only filed under a `colors` protocol and given a class comment saying that they are the one place colors are written down.
+Two more pairs are already here for chapters to come: `allowActionArrowColor` and
+`denyActionArrowColor` for the hint arrows of the next section, and `laserBeamCenterColor` and
+`laserBeamSplatterColor` for the beam.
 
-> **Porting note.** The colors are the original's, including the slight changes page 061 makes "just for fun". The port does not retune them. A color the new drawing needs and the original does not have would be added here; so far there is none.
+Note what the class does *not* know. It answers plain `Color` instances, and Bloc wraps them
+itself: `BlBorder paint:width:` makes a paint from one, and `BlElement >> background:` makes a
+background from one. So the colour class has no Bloc in it at all, which is why it can be read,
+changed and tested without a window.
 
 # Drawing The Target
 
-*Pages 062 and 063 of the 2007 tutorial.*
-
-The target has more in it than the mirror: a crosshair, a ring around the middle of the cell, and the inside of the ring filled with one of two colors depending on whether the laser reaches the cell. The original draws all four with `Form` and a `Circle`, and asks the renderer where its cell sits on the board form to place them. Here they are four children of the cell element, placed in cell coordinates.
+The target has more in it than the mirror: two crossing lines, a ring around the middle of the cell,
+and the inside of the ring filled with one of two colours, depending on whether the laser reaches
+the cell. Four children of the cell element, all of them placed in cell coordinates.
 
 ## Numbers with names
 
-Three numbers say where the parts of the target go. Two are new names for numbers the original writes inline, and one, the radius, is the original's method unchanged.
+Five methods hold the geometry. None of the drawing code below contains a number:
 
-```
+```smalltalk
 TargetCellRenderer >> radius
+	"Answer the radius of the ring drawn in a target cell. It is worked out from the cell size, so
+	that the ring grows with the cell, and clamped at ten so that it stops growing once the cell
+	is large enough."
+
 	^(self class cellExtent x // 2 - 8) min: 10
 ```
-
-This is the method as this chapter writes it; Section 4.3 gives it the comment that explains the clamp of page 137.
 
 ```smalltalk
 TargetCellRenderer >> crossHairInset
@@ -861,8 +1017,8 @@ TargetCellRenderer >> crossHairInset
 
 ```smalltalk
 TargetCellRenderer class >> outlineWidth
-	"Answer the thickness, in pixels, of the target outline: the crosshairs and the ring. The
-	original drew both with a two pixel pen."
+	"Answer the thickness, in pixels, of the target outline: the crosshairs and the ring. Both are
+	two pixel strokes."
 
 	^ 2
 ```
@@ -881,7 +1037,9 @@ TargetCellRenderer >> innerRadius
 	^ self radius - self class centerInset
 ```
 
-`radius` is the original's: half the cell, less eight pixels, and never more than ten. With a 50 pixel cell it answers 10, so `innerRadius` answers 6.
+`radius` is the interesting one. It is half the cell, less eight pixels, and never more than ten. The
+first part makes the ring grow with the cell; the `min: 10` stops it growing past a size that looks
+right. With a fifty pixel cell it answers 10, so `innerRadius` answers 6.
 
 ## The contents, in three parts
 
@@ -895,7 +1053,9 @@ TargetCellRenderer >> renderContentsOn: anElement
 	self renderCenterOn: anElement
 ```
 
-The order is the drawing order: the crosshair first, then the ring over it, then the disc over both.
+A method like that is worth aiming for: three lines, each naming one part of the picture, and the
+order of the lines is the order the parts are drawn in. Children added later are drawn on top, so
+the crosshair goes down first, the ring over it, the disc over both.
 
 ```smalltalk
 TargetCellRenderer >> renderCrossHairsOn: anElement
@@ -931,11 +1091,17 @@ TargetCellRenderer >> addOutlineLineFrom: aPoint to: anotherPoint on: anElement
 	anElement addChild: line
 ```
 
-That is the mirror's `addMirrorFrom:to:on:` again, with another color, and the original says as much: "drawing the crosshairs is a lot like drawing the mirrors". The two methods are not merged, because a mirror and a target outline are two ideas that happen to be drawn the same way today, and each renderer already owns its own drawing.
+That is the mirror's `addMirrorFrom:to:on:` again with another colour. You may be tempted to merge
+the two into one shared method. Resist it for now. A mirror and a target outline are two ideas that
+happen to be drawn the same way today, and each renderer owns its own drawing; merging them would
+tie the two pictures together for the sake of six identical lines. Duplication is worth removing
+when the two copies have to change together — and these two do not.
 
 ## Circles
 
-A circle geometry in Bloc has no center and no radius of its own. It inscribes a circle in the bounds of its element, so the way to ask for a circle of a given radius around a given point is to give the element a square of the diameter and put it a radius up and to the left of that point.
+A `BlCircleGeometry` has no centre and no radius of its own. It inscribes a circle in the bounds of
+its element. So a circle of a given radius around a given point is an element that is a square of
+the *diameter*, placed one radius up and to the left of that point:
 
 ```smalltalk
 TargetCellRenderer >> newCircleOfRadius: aRadius
@@ -952,7 +1118,11 @@ TargetCellRenderer >> newCircleOfRadius: aRadius
 	^ circle
 ```
 
-Both circles come from there, and they differ only in what paints them.
+This is the second Bloc habit of the section, after the line. **Geometry describes a shape inside
+the bounds of an element; the bounds say where the shape is and how big it is.** Once that clicks,
+circles, ellipses and rounded rectangles all stop being special.
+
+Both circles come from that one method, and they differ only in what paints them:
 
 ```smalltalk
 TargetCellRenderer >> renderRingOn: anElement
@@ -979,7 +1149,8 @@ TargetCellRenderer >> renderCenterOn: anElement
 	anElement addChild: center
 ```
 
-The ring has a border and no background, so it is an outline and the crosshair shows through the middle of it. The disc has a background and no border, so it is solid. The original needs two different pen forms and a `Circle` for the same effect, and it fills its circle by flood-filling the bitmap afterwards — one of the calls that Pharo 13 no longer has.
+Border and no background is an outline, and the crosshair shows through the middle of it. Background
+and no border is a solid disc. That is the whole difference between the two.
 
 ## On or off
 
@@ -993,20 +1164,20 @@ TargetCellRenderer >> centerColor
 		  ifFalse: [ LaserGameColors targetCenterColorIdle ]
 ```
 
-The original writes this as two methods, `renderContentsOn` and `renderContentsOff`, each drawing the same circle in a different color. Here the drawing does not change with the state, only one paint does, so the choice becomes an answer and the drawing is written once.
-
-## Nine methods leave
-
-Everything the `Form` version of this page needed goes: `renderContents`, `drawTargetOutlines`, `drawCrossHairsOutlines`, `drawCircleOutline`, `drawCircleOutlineOn:color:`, `drawCircleOutlineOn:color:offset:`, `renderInnerCircleColor:`, `renderContentsOn` and `renderContentsOff`. `radius` stays, because the new code uses it. `maskOffHorizontalOn:` and `maskOffVerticalOn:` stay until the beam is drawn, and so does `renderLaser`.
+Notice how small the state makes the code. There is no *draw the lit target* method and no *draw
+the unlit target* method. The drawing is the same either way; one paint differs, so one method
+answers that paint and the drawing is written once. When you catch yourself writing two methods
+that differ in a single expression, look for the expression that could be answered instead.
 
 ## Firing the laser
 
-Page 063 changes the workspace to fire the laser before drawing, and the target lights up although no beam graphics exist yet: the demo grid is built so that the mirrors lead the beam to the target. The same check belongs on the board element.
+The demo grid is built so that the mirrors lead the beam to the target, so firing the laser should
+light it, even though no beam is drawn yet. That is worth an example of its own:
 
-```
+```smalltalk
 LaserGameBoardElement class >> openExampleWithLaserFired
-	"Open the demo grid with the laser already fired, which lights the target. The beam itself is
-	not drawn yet: that is the work of Section 4.
+	"Open the demo grid with the laser already fired, which lights the target and draws the beam
+	over the blank cells it crosses.
 
 	LaserGameBoardElement openExampleWithLaserFired"
 
@@ -1017,7 +1188,8 @@ LaserGameBoardElement class >> openExampleWithLaserFired
 	^ self openOn: grid
 ```
 
-> **Note.** *Laser On Blank Cell*, in Section 4, draws the beam over the blank cells the laser crosses, and the comment of this method says so from there on.
+The comment mentions the beam, which this chapter does not draw. *Laser On Blank Cell*, much later,
+does, and the same example shows it then.
 
 ## Tests
 
@@ -1090,6 +1262,10 @@ TargetCellRendererTestCase >> testRingIsAnEmptyOutlineAroundTheMiddleOfTheCell
 		equals: TargetCellRenderer outlineWidth.
 	self assert: ring background class equals: BlTransparentBackground
 ```
+
+That last assertion is the one that would catch a mistake you cannot see: an element with no
+background answers a `BlTransparentBackground`, and a ring that had accidentally been given a fill
+would hide the crosshair under it.
 
 ```smalltalk
 TargetCellRendererTestCase >> testCenterSitsInsideTheRing
@@ -1165,106 +1341,51 @@ TargetCellRendererTestCase >> testALitTargetIsFilledWithTheActiveColor
 		equals: LaserGameColors targetCenterColorActive
 ```
 
-Page 063 gets a test of its own, on the board rather than on the renderer, since it is the whole board that the original looks at.
+And one test on the board rather than on the renderer, because lighting the target is something the
+whole board shows:
 
-```
+```smalltalk
 LaserGameBoardElementTestCase >> testFiringTheLaserLightsTheTargetOfANewBoard
-	"Page 063 of the original: the laser is fired and the target turns on, even though no beam is
-	drawn yet. The cells are built from the model, so a board built after the shot shows the lit
-	target."
+	"Firing the laser turns the target on. The cells are built from the model, so a board built
+	after the shot shows the lit target. The disc is the last child of the target, since a lit
+	target draws the beam under its picture."
 
 	| grid board center |
 	grid := GridFactory demoGrid.
 	grid fireLaser.
 	board := LaserGameBoardElement on: grid.
-	center := (board cellElementAt: 5 @ 1) children fourth.
+	center := (board cellElementAt: 5 @ 1) children last.
 	self assert: (grid at: 5 @ 1) isOn.
 	self
 		assert: center background paint color
 		equals: LaserGameColors targetCenterColorActive
 ```
-> **Note.** *Laser On Target Cell*, in Section 4, draws the beam under the picture of the target, so this test reads the disc as the last child of the cell and its comment says so.
 
-That test also marks the limit of what the board can do so far. It fires the laser *before* the board is built. A board already on the screen does not notice a change in its model, because nothing tells it to rebuild; the refresh path is a later step, at pages 065 to 067.
+Read the order of that test carefully, because it marks the edge of what we have built. It fires the
+laser **and then** builds the board. A board already on the screen would show nothing new: the cells
+were built from the model as it was, and nothing tells them the model has changed. Making a board
+notice is the job of the next chapter.
 
-Opening the two examples shows the state of the port at the end of the chapter: 25 cells, ten of them holding a mirror, and one holding a crosshair, a ring and a disc that is blue-grey in the first example and pale yellow in the second.
+Open both examples and compare them:
+
+```smalltalk
+LaserGameBoardElement openExample
+```
 
 ```smalltalk
 LaserGameBoardElement openExampleWithLaserFired
 ```
 
-# Progress So Far
+Twenty-five cells, ten with a mirror, and one with a crosshair, a ring and a disc that is pale blue
+in the first window and pale yellow in the second.
 
-*Page 064 of the 2007 tutorial.*
+# Assembling the Game Window
 
-This page writes no game code. The original stops to tidy the image: it moves the cell rendering classes into the graphics system category, saves the image, and notes that saving erases the drawn form, which the workspace can redraw. It also states the thought that the game is playable before the beam is drawn, since the target already turns on or off according to where the mirrors are — which is what the previous chapter ended with.
-
-## The recategorisation is already done
-
-Pharo replaced Squeak's system categories with packages and tags, so the move the page describes is a move between tags of one package. The `Laser-Game` package carries three:
-
-| Tag | Holds |
-|---|---|
-| `Model` | `Cell` and its subclasses, `Grid`, `GridFactory`, `GridDirection` and its subclasses, `LaserPathElement`, the seven `Reverse…LaserGameAction` classes |
-| `Graphics` | `CellRenderer` and its three subclasses, `LaserGameColors`, `LaserGameBoardElement`, the seven `CellClickRegion` classes, and the four captured Squeak display classes that are on their way out |
-| `Tests` | the twelve test cases |
-
-So the cell renderers are where this page wants them, and the classes the port has added since — `LaserGameBoardElement` and the two new test cases — went to the right tag as they were created.
-
-> **Porting note.** In Pharo a class is put in a tag from code with
-> `(Smalltalk packageOrganizer packageNamed: 'Laser-Game') ensureTag: 'Graphics'` and then
-> `tag addClass: TheClass`. Sending `category:` to a class no longer works, and `Package` has no
-> `moveClasses:toTag:`.
-
-## Saving the image
-
-The advice to save is worth keeping, and it is the one thing on this page the reader still has to do by hand. Nothing here erases a drawing, though: the board is an element tree, not a bitmap on the display, so a saved and restarted image reopens it by running the example again, and the window is closed rather than blanked.
-
-## Where the port stands
-
-The board of the original's screenshot is on the screen, complete: a 5 by 5 grid, ten mirrors leaning both ways, one target with its crosshair and ring, all colors from `LaserGameColors`, all four visible parts of a cell drawn by elements with geometries and no bitmap anywhere on the path.
-
-What the original has at this point and the port does not:
-
-- the beam of the laser, which the original also has not drawn yet. Both stop at the target turning on.
-- a control panel, the counters and the undo buttons. Those are Section 3 onwards in both.
-- any reaction to the mouse. Clicking a cell does nothing yet, in either.
-
-And what the port carries that the original does not: the 2007 `Form` and `Morph` code, still in the package, being read from and deleted page by page. Forty-five methods still name one of `Form`, `Morph`, `Display`, `World`, `Circle`, `Line`, `Arc`, `MorphPath`, `LaserGameForms` or `Cursor`, against seventy-two when the port started:
-
-| Class | Methods left on the old stack | Goes at |
-|---|---|---|
-| `LaserGameForms` | 13 | 3.4 |
-| `CellRenderer` | 10 | 3.x and 4.x |
-| `MirrorCellRenderer` | 5 | 3.x and 4.x |
-| `LaserGame` | 4, and it is still a `Morph` subclass | retires group by group across Sections 3 to 5 |
-| `TargetCellRenderer` | 2 | 4.x |
-| `Arc`, `Line`, `MorphPath` | 5 together | deleted, not ported |
-| the seven `CellClickRegion` classes | 1 each, all `arrowForm` | 3.x |
-
-None of the ported code names any of them. Every class written or rewritten since page 049 — `LaserGameBoardElement`, `LaserGameColors`, the four renderers' Bloc methods and the three test cases added since — depends on Bloc alone.
-
-## No commit for this step
-
-This step changes no code, so it produces no commit. The recategorisation it asks for was done when the package was reorganised into tags, before the port reached page 049.
-
-# Back to the LaserGame Morph
-
-*Pages 065 to 067 of the 2007 tutorial.*
-
-<!-- http://squeak.preeminent.org/tut2007/html/065.html
-     http://squeak.preeminent.org/tut2007/html/066.html
-     http://squeak.preeminent.org/tut2007/html/067.html -->
-
-Everything we have drawn so far, we have drawn from a workspace. The original tutorial has been doing the same, and on this page it goes back to the class it created at the very beginning — `LaserGame` — and makes that class open the board itself. Opening it as it stands gives, in the original's words, "a little colored rectangle on the screen". Ours is the same story with a different name: there is no game object on the new stack yet, only a board element that a class method opens for us.
-
-## A morph catalogue we do not have
-
-The original opens its game from the World menu: *new morph…*, *from alphabetical list*, then `LaserGame`. Pharo has no equivalent for our class, and we do not want one — the game is a Bloc element, and a Bloc element is shown by putting it in a space. So the step of this page is not "find it in a menu", it is "write the class that owns the whole window", and the way to see it is to send it a message.
+Everything so far has been opened by a class method on a renderer or on the board. That is right for
+working on a drawing, and it is not a game. A game is a window: the board, a panel beside it for the
+controls, and a margin around both. Something has to own that window, and this chapter writes it.
 
 ## The class
-
-The whole game gets one element:
 
 ```smalltalk
 BlElement << #LaserGameElement
@@ -1273,49 +1394,56 @@ BlElement << #LaserGameElement
 	package: 'Laser-Game'
 ```
 
-Three instance variables, and one of them is the original's. Page 065 adds `grid` and `boardForm` to `LaserGame`; we keep the grid and drop the form, for the reason the very first chapter gave: there is no shared bitmap to draw into. What the original keeps in a form, we keep in two children — the board element, and the control panel beside it — so those get a slot each.
+The game plays on a grid, and it holds its two children: the board element, and the panel beside it.
+Later chapters add a slot or two as the game grows, but these three carry the next several chapters.
 
-> **Porting note.** The inherited `LaserGame` class is still in the package, still a `Morph` subclass, and still carries `boardForm` with its accessors. `LaserGameElement` is a new class beside it, not a rewrite of it in place: the old one holds the rules, the counters and the mouse handling that Sections 3 to 5 port, and it retires a group of methods at a time. The two never talk to each other.
+Note that the game holds the grid, and the board also holds the grid. That is not a duplicate: the
+game is handed a grid and hands it on, which is how it can later be given another one.
 
 ## The numbers
 
-Page 066 asks for a constant for the width of the control panel, and for the arithmetic that sizes the window, so that we do not get the tiny rectangle again. The original's numbers are `^110` for the panel and `^10` for the margin, and we keep both:
-
-> **Note.** The chapter *Buttons Of One Width*, at the end of Section 5, states this width from the buttons rather than beside them, and the number becomes a hundred and thirty. It is quoted here as it read before that.
+Two constants: how wide the panel is, and how much margin there is around everything.
 
 ```
 LaserGameElement class >> panelWidth
-	"Answer the width, in pixels, of the control panel beside the board. The original's number."
+	"Answer the width, in pixels, of the control panel beside the board."
 
 	^ 110
 ```
 
 ```smalltalk
 LaserGameElement class >> gameMargin
-	"Answer the margin, in pixels, between the edge of the game and what it holds. The original's
-	number."
+	"Answer the margin, in pixels, between the edge of the game and what it holds."
 
 	^ 10
 ```
 
-They sit on the class side, because the size of a game can be asked for before one exists. The original's `calculatedExtent` reads the extent of the board form, adds the panel width to the horizontal, then adds one margin on each side. Ours reads the extent of the board element instead, and the rest of the sum is the same:
+The panel width is a first version. In *Buttons Of One Width*, at the end of the book, the panel
+states its width from the buttons it has to hold instead of beside them, and the number becomes a
+hundred and thirty. Until then, a hundred and ten.
+
+Both sit on the *class* side, because the size of a game can be asked for before a game exists —
+which is exactly what opening a window needs:
 
 ```
 LaserGameElement class >> extentForGrid: aGrid
 	"Answer the extent a game showing aGrid occupies: the board, the control panel beside it, and
-	one margin on each side. This is the original's calculatedExtent, with the board element
-	standing in for the board form."
+	one margin on each side."
 
 	^ (LaserGameBoardElement extentForGrid: aGrid) + (self panelWidth @ 0)
 	  + (2 * self gameMargin)
 ```
-> **Note.** *Adding More Game Stats*, the second chapter of Section 5, takes the height of the taller of the board and the panel, since four counters can stand taller than a board of few rows.
 
-That is the third time this shape of arithmetic appears — `CellRenderer cellExtent` for a cell, `LaserGameBoardElement extentForGrid:` for the board, `LaserGameElement extentForGrid:` for the window — and each one is written in terms of the one below it. Nobody multiplies a cell size by a grid size twice.
+That is the third time this shape of arithmetic has appeared: `CellRenderer cellExtent` for a cell,
+`LaserGameBoardElement extentForGrid:` for the board, and now the window. Each one is written in
+terms of the one below it, and nothing multiplies a cell size by a grid size twice. That is the
+whole trick to sizes that stay consistent.
 
-## Two panes, no layout policy
+This version takes its height from the board. *Adding More Game Stats*, in the last part of the
+book, changes it to the height of the taller of the board and the panel, because four counters can
+stand taller than a board of few rows.
 
-The original sets a `ProportionalLayout` on the morph and adds its children with layout frames: fractions for the part of the morph each one claims, offsets in pixels for the margins. Bloc says the same thing with a linear layout and padding, and the padding is where the margin lives:
+## Two panes
 
 ```
 LaserGameElement >> initialize
@@ -1328,11 +1456,19 @@ LaserGameElement >> initialize
 	self padding: (BlInsets all: self class gameMargin)
 ```
 
-This is the method as this chapter writes it; Section 4.4 moves the control panel to the left of the board and fills the window with a colour ramp instead of a flat colour.
+`BlLinearLayout horizontal` puts its children in a row, in the order they were added. That is the
+second layout of the book, after the grid layout of the board, and between them they do nearly
+everything this game needs.
 
-Padding is exactly the right tool here. In the original, the margin is spelled out four times over — `gameMargin @ gameMargin`, `gameMargin negated`, and the same again for the second pane — and a change to the constant has to be right in all of them. As padding, the element reserves the margin once and every child is inside it.
+The margin is **padding** on the game, not an offset on each child. Padding is reserved by the
+element once, and every child is placed inside it. Had we given each child a margin instead, the
+same constant would appear twice, and a change to it would have to be right in both places. Reach
+for padding when the space belongs to the container, and for a margin when it belongs to the child.
 
-Setting the grid builds the two panes, so that the same game element can be handed another grid later:
+*Add A Counter and Window Colors*, later in the book, replaces this method: the panel moves to the
+left of the board, and the flat background becomes a colour ramp.
+
+Setting the grid builds the two panes, so the same game element can be handed another grid:
 
 ```smalltalk
 LaserGameElement >> grid: aGrid
@@ -1356,18 +1492,19 @@ LaserGameElement >> rebuild
 	self extent: (self class extentForGrid: self grid)
 ```
 
-This is the method as this chapter writes it; Section 4.4 adds the panel before the board, since page 139 moves it to the left, and registers the block that keeps the counters current.
+Write the three accessors — `grid`, `board` and `controlPanel`. Only the grid has a setter, and it
+is the one above.
 
-Write the three accessors — `grid`, `board` and `controlPanel` — as reading methods; only the grid has a setter, and it is the one above.
-
-The last line does the work of the original's `setExtent`, which sends `self extent: self calculatedExtent`. It is part of rebuilding rather than a step of initialization, because a game with no grid has no size to ask for.
+The last line asks for the size the arithmetic gives. It belongs to rebuilding rather than to
+`initialize`, because a game with no grid has no size to ask for. That ordering — *a thing takes its
+size when it knows what it holds* — comes back every time the game grows.
 
 ## The blank panel
 
-Page 066 is explicit that the control panel starts as nothing more than a blank white rectangle, and that the buttons come later. So it does:
+The panel starts as nothing but a coloured rectangle. The controls go in next chapter:
 
 ```
-newControlPanel
+LaserGameElement >> newControlPanel
 	"Answer the control panel: a blank column of a fixed width, as tall as the board beside it. The
 	controls go in at the next step."
 
@@ -1379,40 +1516,38 @@ newControlPanel
 	^ panel
 ```
 
-That is the version this page ends with, and it is the only method of the port that a later page replaces
-outright: the next chapter gives the panel a class of its own, and `newControlPanel` becomes one line that
-answers an instance of it. It is printed here without the usual `LaserGameElement >>` heading because it is
-no longer what the image holds.
+Writing it this way, and not waiting until there is something to put in it, is worth a word. The
+window arithmetic, the layout and the margins are all exercised *now*, with a rectangle standing in
+for the panel. When the real panel arrives, the only new thing to get wrong is the panel itself.
 
-Two more colors join `LaserGameColors`, both taken from the original's `setWindowColors` and `makeControlPanelMorph`:
+Two colours join `LaserGameColors`:
 
 ```smalltalk
 LaserGameColors class >> gameWindowColor
-	"Answer the color behind the whole game: the margin around the board and the control panel.
-	This is the window color the original gives its morph."
+	"Answer the color behind the whole game: the margin around the board and the control panel."
 
 	^ Color r: 0.369 g: 0.369 b: 0.505
 ```
 
 ```
 LaserGameColors class >> controlPanelColor
-	"Answer the color of the control panel beside the board. The original starts with a blank white
-	rectangle there, and the buttons come later."
+	"Answer the color of the control panel beside the board: a blank white rectangle, with the
+	buttons still to come."
 
 	^ Color white
 ```
 
-This is the method as this chapter writes it; page 140 paints the panel transparent so that the window ramp runs behind it, and Section 4.4 follows it.
+The panel colour is a first version too: *Add A Counter and Window Colors* paints the panel
+transparent, so that the ramp behind the window runs behind it. The rule of the colours chapter
+holds in both versions — neither colour is written as a literal anywhere else.
 
-Page 061 asked for every color of the game to be written down in one place, and the rule holds: neither of these two is a `Color` literal anywhere else.
-
-> **Which side is the panel on?** Page 066 says "I'd like to place the game board on the left side of the morph and have a vertical control panel on the right", and that is the order we use: the board is the first child, the panel the second. The finished 2007 code does the opposite — its `setupMorphs` gives the control panel the fractions `0@0 corner: 0@1` at the left edge and offsets the board by `gameMargin + panelWidth` — so somewhere after this page the author changed their mind. We follow the sentence on the page, and turning the game around later means swapping two `addChild:` sends.
-
-There is a third pane in the original's `setupMorphs`, a four pixel strip under the left edge of the board called the laser-home morph. It marks where the beam enters. It belongs with the beam, so it arrives in Section 4 with the rest of the drawing of the laser.
+The board goes in first and the panel second, so the board is on the left. Turning the game around
+later means swapping two `addChild:` sends, and that is what a later chapter does.
 
 ## Opening it
 
-The original opens its morph from a menu. We give the class the two messages the board element already has — one to build, one to open — plus an example:
+The game gets the same two class methods the board element has, one to build and one to open, plus
+an example:
 
 ```smalltalk
 LaserGameElement class >> on: aGrid
@@ -1439,11 +1574,9 @@ LaserGameElement class >> openOn: aGrid
 	^ space
 ```
 
-*A Window The Player Can Resize*, at the end of Section 4, rewrites this method: the space is still opened at the size the game asks for, but the game then follows the window when the player drags its corner. The version above is the one this page leaves in the image.
-
 ```smalltalk
 LaserGameElement class >> openExample
-	"Open the demo grid of the tests, as the original opens its morph on the grid of the factory.
+	"Open the demo grid of the tests: the five by five board with ten mirrors and one target.
 
 	LaserGameElement openExample"
 
@@ -1451,40 +1584,20 @@ LaserGameElement class >> openExample
 	^ self openOn: GridFactory demoGrid
 ```
 
-The space is given the size the game asks for, so the window fits the game exactly and there is no second margin around it.
-
-## Rendering all the cells
-
-Page 067 takes the loop that has been sitting in the workspace since page 053 — walk the columns, walk the rows, ask `CellRenderer` for a renderer, tell it to render — and writes it as a method on the game, then calls it from `#initialize`. That method is `drawGameBoard`, and it is the last thing the workspace was needed for.
-
-We have nothing to do here, because that loop became a method three chapters ago, when the board element was written:
-
-```smalltalk
-LaserGameBoardElement >> rebuildCells
-	"Replace my children with one element per cell of my grid, row by row. The grid layout
-	places them, so no cell has to work out where it is on a shared surface."
-
-	self removeChildren.
-	self layout columnCount: self grid numberOfColumns.
-	1 to: self grid numberOfRows do: [ :row |
-		1 to: self grid numberOfColumns do: [ :column |
-			| location |
-			location := column @ row.
-			self addChild: (CellRenderer
-					 rendererFor: (self grid at: location)
-					 grid: self grid) newElement ] ]
-```
-
-It is called from `grid:` for the same reason `rebuild` is: the cells exist because the board has a grid, not because a window opened. And where the original has to remember to call `drawGameBoard` after `setupMorphs`, and later has to call it again whenever anything moves, our board rebuilds when it is given a grid and a single cell element is replaced when a single cell changes.
+The space is given the size the game asks for, so the window fits the game exactly and there is no
+second margin around it. *A Window The Player Can Resize* rewrites `openOn:` so that the game
+follows the window when the player drags its corner; the version above is the one this chapter
+leaves in the image.
 
 ## Checking it
 
-Six tests, and none of them opens a window. The arithmetic first, both as the sum of its parts and as the plain number it comes to for the demo grid:
+Six tests, and not one of them opens a window. The arithmetic first, both as the sum of its parts
+and as the plain number it comes to for the demo grid:
 
 ```
 LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins
 	"The game is as wide as the board, the panel beside it and a margin on each side, and as
-	tall as the board with a margin above and below. This is the original's calculatedExtent."
+	tall as the board with a margin above and below."
 
 	| grid expected |
 	grid := GridFactory demoGrid.
@@ -1496,7 +1609,12 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins
 		assert: (LaserGameElement extentForGrid: grid)
 		equals: 5 * CellRenderer cellExtent + (110 @ 0) + 20
 ```
-> **Note.** *Adding More Game Stats*, the second chapter of Section 5, takes the height of the taller of the board and the panel, since four counters can stand taller than a board of few rows.
+
+Two assertions about one answer, and they are not redundant. The first says the sum is built from
+the right parts; it would still pass if every part were wrong. The second says the answer is 380 by
+270, which is a number you can check against the window on your screen. A test that only restates
+the implementation proves nothing, and a test that only states a number does not say where the
+number came from.
 
 Then the two panes, in order:
 
@@ -1513,14 +1631,12 @@ LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
 	self assert: game layout class equals: BlLinearLayout
 ```
 
-This is the test as this chapter writes it; Section 4.4 turns the two children around, since page 139 puts the panel on the left.
-
 The panel keeps its width whatever the grid is, which is the point of a constant:
 
 ```
 LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoard
-	"The panel keeps the original's width whatever the grid is, and it is as tall as the board
-	beside it. Sizes are read from the layout constraints, since nothing is laid out yet."
+	"The panel keeps its width whatever the grid is, and it is as tall as the board beside it.
+	Sizes are read from the layout constraints, since nothing is laid out yet."
 
 	| grid game |
 	grid := GridFactory demoGrid.
@@ -1535,9 +1651,8 @@ LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoard
 		assert: game controlPanel background paint color
 		equals: LaserGameColors controlPanelColor
 ```
-> **Note.** *Adding More Game Stats*, the second chapter of Section 5, replaces this test with `testControlPanelIsAFixedColumnAsTallAsTheBoardOrItsContents`, since the panel keeps the height of what it holds when the board is shorter than that.
 
-And handing the game another grid replaces what it holds, rather than adding to it:
+And handing the game another grid replaces what it holds rather than adding to it:
 
 ```smalltalk
 LaserGameElementTestCase >> testSettingAnotherGridRebuildsTheGame
@@ -1558,9 +1673,46 @@ LaserGameElementTestCase >> testSettingAnotherGridRebuildsTheGame
 		equals: (LaserGameElement extentForGrid: smallGrid) x
 ```
 
-Two more do the remaining checks: `testBoardShowsTheGridOfTheGame` — the board renders the game's own grid, twenty five cell elements for the demo grid — and `testGameTakesTheExtentItCalculates`, which reads back the size, the padding and the window color of the game itself.
+`deny:identicalTo:` is the assertion that matters there. A board that had merely been emptied and
+refilled would pass an equality check; this one insists that it is a *different* board, which is
+what `rebuild` promises.
 
-Sizes are read from the layout constraints throughout, never from `extent`, for the reason given when the board was written: a fresh element measures `0.0@0.0` until a layout pass runs, and `forceLayout` is forbidden by a Renraku rule.
+```smalltalk
+LaserGameElementTestCase >> testBoardShowsTheGridOfTheGame
+	"The board the game holds renders the game's own grid, one element per cell."
+
+	| grid game |
+	grid := GridFactory demoGrid.
+	game := LaserGameElement on: grid.
+	self assert: game grid equals: grid.
+	self assert: game board grid equals: grid.
+	self assert: game board children size equals: 25
+```
+
+The last test reads back the size, the padding and the colour of the game itself:
+
+```
+LaserGameElementTestCase >> testGameTakesTheExtentItCalculates
+	"The game asks for exactly the size its own arithmetic gives, and the margin around its two
+	children is padding, so the color behind them shows through it."
+
+	| grid game |
+	grid := GridFactory demoGrid.
+	game := LaserGameElement on: grid.
+	self
+		assert: game constraints horizontal resizer size
+		equals: (LaserGameElement extentForGrid: grid) x.
+	self
+		assert: game constraints vertical resizer size
+		equals: (LaserGameElement extentForGrid: grid) y.
+	self assert: game padding top equals: LaserGameElement gameMargin.
+	self assert: game padding left equals: LaserGameElement gameMargin.
+	self assert: game padding right equals: LaserGameElement gameMargin
+```
+
+Sizes are read from the layout constraints throughout, never from `extent`, for the reason the blank
+cell test gave: a fresh element measures `0.0@0.0` until a layout pass runs, and `forceLayout` is
+forbidden by a Renraku rule.
 
 ## What it looks like
 
@@ -1568,45 +1720,58 @@ Sizes are read from the layout constraints throughout, never from `extent`, for 
 LaserGameElement openExample
 ```
 
-A window 380 by 270: the demo board, 250 by 250, on the left, the white panel 110 wide beside it, and a ten pixel margin of the window color around both. The original's screenshot of this page is the same picture with the panel on the other side, and with its note that the white panel on the right "may not be easy to tell" — ours is easy enough to tell, since the board no longer has to share a bitmap with anything.
+A window 380 by 270. The demo board, 250 by 250, on the left. The white panel, 110 wide, beside it.
+A ten pixel margin of the window colour around both.
 
-The workspace has done its job. From here the game opens itself, and the pages that follow put the controls in that white column.
+The examples on the renderers and on the board have done their job. From here the game opens itself,
+and the next chapter puts the controls in that white column.
 
 # Adding Controls
 
-*Pages 068 to 072 of the 2007 tutorial.*
-
-<!-- http://squeak.preeminent.org/tut2007/html/068.html
-     http://squeak.preeminent.org/tut2007/html/069.html
-     http://squeak.preeminent.org/tut2007/html/070.html
-     http://squeak.preeminent.org/tut2007/html/071.html
-     http://squeak.preeminent.org/tut2007/html/072.html -->
-
-The white column beside the board has been waiting since the last chapter. Two buttons go in it now. One quits the game, which is easy to describe and easy to write. The other fires the laser, which the original admits has not really been thought about yet: does the beam stay on, or only while the button is held down? It settles on a toggle, and so do we.
+The white column beside the board has been waiting since the last chapter. Two buttons go in it now.
+One quits the game, which is easy to describe and easy to write. The other fires the laser, and that
+one needs a decision first: should the beam stay on until the player says otherwise, or only while
+the button is held down? A button held down is a fiddly thing to play with, so the beam stays on, and
+the same button turns it off again. One button, two meanings, and a label that says which one is
+waiting.
 
 ## A class of its own
 
-The panel was a plain `BlElement` a chapter ago. Now that it holds things and has to keep them up to date, it becomes a class:
+The panel was a plain `BlElement` a chapter ago. Now that it holds things and has to keep them up to
+date, it becomes a class of its own:
 
-```smalltalk
+```
 BlElement << #LaserGameControlPanelElement
 	slots: { #game . #quitButton . #fireButton };
 	tag: 'Graphics';
 	package: 'Laser-Game'
 ```
 
-It keeps a reference to the game rather than to the grid. A button is an instruction from the player — *quit*, *fire* — and instructions go to the game, which decides what that means for the model and then shows the result. The panel never touches the grid.
+Three slots for now. The panel gains more of them as it gains buttons and counters, so this is the
+definition as this chapter leaves it and not the one the finished game has.
 
-```smalltalk
+It keeps a reference to the game and not to the grid. A button is an instruction from the player —
+*quit*, *fire* — and an instruction goes to the game, which decides what it means for the model and
+then shows the result. The panel never touches the grid.
+
+```
 LaserGameControlPanelElement >> initialize
-	"A panel is a blank column with its buttons at the bottom left corner, as the original places
-	them. A frame layout puts a child where it is aligned, which is what the original's layout
-	frames do."
+	"A panel is a blank column with its buttons at the bottom left corner. A frame layout puts a
+	child where it is aligned, which is what that corner needs."
 
 	super initialize.
 	self background: LaserGameColors controlPanelColor.
 	self layout: BlFrameLayout new
 ```
+
+`BlFrameLayout` is the third layout in the book, and the simplest to describe: every child says
+which corner, edge or centre of the frame it wants, and the layout puts it there. A grid layout
+places children in rows and columns, a linear layout places them one after another, and a frame
+layout places each one on its own. Buttons in the bottom left corner is one child in one corner, so
+a frame is what that needs. The counters that arrive in Section 4 take the top left corner of the
+same frame, and that is the reason a frame was chosen over a second linear layout.
+
+This version has no counters in its comment yet. *Add A Counter and Window Colors* adds them.
 
 ```smalltalk
 LaserGameControlPanelElement class >> on: aGame
@@ -1626,19 +1791,24 @@ LaserGameControlPanelElement >> game: aGame
 	self rebuild
 ```
 
-`BlFrameLayout` is the Bloc layout that matches Morphic's `ProportionalLayout`: a child says where in the frame it wants to be, and the layout puts it there. Write the readers `game`, `quitButton` and `fireButton`; only the game has a setter.
+That setter is the same pattern as `LaserGameBoardElement >> grid:`: being given what you work on is
+the moment you can build what shows it. Write the readers `game`, `quitButton` and `fireButton` as
+well; only the game gets a setter.
 
 ## One method makes a button
 
-The original writes `makeButton:action:state:` and builds a `PluggableButtonMorph` with a `StringMorph` label, rounded corners, an on color, an off color, a border width and a border color — nine messages of appearance before the button does anything. Toplo has all of that in its theme, so what is left is the label, the size and the action:
+Toplo, the widget library that sits on Bloc, has the button. `ToButton` already knows how to look
+pressed, how to look hovered, how to look disabled and how to draw a label, because all of that
+comes from the skin of the current theme. What is left for us is the label, the size and what a
+click does:
 
-> **Note.** The chapter *Buttons Of One Width*, at the end of Section 5, adds a line to this method, so that a button centres its label. It is quoted here as it read before that.
+> **Note.** *Buttons Of One Width*, at the end of the book, adds one line to this method so that a
+> button centres its label. It is quoted here as it reads before that.
 
 ```
 LaserGameControlPanelElement >> newButton: aLabel action: aBlock
-	"Answer a labelled button of the original's size that evaluates aBlock when it is clicked. The
-	original builds a PluggableButtonMorph with a StringMorph label and paints its colors by hand;
-	Toplo gives the look and the click, so only the label, the size and the action are left."
+	"Answer a labelled button that evaluates aBlock when it is clicked. Toplo gives the look and
+	the click, so only the label, the size and the action are left here."
 
 	| button |
 	button := ToButton labelText: aLabel.
@@ -1647,13 +1817,15 @@ LaserGameControlPanelElement >> newButton: aLabel action: aBlock
 	^ button
 ```
 
-> **Porting note.** The original's third argument, `state:`, is a selector that `PluggableButtonMorph` polls to decide whether to paint itself in its on color or its off color. Page 068 stubs those state methods out. A `ToButton` gets its pressed, hovered and disabled looks from the skin of the current theme, so there is nothing to poll and no stub to write. The state the game actually cares about — is the laser firing? — shows up in the *label* of the fire button, which is what pages 070 and 071 are about.
+`clickAction:` takes a block — a piece of code kept for later and run when the button is clicked.
+Nothing in the block runs now. It runs on the click, which is why the block can mention a game that
+has not been played yet.
 
 The two buttons are then one line each:
 
 ```smalltalk
 LaserGameControlPanelElement >> newQuitButton
-	"Answer the button that closes the game. The original sends #delete to its morph."
+	"Answer the button that closes the game."
 
 	^ self newButton: 'Quit' action: [ self game quit ]
 ```
@@ -1675,43 +1847,52 @@ LaserGameControlPanelElement >> fireButtonLabel
 		  ifFalse: [ 'Fire' ]
 ```
 
-The rule in that last method is the one page 069 states: the label names the action the click will cause, not the state the game is in. Beam off, the button says *Fire*. Beam on, it says *Stop*.
+That last method is the whole rule of a toggle button, and it is worth stating out loud because it
+is easy to get backwards: **the label names the action the click will cause, not the state the game
+is in.** Beam off, the button says *Fire*. Beam on, it says *Stop*. A button labelled with the state
+instead would say *Fire* while the beam is already firing, and the player would click it to fire
+again and watch the beam go out.
 
 ## Where the buttons sit
 
-Three numbers, all the original's:
+Three numbers. A button is forty wide and twenty tall, and everything is ten pixels from everything
+else:
 
-> **Note.** The chapter *Buttons Of One Width*, at the end of Section 5, widens a button to fifty pixels, so that its longest labels fit inside it. It is quoted here as it read before that.
+> **Note.** *Buttons Of One Width*, at the end of the book, widens a button to fifty pixels, so that
+> its longest labels fit inside it. It is quoted here as it reads before that.
 
 ```
 LaserGameControlPanelElement class >> buttonWidth
-	"Answer the width, in pixels, of a control panel button. The original's number."
+	"Answer the width, in pixels, of a control panel button."
 
 	^ 40
 ```
 
 ```smalltalk
 LaserGameControlPanelElement class >> buttonHeight
-	"Answer the height, in pixels, of a control panel button. The original's number."
+	"Answer the height, in pixels, of a control panel button."
 
 	^ 20
 ```
 
 ```smalltalk
 LaserGameControlPanelElement class >> buttonGap
-	"Answer the gap, in pixels, between the buttons and around the row they sit in. The original
-	spaces its buttons ten pixels apart, and the horizontal gap its arithmetic produces for two
-	buttons in a panel of this width comes to the same ten."
+	"Answer the gap, in pixels, between the buttons and around the row they sit in."
 
 	^ 10
 ```
 
-The original turns those into a position with `buttonLayoutFrameForRow:column:`, which takes a row counted from the bottom and a column counted from the left and returns a `LayoutFrame`: nine lines of arithmetic, including `xOffset := (self panelWidth - (2 * buttonWidth)) // 3`, which for a panel 110 wide and buttons 40 wide comes to 10 — the same gap it uses vertically. We let a layout do the arithmetic instead. The buttons go in a row, and the row goes in the corner:
+Now the placing. There is a way to do this by hand: ask where the bottom left corner of the panel
+is, subtract a button height and a gap, place the first button there, add a button width and a gap,
+place the second one. It works, and every later button costs another line of that arithmetic, and
+every change to a number means reading all of it again.
+
+The alternative is to let a layout do the arithmetic. The two buttons go in a row, the row says which
+corner it wants, and nothing is computed here at all:
 
 ```
 LaserGameControlPanelElement >> newButtonRow
-	"Answer the row of buttons: Quit first, then Fire, one gap apart. The original puts these two
-	in the bottom row of its panel, and the rest of its buttons come later."
+	"Answer the row of buttons: Quit first, then Fire, one gap apart."
 
 	| row |
 	row := BlElement new.
@@ -1728,10 +1909,26 @@ LaserGameControlPanelElement >> newButtonRow
 	^ row
 ```
 
+Four Bloc things in one method, and each is worth a sentence:
+
+- `BlLinearLayout horizontal` lays children out side by side, and `cellSpacing:` is the gap it leaves
+  between them. Ten pixels between *Quit* and *Fire*, stated once.
+- `fitContent` on both axes means the row is exactly as big as the buttons inside it. A row is not a
+  thing the player sees; it is a bag that holds two buttons in order, so it should have no size of
+  its own.
+- `frame horizontal alignLeft` with `frame vertical alignBottom` is the corner. These are the
+  constraints the frame layout of the panel reads, which is why they are `frame` constraints and the
+  two above are not.
+- `margin:` is the gap *outside* the row — between the row and the two panel edges it is aligned to.
+  Padding would be inside, between the row's edge and the buttons, and would push the buttons
+  without moving the row. The distinction turns up again in the next section, on the game itself.
+
+Then the panel builds its buttons and its row, and takes its own size:
+
 ```
 LaserGameControlPanelElement >> rebuild
-	"Replace what I hold with a fresh row of buttons for my game, and take the width of a panel and
-	the height of the board beside me."
+	"Replace what I hold with a fresh row of buttons for my game, and take the width of a panel
+	and the height of the board beside me."
 
 	self removeChildren.
 	quitButton := self newQuitButton.
@@ -1741,15 +1938,18 @@ LaserGameControlPanelElement >> rebuild
 		@ (LaserGameBoardElement extentForGrid: self game grid) y
 ```
 
-Both are shown as this chapter writes them. Section 4.4 adds the counter of page 141 above the buttons, and Section 4.5 adds a third button and puts each row of buttons in a column, so the row in the image today is built by `newRowOfButtons:` and `rebuild` fills more variables than these two.
+Both of those are shown as this chapter writes them. *Add A Counter and Window Colors* puts a
+counter above the buttons, and *Add Move Counter And Randomizer* adds a third button and gives the
+panel a column of button rows rather than one row, so the finished game builds a row with
+`newRowOfButtons:` and `rebuild` fills a good many more variables than these two.
 
-`cellSpacing:` is the gap between the buttons, the margin is the gap between the row and the two edges of the panel it is aligned to, and `alignLeft` with `alignBottom` is the corner. Three numbers in, no offsets computed by hand, and the next three buttons the original adds will be three more `addChild:` sends rather than three more calls into the arithmetic.
-
-Sizing the panel moves here too, out of the game: a panel knows it is `panelWidth` wide and as tall as the board beside it, so it can say so itself.
+Sizing the panel moves here too, out of the game: a panel knows it is `panelWidth` wide and as tall
+as the board beside it, so it is the panel that should say so. The game asked for that size in the
+last chapter; now it only has to leave room for it.
 
 ## What the buttons do
 
-The game gains the two actions, and the question the buttons ask it:
+The game gains the two actions the buttons send it, and the question they ask it:
 
 ```smalltalk
 LaserGameElement >> laserIsActive
@@ -1761,7 +1961,7 @@ LaserGameElement >> laserIsActive
 ```smalltalk
 LaserGameElement >> toggleLaser
 	"Fire the laser, or stop it if it is already firing, and show the result. This is what the fire
-	button does, and it is the original's #fireLaser on the morph."
+	button does."
 
 	self laserIsActive
 		ifTrue: [ self grid stopLaser ]
@@ -1771,27 +1971,43 @@ LaserGameElement >> toggleLaser
 
 ```
 LaserGameElement >> quit
-	"Close the game. The original sends #delete to its morph."
+	"Close the game, by closing the space it is shown in."
 
 	self space ifNotNil: [ :aSpace | aSpace close ]
 ```
 
-Page 144 makes Quit ask before it closes, so from Section 4.5 on this method is called `close` and `quit` is the question.
+`space` is the window the element is shown in, and it is `nil` until a space adopts the element.
+A game built in a test has no space, so `ifNotNil:` is not caution for its own sake: it is the
+difference between a test that passes and a test that errors.
+
+*Add Move Counter And Randomizer* makes Quit ask before it closes, because by then Quit sits next to
+four other buttons and is easy to hit by accident. This method keeps its body and takes the name
+`close` there, and `quit` becomes the question.
 
 ```
 LaserGameElement >> refresh
-	"Show what the model says now: redraw the cells and put the right label on the fire button.
-	This is the original's #updateGameBoardAndControls, without the counters it does not have yet."
+	"Show what the model says now: redraw the cells and put the right label on the fire button."
 
 	self board rebuildCells.
 	self controlPanel updateFireButtonLabel
 ```
 
-This is the method as this chapter writes it; page 142 adds the counters to it, and Section 4.4 with it.
+One method that shows everything the model currently says. Every action on the game ends by sending
+it, which is why no action has to remember what it changed. `refresh` grows as the window grows —
+*Add A Counter and Window Colors* adds the counters to it — and the callers never change.
 
-Page 070 pauses over a design choice in the middle of `toggleLaser`: one method that looks at the state and does one of two things, or a button that is given a different action each time its label changes. It keeps the single method, and so do we — the button asks the game to toggle, and the game is the one place that decides what toggling means. Its name here is `toggleLaser` rather than the original's `fireLaser`, because a method that may stop the laser should not be called firing it, and because `Grid >> fireLaser` already has that name for the thing that really does fire it.
+There is a design choice hiding in the middle of `toggleLaser`, and it is worth naming. The
+alternative to one method that looks at the state is a button whose action block is *replaced* every
+time the label changes: a Fire button whose block fires, swapped for a Stop button whose block stops.
+That works, and it puts the knowledge of what state the game is in into two places — the label and
+the block — which then have to agree. One method that asks the model keeps it in one place. The
+model is the thing that knows.
 
-And `newControlPanel` on the game now answers the new class:
+The name is `toggleLaser` and not `fireLaser`, for two reasons. A method that may *stop* the laser
+should not be called firing it. And `Grid >> fireLaser` already has that name, for the thing that
+really does fire it.
+
+Finally, the game's `newControlPanel` answers the new class instead of a blank element:
 
 ```smalltalk
 LaserGameElement >> newControlPanel
@@ -1800,124 +2016,34 @@ LaserGameElement >> newControlPanel
 	^ LaserGameControlPanelElement on: self
 ```
 
-## A lookup we do not need
+## Holding the button instead of looking for it
 
-Page 071 hits the problem that the label does not change when the beam does. Its fix is to name the button — `btn name: 'fireButton'` — then find it again by walking the submorphs:
-
-```
-findFireButton
-	^self allMorphs detect: [:m | m knownName = 'fireButton'] ifNone: []
-```
-
-We hold the button in an instance variable, so there is nothing to search for and nothing to name:
+Run the game now and the button works, but the label does not change. Clicking *Fire* lights the
+target and the button still says *Fire*. This is the bug every toggle has at least once: something
+has to put the new label on the button, and nothing does.
 
 ```smalltalk
 LaserGameControlPanelElement >> updateFireButtonLabel
-	"Make the fire button say what a click will do now. The original has to find the button among
-	its submorphs by name; I hold it in an instance variable."
+	"Make the fire button say what a click will do now. I hold the button in an instance variable,
+	so it does not have to be looked for."
 
 	self fireButton labelText: self fireButtonLabel
 ```
 
-That is the whole of page 071 on this side of the port. The reason the original needs the lookup is that its buttons are created inside `addButtonsToPanel:` and handed to a layout, and nobody keeps them; the panel being a class of its own is what makes keeping them natural.
+Two methods, one word apart in their names, and the difference between them is the whole lesson:
+`fireButtonLabel` *answers* the label, and `updateFireButtonLabel` *puts it on the button*. The first
+is a question with no side effect, and can be asked in a test without a window. The second changes
+something, and is sent from `refresh`.
 
-## The model work of page 069 is already here
-
-Page 069 spends most of its length in the model: it checks the senders of `laserIsActive` and `laserIsActive:`, finds that the flag is only ever read and never turned on, writes unit tests for two new methods, then writes them. All four methods are in the code we inherited, which is the finished 2007 version:
-
-```smalltalk
-Grid >> fireLaser
-	self laserIsActive: true.
-	self activateCellsInPath.
-```
-
-```smalltalk
-Grid >> stopLaser
-	self laserIsActive: false.
-	self clearCellsInPath.
-```
-
-```smalltalk
-Grid >> clearCellsInPath
-	self calculatePath.
-	self laserBeamPath do: [:pe |
-		pe clearCell]
-```
-
-`clearCellsInPath` is the method the page arrives at by noticing that `stopLaser` cannot use `activateCellsInPath`: the path has to be walked to know which cells to touch, but their segments have to be cleared rather than lit. The two differ in one message, `clearCell` against `activateCell`.
-
-Its tests are here too, and they are page 069's tests:
-
-```smalltalk
-GridTestCase >> testFireLaser
-
-	| grid cell |
-	grid := self generateDemoGrid.
-	grid fireLaser.
-	self assert: grid laserIsActive.
-	cell := grid startingCell.
-	self assert: cell isOn.
-	cell := grid at: 5 @ 1.
-	self assert: cell isOn
-```
-
-```smalltalk
-GridTestCase >> testStopLaser
-
-	| grid cell |
-	grid := self generateDemoGrid.
-	grid stopLaser.
-	self shouldnt: [ grid laserIsActive ].
-	cell := grid startingCell.
-	self assert: cell isOff.
-	cell := grid at: 5 @ 1.
-	self assert: cell isOff
-```
-
-> **Porting note.** Where the page clicks the *senders* button in the browser, the same question is one call in an image driven from the outside: `find_senders` for `laserIsActive:`, which answers `fireLaser`, `stopLaser`, `initialize` and `reset`. The answer is longer than the page's, because the page is looking at the code *before* `fireLaser` and `stopLaser` were written.
-
-## Deleting what the panel replaces
-
-The 2007 button code has a Bloc counterpart now, so it goes, the way each `Form` drawing method went as its element arrived. Nine methods leave `LaserGame`:
-
-| Deleted | Replaced by |
-|---|---|
-| `makeQuitGameButton`, `makeFireLaserButton` | `newQuitButton`, `newFireButton` |
-| `fireButtonLabel` | `LaserGameControlPanelElement >> fireButtonLabel` |
-| `findFireButton`, `updateFireButtonLabel` | `updateFireButtonLabel`, with the button held in a slot |
-| `laserActive` | `LaserGameElement >> laserIsActive` |
-| `fireLaser` (the morph's, not the grid's) | `LaserGameElement >> toggleLaser` |
-| `quitGame`, `quitGameAction` | `LaserGameElement >> quit` |
-
-What stays is what later pages still need to be read from: `makeButton:action:state:` builds five buttons, three of which arrive in Section 3; `addButtonsToPanel:`, `makeControlPanelMorph`, `buttonLayoutFrameForRow:column:` and the counter methods go with those pages. They are dead code either way — nothing instantiates the morph — and three of them now send a method that no longer exists, which the critics report and which this project accepts for the same reason as before: a broken method on the old stack is a method with a deadline, and the deadline is the page that replaces it.
-
-## Page 072: the bug that is not there any more
-
-The original opens its morph, clicks *Fire*, clicks *Stop*, and finds the target cell still reporting `isOn`. Page 072 is the diagnosis: halos, *inspect morph*, into the grid, into the cells, down to the target at `5@1`, and the conclusion that the graphic is right and the model is wrong. Page 073 then writes the unit test that reproduces it.
-
-That test is in the package already:
-
-```smalltalk
-GridTestCase >> testToggleLaser
-
-	| grid cell |
-	grid := self generateDemoGrid.
-	grid fireLaser.
-	grid stopLaser.
-	self shouldnt: [ grid laserIsActive ].
-	cell := grid startingCell.
-	self assert: cell isOff.
-	cell := grid at: 5 @ 1.
-	self assert: cell isOff
-```
-
-And it passes. The code we inherited is the tutorial's *finished* code, so the fix the following pages arrive at is already in it: `Cell >> clearCell` resets the whole segment dictionary, which puts every side of the cell out, and `isOn` answers whether any side is lit. So the symptom the original is about to chase does not reproduce here, and clicking *Fire* then *Stop* in our window leaves the target idle.
-
-This is the first place where the port cannot follow the tutorial's story, only its conclusion. The next step reads page 073 against the code and confirms that: nothing to fix, and a test that already covers the bug.
+That `self fireButton` is the reason the panel became a class with slots in it. A panel that built
+its buttons and handed them straight to a layout would have to go looking for the fire button among
+its children when the label changed — walk the children, find the one whose label is *Fire* or
+*Stop*, hope no other button ever says that. Holding the button in an instance variable the moment
+it is built costs one slot and removes the search entirely.
 
 ## Checking it
 
-The panel's own tests are in `LaserGameControlPanelElementTestCase`, built on one helper:
+The panel's tests are built on one helper, so that no test has to assemble a game:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> newPanel
@@ -1926,10 +2052,12 @@ LaserGameControlPanelElementTestCase >> newPanel
 	^ (LaserGameElement on: GridFactory demoGrid) controlPanel
 ```
 
+The first test is the shape of the panel: what it holds, in what order, and what the buttons say.
+
 ```
 LaserGameControlPanelElementTestCase >> testPanelHoldsARowOfTwoButtons
-	"The game's panel is a control panel element. It holds one child, the row, and the row holds the
-	Quit button then the Fire button. The rest of the original's buttons arrive with their own pages."
+	"The game's panel is a control panel element. It holds one child, the row, and the row holds
+	the Quit button then the Fire button."
 
 	| panel row |
 	panel := self newPanel.
@@ -1944,12 +2072,12 @@ LaserGameControlPanelElementTestCase >> testPanelHoldsARowOfTwoButtons
 	self assert: panel fireButton labelText asString equals: 'Fire'
 ```
 
-This is the test as this chapter writes it; Section 4.4 gives the panel a second child, so the row is read from `buttonRow` rather than from the children.
+The second is where the row sits:
 
 ```
 LaserGameControlPanelElementTestCase >> testButtonRowSitsAtTheBottomLeftOneGapIn
 	"The row is aligned to the bottom left corner of the panel, one gap away from both edges, and
-	the buttons inside it are one gap apart. That is where the original's layout frames put them."
+	the buttons inside it are one gap apart."
 
 	| panel row |
 	panel := self newPanel.
@@ -1968,9 +2096,16 @@ LaserGameControlPanelElementTestCase >> testButtonRowSitsAtTheBottomLeftOneGapIn
 		equals: LaserGameControlPanelElement buttonGap
 ```
 
-This is the test as this chapter writes it; Section 4.4 gives the panel a second child, so the row is read from `buttonRow` rather than from the children.
+Both are quoted as this chapter writes them. Once the panel holds a counter column as well as a
+button column, `panel children first` is no longer the row, and both tests read it from
+`panel buttonRow` instead.
 
-The label rule gets two tests, one for what it answers and one for it reaching the button. They are separate on purpose: the label follows the grid only when something updates it, and forgetting to update is exactly the mistake of page 071.
+Notice what these two tests do *not* do: they never ask where the row actually ended up in pixels.
+They assert the alignment, the margin and the spacing — the three numbers we wrote — and leave the
+arithmetic to Bloc. A test that asserted a pixel position would be asserting Bloc's layout code,
+would need a laid-out element to do it, and would break the first time the panel changed width.
+
+The label rule gets two tests, one for what it answers and one for it reaching the button:
 
 ```smalltalk
 LaserGameControlPanelElementTestCase >> testFireButtonSaysWhatAClickWillDo
@@ -1998,14 +2133,29 @@ LaserGameControlPanelElementTestCase >> testUpdatingTheLabelPutsItOnTheButton
 	self assert: panel fireButton labelText asString equals: 'Stop'
 ```
 
-Two more check the sizes: `testButtonsKeepTheOriginalSize`, for forty by twenty on both buttons, and `testPanelIsAPanelWideColumnAsTallAsTheBoard`, which is the sizing that moved out of the game.
+They are separate on purpose, and the second one is the more interesting of the two. Look at its
+third line: the grid is already firing and the button still says *Fire*. That assertion is not a
+mistake — it is the bug of the previous section, written down and kept. The label follows the model
+only when something updates it, and forgetting to update is the mistake that is easy to make twice.
+A test that fires the grid and then expects *Stop* without an update would hide exactly the thing
+worth remembering.
 
-On the game side, one test does the whole round trip a player makes — click, look, click again — without a window:
+Two more tests check the sizes: `testEveryButtonIsFortyByTwenty`, which reads both numbers from the
+layout constraints of each button, and `testPanelIsAPanelWideColumnAsTallAsTheBoardOrItsContents`,
+which is the sizing that moved out of the game and into `rebuild`.
 
-```
+Sizes are read from `constraints horizontal resizer size` and not from `extent`, for the reason the
+cell element chapter gave: nothing in these tests is laid out, so the extent of a fresh element is
+still `0@0`, and what a test can read is the size the element *asked for*.
+
+On the game side, one test does the whole round trip a player makes — click, look, click again —
+with no window anywhere:
+
+```smalltalk
 LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain
 	"The fire button toggles: the first click fires the laser and lights the target, the second
-	stops it and puts the target out. The board and the button label both follow."
+	stops it and puts the target out. The board and the button label both follow. The disc is the
+	last child of the target, since a lit target draws the beam under its picture."
 
 	| game target |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -2014,25 +2164,32 @@ LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain
 	self assert: game laserIsActive.
 	self assert: target isOn.
 	self
-		assert: (game board cellElementAt: 5 @ 1) children fourth background paint color
+		assert: (game board cellElementAt: 5 @ 1) children last background paint color
 		equals: LaserGameColors targetCenterColorActive.
 	self assert: game controlPanel fireButton labelText asString equals: 'Stop'.
 	game toggleLaser.
 	self deny: game laserIsActive.
 	self assert: target isOff.
 	self
-		assert: (game board cellElementAt: 5 @ 1) children fourth background paint color
+		assert: (game board cellElementAt: 5 @ 1) children last background paint color
 		equals: LaserGameColors targetCenterColorIdle.
 	self assert: game controlPanel fireButton labelText asString equals: 'Fire'
 ```
-> **Note.** *Laser On Target Cell*, in Section 4, draws the beam under the picture of the target, so this test reads the disc as the last child of the cell and its comment says so.
 
-That single test is page 069, page 070, page 071 and the check of page 072 together: the model toggles, the drawing follows, the label follows, and the target goes out again when the beam stops. And quitting a game nobody opened is harmless, which is worth one test because `space` is `nil` until a space adopts the element:
+That single test is this whole chapter: the model toggles, the drawing follows, the label follows,
+and the target goes out again when the beam stops. It is also the first test in the book that reads
+through three objects to check one click — the game, its board, the cell element — and it is worth
+pausing on how cheap that is. No window is opened. No click is simulated. The action a button sends
+is a message, so a test can send the same message, and everything the player would see is an object
+it can ask.
+
+And quitting a game nobody opened should be harmless, which is worth a test of its own because
+`space` is `nil` until a space adopts the element:
 
 ```
 LaserGameElementTestCase >> testQuittingAGameThatIsNotOpenDoesNothing
-	"Quit closes the space the game is in. A game that was never opened has no space, and asking it
-	to quit is harmless."
+	"Quit closes the space the game is in. A game that was never opened has no space, and asking
+	it to quit is harmless."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -2041,7 +2198,10 @@ LaserGameElementTestCase >> testQuittingAGameThatIsNotOpenDoesNothing
 	self assert: game children size equals: 2
 ```
 
-Section 4.5 drops this test: once Quit asks first, a game that was never opened answers the question rather than closing, and a test of that answer takes its place.
+That last assertion is the test's real point: after quitting a game that is not open, the game is
+still intact — board and panel, two children. *Add Move Counter And Randomizer* drops this test:
+once Quit asks before it closes, a game that was never opened answers the question instead of
+closing, and a test of that answer takes its place.
 
 ## What it looks like
 
@@ -2049,24 +2209,31 @@ Section 4.5 drops this test: once Quit asks first, a game that was never opened 
 LaserGameElement openExample
 ```
 
-The same window as the last chapter, with two buttons in the bottom left of the white column: *Quit* and *Fire*. Click *Fire* and the target lights up and the button becomes *Stop*; click it again and the target goes out and the button is *Fire* once more. Click *Quit* and the window closes.
+The same window as the last chapter, with two buttons in the bottom left of the white column: *Quit*
+and *Fire*. Click *Fire* and the target lights up and the button becomes *Stop*. Click it again and
+the target goes out and the button is *Fire* once more. Click *Quit* and the window closes.
 
-The beam is still invisible — it is the target reacting that tells us the laser reached it. Drawing the beam is Section 4.
+The beam itself is still invisible — it is the target reacting that tells us the laser reached it.
+Drawing the beam is Section 4.
 
 # A Unit Test To Demonstrate A Bug
 
-*Pages 073 and 073A of the 2007 tutorial.*
+The window works. The board is drawn, the buttons are there, *Fire* lights the target and *Stop* puts
+it out. That is a good moment to look for the bug, because a game that looks right is exactly where
+a bug of this shape hides: the kind where the flag says one thing and the cells say another.
 
-<!-- http://squeak.preeminent.org/tut2007/html/073.html
-     http://squeak.preeminent.org/tut2007/html/073A.html -->
+This chapter is about the method for finding it. A symptom on the screen is not something you can
+work with. A failing test is. So the shape of the work is always the same: make the symptom into an
+assertion, watch it fail, read the chain of methods it runs through, find the one that does less than
+its name claims, and fix that one.
 
-Section 2 ends with a bug hunt. The fire button works, but stopping the laser leaves the target lit, so the author goes back to `GridTestCase`, adds cell assertions to the two laser tests, writes a third test that fires and then stops, watches it fail, opens the debugger on it, steps until the fault shows itself, and repairs it in three small methods.
+## Assert the cells, not only the flag
 
-The port inherits the finished 2007 code, which is the code *after* that repair. So this chapter has nothing to write. It reads the page against the image, shows that the test the page asks for is already there and green, shows where the fix lives, and — since a bug nobody can see is a poor lesson — reproduces the 2007 failure in a workspace without touching a single method.
-
-## The tests the page writes
-
-The page first strengthens the two existing tests, so that they check the cells and not only the flag. Both are in the image exactly so:
+The two tests written for the laser so far check the flag, and the flag is the least interesting
+thing in the grid. `laserIsActive` is one boolean that `fireLaser` sets by hand; it would still be
+right if the beam never touched a single cell. What a player sees is the cells. So both tests are
+strengthened to check two of them: the cell the beam starts from, and the target at `5@1` the demo
+grid's mirrors send it to.
 
 ```smalltalk
 GridTestCase >> testFireLaser
@@ -2094,7 +2261,29 @@ GridTestCase >> testStopLaser
 	self assert: cell isOff
 ```
 
-Then the test that is supposed to fail:
+`isOn` and `isOff` are the two questions a cell answers about its own segments:
+
+```smalltalk
+Cell >> isOn
+	^self activeSegments values anySatisfy: [:each | each = true]
+```
+
+```smalltalk
+Cell >> isOff
+	^self isOn not
+```
+
+A cell is on when *any* of its four sides is lit. That is worth noting now, because the bug in this
+chapter is about sides that stay lit when they should not.
+
+Both tests pass. `testStopLaser` passes for an uninteresting reason, though: it stops a laser that
+was never fired, so the cells it checks were off before it started. The test is green, and the path
+through the code it exercises is the empty one.
+
+## The test that names the bug
+
+The interesting order is the one a player produces: fire, then stop. One test, three lines longer
+than nothing, and it is the whole of the bug hunt:
 
 ```smalltalk
 GridTestCase >> testToggleLaser
@@ -2110,20 +2299,29 @@ GridTestCase >> testToggleLaser
 	self assert: cell isOff
 ```
 
-It does not fail. `Laser-Game` runs 85 tests, 85 passed, 0 failed, 0 errored, and this is one of them.
+That is the shape to copy whenever two methods undo each other. Testing each one on a fresh object
+proves very little: the second of them only has work to do once the first has run. Fire then stop,
+push then pop, open then close, add then remove — the test that matters is the pair, in order, on
+the same object.
 
-## Where the fix already is
+## The mistake this test catches
 
-The original's `clearCellsInPath` calculated the path and then did nothing with it:
+Here are the two methods it runs through:
 
+```smalltalk
+Grid >> fireLaser
+	self laserIsActive: true.
+	self activateCellsInPath.
 ```
-clearCellsInPath
-	self calculatePath.
+
+```smalltalk
+Grid >> stopLaser
+	self laserIsActive: false.
+	self clearCellsInPath.
 ```
 
-That is the whole bug. The debugger sequence of the page — restart, over, into — ends on this method, and the page's conclusion is that it "works as written": a correct path, built and dropped.
-
-The repair is to make it the mirror image of its template, which the page quotes first:
+Each lowers or raises the flag and then does the work on the cells. And the work is a pair of
+methods that have to be mirror images of each other:
 
 ```smalltalk
 Grid >> activateCellsInPath
@@ -2139,7 +2337,67 @@ Grid >> clearCellsInPath
 		pe clearCell]
 ```
 
-One selector apart. The page then follows `activateCell` down and writes the same chain for clearing, and both halves of it are in the image:
+One selector apart: `activateCell` against `clearCell`. Walk the path, light each element, or walk
+the same path and put each one out.
+
+Now the mistake. It is the easiest one in this whole game to make, because the first line of
+`clearCellsInPath` is the line that *looks* like the method:
+
+```
+clearCellsInPath
+	self calculatePath.
+```
+
+A correct path, computed and then dropped. The method answers without error, the flag goes down,
+`laserIsActive` reports false, and every cell the beam was crossing stays lit. Nothing complains.
+The only thing that notices is a test that asks a cell.
+
+Write `clearCellsInPath` that way, run `testToggleLaser`, and the failure is on
+`self assert: cell isOff` for the starting cell. From a red test, the way to the method is short:
+open the failure in the debugger, step into `stopLaser`, step into `clearCellsInPath`, and look at
+what it does with the path it just built. The debugger is the fastest reader of this bug because the
+answer is not a wrong value anywhere — it is a line that is missing.
+
+## Seeing the bug without breaking the code
+
+A bug nobody can see is a poor lesson, and putting a broken method back in the image to look at it
+is a poor habit. The grid can be made to misbehave from a playground instead, because `stopLaser` is
+three statements and the broken version is the same three with the last one doing nothing:
+
+```smalltalk
+| grid |
+grid := GridFactory demoGrid.
+grid fireLaser.
+"The broken version of stopLaser: lower the flag, calculate the path, clear nothing."
+grid laserIsActive: false.
+grid calculatePath.
+grid laserBeamPath count: [ :pe | pe cell isOn ]
+```
+
+It answers `9`. Every cell along the beam is still lit, the starting cell among them. That is the
+useful detail the counting brings out: the fault was not about the target cell at all, even though
+the target is where a player notices it. Nine cells are wrong, and the one with a picture on it is
+the one that shows.
+
+The same snippet with the real `stopLaser` in the middle answers `0`:
+
+```smalltalk
+| grid |
+grid := GridFactory demoGrid.
+grid fireLaser.
+grid stopLaser.
+grid calculatePath.
+grid laserBeamPath count: [ :pe | pe cell isOn ]
+```
+
+A playground that can play a broken version of a method against real objects is worth remembering.
+It gives the symptom, and the count, and the answer to *how many* and *which ones*, without a single
+edit to the package.
+
+## The chain the fix runs down
+
+`clearCell` is sent to a path element, which hands it to its cell, which resets its segments. Three
+one-line methods, and each of them mirrors one on the lighting side:
 
 ```smalltalk
 LaserPathElement >> activateCell
@@ -2156,7 +2414,8 @@ Cell >> clearCell
 	self initializeActiveSegments
 ```
 
-The last of those is the page's "reset the cell segments by reusing the initialization technique", and this is the method it reuses:
+And the last one does not write any new code at all. Putting every side of a cell out is exactly
+what a fresh cell already does, so clearing reuses the method the cell is initialized with:
 
 ```smalltalk
 Cell >> initializeActiveSegments
@@ -2167,54 +2426,30 @@ Cell >> initializeActiveSegments
 	self activeSegments at: #west put: false.
 ```
 
-## Reproducing the 2007 bug without breaking the image
+That is worth noticing. "Reset it to how it started" and "initialize it" are the same operation, and
+whenever the second one is already written as a method of its own, the first one is a single send.
+It is also why `clearCell` is correct for a cell the beam crossed twice: it does not subtract a
+side, it puts all four out.
 
-The bug is easy to see without putting it back. `stopLaser` is three statements, and the 2007 version is the same three with the last one doing nothing, so a workspace can play that version directly against a demo grid:
+## What this chapter is really teaching
 
-```smalltalk
-| grid |
-grid := GridFactory demoGrid.
-grid fireLaser.
-"What stopLaser did in 2007: lower the flag, calculate the path, clear nothing."
-grid laserIsActive: false.
-grid calculatePath.
-grid laserBeamPath count: [ :pe | pe cell isOn ]
-```
+Four habits, and they are the same four every time:
 
-It answers `9`: every cell on the beam path is still on, the starting cell among them. That is precisely what page 073's debugger shows, and why the page notes that the fault is not specific to the target cell.
+1. **Assert what the player sees, not the flag that implies it.** A boolean the code sets by hand
+   agrees with itself. The cells are the thing that can disagree.
+2. **Test the pair, in order.** Methods that undo each other are only interesting together.
+3. **Let the failing test pick the method.** The debugger opened on a red test puts you inside the
+   method with the bug in it, which beats reading the whole class looking for it.
+4. **Suspect the method that does less than its name.** `clearCellsInPath` that clears nothing is
+   not a wrong calculation; it is a missing line. Those are invisible on a reading and obvious under
+   an assertion.
 
-The same snippet with the real `stopLaser` in the middle answers `0`:
+## Checking it
 
-```smalltalk
-| grid |
-grid := GridFactory demoGrid.
-grid fireLaser.
-grid stopLaser.
-grid calculatePath.
-grid laserBeamPath count: [ :pe | pe cell isOn ]
-```
+Run the whole package. Every test is green, including the three laser tests of this chapter, and the
+grid now toggles correctly however many times it is asked to.
 
-> **Porting note.** The original writes this fix inside the debugger, which is the Squeak and Pharo habit the tutorial teaches in Section 1. Nothing here fails, so there is no debugger to code in. The habit still applies to every method the port writes for itself: a failing test first, then the method.
+Section 2 is finished. The game can be opened, it draws its board, its mirrors and its target, and
+one button fires the laser and stops it again. What it cannot do is let the player touch anything on
+the board. That is the next section, where the cells start listening to the mouse.
 
-## The Section 2 inventory of page 073A
-
-Page 073A closes the section with an inventory: every class and method a reader's image should hold at this point. It is 179 entries, counting the class definitions, and it can be checked against the image mechanically rather than by eye.
-
-157 of the 179 are present. The 22 that are not divide into four groups, and each was recorded when it happened:
-
-| Absent from the image | Why |
-|---|---|
-| `LaserGame >> makeQuitGameButton`, `makeFireLaserButton`, `fireButtonLabel`, `findFireButton`, `updateFireButtonLabel`, `laserActive`, `fireLaser`, `quitGame` | deleted at 2.16, when `LaserGameControlPanelElement` and the game element took over the buttons and the firing |
-| `MirrorCellRenderer >> renderContents`, `renderContentsLeanLeft`, `renderContentsLeanRight` | replaced at 2.12 by `renderContentsOn:`, `renderContentsLeanLeftOn:`, `renderContentsLeanRightOn:`, which add child elements to a cell element instead of drawing into a `Form` |
-| `TargetCellRenderer >> renderContents`, `renderContentsOn`, `renderContentsOff`, `drawTargetOutlines`, `drawCircleOutline`, `drawCrossHairsOutlines`, `renderInnerCircleColor:` | replaced at 2.13 by `renderContentsOn:`, `renderRingOn:`, `renderCrossHairsOn:`, `renderCenterOn:`, `newCircleOfRadius:` and `addOutlineLineFrom:to:on:` |
-| `CellRendererTestCase >> testCellOffsetCalculations` | deleted at 2.11: it built a `Form` to assert offsets that the board layout now computes |
-| `CellRendererTestCase >> testRenderSelection`, `GridTestCase >> testNonDefaultGridSizeConditions` | renamed before the port began. The captured source has `testRendererSelection` and `testNonDefaultGridSizeInitialConditions`, so these are the 2007 author's own later edits, not ours |
-| `Object >> revisit:` | never captured. The 2007 image carried a one-line marker method on `Object`; the source this port started from does not have it, and no ported code sends it |
-
-The inventory is also much shorter than the package, because it is a snapshot of the reader's image at the end of Section 2 while the captured source is the finished game: `Grid` alone holds pushing, rotation, undo and the counters that Sections 3 and 4 add, and the package holds the seven `CellClickRegion` classes and the reverse-action classes on top of that.
-
-## No commit for this step
-
-This step changes no code, so it produces no commit — the second such step in the section, after 2.14. The page's test, `GridTestCase >> testToggleLaser`, passes; the fix it leads to is in `Cell >> clearCell`, `LaserPathElement >> clearCell` and `Grid >> clearCellsInPath`; and the bug is visible on demand from a workspace.
-
-Section 2 is finished. Page 074 opens Section 3, where the cells start listening to the mouse.
