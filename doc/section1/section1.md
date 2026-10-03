@@ -1944,22 +1944,17 @@ test does not give you is a picture:
 grid := GridTestCase new generateDemoGrid.
 grid calculatePath.
 grid laserBeamPath collect: [ :pe | pe cell gridLocation ]
+>>> {(1@5). (2@5). (3@5). (4@5). (4@4). (4@3). (4@2). (4@1). (5@1)}
 ```
 
 The demo board lives in the test class for now, and `GridTestCase new generateDemoGrid` is how a
 playground borrows it. From *Drawing the mirror* onwards the same board is `GridFactory demoGrid`,
 which is what the rest of this book writes.
 
-It answers nine locations:
-
-```text
-{(1@5). (2@5). (3@5). (4@5). (4@4). (4@3). (4@2). (4@1). (5@1)}
-```
-
-Follow them on the board picture from *Game overview*. The beam comes in at the bottom left, the
-mirror there turns it east along the bottom row, the mirror at `4@5` turns it north, it runs up
-column four to the mirror at `4@1`, and that one turns it east into the target at `5@1`. Nine cells,
-and the last of them is the target.
+It answers nine locations. Follow them on the board picture from *Game overview*. The beam comes in
+at the bottom left, the mirror there turns it east along the bottom row, the mirror at `4@5` turns
+it north, it runs up column four to the mirror at `4@1`, and that one turns it east into the target
+at `5@1`. Nine cells, and the last of them is the target.
 
 Asking for the entry sides instead is just as useful:
 
@@ -1968,10 +1963,7 @@ Asking for the entry sides instead is just as useful:
 grid := GridTestCase new generateDemoGrid.
 grid calculatePath.
 grid laserBeamPath collect: [ :pe | pe entrySide ]
-```
-
-```text
-#(#south #west #west #west #south #south #south #south #west)
+>>> #(#south #west #west #west #south #south #south #south #west)
 ```
 
 Read that against the locations. While the beam runs east the cells are entered from the west; while
@@ -2026,10 +2018,7 @@ Which cells? The same question as the end of the last chapter, over the first do
 
 ```smalltalk
 (self laserBeamPath first: 12) collect: [ :pe | pe cell gridLocation ]
-```
-
-```text
-{(1@5). (2@5). (1@5). (1@4). (1@5). (2@5). (1@5). (1@4). (1@5). (2@5). (1@5). (1@4)}
+>>> {(1@5). (2@5). (1@5). (1@4). (1@5). (2@5). (1@5). (1@4). (1@5). (2@5). (1@5). (1@4)}
 ```
 
 Four steps and it is back where it started. Three locations, over and over. A beam that returns to a
