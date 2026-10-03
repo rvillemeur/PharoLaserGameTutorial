@@ -185,16 +185,16 @@ Net: 55 chapters become 50.
 
 ## 7. Order of work
 
-**Phase 0 — the image comments.** Needs the `pharo` MCP server running. Rewrite the ~114 comments
-of §5 class by class, tests green and critics clean after each class, and hand the user a commit
-message. Nothing in the Markdown is touched yet. *Blocked until the server is up.*
+**Phase 0 — the image comments. Done.** The ~114 comments of §5 rewritten class by class, tests
+green and critics clean after each class. The `Laser-Game` and `Laser-Game-Tests` packages are
+dirty in the user's image and need their own Iceberg commit; no commit here carries code.
 
-**Phase 1 — mechanical strip, one file per pass.** Delete the 38 openers, the 167 HTML comments,
+**Phase 1 — mechanical strip, one file per pass. Done.** Delete the 38 openers, the 167 HTML comments,
 the 53 Squeak source fences with their introducing sentences, and the five chapters marked
 **delete**. Retitle *Back to the LaserGame Morph*. Requote the 21 code fences whose comments
 changed in phase 0. Verifiable by grep, so it is done first and reviewed quickly.
 
-**Phase 2 — prose rewrite, one chapter per pass.** §4.2 and §4.3 together: a chapter is read whole,
+**Phase 2 — prose rewrite, one chapter per pass. Done.** §4.2 and §4.3 together: a chapter is read whole,
 rewritten, and left with no reference to the original and no unexplained vocabulary. Chapter order,
 section1 first, so the reader's path is rebuilt from the start. This is the bulk of the work.
 
@@ -219,7 +219,7 @@ and the two missing `ifTrue: [ ^ nil ]` guards. Code quoted from the image as al
 version of `nextElementIn:` is shown in a plain fence, since the image version is the one *Push A
 Cell* arrives at.
 
-**Phase 4 — introduction and overview.** The two chapters of section1 that are still 2007 Squeak
+**Phase 4 — introduction and overview. Done.** The two chapters of section1 that are still 2007 Squeak
 environment text. Last, because the introduction is easiest to write once the rest reads the way it
 should.
 
