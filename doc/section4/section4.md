@@ -1,7 +1,9 @@
 # Communicate with arrow colours
 
 The game plays. From here on the chapters are a list of things that could be better, and the first
-one is what the player notices first.
+one is what the player notices first. In this chapter the renderers answer a colour for each hint
+arrow, green where the click would work and red where it would not, so an arrow says both what a
+click does and whether the board will let it.
 
 A hint arrow says which way a click would move a cell. It says nothing about whether it could. Rest
 the pointer in the middle of the mirror at `4@1` of the demo grid and four push arrows are on offer,
@@ -265,8 +267,10 @@ missing is any mark of *where* the pointer is, which is the next chapter.
 # Better cursor management
 
 The arrows now say what a click would do and whether it would work. The thing in the way of reading
-them is the pointer itself: a cell is small, the arrow fills most of it, and the pointer sits exactly
-on top of the arrow it is asking about.
+them is the pointer itself: a cell is small, the arrow fills most of it, and the pointer sits
+exactly on top of the arrow it is asking about. Rather than change the pointer, this chapter draws a
+small cross hair inside the cell at the place the pointer is, which means one more child element,
+one more number on the renderer, and three callers that each gain a single line.
 
 There is a second reason to want a mark on the board, and it is the more important one. A mirror cell
 is cut into six regions, and a single pixel decides between a push north and a push west. The player
@@ -682,7 +686,10 @@ pointer covered most. The next chapter asks what happens if the cell is bigger.
 
 # Making larger cells
 
-A cell is fifty pixels square. Nothing in the game says so twice.
+A cell is fifty pixels square. Nothing in the game says so twice. This chapter puts that claim to
+the test by changing the one number and running the suite at several cell sizes, which turns the
+region offsets and the target radii into arithmetic and turns up the places where a size had been
+written down by hand.
 
 That is a claim, and this chapter is about the two things a claim like it is worth. First, what it
 buys: changing one method changes the size of the whole game, and the arrows, the regions, the
@@ -997,8 +1004,10 @@ of buttons, which is the next chapter.
 # Add a counter and window colours
 
 Nothing in this chapter changes a rule of the game. The window gets a colour ramp behind it, the
-control panel moves to the left of the board, and a small LED display appears at the top of the panel
-counting the cells the beam crosses. Eye candy, and it is worth a chapter for two reasons.
+control panel moves to the left of the board, and a small LED display appears at the top of the
+panel counting the cells the beam crosses. Eye candy, and it is worth a chapter for two reasons: the
+LED is a seven-rectangle element built and tested like any other, and the counter is the first thing
+in the game that has to be told when the board changes.
 
 The first is that drawing a seven segment display is a good exercise in the lesson of the last
 chapter: every number in it is derived from one size. The second is the last section, which is the
@@ -1830,7 +1839,8 @@ follows it, without the fire button being touched.
 
 Two features. The first is a Moves counter, showing how many moves the player has made: the point of
 the game is to light the target in as few as possible, so the number is worth putting on the screen.
-The second is a random game generator, so that the board is a new puzzle each time.
+The second is a random game generator, so that the board is a new puzzle each time, which brings
+with it a third button, a new game, and a question put to the player before the window closes.
 
 Both of them drag something else along. A random board needs a New button, and the panel was laid out
 for two buttons in one row; three buttons means deciding how a panel arranges buttons at all. And
@@ -2759,8 +2769,9 @@ game as it was; Yes closes the window.
 
 Five columns by five rows was a choice, and it is time to find out whether the game knows that. A
 tutorial game that only ever plays one board size tends to be full of fives nobody noticed: a loop
-that counts to five, a width worked out once on paper, a counter wide enough for the numbers the small
-board happens to produce.
+that counts to five, a width worked out once on paper, a counter wide enough for the numbers the
+small board happens to produce. This chapter deals boards of any extent, hands one to the game
+instead of letting the game make its own, and then goes looking for whatever still believes in five.
 
 So this chapter is mostly a search. It asks the game for an eight by ten board and then looks for
 everything that complains.
@@ -3065,7 +3076,9 @@ one in Section 5, when a fourth counter makes the panel taller than a short boar
 
 The game is playable without the beam being drawn. The counter says how many cells the beam runs
 through, the target lights up when the beam reaches it, and the player works out the rest. That is
-enough to play, and it is a poor thing to look at.
+enough to play, and it is a poor thing to look at, so this chapter builds the shape of a beam — a
+pale band with a bright centre on it, horizontal and vertical — and tests it before any cell asks
+for one.
 
 This chapter builds the beam as a shape. Nothing on the board draws it yet — wiring it into the cells
 is the next chapter — so the work here is one question: what *is* a laser beam, as geometry?
@@ -3395,9 +3408,11 @@ the clamp earns its line — the core is one pixel rather than nothing at all.
 
 # Laser on blank cell
 
-The shapes of the last chapter are built by nobody. This chapter puts the beam on the board, starting
-with the easiest cell: a blank one, which the beam goes straight through. What the beam does at a
-mirror and at the target is the work of the two chapters after this one.
+The shapes of the last chapter are built by nobody. This chapter puts the beam on the board,
+starting with the easiest cell: a blank one, which the beam goes straight through. What the beam
+does at a mirror and at the target is the work of the two chapters after this one, so the renderer
+gains one question, every cell answers it, and the element paints the answer under what is already
+there.
 
 Taking the three kinds of cell one chapter at a time is the point rather than a convenience. Each kind
 has its own question to answer, and a cell that has not learned to draw the beam yet simply draws
@@ -3666,9 +3681,11 @@ mirrors own.
 
 # Laser on target cell
 
-The target is the cell the beam ends in. It swallows the light, so the beam covers only half the cell,
-and the target has to stay visible through it. Two differences from the blank cell of the last
-chapter, and both of them are about the half of the picture that is *not* drawn.
+The target is the cell the beam ends in. It swallows the light, so the beam covers only half the
+cell, and the target has to stay visible through it. Two differences from the blank cell of the last
+chapter, and both of them are about the half of the picture that is *not* drawn: this chapter builds
+a bar that fills half a cell, asks the cell which side the light arrives from, and puts the beam
+under the target rather than over it.
 
 ## Half a beam
 
@@ -4031,9 +4048,11 @@ two half beams have to meet each other, so that is where it gets settled.
 
 # Laser on mirror cell
 
-The mirror is the cell that turns the light. It is lit on two sides at a right angle to each other, so
-two half beams have to meet in the middle of the cell, and the two quarters of the cell the light
-never reaches have to stay empty.
+The mirror is the cell that turns the light. It is lit on two sides at a right angle to each other,
+so two half beams have to meet in the middle of the cell, and the two quarters of the cell the light
+never reaches have to stay empty. This chapter asks the cell which sides are lit, builds one bar per
+axis from that answer, and ends with a single method that draws the beam for every kind of cell
+there is.
 
 That sounds like a third case of beam drawing, after the whole beam of the blank cell and the half beam
 of the target. It is not. Writing the mirror properly means noticing that all three cases are one case,
@@ -4604,8 +4623,10 @@ making it resize, and making its counters readable.
 # A window the player can resize
 
 The board can be any size since the last chapter, but the window it opens in cannot. `openOn:` gives
-the space the extent the grid asks for, and dragging the corner of that window leaves the game the size
-it was, with the desktop colour filling the rest of the frame.
+the space the extent the grid asks for, and dragging the corner of that window leaves the game the
+size it was, with the desktop colour filling the rest of the frame. This chapter gives the game a
+natural extent and a scale, so that it grows to fill whatever window it is given and keeps its shape
+in a window of another shape.
 
 That is worth fixing, and it is cheap to fix, for a reason that goes back to the first drawing chapter.
 A cell is a set of geometries rather than a picture, so it is drawn from its own coordinates every frame
@@ -4850,7 +4871,9 @@ clicked at twice the coordinates without a line of the click code knowing that a
 
 # Counters the player can read
 
-Open the game and the two counters read `88E`.
+Open the game and the two counters read `88E`. Three faults are sitting on top of each other there,
+and this chapter separates them before fixing any of them: an unlit segment painted in a colour that
+still shows, a highlight nobody can see, and a display too narrow for the digit on its right.
 
 Nothing is broken, which is what makes this interesting. Both counters hold the right number —
 `updateCounters` sets them on every move and every shot, and the tests of the counter chapter say so

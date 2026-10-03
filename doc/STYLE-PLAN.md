@@ -122,9 +122,17 @@ rewrapped where the added comma pushed a line past 100 columns. The chapter tabl
 name the pages of the 2007 original, not our chapters. The gate is unchanged at 690 blocks: one
 quoted method comment cites a chapter title, and it is left as the image has it.
 
-**Phase 2 — the chapter openers.** Two or three sentences at the head of each of the 61 chapters,
-before the first `##`: what the reader will build, and what it revisits. Written in the voice phase 3
-establishes, so phase 3's rules are decided first even though the openers land first.
+**Phase 2 — the chapter openers. Done on 2026-10-03.** Two or three sentences at the head of each of
+the 61 chapters, before the first `##`: what the reader will build, and what it revisits. Written in
+the voice phase 3 establishes, so phase 3's rules are decided first even though the openers land
+first.
+
+*What landed:* every chapter already opened with prose, so this was an enrichment rather than an
+insertion. Each opener was composed against an inventory of its own chapter — the `##` subheadings
+and the `Class >> selector` heads of its fences — so that the sentences name deliverables that really
+arrive. Section 1's 13 openers were rewritten outright, because the introductory chapters had been
+the terse ones; sections 2 to 5 kept their opening sentences and gained one that says what the
+chapter builds. 61 chapters, 61 openers.
 
 *Verified by:* every `#` heading is followed by prose, not by a heading or a fence.
 

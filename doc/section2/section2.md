@@ -1,7 +1,10 @@
 # Game graphics
 
 The model of the game is written, and every part of it has a test. Nothing of it is visible yet.
-This section draws the board on the screen. Clicking on it comes in the next one.
+This section draws the board on the screen. Clicking on it comes in the next one. This chapter
+builds the renderer hierarchy that the rest of the section draws with: one renderer class per kind
+of cell, a class-side `modelClass` so that each renderer says which model it draws, and
+`rendererFor:` to pick the right one for a cell. Three tests keep the mapping honest.
 
 > **A word on frameworks.** Pharo has drawn its windows and widgets with Morphic for many years,
 > so you will meet Morphic in older books and in older parts of the image. This book uses Bloc,
@@ -190,7 +193,9 @@ We can now say which renderer draws a cell. What a renderer actually draws is th
 
 What should these renderer classes do? Draw a cell. We start with the blank cell, because it is the
 one with nothing inside it. Once a blank cell is drawn we have the background and the border, and
-every other cell is that plus its own contents.
+every other cell is that plus its own contents. By the end of the chapter there is a grey square
+with a white border on the screen, and the two numbers it is built from — `cellExtent` and
+`borderWidth` — are named once, on the class side, where every later chapter can reach them.
 
 Graphics work differently from model work. With the model, you write a test, you make it pass, and
 the test tells you the answer is right. With graphics, some of the answer is *does that look
@@ -385,7 +390,9 @@ The next chapter gives these blank cells a board to sit on.
 # The game board
 
 One cell is drawn. A game needs twenty-five of them, in rows and columns, and something has to hold
-them. That something is the board.
+them. That something is the board. In this chapter `LaserGameBoardElement` holds one cell element
+per cell, rebuilds them all when it is handed another grid, works out its own size from the grid it
+was given, and opens in a window of its own. Five tests say all of that.
 
 The board is a `BlElement` with the cells as its children, and a *layout* puts the children in
 their places. This is the moment to say what a layout is, because the rest of the section leans on
@@ -646,8 +653,10 @@ code in the first place.
 
 # Drawing the mirror
 
-Twenty-five bordered squares are a board, but they are not a game. The mirrors have to be visible.
-A mirror is a diagonal line across its cell, and this chapter draws it.
+Twenty-five bordered squares are a board, but they are not a game. The mirrors have to be visible. A
+mirror is a diagonal line across its cell, and this chapter draws it. We name the two numbers the
+drawing needs, draw the diagonal for each of the two leans, and pick up `GridFactory` on the way, so
+that every example and every test from here on deals the same board.
 
 ## A board to look at
 
@@ -937,6 +946,8 @@ target at 5@1 is still an empty bordered square. It is the next chapter.
 Three colours have been chosen so far: a grey board background, a white cell border, a blue mirror.
 Each was picked where it was needed. That is how colours always get chosen, and it is how a program
 ends up with the same grey written down in nine places and a tenth that is almost the same grey.
+This chapter collects the three in one place, `LaserGameColors`, and gives each of them a name. It
+is the shortest chapter of the section, and the habit it teaches is used by every chapter after it.
 
 So the colours live in one class, `LaserGameColors`, with one method each, and every element asks
 for its paint by name:
@@ -993,7 +1004,9 @@ changed and tested without a window.
 
 The target has more in it than the mirror: two crossing lines, a ring around the middle of the cell,
 and the inside of the ring filled with one of two colours, depending on whether the laser reaches
-the cell. Four children of the cell element, all of them placed in cell coordinates.
+the cell. Four children of the cell element, all of them placed in cell coordinates. We name the
+five numbers the drawing needs first, then build the cross hairs, the ring and the centre, and wire
+the colour of the centre to whether the laser is reaching the cell.
 
 ## Numbers with names
 
@@ -1384,6 +1397,8 @@ in the first window and pale yellow in the second.
 Everything so far has been opened by a class method on a renderer or on the board. That is right for
 working on a drawing, and it is not a game. A game is a window: the board, a panel beside it for the
 controls, and a margin around both. Something has to own that window, and this chapter writes it.
+That owner is `LaserGameElement`: it holds the margin arithmetic, the board, and an empty panel
+standing in for the controls that the next chapter writes.
 
 ## The class
 
@@ -1731,9 +1746,11 @@ and the next chapter puts the controls in that white column.
 The white column beside the board has been waiting since the last chapter. Two buttons go in it now.
 One quits the game, which is easy to describe and easy to write. The other fires the laser, and that
 one needs a decision first: should the beam stay on until the player says otherwise, or only while
-the button is held down? A button held down is a fiddly thing to play with, so the beam stays on, and
-the same button turns it off again. One button, two meanings, and a label that says which one is
-waiting.
+the button is held down? A button held down is a fiddly thing to play with, so the beam stays on,
+and the same button turns it off again. One button, two meanings, and a label that says which one is
+waiting. By the end of the chapter the game has a Fire button whose label says what a click will do
+and a Quit button beside it, both built by one method and placed from the bottom of the panel
+upwards.
 
 ## A class of its own
 
@@ -2218,9 +2235,12 @@ Drawing the beam is Section 4.
 
 # A unit test to demonstrate a bug
 
-The window works. The board is drawn, the buttons are there, *Fire* lights the target and *Stop* puts
-it out. That is a good moment to look for the bug, because a game that looks right is exactly where
-a bug of this shape hides: the kind where the flag says one thing and the cells say another.
+The window works. The board is drawn, the buttons are there, *Fire* lights the target and *Stop*
+puts it out. That is a good moment to look for the bug, because a game that looks right is exactly
+where a bug of this shape hides: the kind where the flag says one thing and the cells say another.
+We write the test that names the bug, and then follow the chain the fix runs down: `Grid >>
+stopLaser`, `clearCellsInPath`, `LaserPathElement >> clearCell` and `Cell >> clearCell`. The test
+stays in the suite afterwards, as the record of a bug that once looked like nothing.
 
 This chapter is about the method for finding it. A symptom on the screen is not something you can
 work with. A failing test is. So the shape of the work is always the same: make the symptom into an

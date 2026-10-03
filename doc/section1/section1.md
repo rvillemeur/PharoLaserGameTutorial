@@ -1,6 +1,8 @@
 # Introduction
 
-This book builds a game, one test at a time.
+This book builds a game, one test at a time. This first chapter says who the book is for, where the
+game comes from, what it leaves to other books, how to read the code in it, and where to get the
+finished code if you want to look ahead.
 
 The game is a puzzle. A laser fires into a grid of cells, bounces off mirrors the player can turn
 and push around, and should end up hitting a target. The player's job is to get the beam to the
@@ -142,7 +144,8 @@ moral rights.
 
 Before writing any code, let us be clear about what the game does. Not precisely — the design will
 change several times as we go, and watching it change is part of the point — but clearly enough to
-start.
+start. By the end of this chapter you will know the board, the two moves a player can make, and what
+the laser does when it meets a mirror or the target. There is no code in it.
 
 The game is played on a grid of square cells. A laser fires into the grid from below the first
 column, and travels in a straight line until something stops it or turns it. Each cell is one of
@@ -190,7 +193,10 @@ Now let us find the objects.
 
 # Discovery of objects
 
-When we look over the game drawings and think about what objects our game may need, a few come immediately to mind. There must be some kind of grid and several cells. There are different kinds of cells too.
+When we look over the game drawings and think about what objects our game may need, a few come
+immediately to mind. There must be some kind of grid and several cells. There are different kinds of
+cells too. In this chapter we turn that reading into four classes, `Cell`, `BlankCell`, `MirrorCell`
+and `TargetCell`, and make the package that holds them.
 
 Cells and a grid are obvious objects of the game and we will probably discover other objects as we explore a little. It is perfectly fine to explore and then throw code away if we later learn we are not heading in the right direction.
 
@@ -303,7 +309,11 @@ Before implementing the behavior of our model we define tests that specify that 
 
 # Test driven development
 
-We use the SUnit testing framework to implement the game model. We will most likely not write unit tests for the behavior of the user interface, which is tedious to do; but there is plenty we can accomplish by driving the development of the game model from unit tests.
+We use the SUnit testing framework to implement the game model. We will most likely not write unit
+tests for the behavior of the user interface, which is tedious to do; but there is plenty we can
+accomplish by driving the development of the game model from unit tests. So we make a second package
+for the tests, write the first one, run it, and read the error it gives us. The test is still red
+when the chapter ends, and that is the point of it: the next chapter makes it green.
 
 We are not too attached to how we code the very first few lines. One approach many people use is to begin with the tests, even to the point of having no objects to test when the first test is written. Another is to implement some basic model and drive it from that point forward with tests.
 
@@ -392,7 +402,9 @@ Navigate the call stack by clicking the lines of the top pane, and the variables
 
 # Getting our first test to pass
 
-Our first test is currently this one.
+Our first test is currently this one. To make it green, `BlankCell` needs somewhere to keep the
+state of its four segments, an `initialize` that fills it, and the two methods the test calls. We
+write all three in this chapter, and finish with the first class comment of the book.
 
 ```smalltalk
 BlankCellTestCase >> testCellOnState
@@ -500,7 +512,10 @@ Accept it and the mark is gone.
 
 # Saving your work
 
-Your code lives in the image, and an image is an easy thing to lose. Saving means putting your packages somewhere outside it, so that you can load them into a fresh image or go back to an earlier state of the project. This is a good moment to set that up, because the tests are green.
+Your code lives in the image, and an image is an easy thing to lose. Saving means putting your
+packages somewhere outside it, so that you can load them into a fresh image or go back to an earlier
+state of the project. This is a good moment to set that up, because the tests are green. This is a
+short chapter, and it points at a book rather than repeating it.
 
 Pharo does it with **Iceberg**, which is part of the standard image and commits your packages to a Git repository. It writes each package out as a directory of readable text files, one per class, so the game can be read, diffed, and merged with the usual Git tools.
 
@@ -512,7 +527,11 @@ One habit matters more than the tool, and this book follows it from here on:
 
 # Coding in the debugger
 
-Some developers write the test first, let it fail, and then define the methods it needs from inside the debugger. Why? Because in the debugger you work against live objects, in the context of the running program. You write code, execute it against those objects, save it and carry on from where you stopped. Let us see how that is done.
+Some developers write the test first, let it fail, and then define the methods it needs from inside
+the debugger. Why? Because in the debugger you work against live objects, in the context of the
+running program. You write code, execute it against those objects, save it and carry on from where
+you stopped. In this chapter we break `isOn` and `isOff` on purpose, run the test, and repair both
+of them from inside the debugger without ever going back to the browser.
 
 ## Setting up the context
 
@@ -560,7 +579,11 @@ We do not repeat this process in the rest of the tutorial, but we use it daily. 
 
 # Improving our model
 
-Now that the first test is green we can add behavior, and we do it test first.
+Now that the first test is green we can add behavior, and we do it test first. Three tests and three
+methods in this chapter: `isSegmentOnFor:`, which answers whether one segment is lit,
+`exitSideFor:`, which says where a beam leaves, and `laserEntersFrom:`, which lights the segments a
+beam crosses. Along the way the debugger writes a method for us, and we note what using symbols for
+directions will cost us later.
 
 ## Asking whether one segment is on
 
@@ -688,7 +711,11 @@ A stronger answer is to make the directions real objects. That is where this gam
 
 # Enhancing MirrorCell
 
-A `MirrorCell` differs from a `BlankCell` in that it carries a mirror, and the mirror can be oriented to send the laser beam in different directions. Let us start with the class comment.
+A `MirrorCell` differs from a `BlankCell` in that it carries a mirror, and the mirror can be
+oriented to send the laser beam in different directions. In this chapter the mirror cell learns
+which way it leans, with `isLeft` and `isRight`, and the three kinds of cell get the common
+superclass they have been asking for: everything they repeat moves up to `Cell`. That move is the
+first refactoring of the book. Let us start with the class comment.
 
 ```text
 I am a `Cell` with a mirror on one of its diagonals. `leansLeft` says which one. When I lean left the mirror runs from my top left corner to my bottom right one, and a beam entering from the north leaves by the east. When I lean right it runs from my top right corner to my bottom left one, and the same beam leaves by the west.
@@ -1080,7 +1107,11 @@ This game keeps the flag. A mirror has exactly two states and it flips between t
 
 # Enhancing TargetCell
 
-The `TargetCell` is the last of our cells. It is unique in that it has no exit: once the laser beam enters a target cell it does not leave and does not propagate any further. The design choice we make here is to answer `nil` for every exit side. Let us start with tests that say what we mean, and with a comment.
+The `TargetCell` is the last of our cells. It is unique in that it has no exit: once the laser beam
+enters a target cell it does not leave and does not propagate any further. The design choice we make
+here is to answer `nil` for every exit side. It is a short chapter — four tests, one
+`initializeExitSides`, and a word on why `nil` is the right answer rather than a missing one. Let us
+start with tests that say what we mean, and with a comment.
 
 ```text
 I am the `Cell` the beam is aimed at. Every side of me leaves by nothing, so a beam that enters lights the side it arrived by and stops there. Reaching me is how the game is won.
@@ -1202,7 +1233,12 @@ We stay with `nil` here, and it turns out to be cheap: the beam path asks a cell
 
 # Grid
 
-The cells know how a beam crosses them. What is still missing is the thing that holds them. From what we have seen so far, the `Grid` is responsible for keeping the cells in a matrix. It must let us put a particular cell at a particular place, it must let us ask which cell sits at a place, and it is the object that will fire the laser beam.
+The cells know how a beam crosses them. What is still missing is the thing that holds them. From
+what we have seen so far, the `Grid` is responsible for keeping the cells in a matrix. It must let
+us put a particular cell at a particular place, it must let us ask which cell sits at a place, and
+it is the object that will fire the laser beam. We build it in this chapter: `at:` and `at:put:`
+over a dictionary, a size, `initializeCells`, and `newOfSize:` for grids that are not five by five.
+A debugger opens on the way, and we end with a better way to build the board the tests work against.
 
 ## A class comment
 
@@ -1541,7 +1577,10 @@ All the structural pieces of the game are now in place and tested: three kinds o
 # The path the beam takes
 
 Every cell knows how a beam crosses it. The grid knows which cell sits where. What nothing in the
-model does yet is the one thing the game is about: work out where the beam actually goes.
+model does yet is the one thing the game is about: work out where the beam actually goes. In this
+chapter we write it. A new class, `LaserPathElement`, holds one step of the beam; `Grid >>
+startingCell` says where it comes in, `calculatePath` walks the whole path, and
+`activateCellsInPath` lights what it crosses.
 
 This chapter follows the beam from the laser, cell by cell, until it stops, and lights every cell it
 crosses. It is the last part of the model, and it is the first part of this book where the code is
@@ -1836,7 +1875,9 @@ each one was found.
 The code of the last chapter is thirty lines, and on the way to those thirty lines there were four
 mistakes. None of them was a misunderstanding of the game. They were the ordinary kinds: a value
 used the wrong way round, a value nobody filled in, a line that parsed differently from how it read,
-and a case that was not handled.
+and a case that was not handled. This chapter walks all four again: what each one looked like from
+the outside, which tool found it, and what the fix was. It is the chapter to come back to when your
+own game hangs or lights the wrong cell.
 
 This chapter is the four of them. Each one is written as what you see, how to get from there to the
 line at fault, and what to remember. The point is not the bugs — you will make different ones. The

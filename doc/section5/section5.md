@@ -2,7 +2,9 @@
 
 Two more numbers for the player: how many mirrors stand on the board, and how many of them the beam
 lights. The model can answer both already, so all of the work is in the panel — which turns out to
-be a good thing, because the panel does not fit.
+be a good thing, because the panel does not fit. This chapter adds the two counts to the grid, hangs
+two more counters off the panel, and then makes the panel tall enough and wide enough for the
+captions it now carries.
 
 There are three lessons in this chapter. An object that holds something can answer for it, so
 nothing has to go looking. A size you need before the thing exists has to be stated, and a stated
@@ -594,7 +596,9 @@ The suite is green. The next chapter asks what that is actually worth.
 The suite has been green at the end of every chapter so far. That is worth something, but it is
 worth less than it looks. Green means the code does what the tests say, and the tests were written
 by the same person, on the same afternoon, against the same board. A test can agree with the code
-and both can be wrong together.
+and both can be wrong together, so this chapter changes one number the whole package rests on, reads
+the failures that come back, and asks of each one whether it found a bug or only noticed that a
+number moved.
 
 This chapter is about the bug that kind of agreement hides, and about the two habits that find it.
 The first is small: run every test before you save your work. The second is the subject of the
@@ -1014,7 +1018,8 @@ A button that takes the last move back. Two rules decide what it means, and they
 on before any code is written. There is no limit on how far back it goes: every move of a game can
 be taken back, one at a time, down to the board the player started with. And an undo takes nothing
 off the move counter — taking a move back is itself work, and the statistics are meant to stay
-honest.
+honest. The code that follows is a class per reversible move, a stack on the grid, and a fourth
+button on the panel.
 
 The second rule is the one people argue about, so notice what it buys. A counter that went down
 would let a player push a mirror back and forth forever and finish with a move count of one. A
@@ -1506,7 +1511,8 @@ The next chapter moves the tests into a package of their own.
 
 This chapter changes no code. It changes where the code lives, which matters the first time somebody
 other than you loads it: a person who wants to play the game should not have to take the tests with
-it.
+it. Moving the test classes into a package of their own means a baseline that says what loads with
+what, and it uncovers a bug that the single package had been hiding.
 
 Until now everything has been in one package, `Laser-Game`, with the test classes gathered under a
 tag called `Tests`. That reads tidily in the browser and does nothing at all for a loader, which is
@@ -1639,7 +1645,9 @@ The next chapter gives the player a Reset button, and turns up a bug on the way.
 # Reset
 
 Reset puts the board back the way it was dealt. After the last chapter it is almost free: Reset is
-Undo, repeated until there is nothing left to undo.
+Undo, repeated until there is nothing left to undo. The work left is a fifth button, a third row of
+buttons on a panel that has to grow again, and a test that had been reading the counters before
+anything happened.
 
 Before that, a test this project should have had for several chapters and did not.
 
@@ -2060,7 +2068,9 @@ The next chapter gives the laser's home cell something to show for itself.
 # Showing where the laser comes from
 
 A small chapter. The beam has been drawn for several chapters now, and it appears at the bottom of
-the first column as though out of nowhere. This adds a mark saying the laser lives there.
+the first column as though out of nowhere. This adds a mark saying the laser lives there: the grid
+answers its starting cell, the board goes into a column of its own so there is a margin to draw in,
+and the mark costs the game no size.
 
 It is small and it is not trivial, because the mark has to go in a band of the window that no element
 occupies, and a layout places the children it is given. Getting something into empty space is a
@@ -2377,6 +2387,8 @@ itself.
 
 *A missed bug* ran an experiment by hand: recompile `cellExtent`, run everything, read the failures,
 put the method back. It found three brittle tests and a design floor, which was worth the trouble.
+This chapter turns the experiment into a harness any test case can inherit, and then rewrites the
+push, rotate and boundary tests as tables that have to hold at every cell size.
 
 An experiment you run by hand is one you run when you remember to. This chapter turns it into
 something the suite does by itself, and then uses it on the part of the game that has the most
@@ -2784,7 +2796,9 @@ The next chapter goes back to the hint arrows and puts them where they belong.
 A hint arrow has to sit in the middle of the cell it belongs to. That sounds like a sentence nobody
 needs to write a chapter about, and it is the kind of thing that goes wrong quietly: an arrow a few
 pixels off centre looks like a mistake in the drawing rather than a mistake in the arithmetic, and
-nobody can tell which from looking.
+nobody can tell which from looking. So this chapter states the rule as two tests, one on the shape
+and one on the cell, and gives the renderer an arrow extent and an offset that hold at every cell
+size.
 
 So this chapter does two things. It says where the arrow goes, in two constants, and it writes the
 tests that measure where the arrow actually landed — at three cell sizes, using the harness of the
@@ -3041,7 +3055,8 @@ everything else is right.
 
 Everything works. This chapter is about three things that only make a difference to the look of the
 game: a shadow under the board, a bar across the control panel above the buttons, and a board worth
-playing on when nobody said which board to play.
+playing on when nobody said which board to play. Small changes, each with a test, and the last of
+them changes what `LaserGameElement new` opens on.
 
 They are small, and that is the point. Each one is a change to a finished program, and each one has
 to be made without breaking the arithmetic the rest of the game is built on. The tests are what say
@@ -3470,7 +3485,8 @@ The next chapter goes back to the counters and makes them agree about how wide t
 
 The game is finished and it works. Then somebody looks at it properly, and says: the four counter
 boxes are not the same width, their right edges are ragged, and the words inside them sit against
-the left border.
+the left border. This chapter finds out what the panel had actually been measuring, states one
+counter width in one place, and centres the caption instead of leaving it against the left edge.
 
 That is a bug report, and it is the kind this chapter is about. Nothing is broken, no test is red,
 and nothing in the code is obviously wrong. The work is to find out which decision produced the
@@ -3733,7 +3749,9 @@ The next chapter takes the same report's second half, which is about the buttons
 
 The same look at the finished game that found the ragged counters found something about the buttons:
 the words *Reset* and *Undo* run into the right edge of the buttons they are painted in. A label
-should stand in the middle of its button, and it should fit inside it with room to spare.
+should stand in the middle of its button, and it should fit inside it with room to spare. This
+chapter measures the widest label the game has, derives one button width from it, and lets the panel
+take its own width from the buttons rather than the other way round.
 
 Three complaints were made, and the first job is to find out how many faults there are.
 

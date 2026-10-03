@@ -3,7 +3,10 @@
 The board is on the screen and the laser fires, so the game can now be played with the mouse. Only
 mirror cells react: a mirror can be rotated, and it can be pushed to the next square along. That is
 two different actions on one cell, and the mouse has one button, so the cell has to decide from
-*where* it was clicked which of the two was meant.
+*where* it was clicked which of the two was meant. In this chapter we build that decision as a
+hierarchy of regions — `CellClickRegionInside`, `CellClickRegionOutside` and `CellClickRegionIgnore`
+— let priority rather than geometry settle the overlaps, and give the cell element the job of
+answering which region a point falls in. No test in it names a pixel.
 
 A cell is divided into three areas, one inside the next:
 
@@ -418,7 +421,10 @@ the cells *are*, not what they show. The next one gives them mouse events.
 
 # Handle mouse events
 
-A cell can classify a point. Now it has to be given one, which means the mouse.
+A cell can classify a point. Now it has to be given one, which means the mouse. In this chapter
+`LaserGameCellElement` listens for enter, leave, move and click, the board remembers which cell the
+pointer is over and which one was clicked last, and the tests send real Bloc events instead of
+calling the handlers by hand.
 
 Think for a moment about what that would take if the board were a single picture. The pointer would
 report a position on the screen; the position of the window, the margin around the board and the
@@ -723,6 +729,8 @@ what the pointer is asking for.
 
 The events arrive, and the regions can classify a point. This chapter joins the two: while the
 pointer moves over the board, the cell under it works out which of its regions the pointer is in.
+The renderer answers the region, the cell element keeps the answer, and only a mirror answers at all
+— which is the first time the drawing side of the game has an opinion about the model.
 
 That answer will become the arrow the player sees, but not yet. Here it is only computed and kept,
 and the chapter is about *where* the question is asked.
@@ -967,8 +975,10 @@ is the next chapter.
 # Creating custom shapes
 
 A cell can say which of its regions the pointer is in. To turn that answer into something the player
-can see, the game needs pictures: an arrow per push direction, and a cross hair to mark the point the
-pointer is at.
+can see, the game needs pictures: an arrow per push direction, and a cross hair to mark the point
+the pointer is at. We write each shape as a class-side list of points, scale it from one set of
+numbers to any cell size, and meet the Bloc trap that catches everybody once: a fresh element has no
+extent yet.
 
 This chapter builds them. It is the first place in the book where something is drawn that is not a
 rectangle, and the lesson is how a shape is described in Bloc — as numbers, not as pixels.
@@ -1449,7 +1459,8 @@ the tests that no point of the inside region belongs to two of them or to none.
 The inside region of a cell is divided into four push regions, and so far every one of them answers
 `true` to `containsPoint:`. The hierarchy is in place; the geometry is not. This chapter works out
 which of the four triangles a point falls in, checks the answer with tests, and then puts it to use:
-a mirror asked what hint applies at a point answers a push region.
+a mirror asked what hint applies at a point answers a push region. One of the tests turns out to be
+wrong before the code is, and the detour that finds it is worth the two pages it takes.
 
 The whole chapter is arithmetic with two straight lines in it, so it is worth being careful about
 one thing before starting. On the screen *x* grows to the right, as on paper, but *y* grows
@@ -2007,9 +2018,10 @@ ago, drawn inside the cell the pointer is over.
 
 # Drawing push hints on the game board
 
-The pointer moves inside a mirror cell, and the game knows which way that cell would be pushed.
-This chapter shows the player: the arrow of the push region appears in the cell under the pointer,
-and goes when the pointer does.
+The pointer moves inside a mirror cell, and the game knows which way that cell would be pushed. This
+chapter shows the player: the arrow of the push region appears in the cell under the pointer, and
+goes when the pointer does. The region answers its own picture, the cell element places it from
+`hintArrowExtent` and `hintArrowOffset`, and the board shows at most one arrow at a time.
 
 Four things have to be settled to draw a hint on a board:
 
@@ -2376,7 +2388,9 @@ The hint drawing of the last chapter works, and it is also the first code in thi
 to watch. A mouse move arrives for every pixel the pointer crosses, so `showPositionHintAt:` and
 `updateHintElement` run dozens of times a second. This chapter is a short detour about the tools for
 that, because sooner or later a hint will appear in the wrong place and you will want to stand
-inside the method while it happens.
+inside the method while it happens. It is three short sections: why `self halt` is no help here,
+what `haltOnce` does instead, and the better answer, which is to ask the objects rather than watch
+them run.
 
 ## Why `self halt` is no help here
 
@@ -2469,7 +2483,9 @@ has one of those waiting in *Clean up left-over hints*.
 
 A click near the rim of a mirror cell will turn the mirror rather than push it, and a turn needs a
 picture of its own: an arrow bent round a circle, one for each direction. This chapter builds it,
-and it is the last shape work in the section.
+and it is the last shape work in the section. The arrow is an arc built from a fixed number of
+corners, closed into a single outline, and the test asks a curve the kind of question a curve can
+answer.
 
 The four straight arrows were seven points in an array. A curve is not, and that is the whole
 problem of the chapter: `BlPolygonGeometry` joins points with straight lines, so a circle has to
@@ -2804,7 +2820,8 @@ The shapes are finished. The next chapter divides the rim of a cell between them
 
 A click in the inside region pushes a cell. A click in the outside region turns a mirror, one way or
 the other, and this chapter decides which. It is the same walk as the last three chapters, one ring
-further out: divide the region, name the halves, give each one a hint.
+further out: divide the region, name the halves, give each one a hint. By the end of it a click
+anywhere on a mirror cell has a meaning, and a hint to go with it.
 
 Doing the same walk twice is the point. By the end of the chapter the whole of the rotate behaviour
 will be four short methods and a handful of tests, because every piece of machinery it needs was
@@ -3205,7 +3222,9 @@ one of them does anything yet. The next chapter makes a mirror turn.
 The board can tell which region a click falls in. The next thing is a mirror that turns — and this
 chapter never touches an element or an event. Work on the model first and the interface after. A
 mirror that turns correctly is something you can test in three lines; a mirror that turns when
-clicked is something you have to test with a mouse.
+clicked is something you have to test with a mouse. On the way the cells learn to print themselves
+properly and the grid gains an inspector tab, because the quickest way through a bug like this one
+is to make the objects say more.
 
 It is also the chapter where a bug gets introduced on purpose, because the bug is a good one: a
 mirror that turns its picture and forgets to turn its behaviour. Finding it is most of the work
@@ -3828,7 +3847,8 @@ is short, because the model is finished and the click already arrives.
 # Click and rotate a cell
 
 A mirror knows how to turn. The board knows which region a click falls in. This chapter joins the
-two, and at the end of it the game is playable with a mouse.
+two, and at the end of it the game is playable with a mouse. The click asks its region whether it
+can act, the region acts, and the cell redraws the one thing that changed.
 
 It is a short chapter, and that is the whole point of the four before it. Every piece is already
 written; what is left is to send one message along a chain that already exists.
@@ -4298,7 +4318,9 @@ is next.
 # Clean up left-over hints
 
 Play the game for a minute and ghosts appear: arrows left standing on cells the pointer passed over
-and left long ago. Four of them at once, on cells nothing is hovering.
+and left long ago. Four of them at once, on cells nothing is hovering. The obvious suspect is the
+wrong one, twice over. The fix is to let the board own the one hint there is, and two tests keep the
+ghosts from coming back.
 
 This chapter is about a kind of bug that is easy to misdiagnose, because the obvious explanation is
 wrong. The arrows are drawn by code that works. They are left behind by an event that never arrived.
@@ -4549,7 +4571,9 @@ believing after it has stopped being true.
 # Bug with target cell
 
 Fire the laser. The target lights up. Now turn the mirror that feeds it. The beam goes somewhere
-else — and the target stays lit.
+else — and the target stays lit. We decide first whether the fault is in the model or in the
+drawing, reproduce it in a test, and then fix it where it belongs — in the grid, not in the method
+that turns the mirror.
 
 This is the third bug hunt of the book and it has a shape of its own. The arrows left behind were a
 missing event. The mirror that turned its picture and not its behaviour was one fact stored twice.
@@ -4874,7 +4898,9 @@ Next, the other half of what a click can do: pushing a cell.
 # Push a cell
 
 Turning a mirror is one of the two moves of the game. This chapter writes the other one: pushing a
-mirror sideways into the empty square next to it.
+mirror sideways into the empty square next to it. The rules give us the tests, the four directions
+become four objects, and the move is written down, so that a chapter near the end of the book can
+take it back.
 
 The rules first, in sentences, before any code:
 
@@ -5518,7 +5544,8 @@ The model can push a mirror. The board has been drawing push arrows since *Drawi
 game board*, and since *Click and rotate a cell* a click already travels from the cell element down
 to the region that decides what it means. Nothing new has to be written to make the arrows work: the
 four push regions were wired at the same time as the two rotate ones, and the push methods of the
-last chapter are what they were waiting for.
+last chapter are what they were waiting for. What is left to write is the question a push asks
+before it acts, `canPushCell:fromLocation:`, and the swap that happens once the answer is yes.
 
 So open the game, click the middle of a mirror, and watch it move.
 
@@ -5746,7 +5773,9 @@ now work with the mouse.
 
 # Visual bug with push
 
-Here is the bug the last chapter ended on, in the four steps that produce it:
+Here is the bug the last chapter ended on, in the four steps that produce it: We find where the
+stale hint is kept, write the point down and read it back, and cover both halves of the rule with
+tests.
 
 1. rest the pointer in the middle of the mirror at `1@2`, in the lower half, so the north arrow
    appears — the empty corner at `1@1` is where the mirror can go;
