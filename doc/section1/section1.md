@@ -1,106 +1,186 @@
 # Introduction
 
-An activity I enjoy is writing simple games in Pharo. I also enjoy sharing this powerful development environment with interested developers. This is one of the reasons I write these tutorials.
+This book builds a game, one test at a time.
 
-For this development example I'd like to try something different and take the student through the process of writing a game in Pharo. Proceed linearly through the example. The development process described here will be very specific to the way I work. Consequently, you will see how I encourage organization of files and other processes as part of Pharo development. In a very real way, Smalltalk development is a personal expression.
+The game is a puzzle. A laser fires into a grid of cells, bounces off mirrors the player can turn
+and push around, and should end up hitting a target. The player's job is to get the beam to the
+target by the longest route they can find.
 
-Let's assume the student has downloaded Pharo and has some understanding of the Smalltalk programming language.
+![The game, finished](figures/031.jpg)
 
-This work make seem tedious at some points. Every step of the process is described in detail. Even when I made mistakes. The idea here is to show how natural it is to iterate over design and implementation and the confidence that builds with test driven development.
+Building it is an excuse to practise three things, and those three things are what this book is
+really about.
 
-Frequently the pages of the tutorial will be filled with screen-shots of browser windows. Although this may tend to be distracting for some readers, whenever I'm introducing something for the first few times the class hierarchy browser is shown so that the student can examine carefully and compare it to what they are doing in case there are mistakes. After progressing through a lot more of the tutorial it's assumed this convention is no longer necessary and descriptions with code samples are given instead.
+**Writing the test first.** Every piece of behaviour in the game arrives twice: first as a test
+that fails, then as the code that makes it pass. By the end you will have written more than two
+hundred of them, and you will have felt why they are worth writing — not because a book said so,
+but because they catch you being wrong, over and over, in the next chapter.
 
-The tutorial begins with a fresh download of Pharo 3.9. I'm doing this development on a Macintosh running OS X. With the exception of the host Operating System look-and-feel, and a few different install files, there should be no difference for a student working with other supported Pharo systems. Here's my Pharo development folder's contents at the beginning of this tutorial.
+**Recognising a shape in the code.** Some problems have been solved so many times that their
+solutions have names. When the game needs one — asking an object what it is instead of testing its
+class, letting two objects decide something together, building an object lazily, sharing the setup
+of a test — this book stops and names it, says why that shape fits, and shows what the clumsy
+version would have looked like.
 
-## Backup installation files
+**Hunting the bug you just made.** Code goes wrong. A good part of this book is spent in the
+debugger, reading a failing assertion, or staring at a game that looks right and is not. These
+chapters are the ones kept most carefully, because watching someone find a bug teaches more than
+watching them avoid one.
 
-The first thing I like to do with a fresh image is back things up. I prefer to keep backup copies of the original Squeak image files in case I need to start over. I usually create a folder named "kit" where I put copies of all the original install files.
+The graphics are built with **Bloc**, which is how you build a user interface in Pharo today. No
+previous experience with it is assumed.
 
-Let's launch Squeak and do some initial setup and organization in the environment.
+## Who this book is for
 
-## Image Update
+Someone who is new to Pharo. Possibly new to programming altogether.
 
-We should check if we need to update our fresh Squeak image. You will need an active Internet connection on your computer before completing this step. You can skip this for later if no Internet access is available.
+You do not need to know Smalltalk. Vocabulary is explained the first time it appears, and the first
+chapters go slowly. You do need a Pharo 13 image, and the patience to type the code rather than
+copy it — the typing is where the learning happens.
 
-From the World menu, select the "help..." menu. In the Help menu select "update code from server".
+The pace is deliberate. Every step is shown, including the wrong ones, because a tutorial where
+nothing goes wrong teaches you nothing about what to do when something does.
 
-In our example, the image is up-to-date. We are given the option to update our system to Squeak 3.10alpha. Do not do this. A confirmation dialog is presented reminding us to save the image. We will do this shortly.
+## Where the game comes from
 
-## Setup
+In 2007 Stephan Wessels wrote the Laser Game as a tutorial for Squeak, and it became one of the
+best-loved teaching projects in that community. Pharo is a descendant of Squeak, and the game has
+been rebuilt here in modern Pharo: the model is much as he designed it, and the teaching order is
+his. The graphics are new, because the toolkit is. Stéphane Ducasse made an earlier Pharo
+adaptation, which this book also draws on.
 
-Before we save our image I'd like to set some preferences. Open up Preferences from the "help" menu.
+Thanks are owed to both of them.
 
-The Preferences window shows a list of categories on a light-blue background. Each category behaves like a Tab control in other control panes you may have experienced in other applications. Select the "browsing" preference category.
+## What this book does not cover
 
-I like to activate the "annotationPanes" and "dragNDropWithAnimation" preferences here.
+The Pharo community has good books on these already, and this one points at them rather than
+repeating them:
 
-For the "scrolling" preferences I like to turn OFF the "scrollBarsOnRight" option. I like my scrollbars on the left (where the text is).
+- installing Pharo and setting up an image — see the **Pharo by Example** book at
+  <https://books.pharo.org>;
+- saving your code with Git, from inside Pharo — see the booklet **Managing Your Code with
+  Iceberg**, at <https://books.pharo.org>;
+- packaging an application for someone else to run.
 
-That's enough for setting preferences for now. Close the window.
+## Conventions used in this book
 
-Squeak provides a way to "partition" off your work into projects. Each project has its own World. There is also a Change-Set associated with each project, but that's not important to us now.
+A class name or a method name in the narrative looks like `Grid` and `rotateClockwise`.
 
-I tend to organize my Squeak projects all from within one main project. I give that main project the name "sbw", my initials. Let's create that first project. Begin by selecting the "open..." menu. Then choose the "morphic project" menu. A new window appears with the title "Unnamed1". Click somewhere inside the new window to enter it.
+A method is shown with the class it belongs to in front of it:
 
-## A New Project
+```smalltalk
+MyClass >> myMethod
 
-The new World opens up and you are presented with a blank environment, except for the flaps. We will not need the flaps so we can turn them off for at least this project World.
+	^ 1 + 2
+```
 
-From the "flaps..." menu, de-select the "show shared tabs" option.
+> **Note.** Do not type the `MyClass >>` part. It tells you which class to select in the browser
+> before you type the method. What you actually type is just the method:
+>
+> ```smalltalk
+> myMethod
+>
+> 	^ 1 + 2
+> ```
 
-The flaps disappear. We will now go back to the previous world and rename this project. Choose the "previous project" entry from the World menu.
+The caret `^` means *answer this*. The method above answers `3` to whoever called it.
 
-## Name the Main Project
+A line of code to run on its own — in a Playground, with the result printed — is shown without a
+class in front of it:
 
-Click on the name along the bottom of the new project window. The tag should turn red. You can then type in your new project name. Hit Return when you have typed the new name. The title bar of the window will change.
+```smalltalk
+3 + 4
+```
 
-Click once inside your new project window to go back into the project world.
+## Getting the finished code
 
-Perform a "save as" operation. I recommend you name the new image "Squeak". This is the default image name. From this point forward, when you re-launch Squeak you will find yourself back at this project world.
+You can write every line of the game yourself, which is the point of the book. If you would rather
+read the finished version alongside it, this loads it into a Pharo 13 image:
 
-Now that we have a saved image, go ahead and quit Squeak. We will not need it right now.
+```smalltalk
+Metacello new
+	baseline: 'LaserGame';
+	repository: 'github://rvillemeur/PharoLaserGameTutorial/src';
+	onConflictUseIncoming;
+	load
+```
 
-Okay. We're all set to go. Let's explore the game design.
+Then evaluate `LaserGameElement openExample` to play.
+
+## License
+
+Copyright 2007 Stephan Wessels. Copyright 2014 Stephan Wessels and Stéphane Ducasse.
+
+This book is available under the Creative Commons Attribution-ShareAlike 3.0 Unported license.
+
+*You are free:*
+
+- to Share — to copy, distribute and transmit the work;
+- to Remix — to adapt the work.
+
+*Under the following conditions:*
+
+- **Attribution.** You must attribute the work in the manner specified by the author or licensor,
+  but not in any way that suggests they endorse you or your use of the work.
+- **Share Alike.** If you alter, transform, or build upon this work, you may distribute the result
+  only under the same, a similar, or a compatible license.
+
+For any reuse or distribution you must make the license terms clear to others; a link to
+<http://creativecommons.org/licenses/by-sa/3.0/> is the easiest way. Any of these conditions can be
+waived with permission from the copyright holder, and nothing in the license impairs the author's
+moral rights.
+
+![Creative Commons BY-SA](figures/CreativeCommons-BY-SA.png)
 
 # Game Overview
 
-We're going to write a new game for Squeak. I'm not sure how it will look, that's just one part of this little project. But the following ideas should be represented in our game.
+Before writing any code, let us be clear about what the game does. Not precisely — the design will
+change several times as we go, and watching it change is part of the point — but clearly enough to
+start.
 
-The game will be played on a grid. We will imagine to have a laser beam that can be activated by the user. It will fire inside this grid from a specific location. The laser beam will always fire from the bottom edge underneath the first column of cells. As the laser beam traverses inside our grid it can hit deflecting mirrors. These mirrors will divert the laser beam's direction as it travels. Ultimately the beam should hit a target location inside our grid.
+The game is played on a grid of square cells. A laser fires into the grid from below the first
+column, and travels in a straight line until something stops it or turns it. Each cell is one of
+three things:
 
-![020](figures/020.jpg)
+- a **blank cell**, which the beam passes straight through;
+- a **mirror cell**, which deflects the beam ninety degrees. A mirror leans one of two ways, left
+  or right;
+- the **target cell**, drawn as a circle, which lights up when the beam reaches it.
 
-The cells of our grid will either be blank, have a target (shown as a circle here) or a deflecting mirror. The mirrors may be oriented in either of two ways, leaning left or right.
+If the beam runs into the edge of the grid, its path simply ends there.
 
-Once the laser is fired we can see how the cells guide the laser to a destination. In this case the laser correctly goes to the target cell.
+![(a) Starting from its origin, the beam reaches the target. (b) Rotating one mirror changes the
+path of the beam.](figures/2-Concept-MirrorRotation.png)
 
-![021](figures/021.jpg)
+The game lays out the mirrors for you, in random places and random orientations. In figure (a)
+above, that random layout happens to send the beam to the target. The player's two moves are:
 
-Initial locations and orientations of the mirror cells will be randomly controlled by the game. In the example the mirrors yield a correct result. However, the user has control over mirror rotation and position (to a certain amount). The user can click on a mirror cell and cause the mirror cell to rotate 90 degress. This would alter the laser's direction. Note that if the laser hits a grid wall it ends its path.
+- **rotate a mirror**, turning it ninety degrees, which changes where it sends the beam — figure
+  (b);
+- **push a mirror** one cell up, down, left or right. A mirror cannot be pushed through the edge of
+  the grid, nor into another mirror, nor into the target.
 
-The user may also click on a mirror cell and cause it to slide 1 grid-cell in a vertical or horizontal direction. Note that a mirror cell cannot move through the grid walls nor through another mirror cell nor the target cell. In this way the user can adjust the mirror cells to get a desired result.
+So a game that already works is not very interesting. What makes it a puzzle is the second goal:
+get the beam to the target by the *longest* path you can. Here is one sequence of moves doing
+exactly that. First, slide a mirror one cell to its left:
 
-Since, initially, this is a solitaire game, it becomes more interesting to have the user manipulate the mirrors to stil have the laser complete its path by hitting the target but also by finding the longest path possible.
+![Finding a longer path: first move, slide a mirror.](figures/2-LongerPath1-Slide.png)
 
-For example, the user could move the mirror cell shown, one cell to its left and cause the laser to take an alternate path.
+The beam now misses the target, which is fine — a move is allowed to break the path. Next, rotate
+another mirror:
 
-![022](figures/022.jpg)
+![Finding a longer path: second move, rotate a mirror.](figures/2-LongerPath2-Rotate.png)
 
-![023](figures/023.jpg)
+And one last move brings the beam back to the target, by a route longer than the one we started
+with:
 
-Then by rotating another mirror, get another result.
+![Finding a longer path: last move, slide a mirror.](figures/2-LongerPath3-Slide.png)
 
-![024](figures/024.jpg)
+That is the whole game. As we build it we will add things that let the player see what is
+happening: a count of how many cells the beam crosses, a count of moves made, an undo button, a
+reset button.
 
-![025](figures/025.jpg)
-
-As a last step, move one more mirror and get the laser to go back to the target cell. This time the path of the laser is longer than before. And ouf course it was strictly a random coincidence that the initial cells configuration already provided a correct path for the laser.
-
-![026](figures/026.jpg)
-
-![027](figures/027.jpg)
-
-That's the general idea. We can add laser cell-path counters and other game instrumentation as we develop.
+Now let us find the objects.
 
 # Discovery of Objects
 
