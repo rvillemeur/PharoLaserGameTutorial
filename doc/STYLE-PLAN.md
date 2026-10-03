@@ -136,7 +136,7 @@ chapter builds. 61 chapters, 61 openers.
 
 *Verified by:* every `#` heading is followed by prose, not by a heading or a fence.
 
-**Phase 3 — the voice.** The large one. Go chapter by chapter and rewrite the prose that describes
+**Phase 3 — the voice. Done on 2026-10-03.** The large one. Go chapter by chapter and rewrite the prose that describes
 what happens into prose that addresses the reader: "The test is written first" becomes "We write the
 test first"; "Running the package gives green" becomes "Run the package: it is green." Target the
 range the three books occupy, roughly 8 to 20 occurrences of "we" per thousand words and 7 to 14 of
@@ -147,14 +147,14 @@ callouts stays impersonal, because a rule is a rule whoever is reading it.
 best split one section file per commit, because it is the only phase where a bad edit is invisible to
 a script.
 
-**Phase 4 — paragraphs that carry two ideas.** Split the paragraphs over about 60 words where the
+**Phase 4 — paragraphs that carry two ideas. Done on 2026-10-03.** Split the paragraphs over about 60 words where the
 split falls naturally. Not a reflow of everything: the target is the median, 40 words down towards
 their 30, by breaking the long ones rather than by shortening every sentence.
 
 *Verified by:* the paragraph histogram of §2 recomputed; no paragraph over 90 words survives without
 a reason.
 
-**Phase 5 — `>>>` results in playground fences.** Merge each printed result into the fence of the
+**Phase 5 — `>>>` results in playground fences. Done on 2026-10-03.** Merge each printed result into the fence of the
 snippet that produced it, as a `>>>` line, and delete the ` ```text ` fence that held it. The 29
 `text` fences divide into results of a snippet, which move, and class comments, error reports,
 test-runner output and ASCII tables, which stay as they are. A `>>>` line inside a fence with no
@@ -163,7 +163,7 @@ test-runner output and ASCII tables, which stay as they are. A `>>>` line inside
 *Verified by:* no ` ```text ` fence remains whose content is the printed result of the fence above it;
 gate still 690.
 
-**Phase 6 — one sentence per line, optional, last.** A reflow of all five section files, nothing else
+**Phase 6 — one sentence per line, optional, last. Done on 2026-10-03.** A reflow of all five section files, nothing else
 in the commit. Only worth doing if the book is going to keep being edited.
 
 *Verified by:* no prose line holds two sentence endings; the rendered text is identical, checked by
