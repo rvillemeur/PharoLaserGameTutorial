@@ -1269,7 +1269,7 @@ Grid >> cells: anObject
 
 `laserIsActive`, `laserIsActive:`, `numberOfColumns:` and `numberOfRows:` are the same three lines each. The two getters `numberOfColumns` and `numberOfRows` are rewritten in a moment, so leave them as the refactoring wrote them for now.
 
-> **Note.** The finished class has two more instance variables, `laserBeamPath` and `movesStack`, which arrive with the beam path in the next section and with *Undo* near the end of the book. The definition in the image is therefore:
+> **Note.** The finished class has two more instance variables, `laserBeamPath` and `movesStack`, which arrive with the beam path in *The Path The Beam Takes*, two chapters from here, and with *Undo* near the end of the book. The definition in the image is therefore:
 
 ```smalltalk
 Object << #Grid
@@ -1303,7 +1303,7 @@ By convention a method parameter is named after the class it expects. Pharo has 
 
 Note that storing cells in a dictionary keyed by their `Point` location is the quick way, not the proper one. An array or a matrix indexed by a small calculation — something in the spirit of `x + (y * numberOfColumns)` — would be the real answer. It is a fine first pass all the same, and that is exactly the point of `at:` and `at:put:`: because the dictionary is hidden behind them, we can change our minds later without touching the rest of the program.
 
-> **Note.** Two details here point forward. `at:` answers `nil` for a location the grid does not hold, because of the `ifAbsent: []` — we come back below to why that matters. And `at:put:` tells the cell where it has been put, which needs the `gridLocation` instance variable that `Cell` gains with the beam path work of the next section.
+> **Note.** Two details here point forward. `at:` answers `nil` for a location the grid does not hold, because of the `ifAbsent: []` — we come back below to why that matters. And `at:put:` tells the cell where it has been put, which needs the `gridLocation` instance variable that `Cell` gains with the beam path, two chapters from here.
 
 ## Initializing a grid
 
@@ -1314,7 +1314,6 @@ Grid >> initialize
 	super initialize.
 	self laserIsActive: false.
 	self initializeCells.
-	
 ```
 
 The first attempt at `initializeCells` reads like this.
@@ -1533,8 +1532,569 @@ GridTestCase >> generateDemoGrid
 
 Writing the generator, it was easy to get confused about which half of `x@y` was the row and which the column. That is a tip-off: the names `at:` and `at:put:` are not saying enough, and we should go back and make them more intention-revealing. Perhaps we should have written this test *before* writing them — which is a clear advantage of writing tests first, since a test is the first client of the code and passes judgement on it.
 
-A way to print a grid as text, and to build one from a text drawing of it, would make all of this easier to debug. That is the first thing the next section does.
+A way to look at a whole grid at once, rather than asking it for one cell at a time, would make all of this easier to debug. The grid gets one later, in *Rotate A Mirror Cell*, where it learns to show its board and its beam path in the inspector.
 
 ## Conclusion
 
-All the structural pieces of the game are now in place and tested: three kinds of cell under a common superclass, and a grid that holds them and can be asked for any of them. What is left of the model is the interesting part — working out the path the beam takes through the board — and that is where the next section begins.
+All the structural pieces of the game are now in place and tested: three kinds of cell under a common superclass, and a grid that holds them and can be asked for any of them. What is left of the model is the interesting part — working out the path the beam takes through the board — and that is the next chapter.
+
+# The Path The Beam Takes
+
+Every cell knows how a beam crosses it. The grid knows which cell sits where. What nothing in the
+model does yet is the one thing the game is about: work out where the beam actually goes.
+
+This chapter follows the beam from the laser, cell by cell, until it stops, and lights every cell it
+crosses. It is the last part of the model, and it is the first part of this book where the code is
+long enough to get wrong in an interesting way. It did go wrong, which is what the next chapter is
+for.
+
+## One step of the beam is two facts
+
+Start by asking what one step of the beam is. The obvious answer is a cell: the beam crosses the cell
+at `1@5`, then the one at `2@5`, and so on. A list of cells, and the job is done.
+
+It is not enough, and the reason is in a method we already have:
+
+```
+exitSideFor: aSymbol
+```
+
+A cell cannot say which side the beam leaves by until it is told which side the beam came in by. A
+blank cell entered from the north sends the beam out south; the same blank cell entered from the west
+sends it out east. So a cell on its own cannot tell us where the beam goes next. A step of the beam
+is *two* facts: which cell, and which side of it the beam enters from.
+
+> **Lesson.** When two values are only meaningful together, they are an object. Carrying them as two
+> parallel collections, or as a cell plus "the side, which you have to remember from the step
+> before", is how a program ends up with a bug that no single method is responsible for.
+
+So we make the object.
+
+```
+Object << #LaserPathElement
+	slots: { #cell . #entrySide };
+	tag: 'Model';
+	package: 'Laser-Game'
+```
+
+The name says what it is: one element of the path the laser takes. Create the four accessors as you
+did for the cells — select the class, use *New > Accessors*, and accept.
+
+Here is the class comment. Write it now, while the reasons are fresh, not later when you have
+forgotten them:
+
+```
+I am one step of the laser beam: a `Cell` and the side the beam enters it from. `Grid >> calculatePath` starts one of me at the laser and follows `nextElementIn:` until a cell swallows the beam or the beam leaves the board, keeping the chain as the grid's `laserBeamPath`.
+
+`nextElementIn: aGrid` asks my cell which side the beam leaves by, steps one cell that way, and answers the element for the cell it lands on, or `nil` when there is none. `activateCell` and `clearCell` turn the light of my cell on and off for the side the beam enters from.
+```
+
+## Making one
+
+An element is never useful half-built: a cell with no entry side cannot answer anything. So the class
+gets an instance creation method that takes both values at once.
+
+```smalltalk
+LaserPathElement class >> cell: aCell entrySide: aSymbol
+	| model |
+	model := self basicNew.
+	model
+		cell: aCell;
+		entrySide: aSymbol.
+	model initialize.
+	^model
+```
+
+This is the same shape as `Grid class >> newOfSize:` from the last chapter, and for the same reason.
+`new` is `basicNew` followed by `initialize`, in that order, so an object made with `new` runs its
+`initialize` *before* anybody can set anything on it. Here we want the two values in place first, so
+the method does the two halves of `new` by hand with the assignments in between.
+
+> **Note.** Watch the semicolons in a method like this. `model cell: aCell; entrySide: aSymbol` is a
+> cascade: both messages go to `model`. Written `^ self basicNew cell: aCell; entrySide: aSymbol` the
+> receiver of the cascade would be `self basicNew`, and the method would answer whatever
+> `entrySide:` answers rather than the new element. And `^ self new; cell: aCell` is worse: the
+> receiver of *that* cascade is `self`, the class, so `cell:` is sent to `LaserPathElement` itself.
+> Both mistakes compile. When a cascade is doing the work, give the object a name, as this method
+> does.
+
+## The next step
+
+Now the heart of it. Given one element, which element comes next?
+
+Three things have to happen. Ask the cell which side the beam leaves by. Turn that side into a step
+across the board. Ask the grid for the cell one step that way.
+
+```
+LaserPathElement >> nextElementIn: aGrid
+	| exitSide vectors inversions newLocation nextCell |
+	exitSide := self cell exitSideFor: self entrySide.
+	exitSide isNil ifTrue: [ ^ nil ].
+	vectors := { #north -> (0 @ -1). #east -> (1 @ 0). #south -> (0 @ 1). #west -> (-1 @ 0) } asDictionary.
+	inversions := { #north -> #south. #east -> #west. #south -> #north. #west -> #east } asDictionary.
+	newLocation := self cell gridLocation + (vectors at: exitSide).
+	nextCell := aGrid at: newLocation.
+	nextCell isNil ifTrue: [ ^ nil ].
+	^ self class cell: nextCell entrySide: (inversions at: exitSide)
+```
+> **Note.** *Push A Cell* rewrites this method. The two dictionaries become four small classes, one
+> per direction, each knowing its own vector and its own inversion — and the version in the image is
+> the one quoted there. Read this one as what we wrote first.
+
+Take it line by line, because every line of it earns its place.
+
+`exitSide := self cell exitSideFor: self entrySide` is the only question the beam ever asks a cell.
+All the behaviour we wrote into the three kinds of cell arrives through this one send: a blank cell
+answers the opposite side, a mirror answers a side at right angles, and a target answers `nil`.
+
+`exitSide isNil ifTrue: [ ^ nil ]` is how the beam stops. A target swallows the beam, and this is the
+single place in the game where that `nil` is looked at — which is what the design discussion at the
+end of *Enhancing TargetCell* promised.
+
+The `vectors` dictionary turns a side into a step. North is `0 @ -1`, not `0 @ 1`: row numbers grow
+downwards, so going north means a *smaller* row number. Get that backwards and the beam walks
+cheerfully in the wrong direction without any error at all.
+
+The `inversions` dictionary is the one to slow down over, and it is where the next chapter's first
+bug lives. The beam leaves the current cell by its east side, so it arrives at the next cell through
+that cell's *west* side. The side the beam leaves by and the side it enters by are opposites, always,
+and both of them are named from the point of view of the cell that owns them.
+
+`aGrid at: newLocation` answers `nil` for a location the grid does not hold, and this is where that
+pays off. One step past the right-hand column is simply not in the dictionary, so the `ifAbsent: []`
+we put in `Grid >> at:` turns walking off the board into the same answer as a target: no next
+element, the path ends.
+
+> **Lesson.** Two different endings — the beam is swallowed, the beam leaves the board — both become
+> `nil` from `nextElementIn:`. One answer for "there is no next one" means the caller has one case to
+> handle instead of two. Each of the two `ifTrue: [ ^ nil ]` lines is a sentence about the game, and
+> they are worth reading as such.
+
+## Where the beam comes in
+
+The path has to start somewhere, and the game puts the laser at the bottom left of the board, pointing
+up.
+
+```smalltalk
+Grid >> startingCell
+	"Answer the cell the laser enters me at: column one of my last row. The beam enters it from
+	the south, so it arrives through the bottom edge of my bottom left corner."
+
+	| pt |
+	pt := 1@(self numberOfRows).
+	^self at: pt
+```
+
+Column one, last row. On the five by five demo board that is `1@5`, and on a board of any other size
+the method still answers the bottom left corner, because it asks the grid for `numberOfRows` rather
+than assuming a number.
+
+Note what the comment says about the side, because it is not obvious: the beam enters that cell from
+the *south*. The laser is below the board, so the light comes in through the bottom edge of the
+bottom left cell.
+
+## Walking the whole path
+
+With a first element and a way to get the next one, the walk is a loop.
+
+```smalltalk
+Grid >> calculatePath
+	| cell dirSym element next |
+	self laserBeamPath: OrderedCollection new.
+	cell := self startingCell.
+	dirSym := #south.
+	element := LaserPathElement cell: cell entrySide: dirSym.
+	[self laserBeamPath addLast: element.
+	next := element nextElementIn: self.
+	next isNil] whileFalse: [
+		element := next]
+```
+
+The path is kept on the grid, in an instance variable `laserBeamPath`, which is the second of the two
+slots the note in the last chapter said would arrive with the beam. Add it to the class definition
+and make its accessors.
+
+Each time round the loop, the method adds the element it has and *then* asks for the next one. That
+order matters: every element that is reached gets into the collection, including the last one, the
+one whose `nextElementIn:` answers `nil`. Write it the other way round — ask first, add second — and
+the target cell, the one the player is trying to hit, is the one cell missing from the path.
+
+The loop is a `whileFalse:`, and the condition is the whole block in front of it. In Pharo a block
+answers its last expression, so `[ ... next isNil ] whileFalse: [ element := next ]` reads: do the
+work, and if there is a next element, go round again.
+
+> **Lesson.** A loop that follows a chain adds the thing it is holding, then asks for the thing after
+> it. The first item needs no special case that way, and neither does the last.
+
+A fresh `OrderedCollection` on the first line means the method can be sent as often as you like and
+the path never grows stale. The path is a *result*, not a record of what has happened: nothing
+accumulates across calls.
+
+## Lighting what the beam crosses
+
+Calculating the path changes nothing a player can see. Lighting the cells is a second, separate step.
+
+```smalltalk
+Grid >> activateCellsInPath
+	self calculatePath.
+	self laserBeamPath do: [:pe |
+		pe activateCell]
+```
+
+```smalltalk
+LaserPathElement >> activateCell
+	self cell laserEntersFrom: self entrySide
+```
+
+And `laserEntersFrom:` is the method from *Improving Our Model*: it lights the side the beam came in
+by and the side it leaves by. The element is the only object that knows both the cell and the entry
+side, so it is the right object to send that message — it hands each cell exactly the one fact the
+cell was waiting for.
+
+Keeping these two apart — work out the path, then light it — is worth the extra method. The next
+section draws the board, and it needs the path for things other than lighting: counting its length
+for a counter, and showing where it runs. Had `calculatePath` lit the cells on its way through,
+anything wanting to look at the path would have had to light the board as a side effect of looking.
+
+> **Lesson.** A method that calculates and a method that changes the world are two methods. The one
+> that calculates can be called from anywhere, including a test, including a playground, as often as
+> you like.
+
+## The test grows
+
+Back in the last chapter `testCellInteractions` asserted one thing: the target of the demo board
+starts out dark. Now the board can be lit, so the test can say what the beam does to it.
+
+```
+testCellInteractions
+	| grid cell |
+	grid := self generateDemoGrid.
+	cell := grid at: 5@1.
+	self assert: cell isOff.
+	grid activateCellsInPath.
+	self assert: cell isOn
+```
+> **Note.** The next chapter finishes this test, and the finished version is the one in the image.
+
+Off, then fire, then on. It is a small test and it goes through everything in this chapter: the
+starting cell, nine steps of `nextElementIn:`, both ways of ending a path, and `laserEntersFrom:` on
+every cell along the way.
+
+## Checking it
+
+Run the test. Then open a playground and look at the path itself, because the one thing a passing
+test does not give you is a picture:
+
+```smalltalk
+| grid |
+grid := GridTestCase new generateDemoGrid.
+grid calculatePath.
+grid laserBeamPath collect: [ :pe | pe cell gridLocation ]
+```
+
+The demo board lives in the test class for now, and `GridTestCase new generateDemoGrid` is how a
+playground borrows it. From *Drawing The Mirror* onwards the same board is `GridFactory demoGrid`,
+which is what the rest of this book writes.
+
+It answers nine locations:
+
+```
+{(1@5). (2@5). (3@5). (4@5). (4@4). (4@3). (4@2). (4@1). (5@1)}
+```
+
+Follow them on the board picture from *Game Overview*. The beam comes in at the bottom left, the
+mirror there turns it east along the bottom row, the mirror at `4@5` turns it north, it runs up
+column four to the mirror at `4@1`, and that one turns it east into the target at `5@1`. Nine cells,
+and the last of them is the target.
+
+Asking for the entry sides instead is just as useful:
+
+```smalltalk
+| grid |
+grid := GridTestCase new generateDemoGrid.
+grid calculatePath.
+grid laserBeamPath collect: [ :pe | pe entrySide ]
+```
+
+```
+#(#south #west #west #west #south #south #south #south #west)
+```
+
+Read that against the locations. While the beam runs east the cells are entered from the west; while
+it runs north they are entered from the south. The inversion is doing its job.
+
+> **Lesson.** `collect:` over a collection of objects, asking each one for the single fact you care
+> about, is the cheapest debugging tool in Pharo. A list of nine points tells you more about a beam
+> than nine inspectors on nine path elements.
+
+That is the model finished. It did not work the first time, though, and the mistakes were worth
+keeping: the next chapter is the four bugs that stood between this code and a green test, and how
+each one was found.
+
+# Chasing The Beam
+
+The code of the last chapter is thirty lines, and on the way to those thirty lines there were four
+mistakes. None of them was a misunderstanding of the game. They were the ordinary kinds: a value
+used the wrong way round, a value nobody filled in, a line that parsed differently from how it read,
+and a case that was not handled.
+
+This chapter is the four of them. Each one is written as what you see, how to get from there to the
+line at fault, and what to remember. The point is not the bugs — you will make different ones. The
+point is that each symptom has a tool that goes with it, and knowing which tool is most of the
+work.
+
+## A beam that never stops
+
+Run the test with the inversion forgotten, and nothing happens. No failure, no debugger, no result.
+The window stops answering, and the fans come on.
+
+That is a loop that does not end. There is still information to be had, and the way to it is the
+user interrupt key: `Cmd+.` on macOS, `Alt+.` on Linux and Windows. Pharo stops whatever it is
+doing and opens a debugger on it.
+
+The top of the stack is `OrderedCollection >> addLast:` under `Grid >> calculatePath`. That already
+says a great deal: the method is not stuck computing one thing, it is going round the loop adding
+elements. Select the `calculatePath` frame and ask the receiver, in the debugger's own code pane:
+
+```smalltalk
+self laserBeamPath size
+```
+
+It answers a number in the hundreds of thousands. The beam is not long. The beam is a circle.
+
+Which cells? The same question as the end of the last chapter, over the first dozen elements:
+
+```smalltalk
+(self laserBeamPath first: 12) collect: [ :pe | pe cell gridLocation ]
+```
+
+```
+{(1@5). (2@5). (1@5). (1@4). (1@5). (2@5). (1@5). (1@4). (1@5). (2@5). (1@5). (1@4)}
+```
+
+Four steps and it is back where it started. Three locations, over and over. A beam that returns to a
+cell it has already crossed, on a board whose mirrors clearly do not form a loop, means the step from
+one cell to the next is wrong — and the only part of that step with two sides to confuse is the
+entry side:
+
+```
+	^ self class cell: nextCell entrySide: exitSide
+```
+
+That reads perfectly well, which is what makes it dangerous. The beam left by the east side, so the
+next element is entered by... the east side. No. Sides are named from the point of view of the cell
+that owns them. The beam leaves cell one by *cell one's* east side, and it arrives at cell two
+through *cell two's* west side. The two cells share an edge and each has its own name for it.
+
+```
+	^ self class cell: nextCell entrySide: (inversions at: exitSide)
+```
+
+With the inversion in place the walk ends after nine cells on the demo board.
+
+> **Lesson.** A program that hangs still has everything you need in it. Interrupt it, read the top of
+> the stack to learn *what* it is repeating, then ask the receiver one question to learn *what over*.
+> A hang investigated this way takes two minutes; a hang investigated by re-reading the method takes
+> an afternoon.
+
+There is no guard in `calculatePath` against a path that never ends, and there deliberately is not
+one: a mirror layout cannot produce a loop, so a loop means a bug in this method rather than an
+unusual board. What the book does instead is pin the claim down with a test much later, in
+*A Bigger Game Board*, where a full eighty-cell board asserts that its path is shorter than a
+thousand steps. If the inversion is ever broken again, that test says so in a second instead of
+freezing the image.
+
+## A cell that does not know where it is
+
+The next one arrives as a debugger with a short, strange message:
+
+```
+MessageNotUnderstood: receiver of "+" is nil
+```
+
+The failing line is in `nextElementIn:`:
+
+```
+	newLocation := self cell gridLocation + (vectors at: exitSide)
+```
+
+A `nil` on the left of the `+`. So `self cell gridLocation` is `nil`: there is a cell in the path,
+and the cell does not know where it is.
+
+Now the useful move, and it is a different one from the last bug. The method where the debugger
+stopped is not the method at fault — this one only reads the location. The question is who was
+supposed to write it. In Pharo you ask that of the setter: select `gridLocation:`, browse its
+senders, and the whole answer is one method:
+
+```smalltalk
+Grid >> at: aPoint put: aCell
+	"Put aCell at aPoint, a column @ row location, and tell the cell where it now sits."
+
+	aCell gridLocation: aPoint.
+	self cells at: aPoint put: aCell
+```
+
+One sender, so there is exactly one way a cell ever learns its location, and a cell with a `nil`
+location got into the grid without going through it. Which is just what the setup had done:
+
+```
+	grid cells at: 4@1 put: MirrorCell leanRight
+```
+
+Straight into the dictionary, past the method whose job is to keep the cell and its key in step. The
+fix is to send the grid's own `at:put:` instead, and the reason to care is bigger than this bug:
+`at:put:` exists precisely so that nothing else has to know that cells are kept in a dictionary, and
+the first time something reached around it, it broke an invariant it did not know about.
+
+> **Lesson.** When a bug is a `nil`, the method that reads the `nil` is rarely the method at fault.
+> Find the setter and look at its senders. If there is one, your invariant has one place to live; if
+> there are nine, you have found the real problem.
+
+## A test that fails with a message about a class the game does not have
+
+Writing the assertions for the path, the first attempt was this:
+
+```
+	self assert: pe cell gridLocation = 2 @ 5
+```
+
+The test does not fail. It *errors*:
+
+```
+MessageNotUnderstood: Message not understood: False >> #@
+```
+
+`False` is not in this program. Nothing in the game sends `@` to a boolean. Read the line again with
+Pharo's rules in mind, though, and it is doing exactly what it was told.
+
+Pharo has three levels of precedence: unary messages first, then binary, then keyword. `=` and `@`
+are both binary, and binaries are evaluated strictly left to right, with no notion that one of them
+is arithmetic and the other a comparison. So the line means:
+
+```
+	self assert: ((pe cell gridLocation = 2) @ 5)
+```
+
+The location is compared with the number `2`, which answers `false`, and then `false` is asked for
+`false @ 5`. Hence the stranger in the error message.
+
+The small fix is parentheses: `self assert: (pe cell gridLocation = (2 @ 5))`. The better fix is the
+one the tests in this book use everywhere:
+
+```
+	self assert: pe cell gridLocation equals: 2 @ 5
+```
+
+`assert:equals:` is a keyword message, so the argument `2 @ 5` is evaluated before anything is
+compared, and the trap cannot happen. It also prints both values when it fails — *Expected 2@5 but
+was 4@5* — where `assert:` can only tell you that something was not true.
+
+> **Lesson.** An error naming a class your program does not use is almost always a precedence
+> surprise. And `assert:equals:` is worth preferring over `assert:` on both counts: it is immune to
+> this, and it says more when it fails.
+
+## A beam that runs off the end of the board
+
+The last of the four is the case that was simply not written. Both `ifTrue: [ ^ nil ]` lines in
+`nextElementIn:` were added after a debugger asked for them.
+
+Leave out the first one — the guard on a `nil` exit side — and the beam reaches the target:
+
+```
+KeyNotFound: key nil not found in Dictionary
+```
+
+The target answered `nil` for its exit side, as a target should, and `vectors at: nil` has nothing to
+give. The error is honest and it names the value: there is no direction called nothing.
+
+Leave out the second one — the guard on a cell the grid does not hold — and the symptom comes one
+step later, which is the more instructive of the two. The beam leaves the board at the right-hand
+column, `aGrid at: newLocation` answers `nil`, and an element is happily built around that `nil`.
+Nothing complains yet. The complaint comes next time round the loop, when the path element asks its
+cell a question:
+
+```
+MessageNotUnderstood: receiver of "exitSideFor:" is nil
+```
+
+That gap between the mistake and the symptom is worth a moment. The method that built an element
+around `nil` ran without error; the method that used it got the debugger. The stack in that debugger
+has both frames in it, which is why reading a stack past its top frame is a habit worth having.
+
+> **Lesson.** `nil` travels. A method that accepts a `nil` it cannot use hands the error to whoever
+> is unlucky enough to ask the next question. Check for the missing thing where it is produced, which
+> here means right after the send that can answer `nil`.
+
+## The test that pins the path down
+
+With the four fixed, the test from the last chapter can say the whole truth instead of one cell's
+worth of it. This is the version in the image:
+
+```smalltalk
+GridTestCase >> testCellInteractions
+
+	| grid cell expectedActiveLocationList foundOn |
+	grid := self generateDemoGrid.
+	cell := grid at: 5 @ 1.
+	self assert: cell isOff.
+	grid activateCellsInPath.
+	self assert: cell isOn.
+	expectedActiveLocationList := {
+		                              (1 @ 5).
+		                              (2 @ 5).
+		                              (3 @ 5).
+		                              (4 @ 5).
+		                              (4 @ 4).
+		                              (4 @ 3).
+		                              (4 @ 2).
+		                              (4 @ 1).
+		                              (5 @ 1) }.
+	foundOn := grid cells select: [ :each | each isOn ].
+	self assert: foundOn size equals: expectedActiveLocationList size.
+	foundOn do: [ :fCell |
+		self assert:
+			(expectedActiveLocationList includes: fCell gridLocation) ]
+```
+
+Two assertions do the work, and they are a pair worth copying. `foundOn size equals:
+expectedActiveLocationList size` says *nine cells are lit, no more*. The loop says *and each of them
+is one of these nine*. Either one on its own is weak: the count alone would accept nine wrong cells,
+and the membership check alone would accept a beam that lit only the first.
+
+> **Lesson.** To pin down a set of results, assert the count and assert the membership. One of them
+> catches extras, the other catches wrong ones, and neither catches both.
+
+Notice what the test does *not* do. It does not ask the path. It asks the grid which of its cells are
+lit, with `grid cells select: [ :each | each isOn ]`, which is what a player would see. A test that
+walked `laserBeamPath` and checked the locations in it would pass against the very first bug of this
+chapter, because a looping beam does cross all nine of those cells — along with three of them several
+hundred thousand times.
+
+> **Lesson.** Assert the effect on the world, not the intermediate structure that produced it. The
+> path is how the beam is worked out; the lit cells are what the game is about.
+
+## What this chapter is really teaching
+
+The four tools, in the order the four bugs asked for them:
+
+1. **A hang is interruptible.** `Cmd+.` or `Alt+.`, then read the top of the stack for *what*, and
+   ask the receiver one question for *what over*.
+2. **A `nil` has an owner.** Browse the senders of the setter. The method that read the `nil` is a
+   witness, not the culprit.
+3. **An impossible class in an error message means precedence.** Unary, then binary left to right,
+   then keyword.
+4. **Read the stack below the top frame.** When `nil` travels, the mistake and the symptom are in
+   different methods.
+
+And one habit underneath all four: every one of those bugs was found by asking a live object a
+question, in the debugger or in a playground, rather than by reading the method again. Reading finds
+the bugs you can imagine. Asking finds the others.
+
+## Checking it
+
+Run the whole of `Laser-Game-Tests`. Everything is green, and the model is finished: three kinds of
+cell, a grid that holds them, a beam that crosses the board and lights what it touches, and a test
+that says where it goes.
+
+Nothing of it is visible yet. A player cannot see a single cell, let alone the beam. That is the next
+section, which draws the board on the screen.

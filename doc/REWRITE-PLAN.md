@@ -131,12 +131,13 @@ order. What changes is that no file or chapter is described by the tutorial sect
 | Enhancing MirrorCell | keep |
 | Enhancing TargetCell | keep |
 | Grid | keep |
+| The Path The Beam Takes | **written** in phase 3. `LaserPathElement`, `Grid >> startingCell`, `calculatePath`, `activateCellsInPath` |
+| Chasing The Beam | **written** in phase 3. The four bugs of the beam path, and the tool each symptom calls for |
 
 ### section2 — the game appears on screen
 
 | Chapter | Fate |
 |---|---|
-| *(front gap)* | **write.** The grid's `printOn:` and the beam-path work have no Markdown yet; see §7 phase 3 |
 | Game Graphics | keep; carries the one Morphic sentence of §3 |
 | Rendering The Cells | keep |
 | The Game Board | keep |
@@ -197,10 +198,26 @@ changed in phase 0. Verifiable by grep, so it is done first and reviewed quickly
 rewritten, and left with no reference to the original and no unexplained vocabulary. Chapter order,
 section1 first, so the reader's path is rebuilt from the start. This is the bulk of the work.
 
-**Phase 3 — the missing front of section2.** The grid's textual representation and the beam path,
-pages 035B–048A, currently only in `SectionOne/11-BeamPath.pier` (1098 lines). Written new under
-this plan rather than adapted line by line: `printOn:`, and a debugging session that is genuinely
-about chasing a bug. Code quoted from the image as always.
+**Phase 3 — the missing beam path. Done.** Written new under this plan rather than adapted line by
+line, as two chapters, *The Path The Beam Takes* and *Chasing The Beam*. Two deviations from the
+disposition above, both deliberate:
+
+- They are the **last two chapters of section1**, not the front of section2. The beam path is model
+  work and every method in it is tested before anything is drawn; section2 opens with the game
+  appearing on screen, and the beam path belongs on the near side of that line.
+- There is **no textual representation of the grid**, because the image has none: `Grid` has no
+  `printOn:` and no cell answers a `stringRepresentation`. What the finished game has instead is
+  `Cell >> printOn:` and the three inspector tabs `inspectionBoard:`, `inspectionCells:` and
+  `inspectionBeam:`, all of which are already written up in *Rotate A Mirror Cell* in section3. The
+  end of the *Grid* chapter now points the reader there, where the old text promised a text drawing
+  of the board.
+
+The debugging session is the second chapter: a beam that never ends (the forgotten side inversion,
+found with the interrupt key), a cell with a `nil` `gridLocation` (found through the senders of the
+setter), `self assert: pe cell gridLocation = 2 @ 5` erroring with `False >> #@` (binary precedence),
+and the two missing `ifTrue: [ ^ nil ]` guards. Code quoted from the image as always; the first
+version of `nextElementIn:` is shown in a plain fence, since the image version is the one *Push A
+Cell* arrives at.
 
 **Phase 4 — introduction and overview.** The two chapters of section1 that are still 2007 Squeak
 environment text. Last, because the introduction is easiest to write once the rest reads the way it
@@ -216,8 +233,12 @@ Phases 1 and 2 can run file by file; phase 0 must land before any block is requo
    returns only the two sanctioned places of §3.
 2. No code fence names `Morph`, `Form`, `BitBlt`, `Display`, `World`, `Cursor`, `SketchMorph` or
    `floodFill`, in code or in comment.
-3. Every method block matches the image character for character, checked by the in-image block
-   checker that verified the current files.
+3. Every method block matches the image character for character. The check is in two halves:
+   `scratchpad/.../verify.py` reads the ```smalltalk fences of a Markdown file and prints
+   `Class|selector|checksum|length` for each one that carries a `Class >> selector` head, and the
+   same checksum is computed in the image over `sourceCode trimRight` and compared. A fence with no
+   `Class >> selector` head is a fragment and is not checked; a plain fence is a superseded version
+   and must carry a `> **Note.**` naming the chapter that replaces it.
 4. `run_tests` on `Laser-Game-Tests` is green and `run_critics` is no worse than the 44 known
    critiques of `PROJECT_MAP.md` §8.
 5. Every chapter that introduces a pattern names it.
@@ -229,7 +250,6 @@ Phases 1 and 2 can run file by file; phase 0 must land before any block is requo
   plan, and the Pillar text is one source among the HTML pages and the image.
 - The Pillar book stays frozen and unedited: `SectionOne/*.pier`, `SectionTwo/*.pier`,
   `pillar.conf`, the templates, `compile.sh`.
-- `doc/section2/section2.md`'s head comment, which says pages 035B–048A are missing, goes when
-  phase 3 lands.
+- `doc/section2/section2.md`'s head comment, which said the beam-path pages were missing, is gone.
 - Images: only `doc/section1/figures/` exists, holding the 2007 screenshots `020.jpg`–`031.jpg`.
   Sections 2–5 reference no figure at all. Screenshots of the Bloc game are the user's to take.
