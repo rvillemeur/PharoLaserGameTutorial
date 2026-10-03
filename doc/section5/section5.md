@@ -181,7 +181,7 @@ meaning anything at all.
 
 Two builders, the same shape as the two that were there:
 
-```
+```st
 LaserGameControlPanelElement >> newMirrorsCounter
 	"Answer the counter showing how many mirrors stand on the board: three digits."
 
@@ -190,7 +190,7 @@ LaserGameControlPanelElement >> newMirrorsCounter
 > **Note.** *Counters Of One Width*, the last chapter but one, sends `newCounterLabelled:digits:`
 > here instead, which gives every counter of the panel the same width.
 
-```
+```st
 LaserGameControlPanelElement >> newActiveMirrorsCounter
 	"Answer the counter showing how many mirrors the beam lights: three digits, captioned 'Active
 	Mirrors'."
@@ -308,7 +308,7 @@ LaserGameControlPanelElement class >> counterCount
 	^ 4
 ```
 
-```
+```st
 LaserGameControlPanelElement class >> contentHeight
 	"Answer the height, in pixels, of everything I hold: my counters, stacked with a gap between
 	them and a gap above and below, and the two rows of buttons under them. A counter takes the
@@ -385,7 +385,7 @@ assertion says it in one line rather than through a difference of pixels.
 The panel takes the new height, and so does the window around it. Two tests that said "as tall as
 the board" now say "as tall as the board, or as tall as what it holds":
 
-```
+```st
 LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBoardOrItsContents
 	"The panel sizes itself: a panel width, and the height of the board beside it — unless the
 	board is shorter than what the panel holds, which the demo grid of five rows is once the mirror
@@ -443,7 +443,7 @@ LaserGameElement class >> extentForGrid: aGrid
 	  + (2 * self gameMargin)
 ```
 
-```
+```st
 LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins
 	"The game is as wide as the board, the panel beside it and a margin on each side, and as tall
 	as the taller of the board and the panel, with a margin above and below. The demo grid is short
@@ -544,7 +544,7 @@ two places can disagree. `self children first` cannot be stale, because there is
 to date; in exchange, the panel now depends on the order in which it adds its own children, which
 is why both comments say so and why `rebuild` adds them in that order in one place only:
 
-```
+```st
 LaserGameControlPanelElement >> rebuild
 	"Replace what I hold with fresh counters at my top and fresh buttons at my bottom, both acting
 	on my game, and take the width of a panel and the height of the board beside me, or the height
@@ -661,7 +661,7 @@ lesson.
 
 The window tests of *A Window The Player Can Resize* contain lines like this:
 
-```
+```smalltalk
 self assert: game naturalExtent equals: 380 @ 270.
 game fitIn: 760 @ 540.
 ```
@@ -1529,7 +1529,7 @@ whether they wanted them or not.
 
 The fix is to make the tests a package. In the image that is one line per class:
 
-```
+```smalltalk
 aClass package: (Smalltalk packageOrganizer ensurePackage: 'Laser-Game-Tests')
 ```
 
@@ -1579,7 +1579,7 @@ here means both. Somebody who only wants to play writes `load: 'core'`.
 The baseline can be checked without a network and without loading anything, by asking Metacello to
 work out the order it would load in:
 
-```
+```smalltalk
 BaselineOfLaserGame project version spec packageSpecsInLoadOrder
 "an Array('Bloc' 'Toplo' 'Laser-Game' 'Laser-Game-Tests' 'core' 'tests' 'default')"
 ```
@@ -1606,7 +1606,7 @@ already present.
 
 Every test class in this project had carried one Renraku critique since the day it was written:
 
-```
+```text
 ReTestClassNotInPackageWithTestEndingNameRule
 Test class not in a package with name ending with '-Tests'
 ```
@@ -1626,7 +1626,7 @@ yet.
 
 The suite is run on the test package now, and answers what it answered before:
 
-```
+```text
 280 run, 280 passes, 0 skipped, 0 expected failures,
 0 failures, 0 errors, 0 unexpected passes
 ```
@@ -1771,7 +1771,7 @@ LaserGameControlPanelElement >> newResetRow
 	^ self newRowOfButtons: { self newResetButton }
 ```
 
-```
+```st
 LaserGameControlPanelElement >> newButtonColumn
 	"Answer the column of button rows: the bottom left corner of the panel, one gap from both
 	edges, the rows one gap apart, the last row against the bottom. The cell spacing of a linear
@@ -1806,7 +1806,7 @@ panel got down to eight by giving up the two it did not need, and `undoButton` m
 `ReExcessiveVariablesRule` allows ten. A tenth would be legal and pointless, because the row Reset
 is the only button of can answer it:
 
-```
+```st
 LaserGameControlPanelElement >> resetRow
 	"Answer the top row of buttons, holding Reset alone. The column reads from the top, so the top
 	row of buttons is its first child."
@@ -1841,7 +1841,7 @@ LaserGameControlPanelElement class >> buttonRowCount
 	^ 3
 ```
 
-```
+```st
 LaserGameControlPanelElement class >> contentHeight
 	"Answer the height, in pixels, of everything I hold: my counters, stacked with a gap between
 	them and a gap above and below, and the rows of buttons under them, spaced the same way. A
@@ -1948,7 +1948,7 @@ every sentence of it should be about that.
 
 The new row gets the test that owns the rest:
 
-```
+```st
 LaserGameControlPanelElementTestCase >> testResetButtonHasTheTopRowToItself
 	"Reset sits in row three, column one, which is the row above New and Undo and the topmost of
 	the three. Its button is the one thing the panel does not hold in an instance variable, so it
@@ -2039,7 +2039,7 @@ is a fitting thing to assert in the chapter that went looking for it.
 Five buttons in three rows. Push some mirrors, fire the laser, press Reset: the board comes back, the
 beam stops, the counter reads zero. Without a window:
 
-```
+```smalltalk
 | game |
 game := LaserGameElement on: GridFactory demoGrid.
 game grid pushCellEastFromLocation: 1 @ 2.
@@ -2358,7 +2358,7 @@ in.
 
 Without a window:
 
-```
+```smalltalk
 | game |
 game := LaserGameElement on: GridFactory demoGrid.
 { game board parent children size.
@@ -2439,7 +2439,7 @@ implementation, reachable from both.
 
 Four test classes now need that method, so it goes in a superclass of the four:
 
-```
+```text
 LaserGameTestCase                    (abstract)
     CellRendererTestCase
     CellClickRegionTestCase
@@ -2602,7 +2602,7 @@ CellClickOutsideRegionRotateTestCase >> assertRotateRegionTable
 
 One row is worth stopping at:
 
-```
+```text
 (outRect topLeft x + 2 @ inRect topLeft y -> CellClickRegionRotateClockwise)
 ```
 
@@ -2766,7 +2766,7 @@ because it has no notion of a corner case.
 Nothing a player can see changed in this chapter. What changed is that the claim "every size follows
 the cell size" is now checked by the suite at three sizes instead of being argued for in comments:
 
-```
+```smalltalk
 | game |
 game := LaserGameElement on: GridFactory demoGrid.
 LaserGameTestCase withCellExtent: 30 @ 30 do: [
@@ -3024,7 +3024,7 @@ clearance on every side, whatever the cell size.
 
 Without a window:
 
-```
+```smalltalk
 LaserGameTestCase withCellExtent: 80 @ 80 do: [
 	{ CellRenderer hintArrowExtent.
 	  CellRenderer hintArrowOffset } ]
@@ -3459,7 +3459,7 @@ the bar.
 
 The suite is still green, at 280 runs:
 
-```
+```text
 280 run, 280 passes, 0 skipped, 0 expected failures,
 0 failures, 0 errors, 0 unexpected passes
 ```
@@ -3482,7 +3482,7 @@ Start by measuring, not by guessing. A counter is a frame around a column of two
 of digits and a caption, and it was never told how wide to be, so it takes the width of what it
 holds. Ask each of the four to measure itself and the cause is in the numbers:
 
-```
+```text
 Laser Path      counter 53   display 34   caption 43
 Moves           counter 44   display 34   caption 26
 Mirrors         counter 44   display 34   caption 27
@@ -3623,7 +3623,7 @@ its own, and what `contentHeight` relies on when it builds one counter to ask ho
 
 Laid out in the finished panel, the four boxes now read:
 
-```
+```text
 Laser Path      (0.0@4.0) corner: (102.0@52.0)      display and caption centred on 51.0
 Moves           (0.0@56.0) corner: (102.0@104.0)    display and caption centred on 51.0
 Mirrors         (0.0@108.0) corner: (102.0@156.0)   display and caption centred on 51.0
@@ -3751,7 +3751,7 @@ right.
 
 Measure the six labels the panel can show, against the forty pixels a button was then:
 
-```
+```text
 Quit    25      Fire    22      Stop    28
 New     26      Undo    33      Reset   33
 ```
@@ -3772,7 +3772,7 @@ button font is a little wider would paint those two labels straight over the bor
 The fix is one line, and finding which line it was took some looking. A `ToButton` has three things
 that sound as though they would centre a label, and two of them do nothing:
 
-```
+```text
 button alignCenter                                   label container still at x 0
 button label constraintsDo: [ :c | ... ]             label container still at x 0
 button labelContainer constraintsDo: [ :c | ... ]    label container still at x 0
@@ -3922,7 +3922,7 @@ else — and what it mainly does now is document, in the suite, a relation that 
 
 Four numbers move, and all four are the window twenty pixels wider:
 
-```
+```text
 panel width      110  ->  130
 counter width    102  ->  122
 demo game        380@355  ->  400@355
@@ -4000,7 +4000,7 @@ and that is the right answer rather than a special case.
 
 Finally, one older test knew the panel's width as a literal, and the literal changed:
 
-```
+```st
 	self
 		assert: (LaserGameElement extentForGrid: grid)
 		equals: 5 * CellRenderer cellExtent x + 130
@@ -4040,7 +4040,7 @@ It answers `{130. 122. 400@355. 550@520}`.
 
 And the whole suite, which is where the book ends:
 
-```
+```text
 280 run, 280 passes, 0 skipped, 0 expected failures,
 0 failures, 0 errors, 0 unexpected passes
 ```

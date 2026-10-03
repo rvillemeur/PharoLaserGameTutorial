@@ -263,7 +263,7 @@ Pharo groups code at two levels. A **package** is the unit you load, save and co
 
 With `Laser-Game` selected, the browser shows a class creation template in its bottom pane. Fill it out and accept it with the context menu or with `Cmd-S` / `Alt-S`. Every class needs a superclass; the easiest thing to do for now is to subclass `Object`. We refactor that later, once the design structure is fleshed out.
 
-```
+```smalltalk
 Object << #Grid
 	slots: {};
 	tag: 'Model';
@@ -276,21 +276,21 @@ Object << #Grid
 
 Then define the three cell classes the same way.
 
-```
+```smalltalk
 Object << #BlankCell
 	slots: {};
 	tag: 'Model';
 	package: 'Laser-Game'
 ```
 
-```
+```smalltalk
 Object << #MirrorCell
 	slots: {};
 	tag: 'Model';
 	package: 'Laser-Game'
 ```
 
-```
+```smalltalk
 Object << #TargetCell
 	slots: {};
 	tag: 'Model';
@@ -355,13 +355,13 @@ Before we can run this test we need definitions of `isOn` and `isOff`, so that t
 
 Select `BlankCell` in the `Laser-Game` package, add a protocol `testing` and accept the two methods below.
 
-```
+```st
 isOff
 	"dummy definition"
 	^ false
 ```
 
-```
+```st
 isOn
 	"dummy definition"
 	^ false
@@ -411,7 +411,7 @@ Before we can finish `isOn` and `isOff` we need somewhere to keep the segments. 
 
 Select `BlankCell`, edit its definition to add the slot and accept.
 
-```
+```smalltalk
 Object << #BlankCell
 	slots: { #activeSegments };
 	tag: 'Model';
@@ -432,7 +432,7 @@ Since the variable holds a dictionary, rename the argument of the setter to say 
 
 The new variable has to be initialized. Add an `initialization` protocol to `BlankCell` and define the method that fills the dictionary; every side starts off.
 
-```
+```st
 initializeActiveSegments
 	self activeSegments: Dictionary new.
 	self activeSegments at: #north put: false.
@@ -443,7 +443,7 @@ initializeActiveSegments
 
 That method has to be called. There are two ways: specialize the default `initialize` method, or initialize lazily. Let us do the first.
 
-```
+```st
 initialize
 	super initialize.
 	self initializeActiveSegments
@@ -457,7 +457,7 @@ In Pharo, `new` sends `initialize` to the newly created instance, so overriding 
 
 Another approach initializes the variable the first time it is read. The getter checks whether the variable is still `nil` and fills it if it is, and the other methods of the class go through the getter instead of touching the variable.
 
-```
+```st
 activeSegments
 	^ activeSegments ifNil: [ self initializeActiveSegments ]
 ```
@@ -470,14 +470,14 @@ Lazy initialization is useful in a live environment where instance variables are
 
 Now we can write `isOn` for real. `activeSegments` answers a dictionary whose values say which segments are lit; as soon as one of them is true the cell is on.
 
-```
+```st
 isOn
 	^ self activeSegments values anySatisfy: [ :each | each = true ]
 ```
 
 Since the values are booleans you could equivalently write `anySatisfy: [ :each | each ]`. Once `isOn` is defined, `isOff` follows naturally.
 
-```
+```st
 isOff
 	^ self isOn not
 ```
@@ -490,7 +490,7 @@ Rerun the test. It passes.
 
 It is not good practice to leave classes undocumented, and the browser says so with a mark against the class name until you write a comment. Select `BlankCell`, press the *Comment* button and write what the class is for.
 
-```
+```text
 I am a `Cell` the beam crosses in a straight line. A beam entering from the west leaves by the east, one entering from the south leaves by the north, and the same in reverse.
 
 I add no state to `Cell`. All I do is fill `exitSides` in `initializeExitSides`, which is what makes a cell blank. Every empty square of the board holds one of me.
@@ -518,13 +518,13 @@ Some developers write the test first, let it fail, and then define the methods i
 
 Temporarily redefine `isOn` and `isOff` on `BlankCell` so that they stop instead of answering.
 
-```
+```st
 isOff
 	"dummy definition"
 	^ self halt
 ```
 
-```
+```st
 isOn
 	"dummy definition"
 	^ self halt
@@ -538,14 +538,14 @@ Run `testCellOnState`. The debugger opens on the halt. Navigate the stack and fi
 
 Now, in the debugger itself, restore `isOff` to what it should be and accept it.
 
-```
+```st
 isOff
 	^ self isOn not
 ```
 
 The moment you accept, the method is recompiled and the debugger re-enters it: the highlight moves to the `isOn` send, which is where execution resumes from. Press *Proceed* and the `halt` in `isOn` is reached in its turn. Restore that one too.
 
-```
+```st
 isOn
 	^ self activeSegments values anySatisfy: [ :each | each = true ]
 ```
@@ -581,7 +581,7 @@ When you accept this, the compiler does not know `isSegmentOnFor:` and asks you 
 
 Run the test. The debugger opens with a message-not-understood: the receiver is the `BlankCell` held by `cell` and it does not understand `isSegmentOnFor:`. Press *Create*, choose `BlankCell` as the class and `testing` as the protocol. The debugger steps into the method it just created for you, whose body is `self shouldBeImplemented` — a placeholder that opens the debugger again if you walk away and leave it there. Replace it and accept.
 
-```
+```st
 isSegmentOnFor: aSymbol
 	^ self activeSegments at: aSymbol
 ```
@@ -614,7 +614,7 @@ BlankCellTestCase >> testCellExitSides
 
 The cell needs somewhere to keep that mapping, so `BlankCell` gains a second instance variable, `exitSides`, holding a dictionary from the side a beam enters by to the side it leaves by. Add the slot to the class definition and create its accessors the way you did for `activeSegments`.
 
-```
+```smalltalk
 Object << #BlankCell
 	slots: { #activeSegments . #exitSides };
 	tag: 'Model';
@@ -642,7 +642,7 @@ BlankCell >> initialize
 
 Finally the lookup itself.
 
-```
+```st
 exitSideFor: aSymbol
 	^ self exitSides at: aSymbol
 ```
@@ -668,7 +668,7 @@ BlankCellTestCase >> testCellLaserActivity
 
 Run it, and create the method from the debugger as before.
 
-```
+```st
 laserEntersFrom: aSymbol
 	| exit |
 	self activeSegments at: aSymbol put: true.
@@ -690,7 +690,7 @@ A stronger answer is to make the directions real objects. That is where this gam
 
 A `MirrorCell` differs from a `BlankCell` in that it carries a mirror, and the mirror can be oriented to send the laser beam in different directions. Let us start with the class comment.
 
-```
+```text
 I am a `Cell` with a mirror on one of its diagonals. `leansLeft` says which one. When I lean left the mirror runs from my top left corner to my bottom right one, and a beam entering from the north leaves by the east. When I lean right it runs from my top right corner to my bottom left one, and the same beam leaves by the west.
 
 `leanLeft` and `leanRight` set the lean and all four exit sides together, which is why `rotate` uses them instead of flipping `leansLeft` on its own. A lean changed without its exit sides is a bug that is hard to see: the mirror is drawn on the new diagonal while the beam still leaves by the old side.
@@ -706,7 +706,7 @@ We need a way to hold the orientation of the mirror. The default is that the mir
 
 Add the instance variable `leansLeft` to the class definition and create its accessors.
 
-```
+```smalltalk
 Object << #MirrorCell
 	slots: { #leansLeft };
 	tag: 'Model';
@@ -733,7 +733,7 @@ We want to reuse that code, not copy it. Nearly the same state and nearly the sa
 
 First create the class `Cell`.
 
-```
+```smalltalk
 Object << #Cell
 	slots: {};
 	tag: 'Model';
@@ -742,7 +742,7 @@ Object << #Cell
 
 And give it a comment.
 
-```
+```text
 I am the model of one square of the laser game board. I know where I sit (`gridLocation`, a `column @ row` point), which side a beam leaves by when it enters from a given side (`exitSides`, a dictionary keyed by `#north`, `#east`, `#south` and `#west`), and which of those sides carry light right now (`activeSegments`).
 
 I am abstract: a subclass fills `exitSides` in `initializeExitSides`. `BlankCell` lets a beam straight through, `MirrorCell` turns it a quarter turn, `TargetCell` swallows it and lights up.
@@ -780,7 +780,7 @@ Both cells manage which segments are on and how a beam crosses them, so `activeS
 
 Both variables move to `Cell` and `BlankCell` is left with none of its own, which is what the definition above already shows.
 
-```
+```smalltalk
 Object << #Cell
 	slots: { #activeSegments . #exitSides };
 	tag: 'Model';
@@ -1039,14 +1039,14 @@ Run your tests and they should pass. This is a good moment to save your work.
 
 As a practical matter a mirror always has an orientation, so every time we make one we have to take the extra step of orienting it. You have seen how that reads in the tests above:
 
-```
+```smalltalk
 cell := MirrorCell new.
 cell leanRight.
 ```
 
 It would be nicer to say it in one step:
 
-```
+```smalltalk
 cell := MirrorCell leanRight
 ```
 
@@ -1082,7 +1082,7 @@ This game keeps the flag. A mirror has exactly two states and it flips between t
 
 The `TargetCell` is the last of our cells. It is unique in that it has no exit: once the laser beam enters a target cell it does not leave and does not propagate any further. The design choice we make here is to answer `nil` for every exit side. Let us start with tests that say what we mean, and with a comment.
 
-```
+```text
 I am the `Cell` the beam is aimed at. Every side of me leaves by nothing, so a beam that enters lights the side it arrived by and stops there. Reaching me is how the game is won.
 
 Like `BlankCell` I add no state to `Cell`; `initializeExitSides` fills `exitSides` with nil for all four sides. `Grid` puts exactly one of me on the board.
@@ -1208,7 +1208,7 @@ The cells know how a beam crosses them. What is still missing is the thing that 
 
 As with the cells, we say what the class is for before we say how it works.
 
-```
+```text
 I am the model of the whole board: a dictionary of `Cell`s keyed by `column @ row` points, `numberOfColumns` of them across and `numberOfRows` down, plus the state of the laser. Every location holds a cell; `BlankCell` fills the empty ones.
 
 `fireLaser` lights the cells the beam crosses and `stopLaser` clears them again. The beam is `laserBeamPath`, an ordered collection of `LaserPathElement`s built by `calculatePath`, which walks from `startingCell` until the beam stops. `movesStack` records the player's moves so `undo` can take them back.
@@ -1244,7 +1244,7 @@ GridTestCase >> testInitialConditions
 
 The test needs four things from a grid. `cells` holds a dictionary whose keys are locations inside the grid and whose values are the cells at those locations. `laserIsActive` is a boolean saying whether the beam is on. `numberOfColumns` and `numberOfRows` give the shape of the matrix.
 
-```
+```smalltalk
 Object << #Grid
 	slots: { #cells . #laserIsActive . #numberOfColumns . #numberOfRows };
 	tag: 'Model';
@@ -1318,7 +1318,7 @@ Grid >> initialize
 
 The first attempt at `initializeCells` reads like this.
 
-```
+```st
 initializeCells
 	self cells: Dictionary new.
 	1 to: self numberOfColumns do: [:x |
@@ -1331,7 +1331,7 @@ initializeCells
 
 But wait. We wrote accessors for `numberOfColumns` and `numberOfRows`, and we never initialized either of them. There are two general answers. One is to set them in `initialize`:
 
-```
+```st
 initialize
 	super initialize.
 	self laserIsActive: false.
@@ -1391,7 +1391,7 @@ Both have their uses. Be aware that you have the choice, and pick the one that s
 
 So far so good. Now let us think about a problem we might have. When `Grid` receives `new`, `initialize` runs and the cells are created — for the default number of rows and columns. What happens if we change the size afterwards? The answer was not obvious when the question came up, and a test is the way to find out.
 
-```
+```st
 testNonDefaultGridSizeInitialConditions
 	| grid |
 	grid := Grid new.
@@ -1427,7 +1427,7 @@ The method it calls goes on the *class side*. In the browser, tick the *Class si
 
 A first attempt does the obvious thing.
 
-```
+```st
 newOfSize: aPoint
 	| model |
 	model := self new.
@@ -1463,7 +1463,7 @@ Run the tests and this time they are green.
 
 The method works, but repeating `model` on every line is not the nicest thing to read. The alternative is a *cascade*, written with `;`, which sends several messages to the same object. The cascade in `newOfSize:` above already does that for the two sizes. We could go further and let the cascade answer the result:
 
-```
+```st
 newOfSize: aPoint
 	^ self basicNew
 		numberOfRows: aPoint y;
@@ -1475,7 +1475,7 @@ That works, because a method that returns nothing in particular returns its rece
 
 To be sure the object made by `self basicNew` is the one that comes back, end the cascade with `yourself`, a message that answers its receiver.
 
-```
+```st
 newOfSize: aPoint
 	^ self basicNew
 		numberOfRows: aPoint y;
@@ -1490,7 +1490,7 @@ newOfSize: aPoint
 
 With the cells working and a minimal test for `Grid`, we can write a much deeper test, one that uses broader parts of the design. Remember the diagram we used to introduce the game? That board is a good context to test against, so let us build it once and reuse it.
 
-```
+```st
 generateDemoGrid
 	| grid |
 	grid := Grid newOfSize: 5@5.
@@ -1514,7 +1514,7 @@ Put it in a protocol of its own — `private`, or `grids` — since it is not a 
 
 And a test that uses it. Checking that the target cell is off will do for now.
 
-```
+```st
 testCellInteractions
 	| grid cell |
 	grid := self generateDemoGrid.
@@ -1555,7 +1555,7 @@ at `1@5`, then the one at `2@5`, and so on. A list of cells, and the job is done
 
 It is not enough, and the reason is in a method we already have:
 
-```
+```st
 exitSideFor: aSymbol
 ```
 
@@ -1570,7 +1570,7 @@ is *two* facts: which cell, and which side of it the beam enters from.
 
 So we make the object.
 
-```
+```smalltalk
 Object << #LaserPathElement
 	slots: { #cell . #entrySide };
 	tag: 'Model';
@@ -1583,7 +1583,7 @@ did for the cells — select the class, use *New > Accessors*, and accept.
 Here is the class comment. Write it now, while the reasons are fresh, not later when you have
 forgotten them:
 
-```
+```text
 I am one step of the laser beam: a `Cell` and the side the beam enters it from. `Grid >> calculatePath` starts one of me at the laser and follows `nextElementIn:` until a cell swallows the beam or the beam leaves the board, keeping the chain as the grid's `laserBeamPath`.
 
 `nextElementIn: aGrid` asks my cell which side the beam leaves by, steps one cell that way, and answers the element for the cell it lands on, or `nil` when there is none. `activateCell` and `clearCell` turn the light of my cell on and off for the side the beam enters from.
@@ -1625,7 +1625,7 @@ Now the heart of it. Given one element, which element comes next?
 Three things have to happen. Ask the cell which side the beam leaves by. Turn that side into a step
 across the board. Ask the grid for the cell one step that way.
 
-```
+```st
 LaserPathElement >> nextElementIn: aGrid
 	| exitSide vectors inversions newLocation nextCell |
 	exitSide := self cell exitSideFor: self entrySide.
@@ -1765,7 +1765,7 @@ anything wanting to look at the path would have had to light the board as a side
 Back in the last chapter `testCellInteractions` asserted one thing: the target of the demo board
 starts out dark. Now the board can be lit, so the test can say what the beam does to it.
 
-```
+```st
 testCellInteractions
 	| grid cell |
 	grid := self generateDemoGrid.
@@ -1798,7 +1798,7 @@ which is what the rest of this book writes.
 
 It answers nine locations:
 
-```
+```text
 {(1@5). (2@5). (3@5). (4@5). (4@4). (4@3). (4@2). (4@1). (5@1)}
 ```
 
@@ -1816,7 +1816,7 @@ grid calculatePath.
 grid laserBeamPath collect: [ :pe | pe entrySide ]
 ```
 
-```
+```text
 #(#south #west #west #west #south #south #south #south #west)
 ```
 
@@ -1868,7 +1868,7 @@ Which cells? The same question as the end of the last chapter, over the first do
 (self laserBeamPath first: 12) collect: [ :pe | pe cell gridLocation ]
 ```
 
-```
+```text
 {(1@5). (2@5). (1@5). (1@4). (1@5). (2@5). (1@5). (1@4). (1@5). (2@5). (1@5). (1@4)}
 ```
 
@@ -1877,7 +1877,7 @@ cell it has already crossed, on a board whose mirrors clearly do not form a loop
 one cell to the next is wrong — and the only part of that step with two sides to confuse is the
 entry side:
 
-```
+```st
 	^ self class cell: nextCell entrySide: exitSide
 ```
 
@@ -1886,7 +1886,7 @@ next element is entered by... the east side. No. Sides are named from the point 
 that owns them. The beam leaves cell one by *cell one's* east side, and it arrives at cell two
 through *cell two's* west side. The two cells share an edge and each has its own name for it.
 
-```
+```st
 	^ self class cell: nextCell entrySide: (inversions at: exitSide)
 ```
 
@@ -1908,13 +1908,13 @@ freezing the image.
 
 The next one arrives as a debugger with a short, strange message:
 
-```
+```text
 MessageNotUnderstood: receiver of "+" is nil
 ```
 
 The failing line is in `nextElementIn:`:
 
-```
+```st
 	newLocation := self cell gridLocation + (vectors at: exitSide)
 ```
 
@@ -1937,7 +1937,7 @@ Grid >> at: aPoint put: aCell
 One sender, so there is exactly one way a cell ever learns its location, and a cell with a `nil`
 location got into the grid without going through it. Which is just what the setup had done:
 
-```
+```st
 	grid cells at: 4@1 put: MirrorCell leanRight
 ```
 
@@ -1954,13 +1954,13 @@ the first time something reached around it, it broke an invariant it did not kno
 
 Writing the assertions for the path, the first attempt was this:
 
-```
+```st
 	self assert: pe cell gridLocation = 2 @ 5
 ```
 
 The test does not fail. It *errors*:
 
-```
+```text
 MessageNotUnderstood: Message not understood: False >> #@
 ```
 
@@ -1971,7 +1971,7 @@ Pharo has three levels of precedence: unary messages first, then binary, then ke
 are both binary, and binaries are evaluated strictly left to right, with no notion that one of them
 is arithmetic and the other a comparison. So the line means:
 
-```
+```st
 	self assert: ((pe cell gridLocation = 2) @ 5)
 ```
 
@@ -1981,7 +1981,7 @@ The location is compared with the number `2`, which answers `false`, and then `f
 The small fix is parentheses: `self assert: (pe cell gridLocation = (2 @ 5))`. The better fix is the
 one the tests in this book use everywhere:
 
-```
+```st
 	self assert: pe cell gridLocation equals: 2 @ 5
 ```
 
@@ -2000,7 +2000,7 @@ The last of the four is the case that was simply not written. Both `ifTrue: [ ^ 
 
 Leave out the first one — the guard on a `nil` exit side — and the beam reaches the target:
 
-```
+```text
 KeyNotFound: key nil not found in Dictionary
 ```
 
@@ -2013,7 +2013,7 @@ column, `aGrid at: newLocation` answers `nil`, and an element is happily built a
 Nothing complains yet. The complaint comes next time round the loop, when the path element asks its
 cell a question:
 
-```
+```text
 MessageNotUnderstood: receiver of "exitSideFor:" is nil
 ```
 

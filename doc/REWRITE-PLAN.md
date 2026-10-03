@@ -231,16 +231,22 @@ should.
    "display", "cursor" — or the Pharo *World menu*.
 2. No fence names a legacy class. Checked with a script that walks each file fence by fence and
    greps the eight names inside fences only.
-3. Fence identity, 675 blocks over the five files: section1 56, section2 106, section3 219,
-   section4 160, section5 133. All match the image. Five mismatches were found and repaired in
+3. Fence identity, 690 blocks over the five files: section1 60, section2 106, section3 227,
+   section4 159, section5 138. All match the image, apart from the `MyClass >> myMethod`
+   placeholder, which resolves to no class on purpose. Five mismatches were found and repaired in
    section3 and one in section4:
    - four fences carried a trailing whitespace-only line that the image does not have
      (`Grid >> canPushCell:fromLocation:`, `CellClickRegionPushNorth class >> containsPoint:`,
      `MirrorCell >> leanLeft`, `MirrorCell >> leanRight`);
    - `Grid >> stackAction:forCell:` was quoted without the method comment it gained in phase 0;
    - section4's `testAGameTakesTheSizeOfWhateverBoardItIsGiven` is the version before the panel
-     could stand taller than the board, so it is now a plain fence with a `> **Note.**` pointing at
-     *Adding More Game Stats*, which holds the version in the image.
+     could stand taller than the board, so it is now an ```` ```st ```` fence with a `> **Note.**`
+     pointing at *Adding More Game Stats*, which holds the version in the image.
+
+   A later pass tagged the 212 fences that carried no language at all, which is where three of those
+   five per-file counts grew: 115 of them are method quotes the gate had never seen, and one of the
+   115, `CellClickRegionInside class >> pushRegionForPoint:`, turned out to be the image version and
+   is now gated. The other 114 are earlier versions and are tagged `st`.
 4. `Laser-Game-Tests`: 280 tests, all green. `run_critics` on `Laser-Game`: 37 critiques, down from
    the 44 of `PROJECT_MAP.md` §8 — the remainder are the four `GridDirection` subclasses and the
    seven `ReverseLaserGameAction` subclasses, each wanting a class comment, their class-side methods
@@ -258,12 +264,22 @@ Phases 1 and 2 can run file by file; phase 0 must land before any block is requo
    returns only the two sanctioned places of §3.
 2. No code fence names `Morph`, `Form`, `BitBlt`, `Display`, `World`, `Cursor`, `SketchMorph` or
    `floodFill`, in code or in comment.
-3. Every method block matches the image character for character. The check is in two halves:
-   `scratchpad/.../verify.py` reads the ```smalltalk fences of a Markdown file and prints
-   `Class|selector|checksum|length` for each one that carries a `Class >> selector` head, and the
-   same checksum is computed in the image over `sourceCode trimRight` and compared. A fence with no
-   `Class >> selector` head is a fragment and is not checked; a plain fence is a superseded version
-   and must carry a `> **Note.**` naming the chapter that replaces it.
+3. Every code fence carries a language tag, and the tag says what the fence is:
+
+   - ```` ```smalltalk ```` — code that is live in the image. A fence whose first line is a
+     `Class >> selector` head is gated against the image; a fence without such a head is a class
+     definition, a playground expression or a fragment, and is only read.
+   - ```` ```st ```` — a method or fragment the book shows on the way to the final one: an early
+     version, a stub, a deliberately wrong line. Not gated, because it is meant to differ.
+   - ```` ```text ```` — not code: a class comment, printed output, an error message, a test-runner
+     summary, an ASCII board or a measurement table.
+
+   Every method block tagged `smalltalk` matches the image character for character. The gate is in
+   two halves: `scratchpad/.../gate.py` reads the ```` ```smalltalk ```` fences of a Markdown file
+   and prints `Class|selector|checksum|length` for each one that carries a `Class >> selector` head
+   (`Class^` for the class side), and the same checksum is computed in the image over
+   `sourceCode trimRight` and compared. The one row that resolves to no class is
+   `MyClass >> myMethod`, the placeholder *Conventions used in this book* uses to teach the notation.
 4. `run_tests` on `Laser-Game-Tests` is green and `run_critics` is no worse than the 44 known
    critiques of `PROJECT_MAP.md` §8.
 5. Every chapter that introduces a pattern names it.

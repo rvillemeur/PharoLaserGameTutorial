@@ -118,7 +118,7 @@ dead code here: it is what lets the caller ask every renderer the same question.
 
 An arrow is a child element, so colouring it is setting a background:
 
-```
+```st
 LaserGameCellElement >> updateHintElement
 	"Show the picture of the hint I hold, and no other, in the colour of what a click there would
 	do. The arrow is a child of mine, so the previous one goes when it is removed and no arrow is
@@ -197,7 +197,7 @@ asserting that `hintColorAt:` was asked, is what makes this a test of the arrow 
 
 Before the two methods above existed, both colour assertions failed with:
 
-```
+```text
 Got Color gray instead of Color green.
 ```
 
@@ -448,7 +448,7 @@ forgotten.
 And `redraw`, which rebuilds a cell after the model changed, forgets the old cross hair along with
 the old arrow:
 
-```
+```st
 LaserGameCellElement >> redraw
 	"Draw my cell again after the model changed. The cell standing at my location may be another
 	one than before, since a push swaps two cells, so the renderer is chosen again — and so is
@@ -521,7 +521,7 @@ that asserted `extent` would be asserting the default, and would pass whatever t
 
 The mark moves within one region, which is the case the arrow deliberately ignores:
 
-```
+```st
 LaserGameCellElementTestCase >> testTheCrossHairFollowsThePointerWithinOneRegion
 	"The arrow is built once per region, since it does not change while the pointer stays in one,
 	but the cross hair marks a point and moves with every event."
@@ -778,7 +778,7 @@ looks like a forgotten `TODO` to anyone who was not there.
 Raising the cell size, opening the game and looking is a real experiment. It is also one that nobody
 runs again. Writing it as a test costs one helper:
 
-```
+```st
 CellRendererTestCase >> withCellExtent: anExtent do: aBlock
 	"Run aBlock with the cell size of the whole package set to anExtent, and put the old size
 	back afterwards. Raising the cell size and asking the geometry whether it followed is the
@@ -886,7 +886,7 @@ insurance.**
 Doing this by hand first — opening a board at eighty pixels, then restoring fifty while the window
 was still on screen — produced one walkback per mouse move, fifty five of them, all the same:
 
-```
+```text
 NotFound: [:cls | cls regionRectangle containsPoint: aPoint] not found in SortedCollection
 CellClickRegion class>>clickRegionForPoint:
 MirrorCellRenderer>>hintRegionAt:
@@ -896,7 +896,7 @@ LaserGameCellElement>>mouseMove:
 
 The classification was a `detect:` with nothing to answer when no region matched:
 
-```
+```st
 	^self sortedSubclasses
 		detect: [ :cls | cls regionRectangle containsPoint: aPoint ]
 ```
@@ -971,12 +971,12 @@ ever reach.
 
 The picture is still worth having. Raise the size, look, and lower it again:
 
-```
+```smalltalk
 CellRenderer class compile: 'cellExtent' , String cr , String tab , '^ 80@80' classified: 'constants'.
 LaserGameElement openExample
 ```
 
-```
+```smalltalk
 CellRenderer class compile: 'cellExtent' , String cr , String tab , '^ 50@50' classified: 'constants'
 ```
 
@@ -1049,7 +1049,7 @@ LaserGameElement class >> windowBackgroundPaint
 An element has one background, and here it is the ramp. There is no flat colour underneath it to
 show through, because nothing shows through a gradient that covers the element.
 
-```
+```st
 LaserGameElement >> initialize
 	"A game is a row of two: the control panel, and the board beside it. The margin around both is
 	padding, and the ramp behind them shows through it."
@@ -1081,7 +1081,7 @@ deliberately painted transparent look the same on the screen and read very diffe
 
 Which side the panel is on is the order its two children are added in:
 
-```
+```st
 LaserGameElement >> rebuild
 	"Replace what I hold with a control panel for me and a board showing my grid beside it, and
 	take the size the two of them and my margins need. The board tells the panel when a move
@@ -1226,7 +1226,7 @@ The children are added in the order of `segmentNames`, and that order is the who
 the third child of a digit is segment `c`, now and for ever. Nothing holds a dictionary of name to
 element, and nothing searches for a segment by name.
 
-```
+```st
 LaserGameLedElement >> rebuildDigits
 	"Replace my digits with digitCount fresh ones and take the size they need."
 
@@ -1288,7 +1288,7 @@ LaserGameLedElement >> highlighted: aBoolean
 	self updateDigits
 ```
 
-```
+```st
 LaserGameLedElement >> onColor
 	"Answer the color of a lit segment: bright while I am highlighted, dim otherwise."
 
@@ -1317,7 +1317,7 @@ LaserGameColors class >> counterDigitColor
 	^ Color r: 0.674 g: 0.674 b: 0.96
 ```
 
-```
+```st
 LaserGameColors class >> counterDigitOffColor
 	"Answer the color of a segment that is not lit: a much darker version of the color it lights
 	in."
@@ -1356,7 +1356,7 @@ children at the corners too.
 `fitContent` on both constraints is the sentence "I am as big as what I hold". The counter does not
 state a size anywhere, so changing the caption or the number of digits changes the frame.
 
-```
+```st
 LaserGameCounterElement >> digits: anInteger
 	"Show anInteger digits."
 
@@ -1365,7 +1365,7 @@ LaserGameCounterElement >> digits: anInteger
 	self addChild: led
 ```
 
-```
+```st
 LaserGameCounterElement >> labelText: aString
 	"Caption me aString. The caption is added last, so it is drawn under the display."
 
@@ -1428,7 +1428,7 @@ LaserGameControlPanelElement class >> counterGap
 	^ 4
 ```
 
-```
+```st
 LaserGameControlPanelElement >> newLaserPathCounter
 	"Answer the counter showing how long the laser beam is: three digits. Three digits hold every
 	path a board of this size can produce."
@@ -1438,7 +1438,7 @@ LaserGameControlPanelElement >> newLaserPathCounter
 > **Note.** *Counters Of One Width* sends `newCounterLabelled:digits:` here instead, which states the
 > width every counter of the panel is given.
 
-```
+```st
 LaserGameControlPanelElement >> newCounterColumn
 	"Answer the column of counters: one so far, at the top left corner of the panel, one gap away
 	from both edges. The counters added later fall in under this one."
@@ -1457,7 +1457,7 @@ LaserGameControlPanelElement >> newCounterColumn
 	^ column
 ```
 
-```
+```st
 LaserGameControlPanelElement >> rebuild
 	"Replace what I hold with fresh counters at my top and fresh buttons at my bottom, both acting
 	on my game, and take the width of a panel and the height of the board beside me."
@@ -1503,7 +1503,7 @@ LaserGameControlPanelElement >> laserPathCounter
 	^ laserPathCounter
 ```
 
-```
+```st
 LaserGameControlPanelElement >> updateCounters
 	"Show how long the beam is while the laser fires, and nothing while it does not."
 
@@ -1676,7 +1676,7 @@ LaserGameCounterElementTestCase >> testCounterShowsADisplayWithItsCaptionUnderIt
 
 And the panel for where the counter sits, and for the rule:
 
-```
+```st
 LaserGameControlPanelElementTestCase >> testCounterColumnSitsAtTheTopLeftOneGapIn
 	"The counters are aligned to the top left corner of the panel, one counter gap away from both
 	edges. The buttons keep the bottom."
@@ -1747,7 +1747,7 @@ LaserGameElementTestCase >> testWindowIsFilledWithTheColorRamp
 	self assert: paint end equals: LaserGameColors windowColorRampDirection
 ```
 
-```
+```st
 LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
 	"A game is a row of two children: the control panel first, the board beside it."
 
@@ -1837,7 +1837,7 @@ to ask before it closes the window — which in Bloc is a more interesting probl
 
 One instance variable, set where the game is built:
 
-```
+```st
 LaserGameElement >> initialize
 	"A game is a row of two: the control panel, and the board beside it. The margin around both is
 	padding, and the ramp behind them shows through it. No move has been made yet."
@@ -1870,7 +1870,7 @@ Where the counting happens is the question worth asking, and the previous chapte
 advance. The board already announces a move, and the game already registers a block for it; the block
 now does two things instead of one, so it becomes a method:
 
-```
+```st
 LaserGameElement >> rebuild
 	"Replace what I hold with a control panel for me and a board showing my grid beside it, and
 	take the size the two of them and my margins need. The board tells me when a move changed the
@@ -1911,7 +1911,7 @@ behaviour is a choice rather than a consequence.
 
 The counter itself is the one from the last chapter, under another caption:
 
-```
+```st
 LaserGameControlPanelElement >> newMovesCounter
 	"Answer the counter showing how many moves the player has made: three digits."
 
@@ -1922,7 +1922,7 @@ LaserGameControlPanelElement >> newMovesCounter
 
 And the column from the last chapter takes a second child:
 
-```
+```st
 LaserGameControlPanelElement >> newCounterColumn
 	"Answer the column of counters: the beam length, and the move count under it, at the top left
 	corner of the panel, one gap away from both edges."
@@ -1948,7 +1948,7 @@ cell spacing the column already had. No offset, no height of a counter, no arith
 the column was for, and it is worth noticing how cheap the second counter is compared to what the
 first one cost.
 
-```
+```st
 LaserGameControlPanelElement >> updateCounters
 	"Show how long the beam is while the laser fires, and nothing while it does not, and show how
 	many moves have been made. The move count is never bright: only the beam says whether the
@@ -2007,7 +2007,7 @@ LaserGameControlPanelElement >> newButtonRow
 			  fireButton }
 ```
 
-```
+```st
 LaserGameControlPanelElement >> newNewGameRow
 	"Answer the row above it, holding the New button on the left."
 
@@ -2015,7 +2015,7 @@ LaserGameControlPanelElement >> newNewGameRow
 ```
 > **Note.** *Undo*, in Section 5, adds the Undo button to this row.
 
-```
+```st
 LaserGameControlPanelElement >> newButtonColumn
 	"Answer the column of button rows: the bottom left corner of the panel, one gap from both
 	edges, the rows one gap apart, the last row against the bottom. The cell spacing of a linear
@@ -2081,7 +2081,7 @@ LaserGameControlPanelElement >> buttonRow
 	^ self buttonColumn children last
 ```
 
-```
+```st
 LaserGameControlPanelElement >> newGameRow
 	"Answer the row holding the New button. It is the first row of the column."
 
@@ -2102,7 +2102,7 @@ LaserGameControlPanelElement >> newNewGameButton
 	^ self newButton: 'New' action: [ self game newGame ]
 ```
 
-```
+```st
 LaserGameControlPanelElement >> rebuild
 	"Replace what I hold with fresh counters at my top and fresh buttons at my bottom, both acting
 	on my game, and take the width of a panel and the height of the board beside me."
@@ -2658,7 +2658,7 @@ LaserGameElementTestCase >> testQuittingAsksBeforeItCloses
 	self assert: game children size equals: 3
 ```
 
-```
+```st
 LaserGameElementTestCase >> testAnsweringNoLeavesTheGameAsItWas
 	"No takes the question away and does nothing else."
 
@@ -2681,7 +2681,7 @@ stayed.
 
 And the panel follows its two new children:
 
-```
+```st
 LaserGameControlPanelElementTestCase >> testCounterColumnHoldsTheBeamCounterAboveTheMoveCounter
 	"The move counter sits under the beam counter, one counter lower in the same column."
 
@@ -2694,7 +2694,7 @@ LaserGameControlPanelElementTestCase >> testCounterColumnHoldsTheBeamCounterAbov
 > **Note.** *Adding More Game Stats* replaces this test with
 > `testCounterColumnHoldsTheFourCountersInOrder`, which asserts all four.
 
-```
+```st
 LaserGameControlPanelElementTestCase >> testNewGameButtonHasTheRowAboveTheOthers
 	"New sits in the row above the others: the column of rows holds the New row first and the Quit
 	and Fire row last, which is lowest."
@@ -2929,7 +2929,7 @@ hide.
 
 The window is the board, the panel beside it, and a margin on each side:
 
-```
+```st
 LaserGameElement class >> extentForGrid: aGrid
 	"Answer the extent a game showing aGrid occupies: the board, the control panel beside it, and
 	one margin on each side."
@@ -2943,7 +2943,7 @@ LaserGameElement class >> extentForGrid: aGrid
 And the panel, from the last chapter, takes the width of a panel and the height of the board next to
 it. So all three read the grid, and the test says so in one place:
 
-```
+```st
 LaserGameElementTestCase >> testAGameTakesTheSizeOfWhateverBoardItIsGiven
 	"A game is handed a grid rather than building one, so the size of the board is the size of the
 	grid. The game is one cell per location, the panel keeps its width and takes the height of the
@@ -3108,7 +3108,7 @@ Glows, bars, arrows and cross hairs usually are.
 Write the claim first: a beam crossing a cell from side to side is a pale band the whole way across,
 with a thinner bright bar on it, both centred.
 
-```
+```st
 LaserGameShapesTestCase >> testABeamIsAPaleBandWithABrightCentreOnIt
 	"A beam is an element holding two bars: the pale one first, the bright one on top of it, both
 	running the whole length of the cell and both centred across it."
@@ -3172,7 +3172,7 @@ not what it currently measures.
 
 A beam running down a cell is the same beam with its sides exchanged:
 
-```
+```st
 LaserGameShapesTestCase >> testAVerticalBeamIsTheHorizontalOneTurned
 	"A beam runs across a cell or down it. The two bars are the same two bars with their sides
 	exchanged, so the two beams meet at the same thickness where a path turns."
@@ -3208,7 +3208,7 @@ would break two tests, and the second failure would tell you nothing the first d
 
 And the beam follows the size of the cell:
 
-```
+```st
 LaserGameShapesTestCase >> testTheBeamGetsThickerWithTheCell
 	"The two thicknesses are computed from the extent of the cell: twice the cell, twice the beam.
 	A beam is never thinner than one pixel, however small the cell it is drawn in."
@@ -3271,7 +3271,7 @@ should name the thing it derives from, and here both derive from the cell.**
 
 One bar, centred, in a colour the caller names:
 
-```
+```st
 LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent within: anExtent color: aColor
 	"Answer one bar of a beam, of aBarExtent and painted in aColor, centred in a cell of anExtent."
 
@@ -3292,7 +3292,7 @@ are two, and the second one is the one that gets mistyped.
 
 And the two beams, which are now assemblies rather than drawings:
 
-```
+```st
 LaserGameShapes class >> horizontalLaserBeamElementOfExtent: anExtent
 	"Answer an element of anExtent drawing the beam where it crosses a cell from side to side: a
 	pale band the whole way across, and a brighter, thinner bar along its middle. Two rectangles
@@ -3320,7 +3320,7 @@ LaserGameShapes class >> horizontalLaserBeamElementOfExtent: anExtent
 > `laserBeamElementOfExtent:fromSides:`, which draws a bar the whole way across when both sides of an
 > axis are lit.
 
-```
+```st
 LaserGameShapes class >> verticalLaserBeamElementOfExtent: anExtent
 	"Answer an element of anExtent drawing the beam where it crosses a cell from top to bottom: the
 	horizontal beam with its sides exchanged."
@@ -3400,7 +3400,7 @@ none — which looks wrong on the screen, and is a state the tests can pin down 
 A blank cell is crossed either from side to side or from top to bottom. Nothing else can happen in it:
 the beam enters, it does not turn, it leaves. So there is one question, and the answer is one child:
 
-```
+```st
 BlankCellRenderer >> renderBeamOn: anElement
 	"A beam goes straight through a blank cell, so it is one line: down the cell when the south
 	segment is lit, across it otherwise."
@@ -3431,7 +3431,7 @@ reasoning stops holding, and the method that replaces this one asks a different 
 Two questions come before the drawing: is the laser firing at all, and does light reach this cell?
 Both are asked once, on the superclass:
 
-```
+```st
 CellRenderer >> renderLaserOn: anElement
 	"Draw the beam where it crosses my cell, as children of anElement. Nothing is drawn while the
 	laser is off or while no light reaches my cell, which is why both questions are asked here
@@ -3445,7 +3445,7 @@ CellRenderer >> renderLaserOn: anElement
 > **Note.** *Laser On Mirror Cell* moves the drawing itself onto `CellRenderer`, so the last sentence
 > of this comment changes to say that one `renderBeamOn:` serves every kind of cell.
 
-```
+```st
 CellRenderer >> renderBeamOn: anElement
 	"Draw the beam my lit cell shows, as children of anElement. Empty here: a cell whose kind has
 	not learned to draw the beam yet shows none, which is how this section adds the three kinds one
@@ -3470,7 +3470,7 @@ hook with no comment is a loose end.**
 
 Two places build a cell, and both gain a line. A cell built for the first time:
 
-```
+```st
 CellRenderer >> newElement
 	"Answer a new element rendering my cell. The element is square, keeps me as its renderer,
 	carries the cell background and border, and holds whatever my subclass draws as children:
@@ -3492,7 +3492,7 @@ CellRenderer >> newElement
 
 and a cell drawn again after something changed:
 
-```
+```st
 LaserGameCellElement >> redraw
 	"Draw my cell again after the model changed. The cell standing at my location may be another
 	one than before, since a push swaps two cells, so the renderer is chosen again — and so is
@@ -3665,7 +3665,7 @@ chapter, and both of them are about the half of the picture that is *not* drawn.
 A beam that stops in the middle of a cell is a bar half as long, placed against the side the light
 arrives from. The shapes gain a pair of methods that take that side:
 
-```
+```st
 LaserGameShapes class >> horizontalLaserBeamElementOfExtent: anExtent enteringFrom: aSymbol
 	"Answer an element of anExtent drawing the beam where it enters a cell from the side aSymbol
 	names, west or east, and stops in the middle of it, which is what a cell that swallows the
@@ -3695,7 +3695,7 @@ LaserGameShapes class >> horizontalLaserBeamElementOfExtent: anExtent enteringFr
 > **Note.** *Laser On Mirror Cell* replaces this method with `laserBeamElementOfExtent:fromSides:`,
 > where a single lit side gives the same half beam.
 
-```
+```st
 LaserGameShapes class >> verticalLaserBeamElementOfExtent: anExtent enteringFrom: aSymbol
 	"Answer an element of anExtent drawing the beam where it enters a cell from the side aSymbol
 	names, north or south, and stops in the middle of it. The same picture turned a quarter, with
@@ -3725,7 +3725,7 @@ LaserGameShapes class >> verticalLaserBeamElementOfExtent: anExtent enteringFrom
 
 The one line to read closely is the placement:
 
-```
+```st
 	left := aSymbol = #west ifTrue: [ 0 ] ifFalse: [ anExtent x - length ]
 ```
 
@@ -3755,7 +3755,7 @@ LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent at: aPoint color: aCol
 		  yourself
 ```
 
-```
+```st
 LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent within: anExtent color: aColor
 	"Answer one bar of a beam, of aBarExtent and painted in aColor, centred in a cell of anExtent."
 
@@ -3781,7 +3781,7 @@ something that used to be implied.
 The renderer has two questions to answer — which pair of drawings applies, and which half of the cell
 the beam covers — and one fact answers both:
 
-```
+```st
 TargetCellRenderer >> renderBeamOn: anElement
 	"The target swallows the light, so the beam stops in the middle of my cell: half a beam,
 	running from the side the light arrives by. That side says both which way the beam lies and
@@ -3880,7 +3880,7 @@ it stays on top.
 
 The half beam is tested on its own first, for both sides:
 
-```
+```st
 LaserGameShapesTestCase >> testAHalfBeamCrossesHalfTheCellFromTheSideItComesFrom
 	"A cell that swallows the light shows the beam only as far as its middle: the west half when
 	the west segment is lit, the east half otherwise."
@@ -4739,7 +4739,7 @@ element are both still `0@0`, which is why neither is asserted.
 
 A window of exactly twice the extent is the simple case:
 
-```
+```st
 LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven
 	"The game is drawn at the size the board asks for and scaled to whatever the window is, so a
 	window of twice the extent shows the same game twice as big, filling it."
@@ -4760,7 +4760,7 @@ A window of another shape is the case the `min:` is there for. The demo board is
 wide but no taller scales by 1.0 and leaves 380 pixels over, so the game sits 190 in; as tall as the
 doubled board but no wider scales by 1.0 again and leaves 270, so it sits 135 down:
 
-```
+```st
 LaserGameElementTestCase >> testAGameKeepsItsShapeInAWindowOfAnotherShape
 	"A board is as wide and as tall as it is. A window of another shape scales the game by the
 	tighter of the two directions and centres what is left over, so the cells stay square and the
@@ -4783,7 +4783,7 @@ Shrinking is the same arithmetic in the other direction, and it is worth a test 
 alternative — a window that cuts the board off at its edge — is what a fixed drawing in a resizable
 window usually does:
 
-```
+```st
 LaserGameElementTestCase >> testAGameShrinksWithASmallerWindow
 	"A window smaller than the board scales the game down rather than cutting it off, so the whole
 	board is always in view."
@@ -4799,7 +4799,7 @@ LaserGameElementTestCase >> testAGameShrinksWithASmallerWindow
 And the opening extent, which asserts that a window of no size changes nothing — not that it scales to
 nothing:
 
-```
+```st
 LaserGameElementTestCase >> testAGameIgnoresAWindowOfNoSize
 	"A space announces its extent while it is being opened, and that extent can be nothing at all.
 	Scaling by zero would take the game off the screen, so a window of no size is left alone."

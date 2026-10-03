@@ -439,8 +439,12 @@ bind `Form`, `BitBlt`, `Morph`, `SketchMorph`, `StringMorph`, `Display`, `World`
 - There is no "in-image block checker". The fence gate is in two halves, described in
   `doc/REWRITE-PLAN.md` §8: a python script reads the ```smalltalk fences of a Markdown file and
   prints `Class|selector|checksum|length` for each one that carries a `Class >> selector` head, and
-  the same checksum is computed in the image over `sourceCode trimRight` and compared. 675 blocks
+  the same checksum is computed in the image over `sourceCode trimRight` and compared. 690 blocks
   over the five files, all matching.
+- Every fence in the book carries a language tag, and the tag is what tells the gate which fences to
+  read: `smalltalk` for code that is live in the image, `st` for a version the book shows on the way
+  to it, `text` for class comments, printed output, errors and tables. `doc/REWRITE-PLAN.md` §8 item
+  3 is the full rule.
 
 ## 9. Additions and corrections of the port, outside the tutorial numbering
 

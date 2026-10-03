@@ -237,7 +237,7 @@ Evaluate `CellRenderer openExample`. It fails, because `newElement` does not exi
 Every cell has a background and a border, and every kind of cell has its own contents. That is the
 split: the abstract renderer draws what all cells share, and each subclass draws its own contents.
 
-```
+```st
 CellRenderer >> newElement
 	"Answer a new element rendering my cell. The element is square, carries the cell
 	background and border, and holds whatever my subclass draws as children."
@@ -403,7 +403,7 @@ BlElement << #LaserGameBoardElement
 
 A board lays its cells out in a grid and takes exactly the size of the cells it holds:
 
-```
+```st
 LaserGameBoardElement >> initialize
 	"A board lays its cells out in a grid, one column per grid column, and takes exactly the
 	size of the cells it holds."
@@ -1404,7 +1404,7 @@ game is handed a grid and hands it on, which is how it can later be given anothe
 
 Two constants: how wide the panel is, and how much margin there is around everything.
 
-```
+```st
 LaserGameElement class >> panelWidth
 	"Answer the width, in pixels, of the control panel beside the board."
 
@@ -1425,7 +1425,7 @@ hundred and thirty. Until then, a hundred and ten.
 Both sit on the *class* side, because the size of a game can be asked for before a game exists —
 which is exactly what opening a window needs:
 
-```
+```st
 LaserGameElement class >> extentForGrid: aGrid
 	"Answer the extent a game showing aGrid occupies: the board, the control panel beside it, and
 	one margin on each side."
@@ -1445,7 +1445,7 @@ stand taller than a board of few rows.
 
 ## Two panes
 
-```
+```st
 LaserGameElement >> initialize
 	"A game is a row of two: the board, and the control panel beside it. The margin around both is
 	padding, and the color behind them shows through it."
@@ -1479,7 +1479,7 @@ LaserGameElement >> grid: aGrid
 	self rebuild
 ```
 
-```
+```st
 LaserGameElement >> rebuild
 	"Replace what I hold with a board showing my grid and a control panel beside it, and take the
 	size the two of them and my margins need."
@@ -1503,7 +1503,7 @@ size when it knows what it holds* — comes back every time the game grows.
 
 The panel starts as nothing but a coloured rectangle. The controls go in next chapter:
 
-```
+```st
 LaserGameElement >> newControlPanel
 	"Answer the control panel: a blank column of a fixed width, as tall as the board beside it. The
 	controls go in at the next step."
@@ -1529,7 +1529,7 @@ LaserGameColors class >> gameWindowColor
 	^ Color r: 0.369 g: 0.369 b: 0.505
 ```
 
-```
+```st
 LaserGameColors class >> controlPanelColor
 	"Answer the color of the control panel beside the board: a blank white rectangle, with the
 	buttons still to come."
@@ -1559,7 +1559,7 @@ LaserGameElement class >> on: aGrid
 	^ element
 ```
 
-```
+```st
 LaserGameElement class >> openOn: aGrid
 	"Open a space showing a game on aGrid and answer it.
 
@@ -1594,7 +1594,7 @@ leaves in the image.
 Six tests, and not one of them opens a window. The arithmetic first, both as the sum of its parts
 and as the plain number it comes to for the demo grid:
 
-```
+```st
 LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins
 	"The game is as wide as the board, the panel beside it and a margin on each side, and as
 	tall as the board with a margin above and below."
@@ -1618,7 +1618,7 @@ number came from.
 
 Then the two panes, in order:
 
-```
+```st
 LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
 	"A game is a row of two children: the board first, the control panel beside it."
 
@@ -1633,7 +1633,7 @@ LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
 
 The panel keeps its width whatever the grid is, which is the point of a constant:
 
-```
+```st
 LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoard
 	"The panel keeps its width whatever the grid is, and it is as tall as the board beside it.
 	Sizes are read from the layout constraints, since nothing is laid out yet."
@@ -1691,7 +1691,7 @@ LaserGameElementTestCase >> testBoardShowsTheGridOfTheGame
 
 The last test reads back the size, the padding and the colour of the game itself:
 
-```
+```st
 LaserGameElementTestCase >> testGameTakesTheExtentItCalculates
 	"The game asks for exactly the size its own arithmetic gives, and the margin around its two
 	children is padding, so the color behind them shows through it."
@@ -1740,7 +1740,7 @@ waiting.
 The panel was a plain `BlElement` a chapter ago. Now that it holds things and has to keep them up to
 date, it becomes a class of its own:
 
-```
+```smalltalk
 BlElement << #LaserGameControlPanelElement
 	slots: { #game . #quitButton . #fireButton };
 	tag: 'Graphics';
@@ -1754,7 +1754,7 @@ It keeps a reference to the game and not to the grid. A button is an instruction
 *quit*, *fire* — and an instruction goes to the game, which decides what it means for the model and
 then shows the result. The panel never touches the grid.
 
-```
+```st
 LaserGameControlPanelElement >> initialize
 	"A panel is a blank column with its buttons at the bottom left corner. A frame layout puts a
 	child where it is aligned, which is what that corner needs."
@@ -1805,7 +1805,7 @@ click does:
 > **Note.** *Buttons Of One Width*, at the end of the book, adds one line to this method so that a
 > button centres its label. It is quoted here as it reads before that.
 
-```
+```st
 LaserGameControlPanelElement >> newButton: aLabel action: aBlock
 	"Answer a labelled button that evaluates aBlock when it is clicked. Toplo gives the look and
 	the click, so only the label, the size and the action are left here."
@@ -1861,7 +1861,7 @@ else:
 > **Note.** *Buttons Of One Width*, at the end of the book, widens a button to fifty pixels, so that
 > its longest labels fit inside it. It is quoted here as it reads before that.
 
-```
+```st
 LaserGameControlPanelElement class >> buttonWidth
 	"Answer the width, in pixels, of a control panel button."
 
@@ -1890,7 +1890,7 @@ every change to a number means reading all of it again.
 The alternative is to let a layout do the arithmetic. The two buttons go in a row, the row says which
 corner it wants, and nothing is computed here at all:
 
-```
+```st
 LaserGameControlPanelElement >> newButtonRow
 	"Answer the row of buttons: Quit first, then Fire, one gap apart."
 
@@ -1925,7 +1925,7 @@ Four Bloc things in one method, and each is worth a sentence:
 
 Then the panel builds its buttons and its row, and takes its own size:
 
-```
+```st
 LaserGameControlPanelElement >> rebuild
 	"Replace what I hold with a fresh row of buttons for my game, and take the width of a panel
 	and the height of the board beside me."
@@ -1969,7 +1969,7 @@ LaserGameElement >> toggleLaser
 	self refresh
 ```
 
-```
+```st
 LaserGameElement >> quit
 	"Close the game, by closing the space it is shown in."
 
@@ -1984,7 +1984,7 @@ difference between a test that passes and a test that errors.
 four other buttons and is easy to hit by accident. This method keeps its body and takes the name
 `close` there, and `quit` becomes the question.
 
-```
+```st
 LaserGameElement >> refresh
 	"Show what the model says now: redraw the cells and put the right label on the fire button."
 
@@ -2054,7 +2054,7 @@ LaserGameControlPanelElementTestCase >> newPanel
 
 The first test is the shape of the panel: what it holds, in what order, and what the buttons say.
 
-```
+```st
 LaserGameControlPanelElementTestCase >> testPanelHoldsARowOfTwoButtons
 	"The game's panel is a control panel element. It holds one child, the row, and the row holds
 	the Quit button then the Fire button."
@@ -2074,7 +2074,7 @@ LaserGameControlPanelElementTestCase >> testPanelHoldsARowOfTwoButtons
 
 The second is where the row sits:
 
-```
+```st
 LaserGameControlPanelElementTestCase >> testButtonRowSitsAtTheBottomLeftOneGapIn
 	"The row is aligned to the bottom left corner of the panel, one gap away from both edges, and
 	the buttons inside it are one gap apart."
@@ -2186,7 +2186,7 @@ it can ask.
 And quitting a game nobody opened should be harmless, which is worth a test of its own because
 `space` is `nil` until a space adopts the element:
 
-```
+```st
 LaserGameElementTestCase >> testQuittingAGameThatIsNotOpenDoesNothing
 	"Quit closes the space the game is in. A game that was never opened has no space, and asking
 	it to quit is harmless."
@@ -2343,7 +2343,7 @@ the same path and put each one out.
 Now the mistake. It is the easiest one in this whole game to make, because the first line of
 `clearCellsInPath` is the line that *looks* like the method:
 
-```
+```st
 clearCellsInPath
 	self calculatePath.
 ```

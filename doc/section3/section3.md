@@ -173,7 +173,7 @@ test fails without anything being wrong.
 So not one of these tests names a pixel. They ask the rectangles where they are, and assert about
 the corners the rectangles answer:
 
-```
+```st
 CellClickRegionTestCase >> testClicksInIgnoreRegion
 
 	| ignoreRect outsideRect |
@@ -205,7 +205,7 @@ never again.
 
 The same shape covers the outside region, the ring between the ignore margin and the inside square:
 
-```
+```st
 CellClickRegionTestCase >> testClicksInOutsideRegion
 
 	| insideRect outsideRect |
@@ -274,7 +274,7 @@ keeps. A variable would be a copy of something that is allowed to change.
 
 The renderer builds that element instead of a plain one:
 
-```
+```st
 CellRenderer >> newElement
 	"Answer a new element rendering my cell. The element is square, keeps me as its renderer,
 	carries the cell background and border, and holds whatever my subclass draws as children."
@@ -462,14 +462,14 @@ LaserGameCellElement >> mouseEnter: anEvent
 	self board ifNotNil: [ :board | board hoverCellElement: self ]
 ```
 
-```
+```st
 LaserGameCellElement >> mouseLeave: anEvent
 	"The pointer left me: my board hovers me no longer."
 
 	self board ifNotNil: [ :board | board unhoverCellElement: self ]
 ```
 
-```
+```st
 LaserGameCellElement >> mouseMove: anEvent
 	"The pointer moved inside me, so I am the cell it is over."
 
@@ -505,7 +505,7 @@ in, handling the release, and comparing the two.
 Bloc sends `BlClickEvent` only when the press and the release both land on the same element. The rule
 is already written, so the game keeps the behaviour and never writes the bookkeeping:
 
-```
+```st
 LaserGameCellElement >> click: anEvent
 	"A click landed on me: a press and a release in the same cell, which Bloc decides."
 
@@ -524,7 +524,7 @@ The cells report; the board holds the answer, because the board is where the res
 read it from. Two instance variables, `hoveredCellElement` and `clickedCell`, and three methods that
 set them:
 
-```
+```st
 LaserGameBoardElement >> hoverCellElement: aCellElement
 	"Remember that the pointer is over aCellElement. A cell tells me this when the pointer
 	enters it and while it moves inside it."
@@ -555,7 +555,7 @@ care, and it is worth understanding rather than copying. Moving the pointer from
 produces two events: a leave on the old cell and an enter on the new one. Nothing promises which
 arrives first. Write the obvious version —
 
-```
+```st
 	hoveredCellElement := nil
 ```
 
@@ -732,7 +732,7 @@ and the chapter is about *where* the question is asked.
 A click only ever acts on a mirror. Blank cells and the target do nothing, so only a mirror has a
 hint to offer. The obvious way to say that is a test on the class of the cell:
 
-```
+```st
 	cell class = MirrorCell ifTrue: [ ... ]
 ```
 
@@ -748,7 +748,7 @@ CellRenderer >> hintRegionAt: aPoint
 	^ nil
 ```
 
-```
+```st
 MirrorCellRenderer >> hintRegionAt: aPoint
 	"Answer the click region aPoint falls in: a mirror reacts to a click, and which of its two
 	actions is meant depends on where in the cell the pointer is."
@@ -777,7 +777,7 @@ did. Given the choice, write the question.
 
 The cell element asks its renderer, and holds what comes back:
 
-```
+```st
 LaserGameCellElement >> showPositionHintAt: aPoint
 	"Keep the hint my renderer answers for aPoint, which is in my own coordinates. My renderer
 	decides: a mirror answers the region the point falls in, every other cell answers nothing."
@@ -785,7 +785,7 @@ LaserGameCellElement >> showPositionHintAt: aPoint
 	hintRegion := self renderer hintRegionAt: aPoint
 ```
 
-```
+```st
 LaserGameCellElement >> clearPositionHint
 	"Forget my hint: the pointer is no longer in me."
 
@@ -835,7 +835,7 @@ coordinate system that made it necessary.
 
 The mirror renderer answers a region for a point of its cell:
 
-```
+```st
 MirrorCellRendererTestCase >> testAMirrorAnswersTheClickRegionOfAPoint
 	"A mirror is the only cell a click acts on, so it is the only renderer that answers a hint
 	region. The point is in cell coordinates, so the regions classify it directly."
@@ -857,7 +857,7 @@ MirrorCellRendererTestCase >> testAMirrorAnswersTheClickRegionOfAPoint
 Then the claim the design rests on gets a test of its own, which is worth doing whenever a design
 rests on a claim:
 
-```
+```st
 CellRendererTestCase >> testOnlyAMirrorAnswersAHintRegion
 	"Every renderer is asked for a hint region, and all but the mirror answer nothing: that is the
 	whole of the design, and it lives in the hierarchy rather than in a conditional."
@@ -885,7 +885,7 @@ would still pass, and that is a sign it should be read alongside the next one.
 
 Then the same thing through a real event, which is what ties the two halves of the chapter together:
 
-```
+```st
 LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion
 	"A mouse move carries a point, and the cell keeps the region that point falls in."
 
@@ -909,7 +909,7 @@ regions all in between. That is one test covering the whole chain. The unit test
 link, and this one pins down that they are actually connected — which is the bug the per-link tests
 cannot catch.
 
-```
+```st
 LaserGameCellElementTestCase >> testMovingOverACellThatIsNotAMirrorRecordsNoHint
 	"Blank and target cells answer no hint region, so moving over them records nothing."
 
@@ -1434,7 +1434,7 @@ The answer is to divide it along its two diagonals, into four triangles, one per
 technique for that is the one the click regions already used: a subclass per case, and a selector
 that asks them.
 
-```
+```smalltalk
 CellClickRegionInside class >> pushRegionForPoint: aPoint
 	^self subclasses detect: [:cls | cls containsPoint: aPoint]
 ```
@@ -1488,7 +1488,7 @@ they do.
 Now the lines. Take the diagonal from the top left corner of the cell to the bottom right one. With
 `y = mx + b` and two of its points, `(0,0)` and `(50,50)`:
 
-```
+```text
 m = (50 - 0) / (50 - 0) = 1
 0 = 1(0) + b, so b = 0
 y = x
@@ -1497,7 +1497,7 @@ y = x
 and the other diagonal, from the top right corner to the bottom left one, through `(50,0)` and
 `(0,50)`:
 
-```
+```text
 m = (0 - 50) / (50 - 0) = -1
 0 = -1(50) + b, so b = 50
 y = 50 - x
@@ -1889,7 +1889,7 @@ class of the answer, there is nothing to update.
 
 The first test is the polymorphism itself: one message, every region answers, one of them refines.
 
-```
+```st
 CellClickRegionTestCase >> testOnlyTheInsideRegionRefinesTheHintItAnswers
 	"Every region is asked for its hint, and the inside region alone does something with it: it
 	answers the push region of the point. The others answer themselves, having nothing finer to
@@ -1913,7 +1913,7 @@ CellClickRegionTestCase >> testOnlyTheInsideRegionRefinesTheHintItAnswers
 
 The second asks a mirror about points of its cell, which is the path the mouse will take:
 
-```
+```st
 MirrorCellRendererTestCase >> testAMirrorAnswersThePushRegionOfAPointInsideIt
 	"A mirror asks the region of a point what hint applies there, so a point in the inside region
 	answers a push region rather than the inside region itself."
@@ -2031,7 +2031,7 @@ and between them they cross two items off the list.
 A region is asked for its picture the same way it is asked for anything else: one message, answered
 by every class, overridden by the ones that have something to show.
 
-```
+```st
 CellClickRegion class >> hintElementOfExtent: anExtent
 	"Answer an element drawing my hint at anExtent, or nil when I have no picture to show. Only
 	the four push regions have one here; the inside and outside regions never answer this
@@ -2113,7 +2113,7 @@ later chapter raises the cell size, there is one place to look and nothing to se
 The last item on the list is the one that takes care. A cell element holds the picture of the hint it
 holds, and showing a new one means taking the old one away:
 
-```
+```st
 LaserGameCellElement >> updateHintElement
 	"Show the picture of the hint I hold, and no other. The arrow is a child of mine, so the
 	previous one goes when it is removed and no arrow is ever left behind. A region without a
@@ -2141,7 +2141,7 @@ anywhere else.
 
 The two methods of *Detecting Mirror Cell Click Regions* now each end in `updateHintElement`:
 
-```
+```st
 LaserGameCellElement >> showPositionHintAt: aPoint
 	"Keep the hint my renderer answers for aPoint, which is in my own coordinates, and show it.
 	My renderer decides: a mirror answers the region the point falls in, every other cell answers
@@ -2156,7 +2156,7 @@ LaserGameCellElement >> showPositionHintAt: aPoint
 > **Note.** *Better Cursor Management* makes the early return update the cross hair, and *Push Cells
 > With The Mouse* adds the line that keeps the point the hint was read at.
 
-```
+```st
 LaserGameCellElement >> clearPositionHint
 	"Forget my hint: the pointer is no longer in me, so the arrow goes too."
 
@@ -2203,7 +2203,7 @@ says what it looks like. Only the last one had to learn anything new.
 
 The first test asks each region for a picture, and checks the arrow it gets by its vertices:
 
-```
+```st
 CellClickRegionTestCase >> testOnlyAPushRegionAnswersAHintElement
 	"Each push region answers an element built at the size asked for, and every other region
 	answers nothing: the inside and outside regions refine themselves first, and the ignore
@@ -2265,7 +2265,7 @@ out, so what the test can read is what was asked for, exactly as in *Creating Cu
 
 The fourth item needs a test of its own, and the thing to assert is a count:
 
-```
+```st
 LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime
 	"Old arrows must not clutter the board. The cell has one hint child, and moving to another
 	push region replaces it."
@@ -3237,7 +3237,7 @@ know about rectangles, not about mirrors — so the click handler will send `rot
 whatever cell was under the pointer. Either the cell quietly ignores it, or every caller has to ask
 first:
 
-```
+```st
 	cell class = MirrorCell ifTrue: [ cell rotateClockwise ]
 ```
 
@@ -3304,7 +3304,7 @@ one place so that they cannot drift.
 
 And the obvious body:
 
-```
+```st
 rotate
 	self leansLeft: self isLeft not
 ```
@@ -3313,7 +3313,7 @@ rotate
 
 A test to go with it, asking the mirror which way it leans:
 
-```
+```st
 testCellRotate
 	| cell |
 	cell := MirrorCell new.
@@ -4028,7 +4028,7 @@ is here.
 
 The click acts on the model. Something has to put the result on the screen.
 
-```
+```st
 LaserGameCellElement >> clickAt: aPoint
 	"Act on a click at aPoint, in my own coordinates. My board records that I was clicked, my
 	renderer decides whether my cell acts and which region handles it, and the board draws itself
@@ -4067,7 +4067,7 @@ day be wrong, and being wrong looks like a cell left lit after the beam has gone
 Redrawing twenty-five small elements costs nothing a player can see. Spend it, and keep the drawing
 code free of a dependency on the rules of the game.
 
-```
+```st
 LaserGameCellElement >> redraw
 	"Draw my cell again after the model changed. The cell standing at my location may be another
 	one than before, since a push swaps two cells, so the renderer is chosen again; my hint is
@@ -4343,7 +4343,7 @@ LaserGameCellElement >> mouseLeave: anEvent
 	self clearPositionHint
 ```
 
-```
+```st
 LaserGameCellElement >> clearPositionHint
 	"Forget my hint: the pointer is no longer in me, so the arrow goes too."
 
@@ -4912,7 +4912,7 @@ no new connection between objects has to be invented.
 Every test in this chapter plays on the demo grid, so it helps to have its map in front of you.
 `/` and `\` are mirrors, `T` is the target, and the laser starts in the bottom left cell:
 
-```
+```text
        1   2   3   4   5
    1   .   .   .   /   T
    2   /   .   .   .   \
@@ -5050,7 +5050,7 @@ and starts shoving mirrors into each other.
 The four methods the tests call are the obvious ones. Starting them as empty stubs is enough to make
 the tests run instead of erroring:
 
-```
+```st
 pushCellNorthFromLocation: aPoint
 
 pushCellEastFromLocation: aPoint
@@ -5063,7 +5063,7 @@ pushCellWestFromLocation: aPoint
 
 Now write the north one for real, in full, with nothing shared:
 
-```
+```st
 pushCellNorthFromLocation: aPoint
 
 	| cell swapLoc swapCell |
@@ -5607,14 +5607,14 @@ are the two ways to look at any bug of this kind: walk the code, or ask the obje
 
 Put a halt in the method the whole chain exists to reach:
 
-```
+```st
 	self halt.
 ```
 
 as the first line of `Grid >> swapCell:with:`. Then open the game and push a mirror. The debugger
 opens with a stack that is the entire feature in one picture, newest frame at the top:
 
-```
+```st
 Grid >> swapCell:with:
 Grid >> pushCell:fromLocation:
 Grid >> pushCellAction:fromLocation:
@@ -5798,7 +5798,7 @@ the point is in, which means the same input now has a different right answer.
 
 Then look at what the redraw of *Click And Rotate A Cell* did with that:
 
-```
+```st
 	region := hintRegion.
 	...
 	hintRegion := region.
@@ -5814,7 +5814,7 @@ method looks careful. It *is* careful — it carefully preserves the wrong thing
 keeps the question can ask it again.** The fix is to store the point instead of the region, and that
 is one slot:
 
-```
+```smalltalk
 BlElement << #LaserGameCellElement
 	slots: { #renderer . #hintRegion . #hintElement . #hintPosition };
 	tag: 'Graphics';
@@ -5831,7 +5831,7 @@ is that `hintRegion` is now a *cache* of an answer that can always be computed a
 
 The point is written where the pointer is heard from:
 
-```
+```st
 LaserGameCellElement >> showPositionHintAt: aPoint
 	"Keep the hint my renderer answers for aPoint, which is in my own coordinates, and show it.
 	My renderer decides: a mirror answers the region the point falls in, every other cell answers
@@ -5870,7 +5870,7 @@ deliberately which side of the return it goes.
 
 And the redraw asks the question again instead of restoring the answer:
 
-```
+```st
 LaserGameCellElement >> redraw
 	"Draw my cell again after the model changed. The cell standing at my location may be another
 	one than before, since a push swaps two cells, so the renderer is chosen again — and so is
@@ -5956,7 +5956,7 @@ The other half of the rule needs its own test, and without it the "fix" could as
 throw every hint away on every redraw. A turn leaves the mirror where it is, so the arrow under the
 pointer is still the right one and has to survive:
 
-```
+```st
 LaserGameCellElementTestCase >> testTheArrowStaysWhenTheCellUnderThePointerStillOffersIt
 	"The other half of the same rule: a turn leaves the mirror where it is, so the hint under the
 	pointer is still the right one and the arrow survives the redraw. The hint is read from the
