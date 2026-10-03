@@ -1,7 +1,7 @@
 "
-I am the test case the tests of this port that have to run at more than one cell size inherit from.
+I am the test case that tests which have to run at more than one cell size inherit from.
 
-The 2007 tutorial writes its click points as numbers of a thirty pixel cell, and pages 190 to 196 rewrite them relative to the rectangles the regions answer, so that a change of `CellRenderer cellExtent` cannot make a correct test fail. This port inherited the rewritten tables with the captured source, and proves them here instead of trusting them: `withCellExtent:do:` sets the cell size of the whole package for the duration of a block and puts the old size back afterwards, so one test can run the same table at thirty, forty and eighty pixels.
+Every size in this package is derived from `CellRenderer cellExtent`, and a test that writes a pixel number down instead of deriving it fails when that one number changes, although the code it checks is still right. The guard is to write each point relative to the rectangle a region answers, and then to prove the table at more than one size rather than trust it: `withCellExtent:do:` sets the cell size of the whole package for the duration of a block and puts the old size back afterwards, so one test can run the same table at thirty, forty and eighty pixels.
 
 I hold nothing else and I am abstract. A test that never looks at a cell size has no reason to be here.
 "
@@ -22,10 +22,9 @@ LaserGameTestCase class >> isAbstract [
 { #category : 'support' }
 LaserGameTestCase class >> withCellExtent: anExtent do: aBlock [
 	"Run aBlock with the cell size of the whole package set to anExtent, and put the old size
-	back afterwards. The method is on the class side as well as on the instance side because a
-	test case that has no reason to inherit from me still has reason to ask this question: page
-	198 of the original moves the hint arrow, and the test that checks where it lands belongs
-	with the other cell element tests."
+	back afterwards. The method is on the class side as well as on the instance side, because a
+	test case that has no reason to inherit from me still has reason to ask the question: the
+	cell element tests check where a hint arrow lands at more than one cell size."
 
 	| previous |
 	previous := CellRenderer class >> #cellExtent.
@@ -40,10 +39,9 @@ LaserGameTestCase class >> withCellExtent: anExtent do: aBlock [
 { #category : 'support' }
 LaserGameTestCase >> withCellExtent: anExtent do: aBlock [
 	"Run aBlock with the cell size of the whole package set to anExtent, and put the old size
-	back afterwards. Page 137 of the original raises the cell size and then looks by eye for the
-	sizes that were written down instead of derived from it; this runs that experiment from the
-	test suite. Pages 190 to 196 ask the same question of the click tables, and page 198 asks it
-	of the hint arrow, so the answer lives on my class side and this method passes it on."
+	back afterwards. Raising the cell size and asking the geometry whether it followed is the
+	experiment this makes cheap. The click tables ask the same question, so the answer lives on
+	my class side and this method passes it on."
 
 	^ self class withCellExtent: anExtent do: aBlock
 ]

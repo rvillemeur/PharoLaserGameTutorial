@@ -39,8 +39,8 @@ MirrorCellRendererTestCase >> requestedExtentOf: anElement [
 { #category : 'tests' }
 MirrorCellRendererTestCase >> testAMirrorAnswersThePushRegionOfAPointInsideIt [
 	"A mirror asks the region of a point what hint applies there, so a point in the inside region
-	answers a push region rather than the inside region itself, and since page 105 a point in the
-	outside region answers a rotate region. That is what page 092 wrote to the Transcript."
+	answers a push region rather than the inside region itself, and a point in the outside region
+	answers a rotate region."
 
 	| renderer rect |
 	renderer := self rendererLeaning: #left.
@@ -59,9 +59,8 @@ MirrorCellRendererTestCase >> testAMirrorAnswersThePushRegionOfAPointInsideIt [
 
 { #category : 'tests' }
 MirrorCellRendererTestCase >> testAMirrorCrossedTwiceShowsBothBeamsWhole [
-	"Page 170 finds a mirror on the board both sides of which are active: the beam crosses its own
-	path there. All four segments are lit, so both beams run the whole way across, and the original
-	says of that case that the drawing is already correct."
+	"A mirror can be lit on all four of its sides, where the beam crosses its own path. Both beams
+	then run the whole way across, and the turn needs no case of its own."
 
 	| grid cell element beam extent |
 	grid := Grid new.
@@ -168,7 +167,7 @@ MirrorCellRendererTestCase >> testRotatingTheCellTurnsTheMirrorOver [
 MirrorCellRendererTestCase >> testTheBeamTurnsAtAMirror [
 	"The demo grid turns the beam north at the mirror of 4@5, which is lit on its west side, where
 	the light arrives, and on its north side, where it leaves. The cell shows two half beams, and
-	nothing at all in the two quadrants pages 171 and 172 have to black out."
+	nothing at all in the two quadrants the light never reaches."
 
 	| grid element beam half extent |
 	grid := GridFactory demoGrid.
@@ -187,8 +186,8 @@ MirrorCellRendererTestCase >> testTheBeamTurnsAtAMirror [
 
 { #category : 'tests' }
 MirrorCellRendererTestCase >> testTheMirrorIsDrawnOverTheBeam [
-	"Page 166 draws the mirror again after the beam, so the light does not hide the thing that
-	turns it. Here the beam is the first child and the mirror is the last."
+	"The mirror is drawn after the beam, so the light does not hide the thing that turns it: the
+	beam is the first child and the mirror is the last."
 
 	| grid element |
 	grid := GridFactory demoGrid.

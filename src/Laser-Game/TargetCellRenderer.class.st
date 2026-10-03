@@ -25,8 +25,8 @@ TargetCellRenderer class >> modelClass [
 
 { #category : 'accessing' }
 TargetCellRenderer class >> outlineWidth [
-	"Answer the thickness, in pixels, of the target outline: the crosshairs and the ring. The
-	original drew both with a two pixel pen."
+	"Answer the thickness, in pixels, of the target outline: the crosshairs and the ring. Both are
+	two pixel strokes."
 
 	^ 2
 ]
@@ -88,9 +88,9 @@ TargetCellRenderer >> newCircleOfRadius: aRadius [
 
 { #category : 'accessing' }
 TargetCellRenderer >> radius [
-	"Answer the radius of the ring drawn in a target cell. Page 137 of the original replaces a
-	hard coded seven with this calculation, so that the ring grows with the cell, and clamps the
-	result at ten so that it stops growing once the cell is large enough."
+	"Answer the radius of the ring drawn in a target cell. It is worked out from the cell size, so
+	that the ring grows with the cell, and clamped at ten so that it stops growing once the cell
+	is large enough."
 
 	^(self class cellExtent x // 2 - 8) min: 10
 ]

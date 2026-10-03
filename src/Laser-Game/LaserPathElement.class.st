@@ -81,8 +81,8 @@ LaserPathElement >> nextElementIn: aGrid [
 
 { #category : 'printing' }
 LaserPathElement >> printOn: aStream [
-	"Name the cell this step of the beam is about and the side the beam enters it from. Page 108 of
-	the original prints the same over three lines."
+	"Name the cell this step of the beam is about and the side the beam enters it from. One line,
+	since that is what a list, an inspector header and a code pane have room for."
 
 	super printOn: aStream.
 	aStream

@@ -8,8 +8,7 @@ Class {
 { #category : 'tests' }
 LaserGameElementTestCase >> testAClickThatChangesNothingIsNoMove [
 	"A click on a blank cell does nothing, so the board is never told and nothing is counted. The
-	original counts every mouse up on the board, whether or not the board changed; the count is
-	what the player is asked to keep down, so only a move that happened counts here."
+	count is what the player is asked to keep down, so only a move that happened counts."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -54,12 +53,10 @@ LaserGameElementTestCase >> testAGameKeepsItsShapeInAWindowOfAnotherShape [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testAGameMadeWithNoGridPlaysTheStandardBoard [
-	"Page 203 opens a LaserGame from the world menu and finds it too small to play: the menu
-	sends #new, and #initialize builds the five by five demo board. Page 204 answers with
-	GridFactory defaultGrid, eight columns by ten rows, dealt. Here a game takes its grid from
-	outside, so the default is what it falls back on when nobody gave it one, and it is dealt
-	when it is first asked for rather than in #initialize, so a game that is given a grid deals
-	no board it would throw away."
+	"A game takes its grid from outside, and falls back on GridFactory defaultGrid, eight columns
+	by ten rows, dealt, when nobody gave it one. The fallback is dealt when the grid is first
+	asked for rather than in #initialize, so a game that is given a grid deals no board it would
+	throw away."
 
 	| game |
 	game := LaserGameElement new.
@@ -79,8 +76,7 @@ LaserGameElementTestCase >> testAGameMadeWithNoGridPlaysTheStandardBoard [
 LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven [
 	"The game is drawn at the size the board asks for and scaled to whatever the window is, so a
 	window of twice that extent shows the same game twice as big, filling it. The extent is read
-	from the game and not written down, because the cell size decides it: pages 174 to 179 of the
-	original are the tale of four tests that had been written down for a cell of thirty pixels."
+	from the game and not written down, because the cell size decides it."
 
 	| game natural |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -94,11 +90,10 @@ LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testAGameShowsItsCountsBeforeAnythingHappens [
-	"Page 188 opens with a bug of the original's: a game just opened shows zero mirrors, because
-	the counters are only written to when something happens, and the page fixes it by updating
-	them at the end of #initializeForGrid:. The port cannot have that bug, since the panel sets
-	its counters at the end of #rebuild, which is what building it does; this test says so, here
-	and after a new board is dealt."
+	"A game just opened shows the counts of the board it was dealt, not zeroes. The panel sets its
+	counters at the end of #rebuild, which is what building it does, so there is no window in which
+	a counter shows a number nothing has written yet. This test says so, here and after a new
+	board is dealt."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -130,21 +125,23 @@ LaserGameElementTestCase >> testAGameShrinksWithASmallerWindow [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testAGameTakesTheSizeOfWhateverBoardItIsGiven [
-	"Page 147 hands the game a grid instead of building one, so the size of the board is the size
-	of the grid. The game is one cell per location, the panel keeps its width and takes the height
-	of the board beside it, and the window is the two of them and the margins. The sizes are read
-	from the layout constraints, since nothing is laid out until a space shows it."
+	"A game is handed a grid rather than building one, so the size of the board is the size of the
+	grid. The game is one cell per location, the panel keeps its width and takes the height of the
+	board beside it, or of what it holds when the board is shorter than that, and the window is the
+	two of them and the margins. The sizes are read from the layout constraints, since nothing is
+	laid out until a space shows it."
 
-	| game wanted |
+	| game wanted panelHeight |
 	game := LaserGameElement onRandomOfExtent: 8 @ 10.
 	wanted := LaserGameElement extentForGrid: game grid.
+	panelHeight := 10 * CellRenderer cellExtent y
+	               max: LaserGameControlPanelElement contentHeight.
 	self assert: game board children size equals: 80.
 	self
 		assert: wanted
 		equals: (8 * CellRenderer cellExtent x + LaserGameElement panelWidth
 		         + (2 * LaserGameElement gameMargin))
-			        @ (10 * CellRenderer cellExtent y
-				         + (2 * LaserGameElement gameMargin)).
+			        @ (panelHeight + (2 * LaserGameElement gameMargin)).
 	self assert: game constraints horizontal resizer size equals: wanted x.
 	self assert: game constraints vertical resizer size equals: wanted y.
 	self
@@ -152,15 +149,15 @@ LaserGameElementTestCase >> testAGameTakesTheSizeOfWhateverBoardItIsGiven [
 		equals: LaserGameElement panelWidth.
 	self
 		assert: game controlPanel constraints vertical resizer size
-		equals: 10 * CellRenderer cellExtent y
+		equals: panelHeight
 ]
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testAMoveOnTheBoardSetsTheCounter [
-	"A move changes the path, so it changes the counter too: page 142 adds #updateCounters to the
-	mouse up handler as well. The board says that a move was made and the game asks its panel to
-	catch up; a board opened on its own says the same thing to nobody. Turning the mirror at the
-	foot of the first column sends the beam somewhere else, and the path gets shorter."
+	"A move changes the path, so it changes the counter too. The board says that a move was made
+	and the game asks its panel to catch up; a board opened on its own says the same thing to
+	nobody. Turning the mirror at the foot of the first column sends the beam somewhere else, and
+	the path gets shorter."
 
 	| game cellElement before |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -177,10 +174,10 @@ LaserGameElementTestCase >> testAMoveOnTheBoardSetsTheCounter [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testANewGameDealsAFreshBoardAndForgetsTheMoves [
-	"Page 146: a new game clears the cells, stops the laser, sets the count to zero and randomizes
-	the grid. The demo grid holds ten mirrors and so does a randomized five by five board, so the
-	proof that the old cells went first is the count: the randomizer writes onto the board it is
-	given and clears nothing, and ten mirrors is what it deals."
+	"A new game clears the cells, stops the laser, sets the count to zero and randomizes the grid.
+	The demo grid holds ten mirrors and so does a randomized five by five board, so the proof that
+	the old cells went first is the count: the randomizer writes onto the board it is given and
+	clears nothing, and ten mirrors is what it deals."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -198,9 +195,8 @@ LaserGameElementTestCase >> testANewGameDealsAFreshBoardAndForgetsTheMoves [
 { #category : 'tests' }
 LaserGameElementTestCase >> testANewGameIsShownOnTheBoard [
 	"Every cell element is built again from the cell that stands at its location now, so a cell
-	that was a mirror and is now blank draws itself blank. Page 146 needs three new rendering
-	methods for that, because its cells paint onto one shared form and a cell used to be able to
-	assume it was blank underneath."
+	that was a mirror and is now blank draws itself blank. Nothing has to be erased: a cell
+	element draws only its own cell."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -229,7 +225,7 @@ LaserGameElementTestCase >> testANewGameKeepsTheSizeOfTheBoard [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testANewGameStartsWithNoMoves [
-	"Page 143 sets the count to zero when the game is built."
+	"The move count is zero when the game is built."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -279,10 +275,10 @@ LaserGameElementTestCase >> testBoardShowsTheGridOfTheGame [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoardOrItsContents [
-	"The panel keeps the original's width whatever the grid is, and it is as tall as the board
-	beside it — or as tall as what it holds, when that is more, which is what a board of five rows
-	comes to once page 181 has added the mirror counters. Sizes are read from the layout
-	constraints, since nothing is laid out yet."
+	"The panel keeps its width whatever the grid is, and it is as tall as the board beside it — or
+	as tall as what it holds, when that is more, which is what a board of five rows comes to once
+	the panel holds four counters. Sizes are read from the layout constraints, since nothing is
+	laid out yet."
 
 	| grid game |
 	grid := GridFactory demoGrid.
@@ -300,8 +296,8 @@ LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoardOrItsC
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testEveryMoveOnTheBoardCountsOne [
-	"Page 144 counts the click in the mouse up handler of the board. Here the board announces the
-	move and the game counts it, so the count is shown without anything searching for the display."
+	"The board announces the move and the game counts it, so the count is shown without anything
+	searching for the display."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -314,12 +310,9 @@ LaserGameElementTestCase >> testEveryMoveOnTheBoardCountsOne [
 { #category : 'tests' }
 LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins [
 	"The game is as wide as the board, the panel beside it and a margin on each side, and as tall
-	as the taller of the board and the panel, with a margin above and below. This is the
-	original's calculatedExtent, which knows only the board height; the demo grid is short enough
-	for the panel to decide instead. The second assertion states the numbers rather than the
-	constants: the panel is a hundred and thirty, two fifty pixel buttons and the three gaps a
-	row of two stands in, where the original's panel is a hundred and ten around its forty pixel
-	buttons."
+	as the taller of the board and what the panel holds, with a margin above and below. The second
+	assertion states the numbers rather than the constants: the panel is a hundred and thirty, two
+	fifty pixel buttons and the three gaps a row of two stands in."
 
 	| grid expected |
 	grid := GridFactory demoGrid.
@@ -330,14 +323,15 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins [
 	self assert: (LaserGameElement extentForGrid: grid) equals: expected.
 	self
 		assert: (LaserGameElement extentForGrid: grid)
-		equals:
-			5 * CellRenderer cellExtent x + 130
-			@ LaserGameControlPanelElement contentHeight + 20
+		equals: 5 * CellRenderer cellExtent x + 130
+			@ (5 * CellRenderer cellExtent y
+				 max: LaserGameControlPanelElement contentHeight) + 20
 ]
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testFiringTheLaserSetsTheCounter [
-	"The fire button reaches the counter: page 142 adds #updateCounters to the method behind it."
+	"The fire button reaches the counter: toggling the laser sets the counters as well as the
+	board."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -354,10 +348,9 @@ LaserGameElementTestCase >> testFiringTheLaserSetsTheCounter [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel [
-	"A game is a row of two children: the control panel first, the board beside it. Page 139 moves
-	the panel to the left of the board. Since page 189 the board is wrapped in a column, which
-	holds the mark of the laser's home under it; the board is reached through the same accessor
-	as before."
+	"A game is a row of two children: the control panel first, the board beside it. The board is
+	wrapped in a column, which holds the mark of the laser's home under it, and the board itself
+	is reached through its own accessor."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -370,11 +363,11 @@ LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testGameShowsWhereTheLaserComesFrom [
-	"Page 189 marks where the laser enters the board: a bar one cell wide and one margin tall, in
-	the colour of the beam's splatter. It belongs under the bottom left corner of the board, which
-	is where the beam starts — Grid >> startingCell is column one of the last row, and the beam
-	enters it from the south. The original adds a SketchMorph over a filled Form; here it is a
-	plain element with a background, standing under the board in a column of its own."
+	"A bar one cell wide and one margin tall marks where the laser enters the board, in the colour
+	of the splatter of the beam. It belongs under the bottom left corner of the board, which is
+	where the beam starts: Grid >> startingCell is column one of the last row, and the beam enters
+	it from the south. It is a plain element with a background, standing under the board in a
+	column of its own."
 
 	| game column |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -397,7 +390,7 @@ LaserGameElementTestCase >> testGameShowsWhereTheLaserComesFrom [
 LaserGameElementTestCase >> testGameTakesTheExtentItCalculates [
 	"The game asks for exactly the size its own arithmetic gives, and the margin around its two
 	children is padding, so the window ramp shows through it. The bottom margin is the one
-	exception, kept free for the mark of page 189 and asserted by
+	exception, kept free for the mark of the laser's home and asserted by
 	#testTheLaserHomeSitsInTheMarginAndCostsNoSize."
 
 	| grid game |
@@ -416,7 +409,7 @@ LaserGameElementTestCase >> testGameTakesTheExtentItCalculates [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testQuittingAsksBeforeItCloses [
-	"Page 144 makes the buttons smaller and puts Quit beside Fire, so #quitGame asks first. The
+	"Quit sits beside Fire and is easy to hit by accident, so quitting asks first. The
 	question covers the game and is not one of the two children the game lays out in a row. A
 	second click on Quit while the question stands asks nothing more."
 
@@ -432,8 +425,8 @@ LaserGameElementTestCase >> testQuittingAsksBeforeItCloses [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testResetPutsEveryCellBackAndZeroesTheMoves [
-	"Page 188: Reset unwinds the whole undo stack, stops the laser and sets the move count back to
-	zero, so the player can start the same board again."
+	"Reset unwinds the whole undo stack, stops the laser and sets the move count back to zero, so
+	the player can start the same board again."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -473,9 +466,9 @@ LaserGameElementTestCase >> testSettingAnotherGridRebuildsTheGame [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testTheCountersStillHoldWhatABiggerBoardProduces [
-	"A bigger board makes a longer beam, and the counter of page 141 has three digits. Eighty
-	cells cannot make a path of a thousand, so the beam counter still shows the whole number the
-	grid answers, whatever board the game was dealt."
+	"A bigger board makes a longer beam, and a counter has three digits. Eighty cells cannot make
+	a path of a thousand, so the beam counter still shows the whole number the grid answers,
+	whatever board the game was dealt."
 
 	| game |
 	game := LaserGameElement onRandomOfExtent: 8 @ 10.
@@ -491,11 +484,10 @@ LaserGameElementTestCase >> testTheCountersStillHoldWhatABiggerBoardProduces [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testTheLaserHomeSitsInTheMarginAndCostsNoSize [
-	"The bar stands in the margin under the board, not in a row of its own, so the game is the
-	size it was before page 189. That is arranged by taking the bottom margin out of the padding
-	and giving it to the panel instead: the column under the board then ends where the game ends,
-	and the bar fills the band between the last row of cells and the bottom edge. The original
-	places the morph in the margin with a layout frame and has nothing to arrange."
+	"The bar stands in the margin under the board, not in a row of its own, so it costs the game no
+	size. That is arranged by taking the bottom margin out of the padding and giving it to the
+	panel instead: the column under the board then ends where the game ends, and the bar fills the
+	band between the last row of cells and the bottom edge."
 
 	| game column |
 	game := LaserGameElement onRandomOfExtent: 8 @ 10.
@@ -550,8 +542,8 @@ LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testUndoOnABoardNobodyHasTouchedDoesNothing [
-	"An empty stack answers false on page 185, and the game does nothing with it: no move is
-	counted and the board is left as it stands."
+	"An empty undo stack answers false, and the game does nothing with it: no move is counted and
+	the board is left as it stands."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -563,9 +555,9 @@ LaserGameElementTestCase >> testUndoOnABoardNobodyHasTouchedDoesNothing [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testUndoTakesTheLastMoveBackAndCountsAsAMove [
-	"Page 186: the Undo button asks the grid to undo, and when the grid says it did, the game
-	counts a move and draws itself again. The count is not taken back — page 183 says an undo
-	must not remove any count from the player's total — so a move and its undo are two moves."
+	"The Undo button asks the grid to undo, and when the grid says it did, the game counts a move
+	and draws itself again. The count is not taken back, since an undo must not remove any count
+	from the total of the player, so a move and its undo are two moves."
 
 	| game |
 	game := LaserGameElement on: GridFactory demoGrid.
@@ -583,8 +575,8 @@ LaserGameElementTestCase >> testUndoTakesTheLastMoveBackAndCountsAsAMove [
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testWindowIsFilledWithTheColorRamp [
-	"Page 140 fills the window with a ramp of two colors rather than one flat color, running the
-	fraction of the way across and down that the page orients it by."
+	"The window is filled with a ramp of two colours rather than one flat colour, running the
+	fraction of the way across and down that the ramp direction states."
 
 	| game paint |
 	game := LaserGameElement on: GridFactory demoGrid.

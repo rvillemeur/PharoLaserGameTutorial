@@ -16,10 +16,8 @@ CellRendererTestCase >> requestedExtentOf: anElement [
 
 { #category : 'tests' }
 CellRendererTestCase >> testABlankCellCrossedTwiceShowsBothBeams [
-	"Page 173 finds the same on a blank cell: the beam can cross its own path there too, and the
-	original then draws the vertical beam when north is lit, the horizontal one when west is lit,
-	and the vertical core once more so that the crossing looks right. The port asks nothing extra:
-	the cell is lit on four sides, so both bands are drawn and both cores go over them."
+	"A blank cell can be crossed twice as well, which lights all four of its sides. Nothing extra
+	is asked for: both bands are drawn the whole way across and both cores go over them."
 
 	| grid cell element beam extent |
 	grid := Grid new.
@@ -43,8 +41,8 @@ CellRendererTestCase >> testABlankCellCrossedTwiceShowsBothBeams [
 
 { #category : 'tests' }
 CellRendererTestCase >> testABlankCellDrawsNoBeamUnlessTheLaserReachesIt [
-	"A cell draws a beam only while the laser is firing and only where the beam runs. The original
-	asks the first question in #render and the second at the head of #renderLaser."
+	"A cell draws a beam only while the laser is firing and only where the beam runs. Both
+	questions are asked in #renderLaserOn:, before anything is drawn."
 
 	| grid |
 	grid := GridFactory demoGrid.
@@ -107,13 +105,11 @@ CellRendererTestCase >> testEveryCellClassHasExactlyOneRenderer [
 
 { #category : 'tests' }
 CellRendererTestCase >> testEverySizeInACellFollowsTheCellSize [
-	"Page 137 of the original raises the cell size, and page 138 then finds the sizes that do not
-	follow: the inside region, the line between the two rotate regions and one of the two
-	diagonals. The port derives all of them from the cell size already, so this section proves
-	that rather than changing it. At any cell size the two nested regions stay centred in the
-	cell, every point of the cell still falls in a region, the four push regions still divide the
-	inside square between them without overlapping, the ring of a target still fits in the cell,
-	and a board is still the grid times the cell."
+	"Every size in a cell is derived from the cell size, and this is what that claim means. At
+	any cell size the two nested regions stay centred in the cell, every point of the cell
+	falls in a region, the four push regions divide the inside square between them without
+	overlapping, the ring of a target still fits in the cell, and a board is still the grid
+	times the cell."
 
 	| grid |
 	grid := GridFactory demoGrid.
@@ -156,10 +152,9 @@ CellRendererTestCase >> testEverySizeInACellFollowsTheCellSize [
 
 { #category : 'tests' }
 CellRendererTestCase >> testOnlyAMirrorAnswersAHintRegion [
-	"Every renderer is asked for a hint region, and all but the mirror answer nothing. That is
-	the polymorphism the original page points at: the message goes to every cell renderer, and
-	each one decides what to do with it. The mirror answers the push region of the point, since
-	the middle of a cell is where a push is asked for."
+	"Every renderer is asked for a hint region, and all but the mirror answer nothing: that is the
+	whole of the design, and it lives in the hierarchy rather than in a conditional. The mirror
+	answers the push region of the point, since the middle of a cell is where a push is asked for."
 
 	| grid point |
 	grid := GridFactory demoGrid.
@@ -202,9 +197,9 @@ CellRendererTestCase >> testRendererSelection [
 
 { #category : 'tests' }
 CellRendererTestCase >> testTheBeamCrossesABlankCellFromSideToSide [
-	"Page 156 draws the beam on the blank cells, which is the easiest case: the beam goes straight
-	through, so it is one line. The demo grid sends the beam along the bottom row from west to
-	east, and the blank cell at 2@5 is one the beam crosses that way."
+	"The beam goes straight through a blank cell, so it is one line. The demo grid sends the beam
+	along the bottom row from west to east, and the blank cell at 2@5 is one the beam crosses that
+	way."
 
 	| grid element beam |
 	grid := GridFactory demoGrid.
@@ -227,8 +222,8 @@ CellRendererTestCase >> testTheBeamCrossesABlankCellFromSideToSide [
 
 { #category : 'tests' }
 CellRendererTestCase >> testTheBeamCrossesABlankCellFromTopToBottom [
-	"Page 157 asks one question to choose between the two drawings: is the south segment lit. The
-	demo grid turns the beam north at 4@5, so the blank cell at 4@4 is crossed from top to bottom."
+	"One question chooses between the two drawings: is the south segment lit. The demo grid turns
+	the beam north at 4@5, so the blank cell at 4@4 is crossed from top to bottom."
 
 	| grid element beam |
 	grid := GridFactory demoGrid.
@@ -251,13 +246,10 @@ CellRendererTestCase >> testTheBeamCrossesABlankCellFromTopToBottom [
 
 { #category : 'tests' }
 CellRendererTestCase >> testTheHintArrowIsCentredInItsCellAtEveryCellSize [
-	"Page 197 complains that the hint arrows are never where the player expects them: the arrow
-	forms were drawn into rectangles big enough to hold them, the black shape sits wherever it
-	landed in that rectangle, and the offset the renderer adds cannot know about the white margin
-	around it. Pages 197 and 198 trim the form to its ink and then centre what is left. In this
-	port an arrow is a polygon scaled onto the rectangle it is given, so its ink is its extent
-	and centring is arithmetic on two constants. Both halves are checked here, at three cell
-	sizes."
+	"A hint arrow is a polygon scaled onto the rectangle it is given, so its ink is its extent and
+	centring it is arithmetic on two constants. Both halves are checked here, at three cell sizes:
+	the offset leaves the same margin on every side of the cell, and every arrow fills the
+	rectangle it is asked for."
 
 	#( 30 40 80 ) do: [ :size |
 		self withCellExtent: size @ size do: [

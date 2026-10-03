@@ -9,8 +9,8 @@ Class {
 CellClickRegionTestCase >> assertIgnoreRegionBoundaries [
 	"Check where the ignore region begins and ends. It is the margin of the cell left over once
 	the outside region is inset, so the corner of the cell belongs to it and the centre of the
-	inside region does not. Page 192 writes both points relative to a rectangle a region answers,
-	so neither goes stale when the cell size changes."
+	inside region does not. Both points are written relative to a rectangle a region answers, so
+	neither goes stale when the cell size changes."
 
 	| ignoreRect outsideRect |
 	ignoreRect := CellClickRegionIgnore regionRectangle.
@@ -129,10 +129,9 @@ CellClickRegionTestCase >> testClicksInOutsideRegion [
 
 { #category : 'tests' }
 CellClickRegionTestCase >> testEachRegionWithAPictureAnswersTheArrowOfItsDirection [
-	"Page 094 asks a push region for its arrow and page 105 asks a rotate region for its own. Here
-	each answers an element built at the size asked for, and the regions that have no picture
-	answer nothing: the inside and outside regions always refine themselves first, and the ignore
-	region never shows anything."
+	"Each region that has a picture answers an element built at the size asked for, and the regions
+	that have no picture answer nothing: the inside and outside regions always refine themselves
+	first, and the ignore region never shows anything."
 
 	| extent |
 	extent := 48 @ 48.
@@ -156,9 +155,9 @@ CellClickRegionTestCase >> testEachRegionWithAPictureAnswersTheArrowOfItsDirecti
 
 { #category : 'tests' }
 CellClickRegionTestCase >> testTheInsideAndOutsideRegionsRefineTheHintTheyAnswer [
-	"Page 092 gives every region the hint message. The inside region answers the push region of
-	the point, and since page 105 the outside region answers the rotate region of the point. The
-	ignore region answers itself, having nothing finer to say and no picture to show."
+	"Every region is asked for its hint. The inside region answers the push region of the point,
+	and the outside region answers the rotate region of the point. The ignore region answers
+	itself, having nothing finer to say and no picture to show."
 
 	| rect |
 	rect := CellClickRegionInside regionRectangle.

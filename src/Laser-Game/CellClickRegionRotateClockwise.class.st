@@ -16,17 +16,16 @@ Class {
 { #category : 'classifying' }
 CellClickRegionRotateClockwise class >> containsPoint: aPoint [
 	"Answer whether aPoint is in the upper half of the cell. The line is half the height of the
-	cell rather than a number of pixels, so it follows the cell size of page 138. A point exactly
-	on the line is mine, which is what page 103 asks for."
+	cell rather than a number of pixels, so it follows the cell size. A point exactly on the line
+	is mine."
 
 	^aPoint y <= (CellRenderer cellExtent y // 2)
 ]
 
 { #category : 'hints' }
 CellClickRegionRotateClockwise class >> hintElementOfExtent: anExtent [
-	"Answer an element drawing the clockwise curved arrow at anExtent. Page 102 of the original
-	answers a cached 450 pixel Form here, and page 105 scales it down; the shape of Section 3.7 is
-	drawn at whatever size it is given."
+	"Answer an element drawing the clockwise curved arrow at anExtent, at whatever size it is
+	given."
 
 	^ LaserGameShapes clockwiseArrowElementOfExtent: anExtent
 ]

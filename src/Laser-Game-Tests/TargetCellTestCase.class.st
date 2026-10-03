@@ -40,7 +40,7 @@ TargetCellTestCase >> testCellOnState [
 ]
 
 { #category : 'tests' }
-TargetCellTestCase >> testCellSegmentState [ 
+TargetCellTestCase >> testCellSegmentState [
 |cell|
 cell := TargetCell new.
 self shouldnt: [ cell isSegmentOnFor: #north ].

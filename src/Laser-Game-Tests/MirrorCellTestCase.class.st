@@ -119,9 +119,9 @@ MirrorCellTestCase >> testCellSegmentsState [
 
 { #category : 'tests' }
 MirrorCellTestCase >> testPrintStringSaysWhereTheCellIsHowItLeansAndWhetherItIsOn [
-	"Page 108 of the original improves what a cell shows in a debugger. Pharo prints objects on
-	one line, in lists, in inspector headers and in the code pane, so the port says the same
-	things in one line and lets the inspector show the rest."
+	"A mirror prints the three facts that tell it apart from any other cell: where it is, which way
+	it leans and whether the laser lights it. One line, since that is what a list, an inspector
+	header and a code pane have room for; the state of the four sides is in the Sides tab."
 
 	| cell |
 	cell := MirrorCell leanLeft.
@@ -135,9 +135,8 @@ MirrorCellTestCase >> testPrintStringSaysWhereTheCellIsHowItLeansAndWhetherItIsO
 
 { #category : 'tests' }
 MirrorCellTestCase >> testTheSidesTabListsTheFourSidesOfTheCell [
-	"Page 108 of the original wants a cell to say more about itself while it is being debugged. In
-	Pharo that belongs in an inspector tab, and the tab has one row per side, which is where the
-	bug of page 110 becomes visible: the exit sides of a rotated mirror."
+	"The Sides tab has one row per side of the cell. It is the table to read when a beam leaves a
+	cell by the wrong side, since it shows the exit sides against the lean."
 
 	| cell table |
 	cell := MirrorCell leanRight.

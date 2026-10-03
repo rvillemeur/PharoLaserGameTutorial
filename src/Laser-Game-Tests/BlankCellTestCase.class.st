@@ -12,7 +12,7 @@ BlankCellTestCase >> testCellExitSides [
 	cell := BlankCell new.
 	exit := cell exitSideFor: #north.
 	self assert: exit equals: #south.
-	
+
 	exit := cell exitSideFor: #east.
 	self assert: exit equals: #west.
 
@@ -68,8 +68,7 @@ BlankCellTestCase >> testCellSegmentsState [
 
 { #category : 'tests' }
 BlankCellTestCase >> testPrintStringSaysWhereTheCellIsAndWhetherItIsOn [
-	"A cell that is not a mirror has no lean to report, so it prints its location and its state.
-	Page 108 of the original prints the same two facts over three lines."
+	"A cell that is not a mirror has no lean to report, so it prints its location and its state."
 
 	| cell |
 	cell := BlankCell new.
@@ -81,9 +80,9 @@ BlankCellTestCase >> testPrintStringSaysWhereTheCellIsAndWhetherItIsOn [
 
 { #category : 'tests' }
 BlankCellTestCase >> testRotatingACellThatIsNotAMirrorDoesNothing [
-	"Page 107 puts the two rotate messages on Cell, where they do nothing, so a click in the
-	outside region of any cell can send them without asking what kind of cell it is. Only a mirror
-	has anything to turn."
+	"The two rotate messages live on Cell, where they do nothing, so a click in the outside region
+	of any cell can send them without asking what kind of cell it is. Only a mirror has anything
+	to turn."
 
 	| cell |
 	cell := BlankCell new.

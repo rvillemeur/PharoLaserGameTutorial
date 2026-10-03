@@ -12,8 +12,8 @@ Class {
 
 { #category : 'tests' }
 LaserPathElementTestCase >> testPrintStringNamesTheCellAndTheSideTheBeamEntersFrom [
-	"Page 108 gives a path element a printOn: of its own, so a debugger says which cell the step is
-	about. One line here, since that is where Pharo shows it."
+	"A path element prints which cell the step is about and the side the beam enters it by, which
+	is what makes a list of path elements readable."
 
 	| element |
 	element := LaserPathElement
@@ -27,10 +27,10 @@ LaserPathElementTestCase >> testPrintStringNamesTheCellAndTheSideTheBeamEntersFr
 
 { #category : 'tests' }
 LaserPathElementTestCase >> testTheNextElementFollowsTheMirrorAfterItIsRotated [
-	"Pages 109 and 110: the beam kept leaving the rotated mirror on the side it left before,
-	because rotating the cell did not touch its exit sides. This is the step the original stepped
-	into, asked directly: the mirror at 4@1 of the demo grid sends a beam that enters from the
-	south out to the east, and once it is turned, out to the west."
+	"Ask the step of the beam directly: the mirror at 4@1 of the demo grid sends a beam that enters
+	from the south out to the east, and once it is turned, out to the west. A rotation that left
+	the exit sides unchanged would send the beam out the way it went out before, and this is the
+	method where that shows."
 
 	| grid mirror element |
 	grid := GridFactory demoGrid.

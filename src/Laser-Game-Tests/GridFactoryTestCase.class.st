@@ -39,9 +39,8 @@ GridFactoryTestCase >> tearDown [
 
 { #category : 'tests' }
 GridFactoryTestCase >> testAGridOfAnyExtentIsDealtReadyToPlay [
-	"Page 147 builds a board of any size and deals it in one message: the grid is made, the target
-	goes in the top right corner of that grid, and the mirrors follow the size of the board.
-	Eight by ten is the board of page 148."
+	"A board of any size is built and dealt in one message: the grid is made, the target goes in
+	the top right corner of that grid, and the mirrors follow the size of the board."
 
 	| grid |
 	grid := GridFactory randomizedGridOfExtent: 8 @ 10.
@@ -56,7 +55,7 @@ GridFactoryTestCase >> testAGridOfAnyExtentIsDealtReadyToPlay [
 
 { #category : 'tests' }
 GridFactoryTestCase >> testARandomizedGridHoldsNothingButBlanksMirrorsAndTheTarget [
-	"Page 145 deals mirrors onto an empty board and puts one target on it."
+	"A dealt board holds nothing but blank cells, mirrors and the one target."
 
 	| grid |
 	grid := Grid newOfSize: 5 @ 5.
@@ -68,8 +67,8 @@ GridFactoryTestCase >> testARandomizedGridHoldsNothingButBlanksMirrorsAndTheTarg
 
 { #category : 'tests' }
 GridFactoryTestCase >> testARandomizedGridPutsTheTargetInTheTopRightCorner [
-	"Page 147 reads the corner from the grid, where page 145 writes 5@1 for the board it has. Both
-	are the same cell on a five by five board."
+	"The target goes in the top right corner of the grid, which on a five by five board is 5@1,
+	and it is the only target on the board."
 
 	| grid |
 	grid := Grid newOfSize: 5 @ 5.
@@ -93,8 +92,7 @@ GridFactoryTestCase >> testBothMirrorsAreDealt [
 
 { #category : 'tests' }
 GridFactoryTestCase >> testTheDefaultGridIsTheStandardBoard [
-	"The board page 148 plays on is eight columns by ten rows, dealt. That is the board the
-	inherited source calls the default one, and it is what the game opens on from this section."
+	"The standard board is eight columns by ten rows, dealt. It is the board the game opens on."
 
 	| grid |
 	grid := GridFactory defaultGrid.
@@ -106,10 +104,9 @@ GridFactoryTestCase >> testTheDefaultGridIsTheStandardBoard [
 
 { #category : 'tests' }
 GridFactoryTestCase >> testTheMirrorsStandOneToACellAndAwayFromTheTarget [
-	"Page 145 deals its mirrors onto locations it has not used yet, and it starts with the target
-	marked used, so every mirror it deals is still on the board afterwards and none of them is on
-	the target. A five by five board takes ten mirrors, which is the number page 145 writes down
-	before page 147 derives it from the size of the board."
+	"The mirrors are dealt onto locations that have not been used yet, and the target is marked
+	used before the first of them, so every mirror dealt is still on the board afterwards and none
+	of them stands on the target. A five by five board takes ten mirrors."
 
 	| grid |
 	grid := Grid newOfSize: 5 @ 5.
@@ -119,8 +116,8 @@ GridFactoryTestCase >> testTheMirrorsStandOneToACellAndAwayFromTheTarget [
 
 { #category : 'tests' }
 GridFactoryTestCase >> testTheNumberOfMirrorsFollowsTheSizeOfTheBoard [
-	"Page 147 asks for one mirror per two and a half cells, which is ten on the board of page 145
-	and thirty-two on the standard board."
+	"One mirror per two and a half cells: ten on a five by five board and thirty-two on the
+	standard one."
 
 	| grid |
 	grid := Grid newOfSize: 8 @ 10.
@@ -131,7 +128,7 @@ GridFactoryTestCase >> testTheNumberOfMirrorsFollowsTheSizeOfTheBoard [
 { #category : 'tests' }
 GridFactoryTestCase >> testTheSameSeedDealsTheSameBoard [
 	"The generator is seeded, so the same seed deals the same board. That is what #reSeed is for:
-	page 145 adds it to make the next game differ from this one."
+	it makes the next game differ from this one."
 
 	| first second |
 	GridFactory randomNumberGenerator seed: 1234.
@@ -152,7 +149,7 @@ GridFactoryTestCase >> testTheSameSeedDealsTheSameBoard [
 
 { #category : 'tests' }
 GridFactoryTestCase >> testTheTargetCornerIsMarkedUsedOnABoardOfAnySize [
-	"Page 147 marks the top right corner of the board used before a single mirror is dealt, so the
+	"The top right corner of the board is marked used before a single mirror is dealt, so the
 	target keeps its cell whatever the size of the board. The dictionary holds one flag per
 	location, false for the locations still free."
 

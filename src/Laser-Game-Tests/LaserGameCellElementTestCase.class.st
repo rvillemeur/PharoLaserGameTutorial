@@ -42,10 +42,9 @@ LaserGameCellElementTestCase >> testACellElementKnowsTheCellItShows [
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testACrossHairMarksThePointWhereAHintIsShown [
-	"Page 134: the pointer itself gets in the way of the hint it asks for. The port cannot swap
-	the system cursor, since every cursor in the image is a Form, so it draws the cross hair of
-	page 134 in the cell, centred on the point a click would use. An element is measured in a
-	layout pass, so what it was asked for is read from its constraints."
+	"The pointer itself gets in the way of the hint it asks for, so a cross hair is drawn in the
+	cell, centred on the point a click would use. An element is measured in a layout pass, so
+	what it was asked for is read from its constraints."
 
 	| board element point extent |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -68,10 +67,9 @@ LaserGameCellElementTestCase >> testACrossHairMarksThePointWhereAHintIsShown [
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime [
-	"The fourth design consideration of page 093: old arrows must not clutter the board. The
-	original had to redraw the cell before drawing the new arrow; here the cell has one hint
-	child, and moving to another push region replaces it. Two children come with a hint since
-	Section 4.2: the arrow and the cross hair under the pointer."
+	"Old arrows must not clutter the board. The cell has one hint child, and moving to another
+	push region replaces it. A hint brings two children: the arrow and the cross hair under
+	the pointer."
 
 	| board element rect childCount |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -94,9 +92,9 @@ LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime [
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testAPushArrowIsColouredByWhetherThePushIsAllowed [
-	"Page 130: the arrow says which way a click would move the cell, and nothing says whether it
-	could. The mirror at 4@1 can be pushed south, where 4@2 is blank, and cannot be pushed east,
-	where the target stands. Same cell, same pointer, two colours."
+	"The arrow says which way a click would move the cell; its colour says whether it could. The
+	mirror at 4@1 can be pushed south, where 4@2 is blank, and cannot be pushed east, where the
+	target stands. Same cell, same pointer, two colours."
 
 	| board element |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -119,9 +117,9 @@ LaserGameCellElementTestCase >> testAPushArrowIsColouredByWhetherThePushIsAllowe
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testARotateArrowIsAlwaysColouredAsAllowed [
-	"A mirror can always be turned, in either direction, whatever stands around it. Page 131 says
-	so in one line — the outside region answers true — so both rotate arrows are drawn in the
-	colour of a move that is allowed, even on a mirror that is boxed in."
+	"A mirror can always be turned, in either direction, whatever stands around it: the outside
+	region answers true in one line. So both rotate arrows are drawn in the colour of a move
+	that is allowed, even on a mirror that is boxed in."
 
 	| board element |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -142,8 +140,7 @@ LaserGameCellElementTestCase >> testARotateArrowIsAlwaysColouredAsAllowed [
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testClickingACellElementRecordsItsCell [
 	"A click reaches the cell element under the pointer, and the board records the cell that was
-	clicked. The original checked that mouse down and mouse up fell in the same cell itself;
-	BlClickEvent is that check."
+	clicked. BlClickEvent is what checks that the press and the release fell in the same cell."
 
 	| board element |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -157,7 +154,7 @@ LaserGameCellElementTestCase >> testClickingACellElementRecordsItsCell [
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testClickingACellThatIsNotAMirrorDoesNothing [
 	"Only a mirror acts on a click. A blank cell and the target answer nothing wherever they are
-	clicked, which is page 114's rule that the renderer superclass does nothing."
+	clicked, which is the renderer superclass doing nothing."
 
 	| board |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -194,12 +191,9 @@ LaserGameCellElementTestCase >> testClickingTheIgnoreRegionOfAMirrorDoesNothing 
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testClickingTheInsideRegionOfAMirrorPushesIt [
-	"The inside region pushes, which page 114 leaves unsent until page 122. The port cannot leave
-	it unsent: the click regions came with `mouseUpForCell:withinGrid:` already written on all six
-	of them, so the same wiring that turns a mirror also pushes one. A push region is named after
-	the side the cell is pushed from, so the lower triangle pushes north; the mirror at 1@2 has a
-	blank cell above it, and after the click each of the two cell elements draws what now stands
-	in it."
+	"The inside region pushes. A push region is named after the side the cell is pushed from, so
+	the lower triangle pushes north; the mirror at 1@2 has a blank cell above it, and after the
+	click each of the two cell elements draws what now stands in it."
 
 	| board element |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -220,10 +214,10 @@ LaserGameCellElementTestCase >> testClickingTheInsideRegionOfAMirrorPushesIt [
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testClickingTheLowerOutsideRegionOfAMirrorTurnsItCounterClockwise [
-	"The other half of page 115. The mirror ends up on the same diagonal either way, so the
-	direction is read from the move the grid records. The last row of the outside rectangle
-	belongs to the ignore margin, as `Rectangle >> containsPoint:` leaves its bottom edge out,
-	so the point is taken one pixel above it."
+	"The lower half of the outside region turns the mirror the other way. The mirror ends up on
+	the same diagonal either way, so the direction is read from the move the grid records. The
+	last row of the outside rectangle belongs to the ignore margin, as `Rectangle >>
+	containsPoint:` leaves its bottom edge out, so the point is taken one pixel above it."
 
 	| board element mirror |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -238,9 +232,9 @@ LaserGameCellElementTestCase >> testClickingTheLowerOutsideRegionOfAMirrorTurnsI
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testClickingTheUpperOutsideRegionOfAMirrorTurnsItClockwise [
-	"Page 115 of the original: a click in the outside region turns the mirror, and the upper half
-	turns it clockwise. The click carries a point in the coordinates of the cell, which is the
-	whole of what the region needs."
+	"A click in the outside region turns the mirror, and the upper half turns it clockwise. The
+	click carries a point in the coordinates of the cell, which is the whole of what the region
+	needs."
 
 	| board element mirror |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -266,8 +260,7 @@ LaserGameCellElementTestCase >> testEachCellElementCarriesTheRendererOfItsCell [
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testEnteringACellElementMakesItTheHoveredCell [
-	"The pointer entering a cell element is enough for the board to know which cell it is over.
-	The original had to ask the hand for its position and divide it by the cell size."
+	"The pointer entering a cell element is enough for the board to know which cell it is over."
 
 	| board element |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -279,10 +272,10 @@ LaserGameCellElementTestCase >> testEnteringACellElementMakesItTheHoveredCell [
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterAPush [
-	"Page 127 on the screen: fire the laser, then push the mirror at 4@5 west to 3@5. The target
-	at 5@1 is drawn lit while nothing feeds it any more. This is the same walk as after a turn,
-	made through a real click on a push arrow: the beam is off the board and back on it before
-	anything is drawn, and every cell element shows the cell that stands in it."
+	"Fire the laser, then push the mirror at 4@5 west to 3@5. Nothing feeds the target at 5@1 any
+	more, so it must not be left drawn lit. This is the same walk as after a turn, made through a
+	real click on a push arrow: the beam is off the board and back on it before anything is
+	drawn, and every cell element shows the cell that stands in it."
 
 	| grid board |
 	grid := GridFactory demoGrid.
@@ -311,11 +304,9 @@ LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterAPush 
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterATurn [
-	"Page 118 asks the question this test answers once and for all: after a mirror is turned while
-	the laser is on, is what the board shows still what the grid holds? The original had to cover
-	its morph with a window, uncover it, and then walk an object explorer down to the cells to
-	find out. Here every cell is asked: the renderer is the one of the cell standing there, and
-	the target is drawn lit exactly when its cell is on."
+	"After a mirror is turned while the laser is on, is what the board shows still what the grid
+	holds? Every cell is asked: the renderer is the one of the cell standing there, and the
+	target is drawn lit exactly when its cell is on."
 
 	| grid board |
 	grid := GridFactory demoGrid.
@@ -355,9 +346,9 @@ LaserGameCellElementTestCase >> testEveryChildOfTheBoardIsACellElement [
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testHoveringAnotherCellClearsTheHintOfTheOneLeftBehind [
-	"Page 116: the pointer moves fast, the mouse moves are sampled, and cells are skipped, so a
-	cell can be left without ever being told. The board hovers one cell at a time, so the cell it
-	hovered before loses its hint when another one takes its place, whatever events were missed."
+	"The pointer moves fast, mouse moves are sampled, and cells are skipped, so a cell can be
+	left without ever being told. The board hovers one cell at a time, so the cell it hovered
+	before loses its hint when another one takes its place, whatever events were missed."
 
 	| board first second |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -378,7 +369,7 @@ LaserGameCellElementTestCase >> testHoveringAnotherCellClearsTheHintOfTheOneLeft
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testLeavingACellClearsItsHintRegion [
 	"The pointer leaving a cell takes its hint with it, so no cell keeps a hint the pointer is
-	no longer in. The original cleared the temporary cursor at the same moment."
+	no longer in."
 
 	| board element |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -420,10 +411,10 @@ LaserGameCellElementTestCase >> testLeavingTheHoveredCellElementClearsTheHover [
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testMovingInTheOutsideRegionOfAMirrorCellShowsARotateArrow [
-	"Page 105 hovers the outside region and gets the curved arrows. The cell adds one as a child
-	exactly as it adds a push arrow, and the upper half of the region shows the clockwise one. The
-	last row of the region belongs to the ignore margin, as `Rectangle >> containsPoint:` leaves
-	its bottom edge out, so the lower point is taken one pixel above it."
+	"Hovering the outside region shows the curved arrows. The cell adds one as a child exactly as
+	it adds a push arrow, and the upper half of the region shows the clockwise one. The last row
+	of the region belongs to the ignore margin, as `Rectangle >> containsPoint:` leaves its
+	bottom edge out, so the lower point is taken one pixel above it."
 
 	| board element rect |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -452,8 +443,7 @@ LaserGameCellElementTestCase >> testMovingInTheOutsideRegionOfAMirrorCellShowsAR
 LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion [
 	"A mouse move carries a point, and the cell keeps the region that point falls in. In the
 	middle of the cell that is a push region, since the push regions divide the inside region
-	between them. The original computed the same thing by subtracting the offset of the cell
-	within the board form from a board-wide position, and wrote the answer to the Transcript."
+	between them."
 
 	| board element |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -470,9 +460,8 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion 
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testMovingInsideAMirrorCellShowsTheArrowOfItsPushRegion [
-	"Page 093 draws the arrow of the hint onto the board. Here the cell adds it as a child, a
-	few pixels smaller than the cell and centred in it, and its vertices are the ones of the
-	direction the pointer asks for."
+	"The cell adds the arrow of the hint as a child, a few pixels smaller than the cell and
+	centred in it, and its vertices are the ones of the direction the pointer asks for."
 
 	| board element |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -494,8 +483,8 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellShowsTheArrowOfItsPus
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testMovingOverACellElementMakesItTheHoveredCell [
-	"A mouse move over a cell is the event the original watched: it answers which cell the
-	pointer is over. Bloc sends it to the cell itself, so the board learns it from the cell."
+	"A mouse move over a cell answers which cell the pointer is over. Bloc sends it to the cell
+	itself, so the board learns it from the cell."
 
 	| board element |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -527,11 +516,10 @@ LaserGameCellElementTestCase >> testMovingOverACellThatIsNotAMirrorRecordsNoHint
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testTheArrowGoesWhenAPushEmptiesTheCellUnderThePointer [
-	"Page 126 single-steps a push and finds a renderer that still believes it draws the mirror
-	cell at 1@2, the place the mirror has just left. The port chooses the renderer again when a
+	"A push moves a mirror out of the cell the pointer is in. The renderer is chosen again when a
 	cell is drawn again, so the picture of the cell is right — but the hint drawn over it would
-	be the one of the cell that moved away. The pointer has not moved, and a blank cell offers
-	no push, so the arrow goes and the emptied cell looks like any other blank cell."
+	be the one of the cell that moved away. The pointer has not moved, and a blank cell offers no
+	push, so the arrow goes and the emptied cell looks like any other blank cell."
 
 	| board element blank |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -580,8 +568,8 @@ LaserGameCellElementTestCase >> testTheArrowGoesWhenThePointerLeavesOrReachesARe
 LaserGameCellElementTestCase >> testTheArrowStaysWhenTheCellUnderThePointerStillOffersIt [
 	"The other half of the same rule: a turn leaves the mirror where it is, so the hint under the
 	pointer is still the right one and the arrow survives the redraw. The hint is read from the
-	cell that stands there after the action, not kept and not dropped. The cross hair of Section
-	4.2 comes back with it, which is the second of the two children counted here."
+	cell that stands there after the action, not kept and not dropped. The cross hair comes back
+	with the arrow, which is the second of the two children counted here."
 
 	| board element childCount |
 	board := LaserGameBoardElement on: GridFactory demoGrid.
@@ -630,7 +618,7 @@ LaserGameCellElementTestCase >> testTheCrossHairFollowsThePointerWithinOneRegion
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testTheCrossHairIsShownExactlyWhenAHintIs [
-	"Page 135 sets the cursor back to the default in the two places the hint goes: a point that
+	"The cross hair appears with the hint and goes in the two places the hint goes: a point that
 	offers no action, and the pointer leaving. A cell that offers nothing, like the blank one at
 	2@2, never shows either."
 
@@ -662,10 +650,8 @@ LaserGameCellElementTestCase >> testTheCrossHairIsShownExactlyWhenAHintIs [
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testTheHintArrowSitsCentredInTheCellAtEveryCellSize [
-	"Page 198 of the original recentres the hint arrow: it cuts the white margin off the cached
-	form and then offsets what is left by half of what the cell has to spare. The port never had
-	a margin, since an arrow is a polygon scaled onto the rectangle it is given, but the second
-	half of the claim still has to hold. A mirror cell is hovered at three cell sizes, and the
+	"An arrow is a polygon scaled onto the rectangle it is given, and it has to end up centred in
+	the cell whatever the cell measures. A mirror cell is hovered at three cell sizes, and the
 	arrow it shows is measured where it really sits: the space it leaves on the left is the space
 	it leaves on the right, and the space above is the space below."
 
@@ -689,8 +675,7 @@ LaserGameCellElementTestCase >> testTheHintArrowSitsCentredInTheCellAtEveryCellS
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testTheSameLocalPointMeansTheSameRegionInEveryCell [
 	"Every cell classifies points in its own coordinates, so the cell in the far corner answers
-	exactly what the cell at the origin answers. The original had to subtract the offset of the
-	cell within the shared board form before it could ask this question."
+	exactly what the cell at the origin answers."
 
 	| board first last |
 	board := LaserGameBoardElement on: GridFactory demoGrid.

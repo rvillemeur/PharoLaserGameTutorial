@@ -101,9 +101,8 @@ Cell >> initializeExitSides [
 { #category : 'inspecting' }
 Cell >> inspectionSides: aBuilder [
 	"Show one row per side of me: where a beam entering there leaves, and whether that side is lit.
-	Page 108 of the original wants this in a debugger and gets as far as printOn: can carry it;
-	pages 109 and 110 then hunt a bug that is an exit side left unchanged, which is exactly what
-	this table shows."
+	This is the table to read when a beam leaves a cell by the wrong side, because the usual cause
+	is an exit side that was left unchanged."
 
 	<inspectorPresentationOrder: 1 title: 'Sides'>
 	^ aBuilder newTable
@@ -169,10 +168,10 @@ Cell >> printDetailsOn: aStream [
 
 { #category : 'printing' }
 Cell >> printOn: aStream [
-	"Say where I am and whether the laser lights me, on one line. Page 108 of the original says the
-	same on three, which reads well in a Squeak debugger pane and badly everywhere Pharo prints an
-	object: a list, an inspector header, a code pane. What the page wanted from those extra lines
-	is in my inspector tab instead."
+	"Say where I am and whether the laser lights me, on one line, since an object is printed in
+	many places where only one line fits: a list, an inspector header, a code pane. A subclass
+	adds its own detail by overriding printDetailsOn:. For the state of my four sides, inspect me
+	and read the Sides tab."
 
 	super printOn: aStream.
 	aStream nextPut: $(.
@@ -185,9 +184,9 @@ Cell >> printOn: aStream [
 
 { #category : 'actions' }
 Cell >> rotateClockwise [
-	"Turn me clockwise, which for a cell in general is nothing at all. Page 107 of the original
-	puts the two rotate messages here so that a click in the outside region can send one without
-	asking what kind of cell it hit; only a mirror has anything to turn."
+	"Turn me clockwise, which for a cell in general is nothing at all. Both rotate messages live
+	here so that a click can send one without asking what kind of cell it hit; only a mirror has
+	anything to turn."
 ]
 
 { #category : 'actions' }

@@ -28,8 +28,7 @@ CellClickRegionPushNorth class >> containsPoint: aPoint [
 
 { #category : 'hints' }
 CellClickRegionPushNorth class >> hintElementOfExtent: anExtent [
-	"Answer the north arrow at anExtent. The original answered a 330 pixel bitmap mask from the
-	forms cache and scaled it down; a polygon is drawn at the size it is given."
+	"Answer the north arrow at anExtent. It is a polygon, so it is drawn at the size it is given."
 
 	^ LaserGameShapes northArrowElementOfExtent: anExtent
 ]

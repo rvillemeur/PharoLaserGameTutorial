@@ -27,8 +27,8 @@ LaserGameCounterElementTestCase >> testACounterCentresWhatItHolds [
 
 { #category : 'tests' }
 LaserGameCounterElementTestCase >> testCounterIsATransparentRoundedFrame [
-	"Page 141 wraps the display in a transparent column with rounded corners, a two pixel border
-	and a five pixel inset, and takes the size of what it holds."
+	"A counter is a transparent frame with rounded corners, a two pixel border and a five pixel
+	inset, and it takes the size of what it holds."
 
 	| counter |
 	counter := LaserGameCounterElement labelled: 'Laser Path' digits: 3.
@@ -51,8 +51,8 @@ LaserGameCounterElementTestCase >> testCounterIsATransparentRoundedFrame [
 
 { #category : 'tests' }
 LaserGameCounterElementTestCase >> testCounterShowsADisplayWithItsCaptionUnderIt [
-	"A counter is the display and then the caption, in that order, which is the order page 141
-	adds them in. Its comment says the label goes above the panel, and the code puts it after."
+	"A counter is the display and then the caption, in that order, so the caption is drawn under
+	the display."
 
 	| counter |
 	counter := LaserGameCounterElement labelled: 'Laser Path' digits: 3.
@@ -68,7 +68,7 @@ LaserGameCounterElementTestCase >> testCounterShowsADisplayWithItsCaptionUnderIt
 { #category : 'tests' }
 LaserGameCounterElementTestCase >> testTheCounterPassesWhatItIsToldToItsDisplay [
 	"A counter holds its display, so the game sets a value on the counter and never looks for the
-	display. Page 142 has to find the LED itself, by name, among every morph of the game."
+	display itself."
 
 	| counter |
 	counter := LaserGameCounterElement labelled: 'Laser Path' digits: 3.

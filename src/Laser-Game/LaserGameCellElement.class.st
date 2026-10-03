@@ -1,16 +1,15 @@
 "
 I am the element that shows one cell of the grid, and I am the thing a player clicks on.
 
-I keep the CellRenderer that built me, so I can answer the cell I show, where that cell sits in the grid, and — through `clickRegionAt:` — which click region a point of mine falls in. The point is in my own coordinates, which is what Bloc hands to an event handler, so nothing has to subtract my position from a board-wide coordinate first. The original tutorial had no such element: every cell drew into one shared Form, and a click had to be converted into a grid location by dividing by the cell size (`CellRenderer >> offsetWithinGridForm` and the `cellForEvent:` family on the LaserGame morph).
+I keep the CellRenderer that built me, so I can answer the cell I show, where that cell sits in the grid, and — through `clickRegionAt:` — which click region a point of mine falls in. The point is in my own coordinates, which is what Bloc hands to an event handler, so nothing has to subtract my position from a board-wide coordinate first.
 
-I listen to the mouse myself: entering, leaving, moving and clicking all reach me because Bloc delivers an event to the element it happened in. I tell my board what happened (`hoverCellElement:`, `unhoverCellElement:`, `clickCellElement:`), and my board holds the state the game reads. The original registered five events on one board morph, added itself as a listener of the hand morph to see moves with the button up, and searched the submorphs under the pointer for the morph named 'board'; none of that has a counterpart here.
+I listen to the mouse myself: entering, leaving, moving and clicking all reach me, because Bloc delivers an event to the element it happened in. I tell my board what happened (`hoverCellElement:`, `unhoverCellElement:`, `clickCellElement:`), and my board holds the state the game reads.
 
 While the pointer is in me I also keep a hint: `showPositionHintAt:` asks my renderer what applies at that point and `clearPositionHint` forgets it when the pointer leaves. Only a mirror answers a region, since a click acts on mirrors only.
 
 Instance variables:
 	renderer	<CellRenderer>	the renderer that built me; it carries the grid and my location in it
 	hintRegion	<CellClickRegion class>	the region the pointer is in, nil when it is elsewhere or my cell offers no hint
-
 "
 Class {
 	#name : 'LaserGameCellElement',
@@ -52,22 +51,19 @@ LaserGameCellElement >> clearPositionHint [
 	self updateHintElement
 ]
 
-{ #category : 'interaction' }
+{ #category : 'events' }
 LaserGameCellElement >> click: anEvent [
-	"A click landed on me: a press and a release in the same cell, which the original checked by
-	keeping the location of the press in activeCellLocation and comparing it on mouse up. The
-	point the event carries is in my own coordinates, and it decides what the click does."
+	"A click landed on me: a press and a release in the same cell, which Bloc decides. The point
+	the event carries is in my own coordinates, and it decides what the click does."
 
 	self clickAt: anEvent localPosition
 ]
 
-{ #category : 'interaction' }
+{ #category : 'events' }
 LaserGameCellElement >> clickAt: aPoint [
 	"Act on a click at aPoint, in my own coordinates. My board records that I was clicked, my
-	renderer decides whether my cell acts and which region handles it, and the board is told that a
-	move was made when something changed. The original walked the same chain from the morph to the
-	renderer to the click region; it started from a board offset, where this starts from a point
-	Bloc already expressed in the cell."
+	renderer decides whether my cell acts and which region handles it, and the board is told that
+	a move was made when something changed."
 
 	self board ifNotNil: [ :board | board clickCellElement: self ].
 	(self renderer mouseUpAt: aPoint) ifNil: [ ^ self ].
@@ -106,17 +102,15 @@ LaserGameCellElement >> hintElement [
 { #category : 'accessing' }
 LaserGameCellElement >> hintRegion [
 	"Answer the click region the pointer is in, or nil when the pointer is not in me or my cell
-	offers no hint. Section 3.6 draws an arrow from this; for now it is what the original wrote
-	to the Transcript on page 080."
+	offers no hint. The arrow the player sees is drawn from this."
 
 	^ hintRegion
 ]
 
 { #category : 'initialization' }
 LaserGameCellElement >> initialize [
-	"Listen to the mouse myself. In the original the LaserGame morph registered interest in the
-	events of one board morph and then worked out which cell each event belonged to; here every
-	cell is an element of its own, so Bloc delivers the event to the cell it happened in."
+	"Listen to the mouse myself. Every cell is an element of its own, so Bloc delivers an event to
+	the cell it happened in, and no cell has to be worked out from a position on the board."
 
 	super initialize.
 	self addEventHandlerOn: BlMouseEnterEvent do: [ :anEvent | self mouseEnter: anEvent ].
@@ -140,11 +134,10 @@ LaserGameCellElement >> mouseLeave: anEvent [
 	self clearPositionHint
 ]
 
-{ #category : 'event handling' }
+{ #category : 'events' }
 LaserGameCellElement >> mouseMove: anEvent [
 	"The pointer moved inside me, so I am the cell it is over, and the point it carries decides
-	which hint I show. The original reached the same two facts from a hand position, a board
-	offset and a division by the cell size."
+	which hint I show."
 
 	self board ifNotNil: [ :board | board hoverCellElement: self ].
 	self showPositionHintAt: anEvent localPosition
@@ -154,12 +147,11 @@ LaserGameCellElement >> mouseMove: anEvent [
 LaserGameCellElement >> redraw [
 	"Draw my cell again after the model changed. The cell standing at my location may be another
 	one than before, since a push swaps two cells, so the renderer is chosen again — and so is
-	the hint, at the point the pointer was last seen at, because page 126 of the original is the
-	tale of a view that went on believing in the cell that had moved away. A blank cell offers no
-	push, so the arrow of the mirror that left goes with it, and the cross hair with the arrow.
-	The beam is drawn here too, since firing the laser changes no cell but lights many of them,
-	and it is drawn under the contents, as page 162 asks.
-	The original repainted a rectangle of the board form and called it redrawCell."
+	the hint, at the point the pointer was last seen at, because an arrow kept across a redraw
+	is the arrow of the cell that has moved away. A blank cell offers no push, so the arrow of
+	the mirror that left goes with it, and the cross hair with the arrow. The beam is drawn here
+	too, since firing the laser changes no cell but lights many of them, and it is drawn under
+	the contents."
 
 	| grid location point |
 	grid := self renderer grid.
@@ -191,13 +183,13 @@ LaserGameCellElement >> renderer: aCellRenderer [
 	renderer := aCellRenderer
 ]
 
-{ #category : 'hints' }
+{ #category : 'drawing' }
 LaserGameCellElement >> showPositionHintAt: aPoint [
 	"Keep the hint my renderer answers for aPoint, which is in my own coordinates, and show it.
 	My renderer decides: a mirror answers the region the point falls in, every other cell answers
 	nothing. A move within the same region changes nothing about the arrow, so it is built once;
-	the cross hair of page 134 marks the point itself and moves with every event. The point is
-	kept, because a redraw has to ask the question again for the cell that stands in me then."
+	the cross hair marks the point itself and moves with every event. The point is kept, because
+	a redraw has to ask the question again for the cell that stands in me then."
 
 	| region |
 	hintPosition := aPoint.
@@ -207,15 +199,13 @@ LaserGameCellElement >> showPositionHintAt: aPoint [
 	self updateHintElement
 ]
 
-{ #category : 'hints' }
+{ #category : 'drawing' }
 LaserGameCellElement >> updateCrossHairElement [
 	"Mark the point the pointer is at, whenever I show a hint, and mark no point when I show
-	none. Page 134 wants that mark because the pointer hides the arrow it asks for: the original
-	replaces the cursor picture with a cross hair while the pointer is over a hint, and puts the
-	default back when it is not. The port cannot replace the cursor picture, since every cursor
-	in the image is a Form and no class here may depend on one, so the cross hair is drawn in the
-	cell instead, centred on the point a click would use. It is built when the hint is and then
-	only moved, since the pointer sends an event for every pixel it crosses."
+	none. The mark is there because the pointer itself hides the arrow under it: the game does
+	not replace the pointer picture, so the cross hair is drawn in the cell instead, centred on
+	the point a click would use. It is built when the hint is and then only moved, since the
+	pointer sends an event for every pixel it crosses."
 
 	hintElement ifNil: [
 		crossHairElement ifNotNil: [ :each |
@@ -230,16 +220,14 @@ LaserGameCellElement >> updateCrossHairElement [
 		hintPosition - (CellRenderer crossHairExtent // 2)
 ]
 
-{ #category : 'hints' }
+{ #category : 'drawing' }
 LaserGameCellElement >> updateHintElement [
 	"Show the picture of the hint I hold, and no other, in the colour of what a click there would
-	do. The original drew its arrow straight onto the board form, which is why page 093 warns
-	that old arrows have to be cleaned off; here the arrow is a child of mine, so the previous
-	one goes when it is removed. The colour comes from page 130: my renderer answers green when
-	the move is allowed and red when it is refused. A region without a picture, such as the
-	ignore margin, answers nothing and leaves me with no hint at all. The cross hair of page 134
-	is shown exactly when the arrow is, and is dropped here so that it is added after the arrow
-	and stays the child on top of it."
+	do. The arrow is a child of mine, so the previous one goes when it is removed and no arrow is
+	ever left behind. The colour comes from my renderer: green when the move is allowed, red when
+	it is refused. A region without a picture, such as the ignore margin, answers nothing and
+	leaves me with no hint at all. The cross hair is shown exactly when the arrow is, and is
+	dropped here so that it is added after the arrow and stays the child on top of it."
 
 	hintElement ifNotNil: [ :each | self removeChild: each ].
 	hintElement := hintRegion ifNotNil: [ :region |

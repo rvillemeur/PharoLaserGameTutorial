@@ -8,7 +8,7 @@ Class {
 { #category : 'helpers' }
 LaserGameLedElementTestCase >> litSegmentsOf: aLed at: anIndex [
 	"Answer the names of the segments the digit at anIndex of aLed lights, sorted, so that a test
-	can compare them against the list of a page without caring about the order."
+	can compare them against a list of names without caring about the order."
 
 	| digit |
 	digit := aLed digitElements at: anIndex.
@@ -100,10 +100,9 @@ LaserGameLedElementTestCase >> testEveryDigitHoldsOneRectanglePerSegment [
 
 { #category : 'tests' }
 LaserGameLedElementTestCase >> testHighlightingBrightensTheLitSegments [
-	"Page 142 highlights the counter while the laser fires. Highlighting changes the color of the
-	segments that are lit and leaves the others alone. The two colors are the ones the screenshot
-	of page 148 shows: the counter of the beam is almost white while the laser fires, and the move
-	counter beside it stays the lavender of the LED."
+	"The counter is highlighted while the laser fires. Highlighting changes the colour of the
+	segments that are lit and leaves the others alone: the counter of the beam is almost white
+	while the laser fires, and the move counter beside it stays the lavender of a dim segment."
 
 	| led digit lit unlit |
 	led := LaserGameLedElement digits: 1.
@@ -148,10 +147,9 @@ LaserGameLedElementTestCase >> testTheDigitsFitInsideTheDisplay [
 
 { #category : 'tests' }
 LaserGameLedElementTestCase >> testUnlitSegmentsVanishIntoTheBody [
-	"The original's display is a dark slab, and a segment that is not lit is the color of that
-	slab, so only the lit ones are seen. The port paints the same two colors, which means the
-	display has to carry the slab as its own background: on the ramp of page 140 an unlit segment
-	would otherwise read as a lit one."
+	"A display is a dark slab, and a segment that is not lit is the colour of that slab, so only
+	the lit ones are seen. The display has to carry the slab as its own background: on the ramp
+	behind the window an unlit segment would otherwise read as a lit one."
 
 	| led unlit |
 	led := LaserGameLedElement digits: 1.

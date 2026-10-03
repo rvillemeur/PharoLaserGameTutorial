@@ -160,9 +160,8 @@ TargetCellRendererTestCase >> testTargetHasCrossHairsARingAndACenter [
 
 { #category : 'tests' }
 TargetCellRendererTestCase >> testTheBeamReachesTheTargetFromTheSideItTravelsBy [
-	"Page 163 tests the other ways in by dragging another cell onto the target from an inspector;
-	here the grid is asked to hold a target where the beam runs upwards, and the beam covers the
-	south half of the cell it now ends in."
+	"The beam can reach the target from any side, so the grid is asked to hold a target where the
+	beam runs upwards, and the beam covers the south half of the cell it now ends in."
 
 	| grid element beam half |
 	grid := GridFactory demoGrid.
@@ -181,9 +180,9 @@ TargetCellRendererTestCase >> testTheBeamReachesTheTargetFromTheSideItTravelsBy 
 
 { #category : 'tests' }
 TargetCellRendererTestCase >> testTheBeamStopsInTheMiddleOfTheTargetItReaches [
-	"Page 160 draws the beam on the target the light arrives at, and stops it in the middle of the
-	cell, since the target swallows the light. The demo grid sends the beam into the target at 5@1
-	from the west, so the beam covers the west half of the cell."
+	"The target swallows the light, so the beam stops in the middle of the cell. The demo grid
+	sends the beam into the target at 5@1 from the west, so the beam covers the west half of the
+	cell."
 
 	| grid element beam half |
 	grid := GridFactory demoGrid.
@@ -201,9 +200,8 @@ TargetCellRendererTestCase >> testTheBeamStopsInTheMiddleOfTheTargetItReaches [
 
 { #category : 'tests' }
 TargetCellRendererTestCase >> testTheTargetIsDrawnOverTheBeam [
-	"Page 162 draws the beam and then the ring, the crosshairs and the disc again over it, so that
-	the light does not hide the target it hits. Here the beam is simply the first child and the
-	four pieces of the target come after it."
+	"The beam is drawn first and the target over it, so that the light does not hide what it hits:
+	the beam is the first child, and the four pieces of the target come after it."
 
 	| grid element children |
 	grid := GridFactory demoGrid.

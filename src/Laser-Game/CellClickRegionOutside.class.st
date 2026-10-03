@@ -31,7 +31,7 @@ CellClickRegionOutside class >> containsPoint: aPoint [
 CellClickRegionOutside class >> hintRegionForPoint: aPoint [
 	"Answer the rotate region aPoint falls in. A click here turns a mirror, and which way it turns
 	is what the hint has to show, so the outside region refines its answer just as the inside one
-	does. Page 105 of the original."
+	does."
 
 	^ self rotateRegionForPoint: aPoint
 ]

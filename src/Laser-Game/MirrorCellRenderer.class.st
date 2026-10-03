@@ -13,8 +13,7 @@ Class {
 
 { #category : 'constants' }
 MirrorCellRenderer class >> mirrorWidth [
-	"Answer the thickness, in pixels, of the mirror. The original drew its diagonal with a two
-	pixel pen, and this is that pen."
+	"Answer the thickness, in pixels, of the mirror: a two pixel stroke."
 
 	^ 2
 ]
@@ -43,15 +42,17 @@ MirrorCellRenderer >> addMirrorFrom: aPoint to: anotherPoint on: anElement [
 
 { #category : 'drawing' }
 MirrorCellRenderer >> cornerInset [
+	"Answer how far, in pixels, the ends of the mirror stay clear of the corners of the cell."
+
 	^8@8
 ]
 
 { #category : 'interaction' }
 MirrorCellRenderer >> hintColorAt: aPoint [
-	"Answer the colour of the hint arrow at aPoint, in the coordinates of my cell: page 130 wants
-	the arrow to say whether the move it offers could actually be made. The region the point
-	falls in knows — the outside region always allows a turn, and the inside region asks the
-	push region whether the cell beside mine would let my cell through."
+	"Answer the colour of the hint arrow at aPoint, in the coordinates of my cell. The arrow says
+	whether the move it offers could actually be made. The region the point falls in knows — the
+	outside region always allows a turn, and the inside region asks the push region whether the
+	cell beside mine would let my cell through."
 
 	^ ((CellClickRegion clickRegionForPoint: aPoint)
 		   canActOnCellAtPoint: aPoint
@@ -66,8 +67,8 @@ MirrorCellRenderer >> hintRegionAt: aPoint [
 	"Answer the region whose hint applies at aPoint: a mirror reacts to a click, and which of its
 	actions is meant depends on where in the cell the pointer is. The region that contains the
 	point has the last word, so a point near the middle answers one of the four push regions.
-	The original had to subtract the offset of my cell within the board form before it could ask
-	this."
+	The point is already in the coordinates of my cell, since the click is delivered to the
+	element of the cell it landed on."
 
 	^ (CellClickRegion clickRegionForPoint: aPoint) hintRegionForPoint: aPoint
 ]
@@ -77,9 +78,8 @@ MirrorCellRenderer >> mouseUpAt: aPoint [
 	"Act on a click at aPoint, in the coordinates of my cell, and answer the cell it acted on, or
 	nil when the region aPoint falls in can do nothing. The region decides both questions: the
 	outside region turns my mirror one way or the other, the inside region pushes it when there
-	is room, and the ignore margin does nothing. Page 114 of the original passes the cell and the
-	grid down to the region for exactly this reason: a region knows what a click means, and
-	nothing else does."
+	is room, and the ignore margin does nothing. The cell and the grid are passed down to the
+	region, because a region knows what a click means and nothing else does."
 
 	| region |
 	region := CellClickRegion clickRegionForPoint: aPoint.

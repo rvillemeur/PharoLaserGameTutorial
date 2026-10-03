@@ -1,7 +1,7 @@
 "
 I am a `Cell` with a mirror on one of its diagonals. `leansLeft` says which one. When I lean left the mirror runs from my top left corner to my bottom right one, and a beam entering from the north leaves by the east. When I lean right it runs from my top right corner to my bottom left one, and the same beam leaves by the west.
 
-`leanLeft` and `leanRight` set the lean and all four exit sides together, which is why `rotate` uses them instead of flipping `leansLeft` on its own: pages 107 to 110 of the original spend three pages on exactly that bug.
+`leanLeft` and `leanRight` set the lean and all four exit sides together, which is why `rotate` uses them instead of flipping `leansLeft` on its own. A lean changed without its exit sides is a bug that is hard to see: the mirror is drawn on the new diagonal while the beam still leaves by the old side.
 
 `rotateClockwise` and `rotateCounterClockwise` are both `rotate`. A diagonal has only two positions, so either direction lands on the other one.
 "
@@ -89,7 +89,7 @@ MirrorCell >> leansLeft: anObject [
 
 { #category : 'printing' }
 MirrorCell >> printDetailsOn: aStream [
-	"Add the way I lean, which is the fact pages 109 and 110 are about."
+	"Add the way I lean, which is the one fact that tells two mirrors at the same place apart."
 
 	super printDetailsOn: aStream.
 	aStream nextPutAll:
@@ -98,10 +98,10 @@ MirrorCell >> printDetailsOn: aStream [
 
 { #category : 'actions' }
 MirrorCell >> rotate [
-	"Turn me a quarter of a turn, which puts my mirror on the other diagonal. Page 107 of the
-	original writes this as `leansLeft: self isLeft not`, and pages 108 to 110 spend three pages
-	finding out why the laser then leaves me on the side it left before: the lean changed and my
-	exit sides did not. `leanLeft` and `leanRight` set both, so the fix of page 110 is to use them."
+	"Turn me a quarter of a turn, which puts my mirror on the other diagonal. Go through leanLeft
+	and leanRight rather than flipping leansLeft, because the lean and the four exit sides have to
+	change together: a lean changed on its own leaves the beam going out the way it went out
+	before."
 
 	self isLeft
 		ifTrue: [ self leanRight ]
@@ -111,8 +111,8 @@ MirrorCell >> rotate [
 { #category : 'actions' }
 MirrorCell >> rotateClockwise [
 	"Turn me clockwise. A quarter of a turn either way leaves my mirror on the same diagonal, so
-	both directions do the same thing to me; page 107 keeps them apart anyway, in case the turn is
-	ever animated, and lets one method do the work."
+	both directions do the same thing to me. The two stay apart all the same, so that a caller can
+	say which way it means, and one method does the work."
 
 	self rotate
 ]

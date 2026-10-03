@@ -41,13 +41,15 @@ Grid >> activateCellsInPath [
 
 { #category : 'accessing' }
 Grid >> at: aPoint [
-	"TODO sbw 05/21/2007 - We should add a more meaningful accessing technique here.  x@y is confusing."
+	"Answer the cell at aPoint, a column @ row location, or nil when I hold no cell there."
+
 	^self cells at: aPoint ifAbsent: []
 ]
 
 { #category : 'accessing' }
 Grid >> at: aPoint put: aCell [
-	"TODO sbw 05/21/2007 - We should add a more meaningful accessing technique here.  x@y is confusing."
+	"Put aCell at aPoint, a column @ row location, and tell the cell where it now sits."
+
 	aCell gridLocation: aPoint.
 	self cells at: aPoint put: aCell
 ]
@@ -67,6 +69,10 @@ Grid >> calculatePath [
 
 { #category : 'action' }
 Grid >> canPushCell: aGridDirection fromLocation: aPoint [
+	"Answer whether the cell at aPoint could be pushed one step in aGridDirection, without moving
+	anything. The arrow drawn on a mirror asks this before any click, so that a push the rules
+	refuse can be shown as refused. The three questions are the push rules themselves."
+
 	| cell vector swapLoc swapCell |
 	cell := self at: aPoint.
 	cell class = MirrorCell ifFalse: [^false].
@@ -81,6 +87,8 @@ Grid >> canPushCell: aGridDirection fromLocation: aPoint [
 
 { #category : 'action' }
 Grid >> canPushCellEastFromLocation: aPoint [
+	"Answer whether the cell at aPoint could be pushed one column to the right."
+
 	| direction |
 	direction := GridDirection directionFor: #east.
 	^self canPushCell: direction fromLocation: aPoint.
@@ -88,6 +96,8 @@ Grid >> canPushCellEastFromLocation: aPoint [
 
 { #category : 'action' }
 Grid >> canPushCellNorthFromLocation: aPoint [
+	"Answer whether the cell at aPoint could be pushed one row up."
+
 	| direction |
 	direction := GridDirection directionFor: #north.
 	^self canPushCell: direction fromLocation: aPoint.
@@ -95,6 +105,8 @@ Grid >> canPushCellNorthFromLocation: aPoint [
 
 { #category : 'action' }
 Grid >> canPushCellSouthFromLocation: aPoint [
+	"Answer whether the cell at aPoint could be pushed one row down."
+
 	| direction |
 	direction := GridDirection directionFor: #south.
 	^self canPushCell: direction fromLocation: aPoint.
@@ -103,6 +115,8 @@ Grid >> canPushCellSouthFromLocation: aPoint [
 
 { #category : 'action' }
 Grid >> canPushCellWestFromLocation: aPoint [
+	"Answer whether the cell at aPoint could be pushed one column to the left."
+
 	| direction |
 	direction := GridDirection directionFor: #west.
 	^self canPushCell: direction fromLocation: aPoint.
@@ -157,8 +171,8 @@ Grid >> initializeCells [
 
 { #category : 'inspecting' }
 Grid >> inspectionBeam: aBuilder [
-	"Show the path the laser takes, one row per step, which is the collection pages 108 and 109
-	step through in a debugger."
+	"Show the path the laser takes, one row per step, which is the collection to read when the beam
+	goes somewhere unexpected."
 
 	<inspectorPresentationOrder: 2 title: 'Beam'>
 	^ aBuilder newTable
@@ -173,9 +187,8 @@ Grid >> inspectionBeam: aBuilder [
 
 { #category : 'inspecting' }
 Grid >> inspectionBoard: aBuilder [
-	"Show me as the board the player sees. Page 108 of the original opens a browser beside its
-	debugger to make a cell say more about itself; a grid can do better than say anything, since
-	Section 2 gave it an element that draws it."
+	"Show me as the board the player sees, drawn by the same element the game uses. A picture of
+	the board is the quickest way to tell a model fault from a drawing fault."
 
 	<inspectorPresentationOrder: 1 title: 'Board'>
 	^ aBuilder newMorph
@@ -186,9 +199,8 @@ Grid >> inspectionBoard: aBuilder [
 { #category : 'inspecting' }
 Grid >> inspectionCells: aBuilder [
 	"Show one row per cell of me, in the order the board lays them out, with what the cell is and
-	whether it is lit. Page 118 of the original reaches the same list through the halos of the
-	morph, an object explorer and two clicks on the arrow beside `cells` — and reads in it that
-	the target is on while nothing lights it."
+	whether it is lit. Read it to catch a cell whose state disagrees with the beam: a target that
+	says it is on while nothing reaches it shows up here at once."
 
 	<inspectorPresentationOrder: 3 title: 'Cells'>
 	| everyCell |
@@ -237,17 +249,25 @@ Grid >> laserIsActive: anObject [
 
 { #category : 'accessing' }
 Grid >> movesStack [
+	"Answer the stack of moves made on me, oldest first, built on first use. Each entry is an
+	association of the symbol of a move and the location the move has to be undone from."
+
 	movesStack isNil ifTrue: [self movesStack: OrderedCollection new].
 	^movesStack
 ]
 
 { #category : 'accessing' }
 Grid >> movesStack: aCollection [
+	"Set the stack of moves made on me."
+
 	movesStack := aCollection
 ]
 
 { #category : 'accessing' }
 Grid >> numberOfActiveMirrors [
+	"Answer how many of my mirror cells the beam lights. A mirror is lit once the beam has crossed
+	it, so this is zero until the laser fires."
+
 	^(self cells select: [:each | (each class = MirrorCell) and: [each isOn]]) size
 ]
 
@@ -266,6 +286,8 @@ Grid >> numberOfColumns: anObject [
 
 { #category : 'accessing' }
 Grid >> numberOfMirrors [
+	"Answer how many mirror cells stand on my board, lit or not."
+
 	^(self cells select: [:each | each class = MirrorCell]) size
 ]
 
@@ -285,13 +307,11 @@ Grid >> numberOfRows: anObject [
 { #category : 'action' }
 Grid >> pushCell: aGridDirection fromLocation: aPoint [
 	"Push the cell at aPoint one step in aGridDirection and answer the cell that ended up where
-	it started. Page 122: only a mirror cell moves, the target never does, and the move happens
-	only when the neighbour in that direction is a blank cell, which includes there being a
-	neighbour at all. Nothing is really pushed — the mirror and the blank trade places. The beam
-	is taken off the board first and put back afterwards if the laser is on, as in
-	rotateCellClockwiseAt:, so the cells lit before the push go dark and the new path lights up.
-	Page 127 is where the original adds those two lines, after a push under a running beam left
-	the target lit by nothing."
+	it started. Only a mirror cell moves, the target never does, and the move happens only when
+	the neighbour in that direction is a blank cell, which includes there being a neighbour at
+	all. Nothing is really pushed — the mirror and the blank trade places. The beam is taken off
+	the board first and put back afterwards if the laser is on, as in rotateCellClockwiseAt:, so
+	the cells lit before the push go dark and the new path lights up."
 
 	| cell vector swapLoc swapCell |
 	cell := self at: aPoint.
@@ -309,10 +329,10 @@ Grid >> pushCell: aGridDirection fromLocation: aPoint [
 
 { #category : 'action' }
 Grid >> pushCellAction: aDirectionSymbol fromLocation: aPoint [
-	"Push the cell at aPoint towards aDirectionSymbol and record the move for the undo of
-	Section 5. Page 124 turns the four direction methods into one by looking the direction up
-	from its symbol; the undo entry is the port's own addition, and it is written only when the
-	cell really moved, which is what the comparison of the two locations asks."
+	"Push the cell at aPoint towards aDirectionSymbol and record the move so that it can be
+	undone and counted. The four direction methods become one by looking the direction up from
+	its symbol; the move is written only when the cell really moved, which is what the
+	comparison of the two locations asks."
 
 	| direction cell swappedCell |
 	cell := self at: aPoint.
@@ -332,8 +352,8 @@ Grid >> pushCellEastFromLocation: aPoint [
 
 { #category : 'action' }
 Grid >> pushCellNorthFromLocation: aPoint [
-	"Push the cell at aPoint one row up. Page 122 asks for one method per direction, page 124
-	leaves them with nothing to say but their direction."
+	"Push the cell at aPoint one row up. One method per direction, each with nothing to say but
+	its direction."
 
 	^ self pushCellAction: #north fromLocation: aPoint
 ]
@@ -354,6 +374,10 @@ Grid >> pushCellWestFromLocation: aPoint [
 
 { #category : 'action' }
 Grid >> reset [
+	"Take every move back, in the reverse of the order they were made in, so that the board is
+	as it was dealt. #undo answers whether it undid anything, so the loop has its work in its
+	condition and ends when the stack of moves is empty."
+
 	[self undo] whileTrue: []
 ]
 
@@ -361,7 +385,7 @@ Grid >> reset [
 Grid >> rotateCellClockwiseAt: aPoint [
 	"Turn the cell at aPoint clockwise. The beam is taken off the board first and put back
 	afterwards if the laser is on, so the cells it lit before the turn go dark and the cells on the
-	new path light up. The turn is recorded for the undo of Section 5."
+	new path light up. The turn is recorded, so that it can be undone and counted."
 
 	| cell |
 	cell := self at: aPoint.
@@ -374,7 +398,7 @@ Grid >> rotateCellClockwiseAt: aPoint [
 { #category : 'actions' }
 Grid >> rotateCellCounterClockwiseAt: aPoint [
 	"Turn the cell at aPoint counter clockwise. See `rotateCellClockwiseAt:`; only the action
-	recorded for the undo differs."
+	recorded differs."
 
 	| cell |
 	cell := self at: aPoint.
@@ -386,11 +410,18 @@ Grid >> rotateCellCounterClockwiseAt: aPoint [
 
 { #category : 'action' }
 Grid >> stackAction: aSymbol forCell: aCell [
+	"Record that aSymbol was done to aCell, so that the move can be taken back and counted. An
+	entry holds the symbol of the move and where the cell is now: a pushed cell has already
+	moved, and the push that undoes it starts from where it landed."
+
 	self movesStack add: aSymbol->(aCell gridLocation)
 ]
 
 { #category : 'accessing' }
 Grid >> startingCell [
+	"Answer the cell the laser enters me at: column one of my last row. The beam enters it from
+	the south, so it arrives through the bottom edge of my bottom left corner."
+
 	| pt |
 	pt := 1@(self numberOfRows).
 	^self at: pt
@@ -405,9 +436,9 @@ Grid >> stopLaser [
 
 { #category : 'action' }
 Grid >> swapCell: aCell with: anotherCell [
-	"Trade the places of two cells. Page 122: a pushed mirror is never moved, it changes places
-	with the blank cell beside it. at:put: writes the new location into the cell, so both cells
-	know where they are afterwards, and the copies are taken before the first write because that
+	"Trade the places of two cells. A pushed mirror is never moved, it changes places with the
+	blank cell beside it. at:put: writes the new location into the cell, so both cells know
+	where they are afterwards, and the copies are taken before the first write because that
 	write already changes one of the two locations."
 
 	| oldLocation newLocation |
@@ -419,6 +450,11 @@ Grid >> swapCell: aCell with: anotherCell [
 
 { #category : 'action' }
 Grid >> undo [
+	"Take the youngest move off my stack, play the move that reverses it, and answer true. Answer
+	false and do nothing when there is no move left to take back. Playing the reverse goes through
+	the methods that record moves, so it records one of its own, and the second #removeLast takes
+	that entry off again."
+
 	| actionAssociation symbol location reverseAction arguments |
 	self movesStack isEmpty ifTrue: [^false].
 	actionAssociation := self movesStack removeLast.

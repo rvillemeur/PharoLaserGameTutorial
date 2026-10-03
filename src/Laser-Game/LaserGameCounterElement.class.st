@@ -28,15 +28,14 @@ Class {
 
 { #category : 'constants' }
 LaserGameCounterElement class >> borderWidth [
-	"Answer the width, in pixels, of my frame. Page 141's number."
+	"Answer the width, in pixels, of my frame."
 
 	^ 2
 ]
 
 { #category : 'constants' }
 LaserGameCounterElement class >> cornerRadius [
-	"Answer the radius, in pixels, of my rounded corners. Page 141 asks for rounded corners and
-	lets the image choose the radius; this states it."
+	"Answer the radius, in pixels, of my rounded corners."
 
 	^ 6
 ]
@@ -44,14 +43,14 @@ LaserGameCounterElement class >> cornerRadius [
 { #category : 'constants' }
 LaserGameCounterElement class >> inset [
 	"Answer the space, in pixels, between my frame and what I hold, and between the display and
-	the label. Page 141's layout inset."
+	the label."
 
 	^ 5
 ]
 
 { #category : 'constants' }
 LaserGameCounterElement class >> labelFontSize [
-	"Answer the size, in points, of my caption. Page 141 takes the default of a StringMorph."
+	"Answer the size, in points, of my caption."
 
 	^ 10
 ]

@@ -1,15 +1,15 @@
 "
 I build the grids the game is played on.
 
-`demoGrid` is the hand-made board of Section 1, the one the tests and the examples of the earlier sections use. `defaultGrid` is the board of page 148: eight columns by ten rows, dealt. `randomizedGridOfExtent:` deals a board of any size, which is page 147's way of making the game bigger.
+`demoGrid` is the hand-made board the tests and the examples use. `defaultGrid` is the board the game opens on: eight columns by ten rows, dealt. `randomizedGridOfExtent:` deals a board of any size.
 
-`randomizeGrid:` is the random game generator of page 145, and `randomizeGrid:targetAt:` the generalized one of page 147: it puts a target in the corner it is given and deals mirrors onto locations it has not used yet, one for every two and a half cells of the board. It writes onto the grid it is given and clears nothing, which is why `LaserGameElement >> newGame` empties the grid first.
+`randomizeGrid:` deals a board with its target in the top right corner, and `randomizeGrid:targetAt:` puts the target in the corner it is given. Either way it deals mirrors onto locations it has not used yet, one for every two and a half cells of the board. It writes onto the grid it is given and clears nothing, which is why `LaserGameElement >> newGame` empties the grid first.
 
 ```
 GridFactory randomizedGridOfExtent: 8@10
 ```
 
-`randomNumberGenerator` holds one seeded `Random` for the whole class, seeded from the clock the first time it is asked for, and `reSeed` puts it back on the clock. A test that wants the same board twice seeds it itself. The original calls `#nextInt:`, which is the Squeak name of Pharo's `#nextInteger:`; that is the only change these methods needed.
+`randomNumberGenerator` holds one seeded `Random` for the whole class, seeded from the clock the first time it is asked for, and `reSeed` puts it back on the clock. A test that wants the same board twice seeds it itself.
 "
 Class {
 	#name : 'GridFactory',
@@ -24,11 +24,16 @@ Class {
 
 { #category : 'instance creation' }
 GridFactory class >> defaultGrid [
+	"Answer the board a new game is dealt on: eight columns by ten rows, randomized."
+
 	^self randomizedGridOfExtent: 8@10
 ]
 
 { #category : 'instance creation' }
 GridFactory class >> demoGrid [
+	"Answer a five by five grid holding ten mirrors and one target, always the same ones. The
+	tests use it whenever a board with something on it is needed, and so do the examples."
+
 	| grid |
 	grid := Grid newOfSize: 5@5.
 	grid at: 4@1 put: MirrorCell leanRight.
@@ -47,6 +52,8 @@ GridFactory class >> demoGrid [
 
 { #category : 'randomizing' }
 GridFactory class >> emptyRandomLocationsFor: aGrid [
+	"Answer a flag per location of aGrid, true where a cell has been taken. Every location starts
+	free but the corner the target stands in."
 	| dict |
 	dict := Dictionary new.
 	1 to: aGrid numberOfColumns do: [:x |
@@ -65,8 +72,7 @@ GridFactory class >> emptyStandardGrid [
 
 { #category : 'randomizing' }
 GridFactory class >> randomBoolean [
-	"Answer true or false, each as likely as the other. Squeak's Random answers #nextInt:, which
-	Pharo calls #nextInteger:; both answer one of 1 to the number asked for."
+	"Answer true or false, each as likely as the other."
 
 	| int |
 	int := self randomNumberGenerator nextInteger: 2.
@@ -75,6 +81,8 @@ GridFactory class >> randomBoolean [
 
 { #category : 'randomizing' }
 GridFactory class >> randomNumberGenerator [
+	"Answer the one generator the class deals from, seeded from the clock the first time it is
+	asked for."
 	RandomNumberGenerator isNil ifTrue: [
 		RandomNumberGenerator := Random new.
 		RandomNumberGenerator seed: Time totalSeconds].
@@ -83,11 +91,16 @@ GridFactory class >> randomNumberGenerator [
 
 { #category : 'randomizing' }
 GridFactory class >> randomizeGrid: aGrid [
+	"Deal mirrors and a target onto aGrid, with the target in the top right corner of whatever
+	board it is."
 	self randomizeGrid: aGrid targetAt: (aGrid numberOfColumns@1)
 ]
 
 { #category : 'randomizing' }
 GridFactory class >> randomizeGrid: aGrid targetAt: pt [
+	"Deal a target at pt and mirrors onto aGrid: one mirror per two and a half cells, each on a
+	location no other mirror took and none of them on the target. The cells of aGrid are not
+	cleared, so a board that is being dealt again is emptied first."
 	| emptyList loc howMany |
 	emptyList := self emptyRandomLocationsFor: aGrid.
 	aGrid at: pt put: TargetCell new.
@@ -99,6 +112,8 @@ GridFactory class >> randomizeGrid: aGrid targetAt: pt [
 
 { #category : 'instance creation' }
 GridFactory class >> randomizedGridOfExtent: ext [
+	"Answer a board of ext columns by ext rows, dealt ready to play: the target in the top right
+	corner of that board, and the mirrors of that size."
 	| grid |
 	grid := Grid newOfSize: ext.
 	self randomizeGrid: grid targetAt: ((ext x)@1).
@@ -114,14 +129,14 @@ GridFactory class >> randomizedMirrorCell [
 
 { #category : 'randomizing' }
 GridFactory class >> reSeed [
+	"Seed the generator from the clock again, so the next board dealt differs from this one."
 	self randomNumberGenerator seed: Time totalSeconds
 ]
 
 { #category : 'randomizing' }
 GridFactory class >> unusedRandomLocationIn: list forGrid: aGrid [
-	"Answer a location of aGrid that list does not hold yet, and mark it used. Squeak's #nextInt:
-	is Pharo's #nextInteger:; both answer one of 1 to the number asked for, which is a column or a
-	row of the grid."
+	"Answer a location of aGrid that list does not hold yet, and mark it used. nextInteger: answers
+	one of 1 to the number asked for, so the location is always on the board."
 
 	| x y pt |
 	[

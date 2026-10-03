@@ -25,7 +25,7 @@ CellClickRegionInside class >> canActOnCellAtPoint: aPoint cell: aCell withinGri
 { #category : 'classifying' }
 CellClickRegionInside class >> containsPoint: aPoint [
 	"Answer whether aPoint falls in me. Each of my four push subclasses answers one line of the
-	truth table of page 088, written against the two diagonals I hold."
+	truth table of the two diagonals I hold, so none of them has a conditional in it."
 
 	^ self subclassResponsibility
 ]
@@ -85,9 +85,9 @@ CellClickRegionInside class >> sortIndex [
 
 { #category : 'classifying' }
 CellClickRegionInside class >> yForHeadingDownLineWith: x [
-	"Answer the y of the diagonal running from the top right corner of the cell to the bottom
-	left one, at abscissa x. Page 138 of the original writes it against the cell, not against the
-	push region, so the diagonal passes through the corners at any cell size."
+	"Answer the y of the diagonal running from the top right corner of the cell to the bottom left
+	one, at abscissa x. It is written against the cell rather than against the push region, so the
+	diagonal passes through the corners at any cell size."
 
 	^CellRenderer cellExtent x - x
 ]

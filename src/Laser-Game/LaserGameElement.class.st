@@ -1,7 +1,7 @@
 "
 I am the whole game on the screen: a control panel on the left, a board on the right, and a margin around both. Under the board stands a bar the width of one cell, marking the square the laser comes in through.
 
-I replace the 2007 `LaserGame` morph of pages 065 to 067, which held a `SketchMorph` over a board form and a white rectangle for the panel. I hold a `LaserGameBoardElement` and a `LaserGameControlPanelElement` instead, and I take my size from them, the panel width and the margin, the way the original's `calculatedExtent` did. Page 139 puts the panel on the left, and page 140 fills me with the colour ramp of `LaserGameColors windowColorRamp`.
+I hold a `LaserGameBoardElement` and a `LaserGameControlPanelElement`, and I take my size from them, the panel width and the margin. The colour behind them all is the ramp of `LaserGameColors windowColorRamp`.
 
 ```
 LaserGameElement openExample
@@ -9,9 +9,9 @@ LaserGameElement openStandardExample
 LaserGameElement openRandomOfExtent: 12@12
 ```
 
-From page 143 I also count the moves the player makes, and from page 146 I can start a new game on a randomized grid. Page 144 asks before quitting, which the original does with `#confirm:`; I lay a `LaserGameConfirmElement` over myself instead, since a Bloc element cannot wait for an answer.
+I also count the moves the player makes, and I can start a new game on a randomized grid. I ask before quitting: a `LaserGameConfirmElement` is laid over me, since a Bloc element cannot stop and wait for an answer.
 
-I play on the grid I am given, of any size: page 147 splits the original's `#initialize` into `#initializeForGrid:` for that, and `#on:` is the same split. The board is one element per location, the panel keeps its width and takes the height of the board, and my own size follows both, so nothing but the grid decides how big the game is.
+I play on the grid I am given, of any size. The board is one element per location, the panel keeps its width and takes the height of the board, and my own size follows both, so nothing but the grid decides how big the game is.
 
 Instance variables:
 - `grid`: the grid played on. Setting it rebuilds what I hold.
@@ -21,7 +21,7 @@ Instance variables:
 - `confirmation`: the question laid over me, nil while none is asked.
 - `laserHome`: the bar under the board marking where the laser enters it.
 
-I know nothing about the rules. The grid answers those, and the model-side `LaserGame` of the later sections will own the moves, the counters and the undo stack.
+I know nothing about the rules. The grid answers those.
 "
 Class {
 	#name : 'LaserGameElement',
@@ -42,10 +42,8 @@ Class {
 { #category : 'accessing' }
 LaserGameElement class >> extentForGrid: aGrid [
 	"Answer the extent a game showing aGrid occupies: the board, the control panel beside it, and
-	one margin on each side. This is the original's calculatedExtent, with the board element
-	standing in for the board form. The height is the taller of the board and the panel, since a
-	board of few rows is shorter than everything the panel holds; the original has no such case
-	and takes the board height alone."
+	one margin on each side. The height is the taller of the board and the panel, since a board of
+	few rows is shorter than everything the panel holds."
 
 	^ (LaserGameBoardElement extentForGrid: aGrid) x + self panelWidth
 	  @ (LaserGameControlPanelElement heightForGrid: aGrid)
@@ -54,8 +52,7 @@ LaserGameElement class >> extentForGrid: aGrid [
 
 { #category : 'accessing' }
 LaserGameElement class >> gameMargin [
-	"Answer the margin, in pixels, between the edge of the game and what it holds. The original's
-	number."
+	"Answer the margin, in pixels, between the edge of the game and what it holds."
 
 	^ 10
 ]
@@ -63,9 +60,7 @@ LaserGameElement class >> gameMargin [
 { #category : 'constants' }
 LaserGameElement class >> laserHomeExtent [
 	"Answer the size, in pixels, of the bar marking where the laser enters the board: one cell
-	wide and one margin tall. Page 189's Form has the same two numbers, less a pixel on the left
-	and two on the right, which keep it clear of the outline the original draws around its board;
-	nothing is drawn around this one."
+	wide and one margin tall."
 
 	^ CellRenderer cellExtent x @ self gameMargin
 ]
@@ -82,17 +77,15 @@ LaserGameElement class >> on: aGrid [
 
 { #category : 'instance creation' }
 LaserGameElement class >> onRandomOfExtent: aPoint [
-	"Answer a game on a freshly dealt board of aPoint columns by aPoint rows. This is page 147's
-	LaserGame class >> randomizedGridOfExtent:, which builds the model with #basicNew and hands it
-	the grid through #initializeForGrid:. A game here takes its grid from outside already, so #on:
-	is that method, and this one only deals the board."
+	"Answer a game on a freshly dealt board of aPoint columns by aPoint rows. Dealing the board is
+	all this does; #on: is what builds a game around a grid."
 
 	^ self on: (GridFactory randomizedGridOfExtent: aPoint)
 ]
 
 { #category : 'examples' }
 LaserGameElement class >> openExample [
-	"Open the demo grid of the tests, as the original opens its morph on the grid of the factory.
+	"Open the demo grid of the tests: the five by five board with ten mirrors and one target.
 
 	LaserGameElement openExample"
 
@@ -104,7 +97,7 @@ LaserGameElement class >> openExample [
 LaserGameElement class >> openOn: aGrid [
 	"Open a space showing a game on aGrid and answer it. The space starts at the size the game is
 	drawn at, and the game follows it from there: a window the player resizes scales the game to
-	match, which the original, a Morph of a fixed size, does not do.
+	match.
 
 	LaserGameElement openOn: GridFactory demoGrid"
 
@@ -125,8 +118,6 @@ LaserGameElement class >> openOn: aGrid [
 { #category : 'instance creation' }
 LaserGameElement class >> openRandomOfExtent: aPoint [
 	"Open a game on a freshly dealt board of aPoint columns by aPoint rows and answer the space.
-	Page 148 changes its workspace to this, so that the game opens on a board of the size asked
-	for instead of the demo board.
 
 	LaserGameElement openRandomOfExtent: 8@10"
 
@@ -135,8 +126,8 @@ LaserGameElement class >> openRandomOfExtent: aPoint [
 
 { #category : 'examples' }
 LaserGameElement class >> openStandardExample [
-	"Open the standard board of page 148: eight columns by ten rows, dealt. The demo board of
-	#openExample is the five by five one the earlier sections play on.
+	"Open the standard board: eight columns by ten rows, dealt. The demo board of #openExample is
+	the five by five one the earlier chapters play on.
 
 	LaserGameElement openStandardExample"
 
@@ -146,11 +137,9 @@ LaserGameElement class >> openStandardExample [
 
 { #category : 'constants' }
 LaserGameElement class >> panelWidth [
-	"Answer the width, in pixels, of the control panel beside the board. The original's number is
-	a hundred and ten, which is exactly two of its forty pixel buttons and the three gaps a row
-	of two stands in; the identity is what makes a row of two fill the panel and a row of three
-	not fit. The buttons are wider here, so that their labels fit inside them, and the panel is
-	stated from them rather than beside them."
+	"Answer the width, in pixels, of the control panel beside the board: exactly two buttons and
+	the three gaps a row of two stands in. That identity is what makes a row of two fill the panel
+	and a row of three not fit, so the panel is stated from the buttons rather than beside them."
 
 	^ (2 * LaserGameControlPanelElement buttonWidth)
 	  + (3 * LaserGameControlPanelElement buttonGap)
@@ -158,10 +147,9 @@ LaserGameElement class >> panelWidth [
 
 { #category : 'accessing' }
 LaserGameElement class >> windowBackgroundPaint [
-	"Answer the paint behind the whole game: page 140's ramp, running in the direction that page
-	orients its fill in. The original sets a flat window color and then fills the morph with the
-	ramp on top of it; an element takes one paint, so only the ramp is left, and the flat color
-	stays as LaserGameColors gameWindowColor for whatever needs a single color."
+	"Answer the paint behind the whole game: the window ramp, running in the direction
+	`LaserGameColors windowColorRampDirection` gives. An element takes one paint, so the ramp is
+	the whole of it; `LaserGameColors gameWindowColor` stays for whatever needs a single color."
 
 	^ BlLinearGradientPaint new
 		  stops: LaserGameColors windowColorRamp;
@@ -196,7 +184,7 @@ LaserGameElement >> board [
 
 { #category : 'actions' }
 LaserGameElement >> close [
-	"Close the game. The original sends #delete to its morph."
+	"Close the game, by closing the space it is shown in."
 
 	self space ifNotNil: [ :aSpace | aSpace close ]
 ]
@@ -226,10 +214,9 @@ LaserGameElement >> dismissQuestion [
 
 { #category : 'geometry' }
 LaserGameElement >> fitIn: anExtent [
-	"Scale the game to a window of anExtent and centre it there. The original is a Morph of a
-	fixed size and has nothing like this: it is the port's answer to a window the player can
-	resize, and it costs nothing, because every cell is drawn from geometries rather than from a
-	bitmap. A window of no size is left alone, since a space announces one while it opens."
+	"Scale the game to a window of anExtent and centre it there. Scaling costs nothing here,
+	because every cell is drawn from geometries rather than from a bitmap. A window of no size is
+	left alone, since a space announces one while it opens."
 
 	(anExtent x > 0 and: [ anExtent y > 0 ]) ifFalse: [ ^ self ].
 	self transformDo: [ :aBuilder |
@@ -241,12 +228,10 @@ LaserGameElement >> fitIn: anExtent [
 
 { #category : 'accessing' }
 LaserGameElement >> grid [
-	"Answer the grid the game plays on. A game built with no grid at all plays the standard
-	board, which is page 204: the world menu opens a morph by sending #new, so #new has to answer
-	something worth looking at, and the original changes LaserGame >> initialize to ask
-	GridFactory for a defaultGrid of eight columns by ten rows instead of the five by five demo
-	board. The board is dealt when it is first asked for, so a game that is given a grid never
-	deals one it would throw away."
+	"Answer the grid the game plays on. A game built with no grid at all plays the standard board
+	of eight columns by ten rows, so that `LaserGameElement new` answers something worth looking
+	at. The board is dealt when it is first asked for, so a game that is given a grid never deals
+	one it would throw away."
 
 	^ grid ifNil: [
 		  self grid: GridFactory defaultGrid.
@@ -264,7 +249,7 @@ LaserGameElement >> grid: aGrid [
 
 { #category : 'updating' }
 LaserGameElement >> incrementMoves [
-	"Count one more move. Page 143's #incrementMoves."
+	"Count one more move."
 
 	self moves: self moves + 1
 ]
@@ -272,9 +257,9 @@ LaserGameElement >> incrementMoves [
 { #category : 'initialization' }
 LaserGameElement >> initialize [
 	"A game is a row of two: the control panel, and the board beside it. The margin around both is
-	padding, and the ramp behind them shows through it. There is none at the bottom: page 189 puts
-	the mark of the laser's home in that band, so the bottom margin is the panel's and the board
-	column's own, and they carry it as a margin instead. No move has been made yet."
+	padding, and the ramp behind them shows through it. There is none at the bottom: the mark of
+	the laser's home stands in that band, so the bottom margin belongs to the panel and to the
+	board column, and they carry it as a margin instead. No move has been made yet."
 
 	super initialize.
 	self background: self class windowBackgroundPaint.
@@ -303,8 +288,8 @@ LaserGameElement >> laserIsActive [
 
 { #category : 'updating' }
 LaserGameElement >> moveMade [
-	"A move was made on my board. Page 144 counts it and then updates the whole game; the board has
-	already drawn its cells by the time it tells me, so only the counters are left to set."
+	"A move was made on my board: count it, and set the counters. The board has already drawn its
+	cells by the time it tells me, so nothing else is left to do."
 
 	self incrementMoves.
 	self controlPanel updateCounters
@@ -312,8 +297,8 @@ LaserGameElement >> moveMade [
 
 { #category : 'accessing' }
 LaserGameElement >> moves [
-	"Answer how many moves the player has made. Page 143 counts every click on the board, and the
-	player is meant to solve the puzzle in as few as possible."
+	"Answer how many moves the player has made. Every click on the board counts, and the player is
+	meant to solve the puzzle in as few as possible."
 
 	^ moves
 ]
@@ -327,9 +312,8 @@ LaserGameElement >> moves: anInteger [
 
 { #category : 'geometry' }
 LaserGameElement >> naturalExtent [
-	"Answer the extent the game is drawn at: the board, the panel and the margins, in the pixel
-	sizes every page of the tutorial writes down. The window can be any size; this one is the
-	size the drawing is scaled from."
+	"Answer the extent the game is drawn at: the board, the panel and the margins, in pixels. The
+	window can be any size; this one is the size the drawing is scaled from."
 
 	^ self class extentForGrid: self grid
 ]
@@ -339,8 +323,7 @@ LaserGameElement >> newBoardColumn [
 	"Answer the column standing where the board stands: the board itself, and under its first
 	column of cells the bar marking where the laser enters. The bar is the last child, so it
 	falls under the bottom row, and it is as tall as my bottom margin, which is why I have no
-	bottom padding: the column ends where I end and the bar fills the band under the board. The
-	original places the same rectangle with a layout frame pinned to the bottom of the window."
+	bottom padding: the column ends where I end and the bar fills the band under the board."
 
 	| column |
 	column := BlElement new.
@@ -363,11 +346,8 @@ LaserGameElement >> newControlPanel [
 
 { #category : 'actions' }
 LaserGameElement >> newGame [
-	"Start again on a fresh random grid: page 146's #newGame. Its two other lines have no
-	counterpart. The dirty dictionary it initializes is the repaint bookkeeping of a shared board
-	form, and every cell here is an element that draws itself; the active cell location it clears
-	is the mouse press the original remembers by hand, and Bloc delivers the click instead. The
-	stack of moves the grid keeps is left alone: it is emptied where Undo and Reset are added."
+	"Start again on a fresh random grid. The stack of moves the grid keeps is left alone: it is
+	emptied where Undo and Reset are added."
 
 	self grid initializeCells.
 	self grid stopLaser.
@@ -379,9 +359,8 @@ LaserGameElement >> newGame [
 { #category : 'initialization' }
 LaserGameElement >> newLaserHome [
 	"Answer the bar that marks where the laser comes from: one cell wide, one margin tall, in the
-	colour the beam splatters the board with. Page 189 makes a Form of that size, fills it and
-	wraps it in a SketchMorph; an element with a background says the same thing and scales with
-	the rest of the game."
+	colour the beam splatters the board with. An element with a background is the whole of it, and
+	it scales with the rest of the game."
 
 	^ BlElement new
 		  background: LaserGameColors laserBeamSplatterColor;
@@ -399,10 +378,8 @@ LaserGameElement >> positionToCenterIn: anExtent [
 
 { #category : 'actions' }
 LaserGameElement >> quit [
-	"Ask before closing. Page 144 makes the buttons smaller and puts Quit next to Fire, which is
-	easy to hit by accident, so #quitGame asks first. The original asks with #confirm:, which opens
-	a Morphic dialog and waits for the answer; a Bloc element does not wait, so the question is laid
-	over the game and answers back."
+	"Ask before closing. Quit sits next to Fire and is easy to hit by accident. A Bloc element
+	cannot stop and wait for an answer, so the question is laid over the game and answers back."
 
 	self ask: 'Are you sure you want to quit?' onConfirm: [ self close ]
 ]
@@ -410,11 +387,10 @@ LaserGameElement >> quit [
 { #category : 'initialization' }
 LaserGameElement >> rebuild [
 	"Replace what I hold with a control panel for me and a board showing my grid beside it, and
-	take the size the two of them and my margins need. Page 139 moves the panel to the left of the
-	board, which here is the order the two are added in. The board tells me when a move changed the
-	grid, so the counters follow a click as well as the fire button. Since page 189 the board goes
-	in inside a column that also holds the mark of the laser's home, and the panel carries the
-	bottom margin that mark stands in."
+	take the size the two of them and my margins need. The panel is added first, so it stands to
+	the left of the board. The board tells me when a move changed the grid, so the counters follow
+	a click as well as the fire button. The board goes in inside a column that also holds the mark
+	of the laser's home, and the panel carries the bottom margin that mark stands in."
 
 	self removeChildren.
 	confirmation := nil.
@@ -431,8 +407,7 @@ LaserGameElement >> rebuild [
 { #category : 'updating' }
 LaserGameElement >> refresh [
 	"Show what the model says now: redraw the cells, put the right label on the fire button and
-	set the counters. This is the original's #updateGameBoardAndControls, and page 142 adds the
-	counters to it."
+	set the counters."
 
 	self board rebuildCells.
 	self controlPanel updateFireButtonLabel.
@@ -441,11 +416,8 @@ LaserGameElement >> refresh [
 
 { #category : 'actions' }
 LaserGameElement >> reset [
-	"Put the board back where the game started: page 188 unwinds the whole undo stack, stops the
-	laser and sets the move count to zero. The original's two other lines have no counterpart —
-	#activeCellLocation: nil is the mouse press it remembers by hand, which Bloc delivers instead,
-	and #initializeDirty is the repaint bookkeeping of a shared board form, where every cell here
-	draws itself."
+	"Put the board back where the game started: unwind the whole undo stack, stop the laser and
+	set the move count to zero."
 
 	self grid reset.
 	self grid stopLaser.
@@ -467,7 +439,7 @@ LaserGameElement >> scaleToFitIn: anExtent [
 { #category : 'actions' }
 LaserGameElement >> toggleLaser [
 	"Fire the laser, or stop it if it is already firing, and show the result. This is what the fire
-	button does, and it is the original's #fireLaser on the morph."
+	button does."
 
 	self laserIsActive
 		ifTrue: [ self grid stopLaser ]
@@ -477,10 +449,9 @@ LaserGameElement >> toggleLaser [
 
 { #category : 'actions' }
 LaserGameElement >> undo [
-	"Take the last move back, and count the undo as a move of its own: page 183 says an undo must
-	not remove any count from the player's total, so the counter goes up, not down. The grid
-	answers whether it undid anything, and on an empty stack there is nothing to draw again. This
-	is page 186's #undo, with #refresh for #updateGameBoardAndControls."
+	"Take the last move back, and count the undo as a move of its own: an undo must not remove any
+	count from the player's total, so the counter goes up, not down. The grid answers whether it
+	undid anything, and on an empty stack there is nothing to draw again."
 
 	self grid undo ifFalse: [ ^ self ].
 	self incrementMoves.

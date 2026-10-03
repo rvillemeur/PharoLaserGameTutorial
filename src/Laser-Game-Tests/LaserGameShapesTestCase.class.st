@@ -16,10 +16,8 @@ LaserGameShapesTestCase >> requestedExtentOf: anElement [
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testABeamIsAPaleBandWithABrightCentreOnIt [
-	"Page 152 takes two masks out of the painted beam, a wide splatter and a narrow centre, and
-	page 153 paints them in two colours. Here the beam is an element holding two bars: the pale
-	one first, the bright one on top of it, both running the whole length and both centred across
-	it."
+	"A beam is an element holding two bars: a pale wide one first, a bright narrow one on top of
+	it, both running the whole length of the cell and both centred across it."
 
 	| extent element splatter centre |
 	extent := 50 @ 50.
@@ -48,9 +46,7 @@ LaserGameShapesTestCase >> testABeamIsAPaleBandWithABrightCentreOnIt [
 { #category : 'tests' }
 LaserGameShapesTestCase >> testABeamThatArrivesFromTwoSidesTurnsInTheMiddle [
 	"A mirror sends the beam on by another side, so two half beams meet in the middle of the cell:
-	one from the side the light arrives by, one to the side it leaves by. Pages 166 to 172 of the
-	original draw two whole beams instead and then black out the two quadrants of the cell the
-	light never reaches."
+	one from the side the light arrives by, one to the side it leaves by."
 
 	| extent beam half |
 	extent := 40 @ 40.
@@ -75,10 +71,8 @@ LaserGameShapesTestCase >> testABeamThatArrivesFromTwoSidesTurnsInTheMiddle [
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testABeamThatCrossesItsOwnPathDrawsBothCoresOverBothBands [
-	"A cell all four sides of which are lit is crossed twice, which page 170 finds on the board and
-	page 173 fixes for the blank cell. Both bands run the whole way across, and both bright cores
-	are drawn after them, so neither core is buried under the other band. Page 167 arrives at the
-	same order by painting one of the cores a second time."
+	"A cell all four sides of which are lit is crossed twice. Both bands run the whole way across,
+	and both bright cores are drawn after them, so neither core is buried under the other band."
 
 	| extent beam |
 	extent := 40 @ 40.
@@ -102,8 +96,7 @@ LaserGameShapesTestCase >> testABeamThatCrossesItsOwnPathDrawsBothCoresOverBothB
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testACrossHairIsTwoBarsCrossingAtTheCentre [
-	"The cross hair of page 083 is two crossing lines. Here it is an element holding two bars,
-	one wide and one tall, both centred in it."
+	"A cross hair is an element holding two bars, one wide and one tall, both centred in it."
 
 	| extent element horizontal vertical |
 	extent := 60 @ 60.
@@ -128,9 +121,8 @@ LaserGameShapesTestCase >> testACrossHairIsTwoBarsCrossingAtTheCentre [
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testAHalfBeamCrossesHalfTheCellFromTheSideItComesFrom [
-	"A cell that swallows the light shows the beam only as far as its middle. Pages 160 and 162 of
-	the original draw the whole beam and then black out the half the light never reaches, keeping
-	the west half when the west segment is lit and the east half otherwise."
+	"A cell that swallows the light shows the beam only as far as its middle: the west half when
+	the west segment is lit, the east half otherwise."
 
 	| extent half |
 	extent := 40 @ 40.
@@ -152,8 +144,8 @@ LaserGameShapesTestCase >> testAHalfBeamCrossesHalfTheCellFromTheSideItComesFrom
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testAHalfBeamGoingUpOrDownKeepsTheHalfTheLightComesFrom [
-	"The same half beam turned a quarter: page 161 keeps the bottom half when the south segment is
-	lit and the top half otherwise."
+	"The same half beam turned a quarter: the bottom half when the south segment is lit, the top
+	half otherwise."
 
 	| extent half |
 	extent := 40 @ 40.
@@ -175,8 +167,8 @@ LaserGameShapesTestCase >> testAHalfBeamGoingUpOrDownKeepsTheHalfTheLightComesFr
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testAHalfBeamIsAsThickAsAWholeOne [
-	"Half a beam is half as long and no thinner: the original cuts its mask in half and leaves the
-	pixels it keeps alone."
+	"Half a beam is half as long and no thinner, so a beam that stops in the middle of a cell
+	meets a beam that crosses one without a step in it."
 
 	| extent whole |
 	extent := 40 @ 40.
@@ -197,10 +189,8 @@ LaserGameShapesTestCase >> testAHalfBeamIsAsThickAsAWholeOne [
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testAVerticalBeamIsTheHorizontalOneTurned [
-	"A beam runs across a cell or down it. The original has one painted form and turns the drawing
-	by asking the mask for a vertical strip instead of a horizontal one; here the two bars are the
-	same two bars with their sides exchanged, so the two beams meet at the same thickness where a
-	path turns."
+	"A beam runs across a cell or down it, and the two are the same two bars with their sides
+	exchanged, so the two beams meet at the same thickness where a path turns."
 
 	| extent horizontal vertical |
 	extent := 50 @ 50.
@@ -260,8 +250,7 @@ LaserGameShapesTestCase >> testEachArrowHasOneTipAndItIsCentredOnTheOtherAxis [
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testEachArrowIsSevenVerticesWideEnoughToBeAnArrow [
-	"The four vertex arrays are the ones the original typed into a workspace on pages 081 and
-	082: seven points each, an outline drawn as a closed polygon."
+	"Each of the four vertex arrays is seven points, an outline drawn as a closed polygon."
 
 	{ LaserGameShapes northArrowPoints.
 	LaserGameShapes eastArrowPoints.
@@ -289,11 +278,8 @@ LaserGameShapesTestCase >> testEveryArrowElementUsesTheVerticesOfItsDirection [
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testEveryArrowFillsTheRectangleItIsGiven [
-	"Page 197 of the original is about white space: an arrow was drawn into a form big enough to
-	hold it, so the black shape sat somewhere inside a white margin nobody measured, and the seven
-	Form methods of that page go looking for the tight rectangle around the black so page 198 can
-	cut it out. Here an arrow is a polygon whose points are scaled onto the rectangle asked for,
-	so the ink is the rectangle and there is no margin to trim. Six arrows are asked at three
+	"An arrow is a polygon whose points are scaled onto the rectangle asked for, so the ink is the
+	rectangle and there is no margin anywhere around it to trim. Six arrows are asked at three
 	sizes and every one of them is checked."
 
 	#( 24 30 48 ) do: [ :size |
@@ -311,8 +297,7 @@ LaserGameShapesTestCase >> testEveryArrowFillsTheRectangleItIsGiven [
 { #category : 'tests' }
 LaserGameShapesTestCase >> testPointsScaleToFillTheRequestedExtent [
 	"Scaling maps the vertex array onto the rectangle the caller asks for, so the same array
-	serves a 12 pixel hint and a 200 pixel drawing. The original had one fixed 330 pixel form and
-	shrank the bitmap afterwards with scaledToSize:."
+	serves a 12 pixel hint and a 200 pixel drawing."
 
 	{ 12 @ 12. 48 @ 48. 200 @ 120 } do: [ :extent |
 		| scaled |
@@ -327,9 +312,8 @@ LaserGameShapesTestCase >> testPointsScaleToFillTheRequestedExtent [
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testShapesAreBuiltAtWhateverSizeIsAsked [
-	"Vertices scale, so no shape has a size of its own. The original drew every arrow into a 330
-	pixel form once, cached the bitmap and scaled it down on use, which is why its small arrows
-	were ragged."
+	"Vertices scale, so no shape has a size of its own: every shape is built at the size the
+	caller asks for, and a small one is as clean as a large one."
 
 	{ 12 @ 12. 50 @ 50. 200 @ 200 } do: [ :extent |
 		{ LaserGameShapes northArrowElementOfExtent: extent.
@@ -339,9 +323,8 @@ LaserGameShapesTestCase >> testShapesAreBuiltAtWhateverSizeIsAsked [
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testTheBeamGetsThickerWithTheCell [
-	"The original paints one beam form of one cell size and scales the bitmap when the cell grows,
-	so the beam keeps its proportions. Here the two thicknesses are computed from the extent, which
-	comes to the same thing: twice the cell, twice the beam."
+	"Both thicknesses are computed from the extent, so the beam keeps its proportions: twice the
+	cell, twice the beam. A beam of a cell too small to halve is still one pixel thick."
 
 	| small large |
 	small := LaserGameShapes laserBeamElementOfExtent: 30 @ 30 fromSides: #( #west #east ).
@@ -365,8 +348,7 @@ LaserGameShapesTestCase >> testTheBeamGetsThickerWithTheCell [
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testTheClockwiseArrowIsTheCounterClockwiseOneMirrored [
-	"Page 099 makes the clockwise arrow by flipping the other one horizontally, which is one
-	step there and one line here."
+	"The clockwise arrow is the other one flipped horizontally, which is one line of code."
 
 	| left right |
 	left := LaserGameShapes counterClockwiseArrowPoints.
@@ -379,9 +361,8 @@ LaserGameShapesTestCase >> testTheClockwiseArrowIsTheCounterClockwiseOneMirrored
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testTheRingOfTheRotateArrowIsAsWideAsTheStemOfItsHead [
-	"The two radii of page 099 are 160 and 200, and the stem of its arrow head is 40 wide and
-	sits at the left end of the ring. That is why the flood fill of the original made one shape
-	out of the two drawings, and it is what keeps the outline of the port closed."
+	"The ring between the two radii is exactly as wide as the stem of the arrow head, and the stem
+	sits at the left end of the ring. That is what keeps the outline of the shape closed."
 
 	| head ring |
 	head := LaserGameShapes rotateArrowHeadPoints.
@@ -400,8 +381,7 @@ LaserGameShapesTestCase >> testTheRingOfTheRotateArrowIsAsWideAsTheStemOfItsHead
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testTheRotateArrowElementsArePolygonsOfTheSizeAsked [
-	"Like the four straight arrows, a rotate arrow is a polygon scaled into the extent asked
-	for, so the 450 pixel form of page 099 and the cache it went into have no counterpart."
+	"Like the four straight arrows, a rotate arrow is a polygon scaled into the extent asked for."
 
 	{ (#counterClockwiseArrowElementOfExtent:
 	 -> LaserGameShapes counterClockwiseArrowPoints).
@@ -420,9 +400,9 @@ LaserGameShapesTestCase >> testTheRotateArrowElementsArePolygonsOfTheSizeAsked [
 
 { #category : 'tests' }
 LaserGameShapesTestCase >> testTheRotateArrowIsARingBetweenTwoCirclesWithAHeadOnIt [
-	"Page 099 draws the curved arrow as two arcs about one centre, cut off by a line, with the
-	straight arrow head of the earlier pages stuck on the end. Every point of the outline is
-	therefore either a point of that head or a point of one of the two circles."
+	"The curved arrow is two arcs about one centre, cut off by a line, with a straight arrow head
+	on the end. Every point of the outline is therefore either a point of that head or a point of
+	one of the two circles."
 
 	| center head |
 	center := LaserGameShapes rotateArrowCenter.

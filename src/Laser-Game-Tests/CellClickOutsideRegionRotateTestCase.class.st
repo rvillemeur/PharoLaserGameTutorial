@@ -14,9 +14,9 @@ Class {
 
 { #category : 'support' }
 CellClickOutsideRegionRotateTestCase >> assertRotateRegionTable [
-	"Check the table of page 191: a point of the outside region, and the rotation a click there
-	asks for. The rows name the corners, the edge centres and a few points near them of both the
-	inside and the outside rectangle, so the table says the same thing at any cell size."
+	"Check the table: a point of the outside region, and the rotation a click there asks for. The
+	rows name the corners, the edge centres and a few points near them of both the inside and the
+	outside rectangle, so the table says the same thing at any cell size."
 
 	| pt regionClass testTable cls rotateRegion inRect outRect |
 	inRect := CellClickRegionInside regionRectangle.
@@ -56,9 +56,9 @@ CellClickOutsideRegionRotateTestCase >> assertRotateRegionTable [
 
 { #category : 'tests' }
 CellClickOutsideRegionRotateTestCase >> testAPointOnTheDividingLineTurnsTheMirrorClockwise [
-	"Page 103 puts the dividing line at half the height of the cell and says a point on it counts
-	as belonging to the upper half. The line is the cell's, not the region's, so it is written
-	here as the cell says it."
+	"The dividing line sits at half the height of the cell, and a point on it counts as belonging
+	to the upper half. The line is the cell's, not the region's, so it is written here as the
+	cell says it."
 
 	| onTheLine |
 	onTheLine := CellClickRegionOutside regionRectangle left
@@ -77,16 +77,16 @@ CellClickOutsideRegionRotateTestCase >> testAPointOnTheDividingLineTurnsTheMirro
 
 { #category : 'tests' }
 CellClickOutsideRegionRotateTestCase >> testClicksInRotateRegions [
-	"Run the table of page 191 at the cell size of the package."
+	"Run the table at the cell size of the package."
 
 	self assertRotateRegionTable
 ]
 
 { #category : 'tests' }
 CellClickOutsideRegionRotateTestCase >> testEveryPointOfTheOutsideRegionIsInExactlyOneRotateRegion [
-	"The dividing line of page 101 cuts the outside region into an upper and a lower half that
-	cover it and do not overlap, so every point of it turns the mirror one way and not the other.
-	The original checked fifteen points of a 30 pixel cell; this walks the whole region."
+	"The dividing line cuts the outside region into an upper and a lower half that cover it and do
+	not overlap, so every point of it turns the mirror one way and not the other. This walks the
+	whole region rather than sampling points of one cell size."
 
 	| rect |
 	rect := CellClickRegionOutside regionRectangle.
@@ -101,9 +101,8 @@ CellClickOutsideRegionRotateTestCase >> testEveryPointOfTheOutsideRegionIsInExac
 
 { #category : 'tests' }
 CellClickOutsideRegionRotateTestCase >> testTheOutsideRegionRefinesTheHintToARotateRegion [
-	"Page 105 gives the outside region a hint of its own. It answers it the way the inside region
-	has since Section 3.5: not itself, but the region of the point, which here is the direction
-	the mirror turns."
+	"The outside region has a hint of its own, and answers it the way the inside region does: not
+	itself, but the region of the point, which here is the direction the mirror turns."
 
 	| rect |
 	rect := CellClickRegionOutside regionRectangle.
@@ -117,9 +116,9 @@ CellClickOutsideRegionRotateTestCase >> testTheOutsideRegionRefinesTheHintToARot
 
 { #category : 'tests' }
 CellClickOutsideRegionRotateTestCase >> testTheRotateRegionTableHoldsAtEveryCellSize [
-	"Run the rotate table at three cell sizes. The dividing line of the outside region is the
-	diagonal of a square, so a table written in corners and edge centres holds wherever the square
-	starts and however wide it is."
+	"Run the rotate table at three cell sizes. The line that divides the outside region sits at
+	half the height of the cell, and every row names a corner or an edge centre of a rectangle a
+	region answers, so no row goes stale when the cell grows."
 
 	#( 30 40 80 ) do: [ :size |
 		self withCellExtent: size @ size do: [ self assertRotateRegionTable ] ]

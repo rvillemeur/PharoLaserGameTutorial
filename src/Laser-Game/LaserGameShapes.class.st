@@ -1,11 +1,11 @@
 "
-I am the repository of the shapes the game draws on top of its cells: the four push arrows and the cross hair.
+I am the repository of the shapes the game draws on top of its cells: the four push arrows, the two rotate arrows, the cross hair and the laser beam.
 
-I hold each shape as a vertex array in the coordinates the original drew it in, around 260 pixels wide, and I answer elements: `pointsOf:scaledToExtent:` stretches an array onto the rectangle a caller asks for, and `arrowElementFromPoints:ofExtent:` wraps the result in a `BlElement` with a `BlPolygonGeometry`. A shape therefore has no size of its own, and the same array serves a hint of twelve pixels and a drawing of two hundred.
+I hold each shape as a vertex array, written at the size it was drawn at, around 260 pixels wide, and I answer elements: `pointsOf:scaledToExtent:` stretches an array onto the rectangle a caller asks for, and `arrowElementFromPoints:ofExtent:` wraps the result in a `BlElement` with a `BlPolygonGeometry`. A shape therefore has no size of its own, and the same array serves a hint of twelve pixels and a drawing of two hundred.
 
-I replace `LaserGameForms` of pages 081 to 083, which cached one `Form` per shape. It drew an outline line by line into a form of 330 pixels, flood filled the inside, reversed black and white so that only the filled pixels would be painted, and scaled the bitmap down at the point of use. A polygon geometry is filled by the renderer and drawn at any size, so the workspace experiments of pages 081 and 082, the flood fill, the reversal and the cache all have no counterpart here. What survives from them is the numbers: my four vertex arrays are the ones those pages typed in.
+A polygon geometry does not follow the extent of the element that holds it: its vertices are element-local and absolute. Scaling the points is the step that makes a shape fit, and it is why every element I answer covers exactly the rectangle it was asked for. A transformation would scale the drawing without changing the extent, which is right for a finished tree and wrong for a child a layout has to measure.
 
-I am a class-side repository: no instance of me is ever created. The colours I paint with, `arrowColor` and `crossHairColor`, are the defaults of the original drawings; a caller that knows whether a move is allowed sets its own on the element it gets.
+I am a class-side repository: no instance of me is ever created. The colours I paint with, `arrowColor` and `crossHairColor`, are defaults; a caller that knows whether a move is allowed sets its own on the element it gets.
 
 "
 Class {
@@ -34,8 +34,8 @@ LaserGameShapes class >> arcPointsFromAngle: startDegrees toAngle: stopDegrees r
 
 { #category : 'accessing' }
 LaserGameShapes class >> arrowColor [
-	"Answer the colour an arrow is painted in when nobody says otherwise: the grey of page 081.
-	A caller that knows more sets its own, as the hints do from Section 4 on."
+	"Answer the colour an arrow is painted in when nobody says otherwise. A caller that knows
+	whether the move it hints at is allowed sets its own colour instead."
 
 	^ Color gray
 ]
@@ -43,9 +43,8 @@ LaserGameShapes class >> arrowColor [
 { #category : 'building' }
 LaserGameShapes class >> arrowElementFromPoints: anArrayOfPoints ofExtent: anExtent [
 	"Answer an element of anExtent whose geometry is the outline anArrayOfPoints describes. The
-	outline is a polygon, so it is drawn at whatever size it is given and needs no flood fill:
-	the original drew the outline line by line, filled the inside with black and reversed the
-	form, which is what pages 081 and 082 spend their workspace code on."
+	outline is a polygon, so Alexandrie fills it at whatever size it is given: the shape is a list
+	of vertices and a colour, not a picture of pixels."
 
 	^ BlElement new
 		  geometry: (BlPolygonGeometry vertices:
@@ -66,8 +65,8 @@ LaserGameShapes class >> clockwiseArrowElementOfExtent: anExtent [
 
 { #category : 'rotate arrow geometry' }
 LaserGameShapes class >> clockwiseArrowPoints [
-	"Answer the outline of the arrow that turns a mirror clockwise, which page 099 makes by
-	flipping the other one horizontally."
+	"Answer the outline of the arrow that turns a mirror clockwise: the other one flipped
+	horizontally."
 
 	^ self counterClockwiseArrowPoints collect: [ :each |
 		  each x negated @ each y ]
@@ -84,9 +83,9 @@ LaserGameShapes class >> counterClockwiseArrowElementOfExtent: anExtent [
 
 { #category : 'rotate arrow geometry' }
 LaserGameShapes class >> counterClockwiseArrowPoints [
-	"Answer the outline of the arrow that turns a mirror anticlockwise: the head of page 099,
-	then the outer arc from the head round to the cut, the cut itself, and the inner arc back.
-	The original drew the same shape as two arcs, a line and a flood fill."
+	"Answer the outline of the arrow that turns a mirror anticlockwise: the head, then the outer
+	arc from the head round to the cut, the cut itself, and the inner arc back. The result is one
+	closed outline, so it draws as a single polygon."
 
 	| head |
 	head := self rotateArrowHeadPoints.
@@ -115,16 +114,16 @@ LaserGameShapes class >> crossHairBarOfExtent: aBarExtent within: anExtent [
 
 { #category : 'accessing' }
 LaserGameShapes class >> crossHairColor [
-	"Answer the colour of a cross hair: the black page 083 drew it in."
+	"Answer the colour of a cross hair."
 
 	^ Color black
 ]
 
 { #category : 'shapes' }
 LaserGameShapes class >> crossHairElementOfExtent: anExtent [
-	"Answer a cross hair of anExtent: two bars crossing at the centre. Page 083 drew the same
-	figure as two lines in a form of one cell, and Section 4.2 puts it under the pointer while
-	the pointer is over a hint of a mirror."
+	"Answer a cross hair of anExtent: two bars crossing at the centre. The arms are a third of the
+	shape and the bars a fifth of that, so the figure holds its proportions at any size. A cell
+	puts one under the pointer while the pointer is over a hint of a mirror."
 
 	| span thickness |
 	span := (anExtent x min: anExtent y) // 3.
@@ -146,8 +145,7 @@ LaserGameShapes class >> eastArrowElementOfExtent: anExtent [
 
 { #category : 'vertices' }
 LaserGameShapes class >> eastArrowPoints [
-	"Answer the outline of an arrow that points east, as the original typed it into a workspace
-	on page 081."
+	"Answer the outline of an arrow that points east, as seven vertices of a closed polygon."
 
 	^ { 0 @ 80. 150 @ 80. 150 @ 0. 260 @ 100. 150 @ 200. 150 @ 120. 0 @ 120 }
 ]
@@ -186,7 +184,7 @@ LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent at: aPoint color: aCol
 { #category : 'beam geometry' }
 LaserGameShapes class >> laserBeamCenterThicknessFor: anExtent [
 	"Answer how thick the bright core of the beam is in a cell of anExtent: half the pale band it
-	sits on. Page 153 pulls the same core out of the painted beam as a mask of its own."
+	sits on, and never less than one pixel."
 
 	^ ((anExtent x min: anExtent y) // 6) max: 1
 ]
@@ -199,7 +197,7 @@ LaserGameShapes class >> laserBeamElementOfExtent: anExtent fromSides: aCollecti
 	are a cell the beam goes straight through, two sides at a right angle are the turn at a mirror,
 	one side is the half beam a cell that swallows the light shows, and four sides are a beam that
 	crosses its own path. The pale bands are drawn first and the bright cores over them, so a
-	crossing shows both cores; page 167 of the original reaches that by painting one core twice."
+	crossing shows both cores."
 
 	| element across down |
 	across := aCollection select: [ :each | #( #west #east ) includes: each ].
@@ -230,9 +228,9 @@ LaserGameShapes class >> laserBeamElementOfExtent: anExtent fromSides: aCollecti
 
 { #category : 'beam geometry' }
 LaserGameShapes class >> laserBeamSplatterThicknessFor: anExtent [
-	"Answer how thick the pale part of the beam is in a cell of anExtent. The original paints one
-	beam of one cell size and scales the bitmap; the port keeps the proportion instead of the
-	pixels, and a beam is never thinner than one pixel."
+	"Answer how thick the pale part of the beam is in a cell of anExtent: a third of the cell, and
+	never less than one pixel. The thickness follows the cell size, so the beam keeps its
+	proportions at any size."
 
 	^ ((anExtent x min: anExtent y) // 3) max: 1
 ]
@@ -246,18 +244,19 @@ LaserGameShapes class >> northArrowElementOfExtent: anExtent [
 
 { #category : 'vertices' }
 LaserGameShapes class >> northArrowPoints [
-	"Answer the outline of an arrow that points north, as the original typed it into a workspace
-	on page 082. The numbers are the ones LaserGameForms holds."
+	"Answer the outline of an arrow that points north, as seven vertices of a closed polygon. The
+	numbers are written at the size the arrow was drawn at, a little over 260 pixels; every caller
+	scales them to the size it needs."
 
 	^ { 100 @ 0. 200 @ 110. 120 @ 110. 120 @ 260. 80 @ 260. 80 @ 110. 0 @ 110 }
 ]
 
 { #category : 'scaling' }
 LaserGameShapes class >> pointsOf: anArrayOfPoints scaledToExtent: anExtent [
-	"Answer anArrayOfPoints moved to the origin and stretched to fill anExtent exactly. The
-	vertex arrays are written at the size the original drew them at, around 260 pixels, and every
-	user asks for the size it needs. The original could not do this: it drew one 330 pixel bitmap
-	per arrow, cached it, and scaled the pixels afterwards."
+	"Answer anArrayOfPoints moved to the origin and stretched to fill anExtent exactly. The vertex
+	arrays are written at the size the arrows were drawn at, around 260 pixels, and every user asks
+	for the size it needs. A polygon geometry does not follow the extent of its element, so this is
+	the step that makes one vertex array serve a 12 pixel hint and a 200 pixel drawing."
 
 	| bounds scale |
 	bounds := Rectangle encompassing: anArrayOfPoints.
@@ -268,27 +267,24 @@ LaserGameShapes class >> pointsOf: anArrayOfPoints scaledToExtent: anExtent [
 
 { #category : 'rotate arrow geometry' }
 LaserGameShapes class >> rotateArrowArcSteps [
-	"Answer how many segments an arc of the curved arrow is drawn with. The original had a pixel
-	arc and no choice to make; a polygon has as many corners as it is given, and two dozen are
-	enough for the largest cell the game uses."
+	"Answer how many segments an arc of the curved arrow is drawn with. A polygon has as many
+	corners as it is given, and two dozen are enough for the largest cell the game uses."
 
 	^ 24
 ]
 
 { #category : 'rotate arrow geometry' }
 LaserGameShapes class >> rotateArrowCenter [
-	"Answer the centre both arcs of the curved arrow turn about, as page 099 typed it into its
-	workspace."
+	"Answer the centre both arcs of the curved arrow turn about."
 
 	^ 282 @ 240
 ]
 
 { #category : 'rotate arrow geometry' }
 LaserGameShapes class >> rotateArrowCutAngle [
-	"Answer where the ring stops, in degrees measured anticlockwise from east. Page 099 draws a
-	line from the centre of the arcs to the top right corner of its 450 pixel form, fills the
-	shape the line closes, and then paints the line out again with a very wide white pen. The
-	angle of that line is all the port keeps of it."
+	"Answer where the ring of the curved arrow stops, in degrees measured anticlockwise from east:
+	the angle of the line from the centre of the arcs to the top right corner of the 450 pixel
+	square the arrow is drawn in. The ring is open there, which is where the head sits."
 
 	| corner |
 	corner := 450 @ 0 - self rotateArrowCenter.
@@ -297,10 +293,9 @@ LaserGameShapes class >> rotateArrowCutAngle [
 
 { #category : 'rotate arrow geometry' }
 LaserGameShapes class >> rotateArrowHeadPoints [
-	"Answer the arrow head of the curved arrow: the array page 099 types into its workspace,
-	moved by the offset the page adds to it. It is the south arrow of page 082 with almost no
-	stem, since the ring is the stem. The two points in the middle, at the top of the stem, are
-	where the ring begins, so the outline replaces them with the ends of the two arcs."
+	"Answer the arrow head of the curved arrow: the south arrow with almost no stem, since the ring
+	is the stem, moved to where the ring ends. The two points in the middle, at the top of the
+	stem, are where the ring begins, so the outline replaces them with the ends of the two arcs."
 
 	^ { 100 @ 260. 40 @ 150. 80 @ 150. 80 @ 141. 120 @ 141. 120 @ 150. 160 @ 150 }
 		  collect: [ :each | each + (2 @ 100) ]
@@ -308,14 +303,14 @@ LaserGameShapes class >> rotateArrowHeadPoints [
 
 { #category : 'rotate arrow geometry' }
 LaserGameShapes class >> rotateArrowInnerRadius [
-	"Answer the radius of the inner arc of the curved arrow, the 160 of page 099."
+	"Answer the radius of the inner arc of the curved arrow."
 
 	^ 160
 ]
 
 { #category : 'rotate arrow geometry' }
 LaserGameShapes class >> rotateArrowOuterRadius [
-	"Answer the radius of the outer arc of the curved arrow, the 200 of page 099."
+	"Answer the radius of the outer arc of the curved arrow."
 
 	^ 200
 ]
@@ -329,8 +324,7 @@ LaserGameShapes class >> southArrowElementOfExtent: anExtent [
 
 { #category : 'vertices' }
 LaserGameShapes class >> southArrowPoints [
-	"Answer the outline of an arrow that points south, as the original typed it into a workspace
-	on page 082."
+	"Answer the outline of an arrow that points south, as seven vertices of a closed polygon."
 
 	^ { 100 @ 260. 0 @ 150. 80 @ 150. 80 @ 0. 120 @ 0. 120 @ 150. 200 @ 150 }
 ]
@@ -364,8 +358,7 @@ LaserGameShapes class >> westArrowElementOfExtent: anExtent [
 
 { #category : 'vertices' }
 LaserGameShapes class >> westArrowPoints [
-	"Answer the outline of an arrow that points west, as the original typed it into a workspace
-	on page 082."
+	"Answer the outline of an arrow that points west, as seven vertices of a closed polygon."
 
 	^ { 260 @ 80. 110 @ 80. 110 @ 0. 0 @ 100. 110 @ 200. 110 @ 120. 260 @ 120 }
 ]

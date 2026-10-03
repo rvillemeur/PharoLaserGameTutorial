@@ -23,9 +23,8 @@ CellClickRegionRotateCounterClockwise class >> containsPoint: aPoint [
 
 { #category : 'hints' }
 CellClickRegionRotateCounterClockwise class >> hintElementOfExtent: anExtent [
-	"Answer an element drawing the counter clockwise curved arrow at anExtent. Page 102 of the
-	original answers a cached 450 pixel Form here, and page 105 scales it down; the shape of
-	Section 3.7 is drawn at whatever size it is given."
+	"Answer an element drawing the anticlockwise curved arrow at anExtent, at whatever size it is
+	given."
 
 	^ LaserGameShapes counterClockwiseArrowElementOfExtent: anExtent
 ]

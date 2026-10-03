@@ -34,19 +34,17 @@ Class {
 
 { #category : 'constants' }
 LaserGameLedElement class >> digitExtent [
-	"Answer the size, in pixels, of one digit. Page 141 asks for three digits in thirty pixels,
-	which is ten each, and fifteen high; the height is one more than the page's, because a bar of
-	the segment thickness at the top, the middle and the bottom and an arm between each pair need
-	an even number of pixels to divide."
+	"Answer the size, in pixels, of one digit: ten wide and sixteen high. Three bars of the
+	segment thickness, at the top, the middle and the bottom, with an arm between each pair, need
+	an even height to divide."
 
 	^ 10 @ 16
 ]
 
 { #category : 'constants' }
 LaserGameLedElement class >> digitGap [
-	"Answer the gap, in pixels, between two digits. The original's LedMorph leaves the gap inside
-	each digit; this one draws it between them, so three digits come to thirty four pixels rather
-	than the thirty of page 141."
+	"Answer the gap, in pixels, between two digits. It is drawn between the digits rather than
+	inside them, so three digits come to thirty four pixels rather than thirty."
 
 	^ 2
 ]
@@ -149,7 +147,7 @@ LaserGameLedElement >> highlighted [
 
 { #category : 'accessing' }
 LaserGameLedElement >> highlighted: aBoolean [
-	"Light my segments brightly, or dimly. Page 142 highlights the counter while the laser fires."
+	"Light my segments brightly, or dimly. The counter is highlighted while the laser fires."
 
 	highlighted := aBoolean.
 	self updateDigits
@@ -157,11 +155,10 @@ LaserGameLedElement >> highlighted: aBoolean [
 
 { #category : 'initialization' }
 LaserGameLedElement >> initialize [
-	"A display is a dark slab with a row of digits on it, one gap apart. The slab is the color the
-	original's LedMorph draws itself in, and an unlit segment takes it too, so that only the lit
-	segments are seen. The gap is a margin on each digit but the first rather than the cell spacing
-	of the layout, since a linear layout spaces the cells from its own edges as well and the last
-	digit would then be clipped."
+	"A display is a dark slab with a row of digits on it, one gap apart. The slab is the colour an
+	unlit segment takes too, so that only the lit segments are seen. The gap is a margin on each
+	digit but the first rather than the cell spacing of the layout, since a linear layout spaces
+	the cells from its own edges as well and the last digit would then be clipped."
 
 	super initialize.
 	value := 0.

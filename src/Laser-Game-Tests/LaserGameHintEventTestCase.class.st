@@ -46,9 +46,9 @@ LaserGameHintEventTestCase >> setUp [
 
 { #category : 'tests' }
 LaserGameHintEventTestCase >> testMovingOffTheBoardClearsTheArrow [
-	"Page 117 ends with one last ghost: the cursor leaves the grid entirely, so no cell is told to
-	clean itself. Bloc sends the leave of the cell under the pointer whatever is under it next, so
-	the arrow goes and the board hovers nothing."
+	"The pointer leaves the board entirely, so no cell is entered next. Bloc sends the leave of the
+	cell under the pointer whatever is under it afterwards, so the arrow goes and the board hovers
+	nothing."
 
 	board eventSimulator mouseMoveAt:
 		(self positionInCellAt: 4 @ 1 offset: CellClickRegionInside regionRectangle center).
@@ -60,9 +60,9 @@ LaserGameHintEventTestCase >> testMovingOffTheBoardClearsTheArrow [
 
 { #category : 'tests' }
 LaserGameHintEventTestCase >> testMovingQuicklyToADistantCellLeavesNoArrowBehind [
-	"Page 116 moves the cursor swiftly down a column and finds in the log that whole cells were
-	skipped: the game is told about 5@2 and then about 5@3, with nothing in between. Here the two
-	moves are the only ones the space is given, and the mirror that was left keeps no arrow."
+	"Move the pointer quickly and whole cells are skipped: the game hears about one cell and then
+	about a distant one, with nothing in between. Here those two moves are the only ones the space
+	is given, and the mirror that was left keeps no arrow."
 
 	| first second |
 	first := board cellElementAt: 4 @ 1.

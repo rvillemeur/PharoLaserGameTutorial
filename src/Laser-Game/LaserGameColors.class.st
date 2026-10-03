@@ -1,5 +1,5 @@
 "
-I am the one place the game's colors are written down. Every element the game shows asks me for its paint, so no `Color` literal appears anywhere else on the Bloc side.
+I am the one place the game's colors are written down. Every element the game shows asks me for its paint, so no `Color` literal appears anywhere else.
 
 My answers are plain `Color` instances. Bloc wraps them in paints and backgrounds where it needs to, so a caller can hand one of my answers straight to `BlBorder paint:width:` or to `BlElement >> background:`.
 
@@ -7,7 +7,7 @@ My answers are plain `Color` instances. Bloc wraps them in paints and background
 LaserGameColors gameBoardBackgroundColor
 ```
 
-Changing a color here changes it everywhere, which is what the original tutorial wanted this class for, and what a color preference of the player would later need.
+Changing a color here changes it everywhere, which is the point of the class: the game is retuned in one place, and a color chosen by the player would be answered from here too.
 "
 Class {
 	#name : 'LaserGameColors',
@@ -19,13 +19,15 @@ Class {
 
 { #category : 'colors' }
 LaserGameColors class >> allowActionArrowColor [
+	"Answer the colour of a hint arrow for a move that can be made. The arrow says which way a
+	click would move a cell; this colour says the click would work."
+
 	^Color green
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> boardShadowColor [
-	"Answer the colour of the shadow the board casts. Page 201 gives it as the shadow colour of
-	the SketchMorph holding the board form."
+	"Answer the colour of the shadow the board casts: a dark grey."
 
 	^ Color r: 0.25 g: 0.25 b: 0.254
 ]
@@ -37,9 +39,9 @@ LaserGameColors class >> cellBorderColor [
 
 { #category : 'colors' }
 LaserGameColors class >> confirmationBackgroundColor [
-	"Answer the color of the box a question is asked in. The original asks with #confirm:, a
-	Morphic dialog painted by the image; a Bloc game asks inside itself, so the box takes the flat
-	window color the ramp of page 140 left unused."
+	"Answer the color of the box a question is asked in. The game asks inside itself rather than
+	in a dialog of its own, so the box takes the flat window color that the window ramp leaves
+	unused."
 
 	^ self gameWindowColor
 ]
@@ -61,64 +63,64 @@ LaserGameColors class >> confirmationTextColor [
 
 { #category : 'colors' }
 LaserGameColors class >> controlPanelColor [
-	"Answer the color of the control panel beside the board. Page 140 paints it transparent, so
-	the ramp behind the whole window shows through it; the white of page 068 was only a
-	placeholder."
+	"Answer the color of the control panel beside the board: transparent, so that the ramp behind
+	the whole window shows through it."
 
 	^ Color transparent
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> counterBodyColor [
-	"Answer the color of the slab a counter shows its digits on. The original's LedMorph draws
-	itself on this dark lavender, and a segment that is not lit is painted the same color, so only
-	the lit segments are seen. Sampled from the screenshot of page 148."
+	"Answer the color of the slab a counter shows its digits on: a dark lavender. A segment that
+	is not lit is painted this same color, so only the lit segments are seen."
 
 	^ Color r: 0.33 g: 0.33 b: 0.52
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> counterBorderColor [
-	"Answer the color of the frame around a counter. Page 141 asks for a two pixel
-	#complexAltInset border, a bevel drawn in two shades of the color behind it; Bloc draws a
-	border in one paint, so the frame is flat and takes the color of the label beside it."
+	"Answer the color of the frame around a counter. The frame is a flat two pixel border, and it
+	takes the color of the label beside it."
 
 	^ Color veryVeryLightGray
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> counterDigitColor [
-	"Answer the color a counter lights its segments in. Page 141's color for the LED."
+	"Answer the color a counter lights its segments in."
 
 	^ Color r: 0.674 g: 0.674 b: 0.96
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> counterDigitHighlightColor [
-	"Answer the color a counter lights its segments in while it is highlighted. Page 142 brightens
-	the counter of the beam while the laser fires, and the screenshot of page 148 has it almost
-	white, against the lavender of the counter beside it."
+	"Answer the color a counter lights its segments in while it is highlighted. The counter of the
+	beam is highlighted while the laser fires, so this is almost white, against the lavender of
+	the counter beside it."
 
 	^ Color r: 0.95 g: 1.0 b: 1.0
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> counterDigitOffColor [
-	"Answer the color of a segment that is not lit: the slab behind it, which is how the original
-	hides it."
+	"Answer the color of a segment that is not lit: the slab behind it, which is how a segment is
+	hidden."
 
 	^ self counterBodyColor
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> counterLabelColor [
-	"Answer the color of the text under a counter. Page 141's color for the label."
+	"Answer the color of the text under a counter."
 
 	^ Color veryVeryLightGray
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> denyActionArrowColor [
+	"Answer the colour of a hint arrow for a move that is refused. An arrow that promises a move
+	the grid would not make is worse than no arrow, so the colour is the warning."
+
 	^Color red
 ]
 
@@ -129,19 +131,22 @@ LaserGameColors class >> gameBoardBackgroundColor [
 
 { #category : 'colors' }
 LaserGameColors class >> gameWindowColor [
-	"Answer the color behind the whole game: the margin around the board and the control panel.
-	This is the window color the original gives its morph."
+	"Answer the color behind the whole game: the margin around the board and the control panel."
 
 	^ Color r: 0.369 g: 0.369 b: 0.505
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> laserBeamCenterColor [
+	"Answer the color of the bright core that runs along the middle of the laser beam."
+
 	^Color r: 0.909 g: 1.0 b: 0.27
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> laserBeamSplatterColor [
+	"Answer the color of the wide, pale part of the laser beam."
+
 	^Color r: 1.0 g: 1.0 b: 0.71
 ]
 
@@ -152,15 +157,15 @@ LaserGameColors class >> mirrorColor [
 
 { #category : 'colors' }
 LaserGameColors class >> panelDividerDarkColor [
-	"Answer the darker end of the bar page 201 draws across the control panel above the buttons.
-	The original fills a RectangleMorph with a gradient between two near whites."
+	"Answer the darker end of the bar drawn across the control panel above the buttons. The bar is
+	a gradient between two near whites."
 
 	^ Color r: 0.847 g: 0.847 b: 0.85
 ]
 
 { #category : 'colors' }
 LaserGameColors class >> panelDividerLightColor [
-	"Answer the lighter end of the bar page 201 draws across the control panel above the buttons."
+	"Answer the lighter end of the bar drawn across the control panel above the buttons."
 
 	^ Color r: 0.972 g: 0.972 b: 0.976
 ]
@@ -182,9 +187,8 @@ LaserGameColors class >> targetCenterColorIdle [
 
 { #category : 'colors' }
 LaserGameColors class >> windowColorRamp [
-	"Answer the ramp the window is filled with: page 140's two stops, each a fraction of the way
-	along the fill paired with the color there. The original hands the same array of associations
-	to #fillWithRamp:oriented:, and Bloc calls them the stops of a gradient paint."
+	"Answer the ramp the window is filled with: two stops, each a fraction of the way along the
+	fill paired with the color there. Bloc calls them the stops of a gradient paint."
 
 	^ {
 		  (0.0 -> (Color r: 0.3 g: 0.8 b: 0.9)).
@@ -193,9 +197,9 @@ LaserGameColors class >> windowColorRamp [
 
 { #category : 'colors' }
 LaserGameColors class >> windowColorRampDirection [
-	"Answer the direction the window ramp runs in, as a fraction of the window in each direction:
-	page 140's #oriented: argument. The first stop sits at the top left corner and the last one
-	that fraction of the way across and down."
+	"Answer the direction the window ramp runs in, as a fraction of the window in each direction.
+	The first stop sits at the top left corner and the last one that fraction of the way across
+	and down."
 
 	^ 0.3 @ 0.8
 ]

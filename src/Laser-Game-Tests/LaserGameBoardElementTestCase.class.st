@@ -85,9 +85,9 @@ LaserGameBoardElementTestCase >> testExtentForGridComesFromTheCellSize [
 
 { #category : 'tests' }
 LaserGameBoardElementTestCase >> testFiringTheLaserLightsTheTargetOfANewBoard [
-	"Page 063 of the original: the laser is fired and the target turns on. The cells are built from
-	the model, so a board built after the shot shows the lit target. The disc is the last child of
-	the target, since a lit target draws the beam under its picture."
+	"Firing the laser turns the target on. The cells are built from the model, so a board built
+	after the shot shows the lit target. The disc is the last child of the target, since a lit
+	target draws the beam under its picture."
 
 	| grid board center |
 	grid := GridFactory demoGrid.
@@ -120,10 +120,9 @@ LaserGameBoardElementTestCase >> testSettingAnotherGridRebuildsTheCells [
 
 { #category : 'tests' }
 LaserGameBoardElementTestCase >> testTheBoardCastsADropShadow [
-	"Page 201 gives the board a drop shadow: three pixels down and to the right, in a dark grey.
-	The original asks the SketchMorph holding the board form for it; here it is an element
-	effect, so the shadow is drawn under the board and the board keeps the size its cells give
-	it, which is what the game's arithmetic counts on."
+	"The board casts a drop shadow: three pixels down and to the right, in a dark grey. It is an
+	element effect rather than a shape of its own, so the shadow is drawn under the board and the
+	board keeps the size its cells give it, which is what the game's arithmetic counts on."
 
 	| board |
 	board := LaserGameBoardElement on: GridFactory demoGrid.

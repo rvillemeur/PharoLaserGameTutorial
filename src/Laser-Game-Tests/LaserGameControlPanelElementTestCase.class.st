@@ -30,8 +30,8 @@ LaserGameControlPanelElementTestCase >> testARowOfTwoButtonsFitsInsideThePanel [
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testActiveMirrorsCounterIsThreeDigitsCaptionedActiveMirrors [
-	"Page 181's second new counter, captioned Active Mirrors. That caption is the longest of the
-	four, and it is why the original widens its panel on the same page."
+	"The same three digit display again, captioned Active Mirrors. That caption is the longest of
+	the four, so it decides how wide a counter has to be."
 
 	| panel |
 	panel := self newPanel.
@@ -45,10 +45,9 @@ LaserGameControlPanelElementTestCase >> testActiveMirrorsCounterIsThreeDigitsCap
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testButtonColumnSitsAtTheBottomLeftOneGapIn [
 	"The buttons are aligned to the bottom left corner of the panel, one gap away from both edges,
-	and the rows are one gap apart. That is where page 144's layout frames put them, counting rows
-	from the bottom. The cell spacing is the whole of the gap, since a linear layout spaces its
-	cells from its own edges as well as from each other; a margin on top of it would take the
-	bottom row past the right edge of the panel and up against the board."
+	and the rows are one gap apart. The cell spacing is the whole of the gap, since a linear
+	layout spaces its cells from its own edges as well as from each other; a margin on top of it
+	would take the bottom row past the right edge of the panel and up against the board."
 
 	| panel column |
 	panel := self newPanel.
@@ -63,25 +62,6 @@ LaserGameControlPanelElementTestCase >> testButtonColumnSitsAtTheBottomLeftOneGa
 	self
 		assert: column layout cellSpacing
 		equals: LaserGameControlPanelElement buttonGap
-]
-
-{ #category : 'tests' }
-LaserGameControlPanelElementTestCase >> testButtonsKeepTheOriginalSize [
-	"All three buttons are the original's forty by twenty. Sizes are read from the layout
-	constraints, since nothing is laid out yet."
-
-	| panel |
-	panel := self newPanel.
-	{
-		panel quitButton.
-		panel fireButton.
-		panel newGameButton } do: [ :button |
-		self
-			assert: button constraints horizontal resizer size
-			equals: LaserGameControlPanelElement buttonWidth.
-		self
-			assert: button constraints vertical resizer size
-			equals: LaserGameControlPanelElement buttonHeight ]
 ]
 
 { #category : 'tests' }
@@ -109,9 +89,8 @@ LaserGameControlPanelElementTestCase >> testContentHeightIsWhatTheCountersAndBut
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testCounterColumnHoldsTheFourCountersInOrder [
-	"Page 181 adds the mirror counters under the two the panel already had, in the order the
-	layout frames of that page put them: the beam, the moves, the mirrors, then the active
-	mirrors."
+	"The four counters sit in one column, in order: the beam, the moves, the mirrors, then the
+	active mirrors."
 
 	| panel |
 	panel := self newPanel.
@@ -125,7 +104,7 @@ LaserGameControlPanelElementTestCase >> testCounterColumnHoldsTheFourCountersInO
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testCounterColumnSitsAtTheTopLeftOneGapIn [
 	"The counters are aligned to the top left corner of the panel, one counter gap away from both
-	edges, which is the layout frame page 141 gives them. The buttons keep the bottom."
+	edges. The buttons keep the bottom."
 
 	| panel column |
 	panel := self newPanel.
@@ -144,9 +123,9 @@ LaserGameControlPanelElementTestCase >> testCounterColumnSitsAtTheTopLeftOneGapI
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testCounterShowsTheBeamLengthOnlyWhileTheLaserFires [
-	"Page 142: while the laser fires the counter is bright and holds the number of path elements
-	of the grid; while it does not the counter is dim and holds zero. The counter follows the grid
-	only when it is updated, which is what the fire button and a move do."
+	"While the laser fires the counter is bright and holds the number of path elements of the
+	grid; while it does not, the counter is dim and holds zero. The counter follows the grid only
+	when it is updated, which is what the fire button and a move do."
 
 	| panel |
 	panel := self newPanel.
@@ -183,11 +162,30 @@ LaserGameControlPanelElementTestCase >> testEveryButtonCentresItsLabel [
 ]
 
 { #category : 'tests' }
+LaserGameControlPanelElementTestCase >> testEveryButtonIsFortyByTwenty [
+	"Every button is forty by twenty. Sizes are read from the layout constraints, since nothing is
+	laid out yet."
+
+	| panel |
+	panel := self newPanel.
+	{
+		panel quitButton.
+		panel fireButton.
+		panel newGameButton } do: [ :button |
+		self
+			assert: button constraints horizontal resizer size
+			equals: LaserGameControlPanelElement buttonWidth.
+		self
+			assert: button constraints vertical resizer size
+			equals: LaserGameControlPanelElement buttonHeight ]
+]
+
+{ #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testEveryButtonLabelFitsInsideTheButton [
-	"Page 144 states forty pixels for a button and never asks whether its labels fit; the longest
-	of them, Reset and Undo, fill all but a few pixels of that, and a font a little wider than
-	this one paints them over the edge. The width is stated here too, but the six labels the
-	panel can show are measured against it, with a margin on each side of the longest."
+	"The width of a button is stated rather than measured, so the six labels the panel can show
+	are measured against it instead, with a margin on each side of the longest. Reset and Undo
+	are the longest two: in a forty pixel button they filled all but a few pixels of it, and a
+	font a little wider would have painted them over its edge."
 
 	LaserGameControlPanelElement buttonLabels do: [ :each |
 		self
@@ -200,11 +198,9 @@ LaserGameControlPanelElementTestCase >> testEveryButtonLabelFitsInsideTheButton 
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testEveryCounterFitsInsideThePanel [
-	"Page 181 widens the panel because the caption of the active mirrors counter is longer than
-	the ones before it. Here the panel width is the width of a row of two buttons, so the check
-	runs the other way: the widest counter has to fit in the width the buttons ask for, with the
-	gap on both sides. A counter takes the size of its caption, so the column is asked to measure
-	itself first; nothing is laid out, and no element is opened."
+	"The panel is as wide as a row of two buttons, so the widest counter has to fit in the width
+	the buttons ask for, with the gap on both sides. A counter takes the size of its caption, so
+	the column is asked to measure itself first; nothing is laid out, and no element is opened."
 
 	| panel |
 	panel := self newPanel.
@@ -219,10 +215,10 @@ LaserGameControlPanelElementTestCase >> testEveryCounterFitsInsideThePanel [
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testEveryCounterIsAsWideAsThePanelLessAGapOnEachSide [
-	"Page 141 lets every counter take the width of its own caption, so the four boxes of the
-	original are four different widths with their right edges ragged. Here they are all given the
-	width of the panel less the gap the column stands in, so the four boxes are the same width
-	and their edges line up under each other."
+	"A counter that took the width of its own caption would leave the four boxes four different
+	widths, with their right edges ragged. They are all given the width of the panel less the gap
+	the column stands in, so the four boxes are the same width and their edges line up under each
+	other."
 
 	| panel widths |
 	panel := self newPanel.
@@ -256,7 +252,7 @@ LaserGameControlPanelElementTestCase >> testFireButtonSaysWhatAClickWillDo [
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testLaserPathCounterIsThreeDigitsCaptionedLaserPath [
-	"Page 141 asks for three digits and the caption Laser Path."
+	"The counter of the beam is three digits, captioned Laser Path."
 
 	| panel |
 	panel := self newPanel.
@@ -267,10 +263,10 @@ LaserGameControlPanelElementTestCase >> testLaserPathCounterIsThreeDigitsCaption
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testMirrorCountersShowTheGridCountsAndAreNeverBright [
-	"Page 182 sets both mirror counters from the grid with #highlighted: false, like the move
-	counter: only the beam counter says whether the laser is on. The demo grid holds ten mirrors,
-	of which three are lit once the laser fires; the numbers are read from the grid, since
-	GridTestCase is where they are written down."
+	"Both mirror counters are set from the grid and never highlighted, like the move counter: only
+	the beam counter says whether the laser is on. The demo grid holds ten mirrors, of which three
+	are lit once the laser fires; the numbers are read from the grid, since GridTestCase is where
+	they are written down."
 
 	| panel |
 	panel := self newPanel.
@@ -293,7 +289,7 @@ LaserGameControlPanelElementTestCase >> testMirrorCountersShowTheGridCountsAndAr
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testMirrorsCounterIsThreeDigitsCaptionedMirrors [
-	"Page 181's first new counter: the same three digit display as the others, captioned Mirrors."
+	"The same three digit display as the others, captioned Mirrors."
 
 	| panel |
 	panel := self newPanel.
@@ -304,7 +300,7 @@ LaserGameControlPanelElementTestCase >> testMirrorsCounterIsThreeDigitsCaptioned
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testMovesCounterIsThreeDigitsCaptionedMoves [
-	"Page 143's counter: the same three digit display as the beam counter, captioned Moves."
+	"The same three digit display as the beam counter, captioned Moves."
 
 	| panel |
 	panel := self newPanel.
@@ -315,8 +311,8 @@ LaserGameControlPanelElementTestCase >> testMovesCounterIsThreeDigitsCaptionedMo
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testMovesCounterShowsTheMoveCountAndIsNeverBright [
-	"Page 143 sets the move counter with #highlighted: false every time: only the beam says whether
-	the laser is on."
+	"The move counter is never highlighted: only the counter of the beam says whether the laser is
+	on."
 
 	| panel |
 	panel := self newPanel.
@@ -331,10 +327,10 @@ LaserGameControlPanelElementTestCase >> testMovesCounterShowsTheMoveCountAndIsNe
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testNewGameButtonHasTheRowAboveTheOthers [
-	"Page 144 puts New in the second row from the bottom, first column: the Quit and Fire row is
-	the lowest of the column and the New row sits directly above it. What else stands in the row,
-	and what rows a later page adds above it, is asserted by
-	#testUndoButtonSharesTheRowWithNewGame and #testResetButtonHasTheTopRowToItself."
+	"New sits in the second row from the bottom, first column: the Quit and Fire row is the lowest
+	of the column and the New row sits directly above it. What else stands in the row, and what
+	rows stand above it, is asserted by #testUndoButtonSharesTheRowWithNewGame and
+	#testResetButtonHasTheTopRowToItself."
 
 	| panel rows |
 	panel := self newPanel.
@@ -350,8 +346,7 @@ LaserGameControlPanelElementTestCase >> testNewGameButtonHasTheRowAboveTheOthers
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testPanelHoldsARowOfTwoButtons [
 	"The game's panel is a control panel element. It holds the column of button rows, and the
-	bottom row holds the Quit button then the Fire button. The rest of the original's buttons
-	arrive with their own pages."
+	bottom row holds the Quit button then the Fire button."
 
 	| panel row |
 	panel := self newPanel.
@@ -369,37 +364,40 @@ LaserGameControlPanelElementTestCase >> testPanelHoldsARowOfTwoButtons [
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBoardOrItsContents [
-	"The panel sizes itself: the original's panel width, and the height of the board beside it —
-	unless the board is shorter than what the panel holds, which the demo grid of five rows is
-	once page 181 has added the mirror counters. Then the panel keeps the height of its contents,
-	so the counters never reach the buttons."
+	"The panel sizes itself: a panel width, and the height of the board beside it — unless the
+	board is shorter than what the panel holds. Then the panel keeps the height of its contents, so
+	the counters never reach the buttons. Both halves of that rule are checked, on a board of one
+	row and on a board of enough rows to be taller than the panel, so neither half depends on what
+	a cell measures."
 
-	| grid panel |
-	grid := GridFactory demoGrid.
-	panel := (LaserGameElement on: grid) controlPanel.
+	| short tall rows |
+	short := GridFactory randomizedGridOfExtent: 5 @ 1.
+	rows := LaserGameControlPanelElement contentHeight
+	        // CellRenderer cellExtent y + 2.
+	tall := GridFactory randomizedGridOfExtent: 5 @ rows.
+	{ short. tall } do: [ :grid |
+		| panel |
+		panel := (LaserGameElement on: grid) controlPanel.
+		self
+			assert: panel constraints horizontal resizer size
+			equals: LaserGameElement panelWidth.
+		self
+			assert: panel constraints vertical resizer size
+			equals: ((LaserGameBoardElement extentForGrid: grid) y
+				 max: LaserGameControlPanelElement contentHeight) ].
 	self
-		assert: panel constraints horizontal resizer size
-		equals: LaserGameElement panelWidth.
+		assert: (LaserGameBoardElement extentForGrid: short) y
+		< LaserGameControlPanelElement contentHeight.
 	self
-		assert: panel constraints vertical resizer size
-		equals: LaserGameControlPanelElement contentHeight.
-	self
-		assert: LaserGameControlPanelElement contentHeight
-		> (LaserGameBoardElement extentForGrid: grid) y.
-	self
-		assert: (LaserGameControlPanelElement heightForGrid:
-				 (GridFactory randomizedGridOfExtent: 8 @ 10))
-		equals:
-			(LaserGameBoardElement extentForGrid:
-				 (GridFactory randomizedGridOfExtent: 8 @ 10)) y
+		assert: (LaserGameBoardElement extentForGrid: tall) y
+		> LaserGameControlPanelElement contentHeight
 ]
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testResetButtonHasTheTopRowToItself [
-	"Page 188 puts Reset in row three, column one, which is the row above New and Undo and the
-	topmost of the three. Its button is the one thing the panel does not hold in an instance
-	variable, so it is read from its row. Since page 201 the column starts with the divider bar,
-	so the three rows follow it."
+	"Reset sits in row three, column one, which is the row above New and Undo and the topmost of
+	the three. Its button is the one thing the panel does not hold in an instance variable, so it
+	is read from its row. The column starts with the divider bar, so the three rows follow it."
 
 	| panel |
 	panel := self newPanel.
@@ -415,10 +413,10 @@ LaserGameControlPanelElementTestCase >> testResetButtonHasTheTopRowToItself [
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testThePanelShowsADividerAboveItsButtons [
-	"Page 201 draws a bar across the panel above the buttons, a gap in from each edge and five
-	pixels tall. The original hangs it off the bottom edge of the panel at a fixed offset, which
-	is a number that has to be found again whenever a row of buttons is added; here it is the
-	first child of the column of button rows, so it stands above them wherever they stand."
+	"A bar runs across the panel above the buttons, a gap in from each edge and five pixels tall.
+	It is the first child of the column of button rows, so it stands above them wherever they
+	stand, rather than hanging off the bottom edge of the panel at an offset that would have to be
+	found again whenever a row of buttons is added."
 
 	| panel divider |
 	panel := self newPanel.
@@ -443,7 +441,7 @@ LaserGameControlPanelElementTestCase >> testThePanelShowsADividerAboveItsButtons
 
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testUndoButtonSharesTheRowWithNewGame [
-	"Page 186 puts Undo in row two, column two: beside New, above Quit and Fire."
+	"Undo sits in row two, column two: beside New, above Quit and Fire."
 
 	| panel |
 	panel := self newPanel.

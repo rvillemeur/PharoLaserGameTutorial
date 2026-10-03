@@ -13,9 +13,8 @@ GridTestCase >> generateDemoGrid [
 
 { #category : 'tests' }
 GridTestCase >> testAPushThatMovesNothingRecordsNoMove [
-	"A push that the rules refuse is not a move, so nothing goes on the stack the undo of
-	Section 5 reads. This is what pushCellAction:fromLocation: asks when it compares the two
-	locations."
+	"A push that the rules refuse is not a move, so nothing goes on the moves stack. This is what
+	pushCellAction:fromLocation: asks when it compares the two locations."
 
 	| grid |
 	grid := self generateDemoGrid.
@@ -30,10 +29,10 @@ GridTestCase >> testAPushThatMovesNothingRecordsNoMove [
 
 { #category : 'tests' }
 GridTestCase >> testAPushedMirrorIsTheSameCellInItsNewPlace [
-	"The push tests of page 123 ask which class sits where. That leaves room for a push that
-	builds a fresh mirror: the classes would still be right and the lean of the mirror, or
-	anything else the cell carries, would be lost. Both cells are the ones that were there
-	before, and both know their new location."
+	"A push test that only asks which class sits where leaves room for a push that builds a fresh
+	mirror: the classes would still be right and the lean of the mirror, or anything else the
+	cell carries, would be lost. Both cells are the ones that were there before, and both know
+	their new location."
 
 	| grid mirror blank |
 	grid := self generateDemoGrid.
@@ -88,6 +87,8 @@ GridTestCase >> testFireLaser [
 
 { #category : 'tests' }
 GridTestCase >> testFireLaserAfterMirrorPush [
+	"The same push with the laser off moves the mirror and lights nothing. Firing afterwards
+	follows the new path, which no longer reaches the target."
 
 	| grid cell |
 	grid := self generateDemoGrid.
@@ -131,6 +132,9 @@ GridTestCase >> testFireLaserAfterMirrorRotation [
 
 { #category : 'tests' }
 GridTestCase >> testFireLaserDuringMirrorPush [
+	"A push made while the laser is on takes the beam off the board and lays it down again along
+	the new path. The beam crosses the mirror at 4@5, so pushing that mirror west sends the beam
+	a different way and the target goes dark."
 
 	| grid cell |
 	grid := self generateDemoGrid.
@@ -205,6 +209,7 @@ GridTestCase >> testNonDefaultGridSizeInitialConditions [
 
 { #category : 'tests' }
 GridTestCase >> testNumberOfActiveMirrorsCounter [
+	"No mirror is lit before the laser fires. The demo beam crosses three of the ten."
 
 	| grid count |
 	grid := self generateDemoGrid.
@@ -217,6 +222,7 @@ GridTestCase >> testNumberOfActiveMirrorsCounter [
 
 { #category : 'tests' }
 GridTestCase >> testNumberOfMirrorsCounter [
+	"The demo grid holds ten mirrors. They are counted over the whole board, lit or not."
 
 	| grid count |
 	grid := self generateDemoGrid.
@@ -369,9 +375,9 @@ GridTestCase >> testPushTargetCell [
 
 { #category : 'tests' }
 GridTestCase >> testPushingAMirrorAgainstANonBlankNeighbourDoesNothing [
-	"Page 122 shows two pictures side by side: a mirror with a blank cell beside it moves, two
-	mirrors beside each other do not move together. The target is no different from a mirror
-	here — it is simply not blank, so a mirror cannot be pushed into it either."
+	"A mirror with a blank cell beside it moves; two mirrors beside each other do not move
+	together. The target is no different from a mirror here — it is simply not blank, so a
+	mirror cannot be pushed into it either."
 
 	| grid |
 	grid := self generateDemoGrid.
@@ -385,9 +391,9 @@ GridTestCase >> testPushingAMirrorAgainstANonBlankNeighbourDoesNothing [
 
 { #category : 'tests' }
 GridTestCase >> testPushingAMirrorOffTheEdgeOfTheGridDoesNothing [
-	"There is no cell beyond the border, so the push finds nothing to trade places with. Page 122
-	states the rule as a rule about the adjacent cell; the demo grid has a mirror on the left
-	edge at 1@2 and one on the bottom edge at 1@5."
+	"There is no cell beyond the border, so the push finds nothing to trade places with. The rule
+	is a rule about the adjacent cell; the demo grid has a mirror on the left edge at 1@2 and one
+	on the bottom edge at 1@5."
 
 	| grid |
 	grid := self generateDemoGrid.
@@ -399,8 +405,8 @@ GridTestCase >> testPushingAMirrorOffTheEdgeOfTheGridDoesNothing [
 
 { #category : 'tests' }
 GridTestCase >> testResetGrid [
-	"Page 188: two pushes, then a reset, and the cell that moved is back where it was with an
-	empty stack behind it. Reset is the undo stack unwound to the end, so this is the same rule
+	"Two pushes, then a reset, and the cells that moved are back where they were with an empty
+	stack behind them. Reset is the undo stack unwound to the end, so this is the same rule
 	#testUndoingEveryMoveGivesTheGridBackAsItWas states one move at a time."
 
 	| grid cell |
@@ -437,9 +443,8 @@ GridTestCase >> testStopLaser [
 
 { #category : 'tests' }
 GridTestCase >> testTheCellsTabListsEveryCellWithItsState [
-	"Page 118 opens an object explorer on the morph and walks down to the cells dictionary to
-	find out that the target at 5@1 is on when it should not be. The same question is one tab
-	away here: one row per cell, with what the cell is and whether it is lit."
+	"The Cells tab answers in one view whether any cell disagrees with the beam: one row per cell,
+	with what the cell is and whether it is lit."
 
 	| grid builder table |
 	grid := self generateDemoGrid.
@@ -459,9 +464,8 @@ GridTestCase >> testTheCellsTabListsEveryCellWithItsState [
 
 { #category : 'tests' }
 GridTestCase >> testTheInspectorTabsOfAGridShowTheBoardAndTheBeam [
-	"Where page 108 improves what a cell prints in a debugger, a grid can show the board itself and
-	the path the laser takes, since Section 2 gave it an element that draws it. One row per step of
-	the beam, and the board as a picture."
+	"A grid can show the board itself, since it has an element that draws it, as well as the path
+	the laser takes. One row per step of the beam, and the board as a picture."
 
 	| grid builder |
 	grid := self generateDemoGrid.
@@ -491,9 +495,9 @@ GridTestCase >> testToggleLaser [
 
 { #category : 'tests' }
 GridTestCase >> testUndoActions [
-	"Page 184: every action symbol the stack can hold answers the selector that takes it back.
-	The six pairs are the four pushes, each answering the push the other way, and the two
-	rotations, each answering the other turn."
+	"Every action symbol the stack can hold answers the selector that takes it back. The six pairs
+	are the four pushes, each answering the push the other way, and the two rotations, each
+	answering the other turn."
 
 	| undoAction |
 	undoAction := ReverseLaserGameAction reverseActionSymbolFor: #north.
@@ -514,7 +518,7 @@ GridTestCase >> testUndoActions [
 
 { #category : 'tests' }
 GridTestCase >> testUndoStackAfterPush [
-	"Page 186: a push puts one entry on the stack, the undo takes it off and answers true, and a
+	"A push puts one entry on the stack, the undo takes it off and answers true, and a
 	second undo finds the stack empty and answers false."
 
 	| grid |
@@ -528,11 +532,10 @@ GridTestCase >> testUndoStackAfterPush [
 
 { #category : 'tests' }
 GridTestCase >> testUndoingEveryMoveGivesTheGridBackAsItWas [
-	"Page 185's undo takes one move off the stack and plays its reverse. A run of pushes and turns
-	mixed together, undone one at a time, has to leave every cell of the grid where it was and
-	facing the way it did, and leave the stack empty. The original tests one push and one undo.
-	Only a move that changed something is stacked, so each move is checked to have been recorded
-	before the run is undone."
+	"Undo takes one move off the stack and plays its reverse. A run of pushes and turns mixed
+	together, undone one at a time, has to leave every cell of the grid where it was and facing
+	the way it did, and leave the stack empty. Only a move that changed something is stacked, so
+	each move is checked to have been recorded before the run is undone."
 
 	| grid before after reading |
 	reading := [ :aGrid |

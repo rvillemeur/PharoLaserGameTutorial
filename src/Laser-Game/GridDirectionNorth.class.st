@@ -7,12 +7,6 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-GridDirectionNorth class >> adjacentInVersionSymbol [
-
-	^ #south
-]
-
-{ #category : 'as yet unclassified' }
 GridDirectionNorth class >> adjacentInversionSymbol [
 	^#south
 ]

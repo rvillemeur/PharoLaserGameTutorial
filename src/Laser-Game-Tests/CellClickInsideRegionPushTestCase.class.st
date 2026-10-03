@@ -7,11 +7,9 @@ Class {
 
 { #category : 'support' }
 CellClickInsideRegionPushTestCase >> assertPushRegionTable [
-	"Check the table of page 190: a point of the inside region, and the push a click there asks
-	for. Every point is written relative to the rectangle the region answers, so the table holds
-	at any cell size, which is what that page is about. The page writes the point of its last row
-	as 20@1, a point of the cell and not of the region; the row means the top centre of the
-	region one pixel down, which is what it says here."
+	"Check the table: a point of the inside region, and the push a click there asks for. Every
+	point is written relative to the rectangle the region answers, so the table holds at any cell
+	size."
 
 	| pt regionClass pushRegion testTable cls rect |
 	rect := CellClickRegionInside regionRectangle.
@@ -38,10 +36,9 @@ CellClickInsideRegionPushTestCase >> assertPushRegionTable [
 
 { #category : 'tests' }
 CellClickInsideRegionPushTestCase >> testAPointOnALineIsNotUnderIt [
-	"Pages 090 and 091: the first run of the original's test failed on a point that sits exactly
-	on a line, and the fault was in the test, not in the code. Both line tests ask <, so a point
-	on a line is not under it, and the truth table then sends the corner points the way the
-	region names say."
+	"The first run of this test failed on a point that sits exactly on a line, and the fault was
+	in the test, not in the code. Both line tests ask <, so a point on a line is not under it,
+	and the truth table then sends the corner points the way the region names say."
 
 	| rect onBoth onHeadingDown |
 	rect := CellClickRegionInside regionRectangle.
@@ -65,9 +62,8 @@ CellClickInsideRegionPushTestCase >> testAPointOnALineIsNotUnderIt [
 
 { #category : 'tests' }
 CellClickInsideRegionPushTestCase >> testClicksInPushRegions [
-	"Run the table of page 190 at the cell size of the package. This is the test the tutorial
-	rewrites on that page, and the port inherited it already rewritten with the captured source,
-	so the table lives in a method of its own and this test is one call of it."
+	"Run the table at the cell size of the package. The table lives in a method of its own, so the
+	test that runs it at three other sizes can share it."
 
 	self assertPushRegionTable
 ]
@@ -75,9 +71,9 @@ CellClickInsideRegionPushTestCase >> testClicksInPushRegions [
 { #category : 'tests' }
 CellClickInsideRegionPushTestCase >> testEveryPointOfTheInsideRegionIsInExactlyOnePushRegion [
 	"The two diagonals cut the inside region into four triangles that cover it and do not
-	overlap, so every point of it belongs to one push region and to no other. The original
-	checked nine points by hand; this walks the whole region, which is what makes the test hold
-	at any cell size."
+	overlap, so every point of it belongs to one push region and to no other. Checking a
+	handful of points by hand would prove less: this walks the whole region, which is what
+	makes the test hold at any cell size."
 
 	| rect |
 	rect := CellClickRegionInside regionRectangle.
@@ -94,7 +90,7 @@ CellClickInsideRegionPushTestCase >> testEveryPointOfTheInsideRegionIsInExactlyO
 CellClickInsideRegionPushTestCase >> testTheLinesRunThroughTheCornersOfTheInsideRegion [
 	"The two diagonals are written as equations of the cell, y = x and y = cellExtent x - x, and
 	no number of the inside region appears in them. They still meet its corners, which is what
-	makes the arithmetic of page 087 hold at any cell size."
+	makes the arithmetic hold at any cell size."
 
 	| rect |
 	rect := CellClickRegionInside regionRectangle.
@@ -115,8 +111,8 @@ CellClickInsideRegionPushTestCase >> testTheLinesRunThroughTheCornersOfTheInside
 { #category : 'tests' }
 CellClickInsideRegionPushTestCase >> testThePushRegionIsTheOneOfTheEdgeThePointIsNearest [
 	"A point near an edge of the inside region pushes away from that edge: near the left edge the
-	cell is pushed east, near the top edge it is pushed south. That is the arrow page 086 draws
-	in its diagram, and it is why the region names read the way they do."
+	cell is pushed east, near the top edge it is pushed south. That is why the region names read
+	the way they do."
 
 	| rect |
 	rect := CellClickRegionInside regionRectangle.
@@ -131,10 +127,8 @@ CellClickInsideRegionPushTestCase >> testThePushRegionIsTheOneOfTheEdgeThePointI
 
 { #category : 'tests' }
 CellClickInsideRegionPushTestCase >> testThePushRegionTableHoldsAtEveryCellSize [
-	"Run the same table at three cell sizes. This is what pages 190 to 194 are for: a row that
-	names a point of the rectangle the region answers cannot go stale when the cell grows, where
-	the thirty pixel numbers of page 075 went stale on page 137. The port proves the claim instead
-	of resting on it."
+	"Run the same table at three cell sizes. Every row names a point of the rectangle a region
+	answers, so no row goes stale when the cell grows. A table of pixel numbers would."
 
 	#( 30 40 80 ) do: [ :size |
 		self withCellExtent: size @ size do: [ self assertPushRegionTable ] ]

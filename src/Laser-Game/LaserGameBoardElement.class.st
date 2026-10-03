@@ -1,11 +1,11 @@
 "
 I am the game board: the element that shows every cell of one grid.
 
-I hold a grid and one child element per cell of it, built by the CellRenderer of each cell. A BlGridLayout places those children, one column per grid column, so a cell never computes where it sits: that was the job of the offsets the original tutorial needed when all cells drew into one shared Form.
+I hold a grid and one child element per cell of it, built by the CellRenderer of each cell. A BlGridLayout places those children, one column per grid column, so a cell never computes where it sits.
 
-The original tutorial computed the extent of that shared Form from the cell size, the border width and the grid dimensions. I keep the arithmetic as `LaserGameBoardElement class >> extentForGrid:`, because a window still has to be given a size, but nothing depends on it internally: I take the size of my cells through fitContent constraints, and cell borders are painted inside the cells, so they cost no space.
+`LaserGameBoardElement class >> extentForGrid:` answers the size a board of a given grid takes, because a window still has to be given a size. Nothing depends on it internally: I take the size of my cells through fitContent constraints, and cell borders are painted inside the cells, so they cost no space.
 
-I also hold what the mouse is doing to my cells. Each cell element handles its own mouse events and tells me: `hoverCellElement:` and `unhoverCellElement:` keep `hoveredCellElement` current, `clickCellElement:` records `clickedCell`, and `moveMade` says that a click changed the grid. So `hoveredCell` answers the cell under the pointer, which the original had to compute from the hand position, the board offset and the cell size, and printed to the Transcript on page 078.
+I also hold what the mouse is doing to my cells. Each cell element handles its own mouse events and tells me: `hoverCellElement:` and `unhoverCellElement:` keep `hoveredCellElement` current, `clickCellElement:` records `clickedCell`, and `moveMade` says that a click changed the grid. So `hoveredCell` answers the cell under the pointer without any arithmetic: the pointer is over a cell when that cell's own element says so.
 
 `moveMade` draws my cells again and then evaluates `moveAction`, which is how the game hears that its counters are out of date. Nothing is registered there when I am opened on my own.
 
@@ -16,7 +16,6 @@ Instance variables:
 	hoveredCellElement	<LaserGameCellElement>	the cell element under the pointer, nil when the pointer is off the board
 	clickedCell	<Cell>	the cell of the last click, nil until a cell is clicked
 	moveAction	<BlockClosure>	evaluated after a move, nil when nobody listens
-
 "
 Class {
 	#name : 'LaserGameBoardElement',
@@ -64,8 +63,7 @@ LaserGameBoardElement class >> openExample [
 { #category : 'examples' }
 LaserGameBoardElement class >> openExampleWithLaserFired [
 	"Open the demo grid with the laser already fired, which lights the target and draws the beam
-	over the blank cells it crosses. The mirrors and the target still show no beam of their own:
-	that is the work of the two sections after page 158.
+	over the blank cells it crosses.
 
 	LaserGameBoardElement openExampleWithLaserFired"
 
@@ -78,9 +76,7 @@ LaserGameBoardElement class >> openExampleWithLaserFired [
 
 { #category : 'examples' }
 LaserGameBoardElement class >> openOn: aGrid [
-
-	"Open a space showing aGrid and answer it. The space is sized from the grid, which is the
-	whole of what the original tutorial computed a target form extent for.
+	"Open a space showing aGrid and answer it. The space is sized from the grid.
 
 	LaserGameBoardElement openOn: GridFactory demoGrid"
 
@@ -95,8 +91,7 @@ LaserGameBoardElement class >> openOn: aGrid [
 
 { #category : 'constants' }
 LaserGameBoardElement class >> shadowOffset [
-	"Answer how far the board casts its shadow, in pixels. Page 201 gives the SketchMorph holding
-	the board form a shadow offset of three pixels down and to the right."
+	"Answer how far the board casts its shadow, in pixels: three down and three to the right."
 
 	^ 3 @ 3
 ]
@@ -120,8 +115,8 @@ LaserGameBoardElement >> clickCellElement: aCellElement [
 
 { #category : 'accessing' }
 LaserGameBoardElement >> clickedCell [
-	"Answer the cell of the last click, or nil while no cell has been clicked. Nothing acts on
-	the click yet: the click regions decide what a click does from Section 3.5 on."
+	"Answer the cell of the last click, or nil while no cell has been clicked. Nothing acts on the
+	click yet: the click regions decide what a click does from *Determine Push Regions* on."
 
 	^ clickedCell
 ]
@@ -144,10 +139,9 @@ LaserGameBoardElement >> grid: aGrid [
 { #category : 'interaction' }
 LaserGameBoardElement >> hoverCellElement: aCellElement [
 	"Remember that the pointer is over aCellElement. A cell tells me this when the pointer enters
-	it and while it moves inside it. The cell I hovered before loses its hint here: page 116 shows
-	that mouse moves are samples, so cells the pointer crossed quickly are never told they were
-	left, and page 117 answers that with a sweep over the cells marked dirty. One cell can hold a
-	hint at a time, so the sweep is this one line."
+	it and while it moves inside it. The cell I hovered before loses its hint here: mouse moves
+	arrive as samples, so a cell the pointer crossed quickly is never told that it was left. One
+	cell can hold a hint at a time, so clearing the previous one is this single line."
 
 	hoveredCellElement == aCellElement ifTrue: [ ^ self ].
 	hoveredCellElement ifNotNil: [ :each | each clearPositionHint ].
@@ -156,9 +150,8 @@ LaserGameBoardElement >> hoverCellElement: aCellElement [
 
 { #category : 'accessing' }
 LaserGameBoardElement >> hoveredCell [
-	"Answer the cell the pointer is over, or nil when the pointer is off the board. This is what
-	the original wrote to the Transcript on page 078, and it took a hand position, a board offset
-	and a division by the cell size to find it."
+	"Answer the cell the pointer is over, or nil when the pointer is off the board. No arithmetic
+	is needed: the cell element under the pointer knows which cell it shows."
 
 	^ hoveredCellElement ifNotNil: [ :element | element cell ]
 ]
@@ -173,9 +166,8 @@ LaserGameBoardElement >> hoveredCellElement [
 { #category : 'initialization' }
 LaserGameBoardElement >> initialize [
 	"A board lays its cells out in a grid, one column per grid column, and takes exactly the
-	size of the cells it holds. It casts a shadow down and to the right, which is page 201's
-	drop shadow: the original asks its SketchMorph for one, and here it is an element effect,
-	drawn under the board by Alexandrie and costing no layout space."
+	size of the cells it holds. It casts a shadow down and to the right, which is an element
+	effect: Alexandrie draws it under the board, and it costs no layout space."
 
 	super initialize.
 	self background: LaserGameColors gameBoardBackgroundColor.
@@ -191,9 +183,8 @@ LaserGameBoardElement >> initialize [
 { #category : 'interaction' }
 LaserGameBoardElement >> moveMade [
 	"A move was made on one of my cells. Every cell is drawn again, and whoever asked to hear
-	about moves is told. Page 142 ends its mouse up handler with #updateCounters; the counters
-	belong to the panel and not to me, so I announce the move instead of reaching for them, and a
-	board opened on its own still works."
+	about moves is told. The counters belong to the panel and not to me, so I announce the move
+	instead of reaching for them, and a board opened on its own still works."
 
 	self redrawCells.
 	moveAction ifNotNil: [ :anAction | anAction value ]

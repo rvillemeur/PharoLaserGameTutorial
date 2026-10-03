@@ -50,8 +50,8 @@ LaserGameConfirmElementTestCase >> testAQuestionShowsItsTextAndTwoAnswers [
 
 { #category : 'tests' }
 LaserGameConfirmElementTestCase >> testTheAnswerGoesToWhoeverAsked [
-	"The original reads the answer as the value of #confirm:, which blocks until the player
-	answers. A Bloc element cannot block, so the answer is handed to a block instead."
+	"A Bloc element cannot stop and wait for an answer inside an event handler, so the answer is
+	handed to a block instead."
 
 	| question answers |
 	answers := OrderedCollection new.
