@@ -257,7 +257,7 @@ Open a System Browser, right-click the package list, choose *New package* and na
 
 Pharo groups code at two levels. A **package** is the unit you load, save and commit as a whole. Inside a package, **tags** sort the class list into groups; a tag is a convenience for whoever reads the class list and has no effect on how the code runs. This book uses one package, `Laser-Game`, with the tags `Model` and `Graphics`, and adds a second package, `Laser-Game-Tests`, once there are enough tests to be worth keeping apart.
 
-> **Note.** Until that split, which is the subject of the chapter *Modify Package Definition*, everything lives in `Laser-Game`.
+> **Note.** Until that split, which is the subject of the chapter *Tests In Their Own Package*, everything lives in `Laser-Game`.
 
 ## Creating the model classes
 

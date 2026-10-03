@@ -193,7 +193,7 @@ CellClickRegionTestCase >> testClicksInIgnoreRegion
 		deny: (CellClickRegion clickRegionForPoint: CellClickRegionInside regionRectangle center)
 		equals: CellClickRegionIgnore
 ```
-> **Note.** *A Less Brittle Unit Test Design*, in Section 5, moves this body into
+> **Note.** *A Less Brittle Test Design*, in Section 5, moves this body into
 > `#assertIgnoreRegionBoundaries` so that a second test can run it at three cell sizes; the test
 > itself becomes one call of that method.
 
@@ -228,7 +228,7 @@ CellClickRegionTestCase >> testClicksInOutsideRegion
 		deny: (CellClickRegion clickRegionForPoint: insideRect center)
 		equals: CellClickRegionOutside
 ```
-> **Note.** *A Less Brittle Unit Test Design*, in Section 5, moves this body into
+> **Note.** *A Less Brittle Test Design*, in Section 5, moves this body into
 > `#assertOutsideRegionBoundaries` and leaves the test as one call of it.
 
 and `testClicksInInsideRegion` does the third, checking that the inside region owns its top left

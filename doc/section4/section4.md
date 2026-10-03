@@ -793,7 +793,7 @@ CellRendererTestCase >> withCellExtent: anExtent do: aBlock
 	aBlock value ] ensure: [
 		CellRenderer class compile: previous sourceCode classified: 'constants' ]
 ```
-> **Note.** *A Less Brittle Unit Test Design* moves this method onto a new abstract
+> **Note.** *A Less Brittle Test Design* moves this method onto a new abstract
 > `LaserGameTestCase`, so that the click tests and the cell element tests can reach it too. The body
 > is unchanged.
 
@@ -1759,7 +1759,7 @@ LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
 	self assert: game board class equals: LaserGameBoardElement.
 	self assert: game layout class equals: BlLinearLayout
 ```
-> **Note.** *Showing Laser Home Visually*, in Section 5, wraps the board in a column, so the board is
+> **Note.** *Showing Where The Laser Comes From*, in Section 5, wraps the board in a column, so the board is
 > no longer the second child of the game.
 
 ```smalltalk
@@ -1848,7 +1848,7 @@ LaserGameElement >> initialize
 	self padding: (BlInsets all: self class gameMargin).
 	moves := 0
 ```
-> **Note.** *Showing Laser Home Visually*, in Section 5, takes the bottom margin out of the padding,
+> **Note.** *Showing Where The Laser Comes From*, in Section 5, takes the bottom margin out of the padding,
 > leaving that band to the mark of the home of the laser.
 
 ```smalltalk
@@ -1885,7 +1885,7 @@ LaserGameElement >> rebuild
 	board whenMoveMadeDo: [ self moveMade ].
 	self extent: (self class extentForGrid: self grid)
 ```
-> **Note.** *Showing Laser Home Visually* puts the board in a column with that mark, and gives the
+> **Note.** *Showing Where The Laser Comes From* puts the board in a column with that mark, and gives the
 > panel the bottom margin.
 
 ```smalltalk
@@ -2036,7 +2036,7 @@ LaserGameControlPanelElement >> newButtonColumn
 	column addChild: self newButtonRow.
 	^ column
 ```
-> **Note.** *Reset (and a bug fix)*, in Section 5, adds a third row here.
+> **Note.** *Reset*, in Section 5, adds a third row here.
 
 A row of rows, and a button never learns where it is. The rows that later chapters add — Undo beside
 New, Reset in a row of its own — fall in above these two without touching anything, because there is
@@ -2087,7 +2087,7 @@ LaserGameControlPanelElement >> newGameRow
 
 	^ self buttonColumn children first
 ```
-> **Note.** *Reset (and a bug fix)* makes this the middle row of three, so it is read as the second
+> **Note.** *Reset* makes this the middle row of three, so it is read as the second
 > child rather than the first.
 
 `children last` rather than `children first` for the bottom row, because a vertical layout draws its
@@ -2671,7 +2671,7 @@ LaserGameElementTestCase >> testAnsweringNoLeavesTheGameAsItWas
 			game controlPanel.
 			game board }
 ```
-> **Note.** *Showing Laser Home Visually*, in Section 5, reads the second child as the column the
+> **Note.** *Showing Where The Laser Comes From*, in Section 5, reads the second child as the column the
 > board sits in.
 
 Those two together are the pair worth having for any element that covers another: one that it appears
@@ -2937,7 +2937,7 @@ LaserGameElement class >> extentForGrid: aGrid
 	^ (LaserGameBoardElement extentForGrid: aGrid) + (self panelWidth @ 0)
 	  + (2 * self gameMargin)
 ```
-> **Note.** *Adding More Game Stats*, the second chapter of Section 5, takes the height of the taller
+> **Note.** *Adding More Game Stats*, the first chapter of Section 5, takes the height of the taller
 > of the board and the panel instead, since four counters can stand taller than a board of few rows.
 
 And the panel, from the last chapter, takes the width of a panel and the height of the board next to
@@ -4752,7 +4752,7 @@ LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven
 	self assert: game transformation matrix sy equals: 2.0.
 	self assert: game constraints position equals: 0 @ 0
 ```
-> **Note.** *A Missed Bug*, the first chapter of the next section, reads the natural extent from the
+> **Note.** *A Missed Bug*, the second chapter of the next section, reads the natural extent from the
 > game instead of writing it down, so that the test holds at any cell size.
 
 A window of another shape is the case the `min:` is there for. The demo board is 380 by 270. Twice as
