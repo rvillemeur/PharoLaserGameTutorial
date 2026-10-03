@@ -2943,7 +2943,7 @@ LaserGameElement class >> extentForGrid: aGrid
 And the panel, from the last chapter, takes the width of a panel and the height of the board next to
 it. So all three read the grid, and the test says so in one place:
 
-```smalltalk
+```
 LaserGameElementTestCase >> testAGameTakesTheSizeOfWhateverBoardItIsGiven
 	"A game is handed a grid rather than building one, so the size of the board is the size of the
 	grid. The game is one cell per location, the panel keeps its width and takes the height of the
@@ -2969,6 +2969,7 @@ LaserGameElementTestCase >> testAGameTakesTheSizeOfWhateverBoardItIsGiven
 		assert: game controlPanel constraints vertical resizer size
 		equals: 10 * CellRenderer cellExtent y
 ```
+> **Note.** *Adding More Game Stats* rewrites this test for the taller panel, and that version is the one in the image.
 
 Eight columns of fifty, plus a panel of a hundred and ten, plus two margins of ten, is five hundred
 and thirty wide; ten rows of fifty and the margins is five hundred and twenty high.

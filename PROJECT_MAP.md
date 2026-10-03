@@ -190,12 +190,12 @@ State of the port:
 
 | File | Covers | State |
 |---|---|---|
-| `doc/section1/section1.md` | pages 001 onward | eleven chapters, 1494 lines, covering `SectionOne/1-Introduction.pier` through `10-Grid.pier`; every code block verified against image source by the in-image block checker (52 method blocks added for chapters 3–10, all identical). **One gap:** the *Introduction* and *Game Overview* chapters are still the 2007 Squeak text (Squeak 3.9, backup files, flaps, morphic projects, "save as Squeak") |
-| `doc/section2/section2.md` | pages 035B–073A | pages 049–073A written, ten chapters, every code block verified against image source by the in-image block checker (142 blocks, 107 method blocks identical, 35 skipped as class definitions, bare expressions, quoted 2007 originals or methods a later section rewrote, those last kept as this chapter wrote them with a forward note); **pages 035B–048A still to port from `SectionOne/11-BeamPath.pier`** |
-| `doc/section3/section3.md` | pages 074–129A | the whole section written, sixteen chapters, verified by the same checker (337 blocks in this file, 222 method blocks identical to the image, 115 skipped as bare expressions, quoted 2007 originals or methods a later section rewrote) |
-| `doc/section4/section4.md` | pages 130–173 | the whole section written, ten chapters, plus an eleventh and a twelfth for the port's own *A Window The Player Can Resize* and *Counters The Player Can Read*; verified by the same checker (300 blocks, 181 method blocks identical, 119 skipped as bare expressions, quoted 2007 originals or methods a later chapter rewrote) |
-| `doc/section5/section5.md` | pages 174–204 | the whole section written, nine chapters, verified by the same checker (186 blocks, 129 method blocks identical, 57 skipped as bare expressions, quoted 2007 originals or methods a later chapter rewrote) |
-| `doc/section6/section6.md` | pages 205–220 | **cancelled**, empty and staying empty. Packaging and deployment are a moving target in Pharo and not worth the effort for this tutorial (user's decision, 2026-09-29) |
+| `doc/section1/section1.md` | the model | **rewritten to `doc/REWRITE-PLAN.md`.** Thirteen chapters, 2101 lines: the eleven of the model plus *The Path The Beam Takes* and *Chasing The Beam*, written new in that plan's phase 3. *Introduction* and *Game Overview* are Pharo text now, carrying the one history paragraph, the attribution, the licence and the four diagrams of `SectionOne/figures/`. 56 method blocks, all identical to the image |
+| `doc/section2/section2.md` | the game on screen | **rewritten.** Ten chapters, 2455 lines, opening with the one Morphic reminder sentence. The beam path it used to be missing is in section1 now, since it is model work. 106 method blocks, all identical to the image |
+| `doc/section3/section3.md` | interaction | **rewritten.** Sixteen chapters, 6034 lines. 219 method blocks, all identical to the image |
+| `doc/section4/section4.md` | feedback and the laser beam | **rewritten.** Twelve chapters, 5116 lines, the last two being *A Window The Player Can Resize* and *Counters The Player Can Read*. 160 method blocks, all identical to the image |
+| `doc/section5/section5.md` | polish, and the bugs polish finds | **rewritten.** Eleven chapters, 4049 lines. 133 method blocks, all identical to the image |
+| `doc/section6/section6.md` | packaging and deployment | **cancelled**, empty and staying empty. Packaging and deployment are a moving target in Pharo and not worth the effort for this tutorial (user's decision, 2026-09-29) |
 
 The Pillar book (`SectionOne/*.pier`, `SectionTwo/*.pier`, `pillar.conf`, the LaTeX and HTML
 templates, `compile.sh`) is the 2015 form of the same text. It is **frozen**: do not add chapters to
@@ -318,7 +318,10 @@ Nothing else. New code never mentions `Form`, `BitBlt`, `Morph`, `SketchMorph`, 
 Drawing composes elements that carry geometries (`BlPolygonGeometry`, `BlCircleGeometry`,
 `BlLineGeometry`, `BlRectangleGeometry`); `aeDrawOn:` and the Alexandrie canvas are reserved for
 shapes no geometry can express. Toplo provides the control panel widgets. `BlSpace` replaces the
-`World`.
+`World`. **One exception, in the inspector:** an inspector tab that shows a Bloc element has to go
+through Pharo's Morphic-backed inspector API, so `Grid >> inspectionBoard:` reads
+`aBuilder newMorph morph: (LaserGameBoardElement on: self) asPreviewMorph`. Nothing is drawn with
+Morphic; `asPreviewMorph` is the frame the inspector hands a Bloc element.
 
 ### One commit per tutorial subsection
 
@@ -329,8 +332,11 @@ work" below for why no chapter travels with it. Section 6 of this file holds the
 
 ### The user commits, after reviewing the image
 
-Claude never commits and never runs `git commit`, `git add` or `wc commitWithMessage:` on this
-project. The sequence for every step is:
+Claude never commits code: never `wc commitWithMessage:`, and never `git commit` or `git add` of
+anything under `src/`. **One exception, given by the user on 2026-10-02:** while the book rewrite
+runs, Claude commits `doc/` itself, one commit per finished phase, without waiting for
+confirmation; the user reviews the whole series at the end. Image code still follows the sequence
+below. The sequence for every step is:
 
 1. Claude compiles the change in the image, runs `run_tests` on `Laser-Game-Tests` and `run_critics` on
    what changed.
@@ -349,7 +355,8 @@ Never answer that situation with "Load version": that overwrites the image from 
 
 ### Book text is Markdown, and never rides in a code commit
 
-Write the text in `doc/section<n>/section<n>.md`, adapted from the matching Pillar chapter, with every
+Write the text in `doc/section<n>/section<n>.md`, to `doc/REWRITE-PLAN.md` — which supersedes the
+older rule that a chapter is adapted from the matching Pillar chapter — with every
 code block quoting the image verbatim — see "Book files — Markdown under `doc/`" in Section 6 for the
 markup mapping and the state of the port. Never create or edit a `.pier` file, never edit
 `pillar.conf`, never add chapters to `SectionOne/` or `SectionTwo/`. Text is not part of a code
@@ -400,18 +407,20 @@ bind `Form`, `BitBlt`, `Morph`, `SketchMorph`, `StringMorph`, `Display`, `World`
   `pillar.conf` by commits `f666984` and `a8d7a00`. Their content now lives in
   `doc/section2/section2.md`, so the two files and their two `pillar.conf` lines can be deleted.
   Waiting on the user; nothing is added to them meanwhile.
-- The 44 critiques `run_critics` reports over `Laser-Game` are all pre-existing and none is a
+- The 37 critiques `run_critics` reports over `Laser-Game` (44 before the class comments of the
+  book rewrite) are all pre-existing and none is a
   broken send: twelve classes with no class comment (`GridDirection` and its four subclasses,
   `ReverseLaserGameAction` and its six), seventeen unclassified class-side methods in the same two
   hierarchies, six `ReClassNotReferencedRule` on the `Reverse*LaserGameAction` classes, which are
   looked up by symbol, and nine `ReMissingSubclassResponsibilityRule`. One of the nine is worth a
   look on its own: `GridDirection` class implements both `adjacentInVersionSymbol` and
   `adjacentInversionSymbol`, a near-duplicate pair that reads like a typo kept alive by its subclasses.
-- `doc/section2/section2.md` starts at page 049. Pages 035B–048A of the same tutorial section, the
-  beam path work, are still only in `SectionOne/11-BeamPath.pier` (1098 lines) and have to be adapted
-  into the front of that file.
-- The *Introduction* and *Game Overview* chapters of `doc/section1/section1.md` are still the 2007
-  Squeak text. Everything they say about installing and setting up (Squeak 3.9, backup files, image
+- ~~`doc/section2/section2.md` starts at page 049, and the beam path work is only in
+  `SectionOne/11-BeamPath.pier`.~~ Closed: the beam path is model work, so it is the last two
+  chapters of section1, written new rather than adapted.
+- ~~The *Introduction* and *Game Overview* chapters of `doc/section1/section1.md` are still the 2007
+  Squeak text.~~ Closed: both are Pharo text now, with the attribution, the licence, the code
+  convention and the four diagrams. What follows is kept as the record of what they used to say. Everything they say about installing and setting up (Squeak 3.9, backup files, image
   update from the server, preference panes, flaps, morphic projects, `save as Squeak`) is obsolete,
   and `SectionOne/1-Introduction.pier`'s own front matter — the attribution to Stephan Wessels, the
   list of what the Pharo adaptation changed, the `MyClass>>myMethod` code convention, and the
@@ -424,6 +433,14 @@ bind `Form`, `BitBlt`, `Morph`, `SketchMorph`, `StringMorph`, `Display`, `World`
   screenshots the Markdown uses. Otherwise the Markdown deliberately uses the 2007 artwork
   (`figures/020.jpg`–`031.jpg`) and drops every Pharo 3.0 tool screenshot of the Pillar book, which
   shows an IDE that no longer looks like that.
+
+- The suite is **280 tests** in `Laser-Game-Tests`, all green. Section 6 of this file stops counting
+  at the subsection it was written for, so a count quoted there is the count of that day.
+- There is no "in-image block checker". The fence gate is in two halves, described in
+  `doc/REWRITE-PLAN.md` §8: a python script reads the ```smalltalk fences of a Markdown file and
+  prints `Class|selector|checksum|length` for each one that carries a `Class >> selector` head, and
+  the same checksum is computed in the image over `sourceCode trimRight` and compared. 675 blocks
+  over the five files, all matching.
 
 ## 9. Additions and corrections of the port, outside the tutorial numbering
 

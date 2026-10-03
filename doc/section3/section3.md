@@ -1584,7 +1584,6 @@ CellClickRegionPushNorth class >> containsPoint: aPoint
 	underHeadingDown := self pointIsUnderHeadingDownLine: aPoint.
 	underHeadingUp := self pointIsUnderHeadingUpLine: aPoint.
 	^(underHeadingDown not) and: [underHeadingUp not]
-
 ```
 
 ```smalltalk
@@ -3734,7 +3733,6 @@ MirrorCell >> leanLeft
 	self exitSides at: #east put: #north.
 	self exitSides at: #south put: #west.
 	self exitSides at: #west put: #south.
-	
 ```
 
 ```smalltalk
@@ -3744,7 +3742,6 @@ MirrorCell >> leanRight
 	self exitSides at: #east put: #south.
 	self exitSides at: #south put: #east.
 	self exitSides at: #west put: #north.
-	
 ```
 
 So `rotate` has nothing to compute. It has only to use them:
@@ -4750,6 +4747,10 @@ The last line records the move:
 
 ```smalltalk
 Grid >> stackAction: aSymbol forCell: aCell
+	"Record that aSymbol was done to aCell, so that the move can be taken back and counted. An
+	entry holds the symbol of the move and where the cell is now: a pushed cell has already
+	moved, and the push that undoes it starts from where it landed."
+
 	self movesStack add: aSymbol->(aCell gridLocation)
 ```
 
@@ -5545,7 +5546,6 @@ Grid >> canPushCell: aGridDirection fromLocation: aPoint
 	swapCell isNil ifTrue: [^false].
 	swapCell class = BlankCell ifFalse: [^false].
 	^true
-
 ```
 
 With, as for the push itself, one short method per direction:

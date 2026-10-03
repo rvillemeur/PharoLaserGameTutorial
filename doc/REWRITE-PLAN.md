@@ -223,7 +223,32 @@ Cell* arrives at.
 environment text. Last, because the introduction is easiest to write once the rest reads the way it
 should.
 
-**Phase 5 — verification.** See §8.
+**Phase 5 — verification. Done.** The five checks of §8, run over the whole book:
+
+1. The legacy grep returns the two sanctioned places and nothing else: the paragraph in
+   *Introduction* and the copyright line in *License* (section1), and the one Morphic reminder at
+   the head of *Game Graphics* (section2). Every other hit is an ordinary English word — "world",
+   "display", "cursor" — or the Pharo *World menu*.
+2. No fence names a legacy class. Checked with a script that walks each file fence by fence and
+   greps the eight names inside fences only.
+3. Fence identity, 675 blocks over the five files: section1 56, section2 106, section3 219,
+   section4 160, section5 133. All match the image. Five mismatches were found and repaired in
+   section3 and one in section4:
+   - four fences carried a trailing whitespace-only line that the image does not have
+     (`Grid >> canPushCell:fromLocation:`, `CellClickRegionPushNorth class >> containsPoint:`,
+     `MirrorCell >> leanLeft`, `MirrorCell >> leanRight`);
+   - `Grid >> stackAction:forCell:` was quoted without the method comment it gained in phase 0;
+   - section4's `testAGameTakesTheSizeOfWhateverBoardItIsGiven` is the version before the panel
+     could stand taller than the board, so it is now a plain fence with a `> **Note.**` pointing at
+     *Adding More Game Stats*, which holds the version in the image.
+4. `Laser-Game-Tests`: 280 tests, all green. `run_critics` on `Laser-Game`: 37 critiques, down from
+   the 44 of `PROJECT_MAP.md` §8 — the remainder are the four `GridDirection` subclasses and the
+   seven `ReverseLaserGameAction` subclasses, each wanting a class comment, their class-side methods
+   wanting a protocol, and `subclassResponsibility` stubs the book deliberately does not write.
+5. Every chapter names what it teaches, though not in one voice: the chapters written under this
+   plan use a `> **Lesson.**` block, the rewritten ones a bold sentence in the prose, and the model
+   chapters of section1 a named section heading and `> **Note.**` paragraphs. Worth harmonising one
+   day; it changes no code.
 
 Phases 1 and 2 can run file by file; phase 0 must land before any block is requoted.
 
