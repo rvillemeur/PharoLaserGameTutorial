@@ -1,4 +1,4 @@
-# Game Graphics
+# Game graphics
 
 The model of the game is written, and every part of it has a test. Nothing of it is visible yet.
 This section draws the board on the screen. Clicking on it comes in the next one.
@@ -186,7 +186,7 @@ before going on.
 
 We can now say which renderer draws a cell. What a renderer actually draws is the next chapter.
 
-# Rendering The Cells
+# Rendering the cells
 
 What should these renderer classes do? Draw a cell. We start with the blank cell, because it is the
 one with nothing inside it. Once a blank cell is drawn we have the background and the border, and
@@ -296,7 +296,7 @@ window. That is the first cell of the game.
 
 ## Two numbers to decide
 
-**How big is a cell?** Fifty pixels square. It leaves room for the mirror, the target and the hint
+**How big is a cell?** Fifty pixels square. It leaves room for the mirror, the target, and the hint
 arrows to be legible, and it is small enough that a board of them fits on a screen.
 
 ```smalltalk
@@ -382,7 +382,7 @@ Run the tests. All green, and the code critic quiet on the new methods.
 
 The next chapter gives these blank cells a board to sit on.
 
-# The Game Board
+# The game board
 
 One cell is drawn. A game needs twenty-five of them, in rows and columns, and something has to hold
 them. That something is the board.
@@ -416,7 +416,7 @@ LaserGameBoardElement >> initialize
 		aConstraints vertical fitContent ]
 ```
 
-That is the first version; *Minor Cosmetic Tweaks*, near the end of the book, adds a drop shadow
+That is the first version; *Minor cosmetic tweaks*, near the end of the book, adds a drop shadow
 here.
 
 `BlGridLayout horizontal` fills the grid row by row: you add children one after another, and the
@@ -644,7 +644,7 @@ Knowing what *not* to assert is part of writing tests. A test that asserts on th
 a framework fails the day the framework is tidied up, and it never told you anything about your own
 code in the first place.
 
-# Drawing The Mirror
+# Drawing the mirror
 
 Twenty-five bordered squares are a board, but they are not a game. The mirrors have to be visible.
 A mirror is a diagonal line across its cell, and this chapter draws it.
@@ -912,7 +912,7 @@ MirrorCellRendererTestCase >> testRotatingTheCellTurnsTheMirrorOver
 	self assert: after to x equals: before from x
 ```
 
-Look at what none of those tests contains: the numbers 8, 41 and 49. Every expected point is built
+Look at what none of those tests contains: the numbers 8, 41, and 49. Every expected point is built
 from `cornerInset` and `cellExtent`. That is deliberate, and it is the second half of the promise
 `cellExtent` made in the last chapter: when the cell grows, the mirrors move with it and no test has
 to be edited. A test that writes `8@8` down would have to be.
@@ -932,7 +932,7 @@ LaserGameBoardElement openExample
 Twenty-five cells, ten of them with a diagonal across them: the ten mirrors of `demoGrid`. The
 target at 5@1 is still an empty bordered square. It is the next chapter.
 
-# Management of Colors
+# Management of colours
 
 Three colours have been chosen so far: a grey board background, a white cell border, a blue mirror.
 Each was picked where it was needed. That is how colours always get chosen, and it is how a program
@@ -977,7 +977,7 @@ laser reaches it. We use them in the next chapter.
 The rule this class exists to enforce is short: **no `Color` literal anywhere else in the game.**
 Grep the package for `Color r:` when you think you have finished a drawing, and if you find one
 outside this class, move it here and give it a name. The payoff arrives later in the book, when the
-game grows a window, a control panel and a counter, and every one of them has to look like it
+game grows a window, a control panel, and a counter, and every one of them has to look like it
 belongs to the same program.
 
 Two more pairs are already here for chapters to come: `allowActionArrowColor` and
@@ -989,7 +989,7 @@ itself: `BlBorder paint:width:` makes a paint from one, and `BlElement >> backgr
 background from one. So the colour class has no Bloc in it at all, which is why it can be read,
 changed and tested without a window.
 
-# Drawing The Target
+# Drawing the target
 
 The target has more in it than the mirror: two crossing lines, a ring around the middle of the cell,
 and the inside of the ring filled with one of two colours, depending on whether the laser reaches
@@ -1120,7 +1120,7 @@ TargetCellRenderer >> newCircleOfRadius: aRadius
 
 This is the second Bloc habit of the section, after the line. **Geometry describes a shape inside
 the bounds of an element; the bounds say where the shape is and how big it is.** Once that clicks,
-circles, ellipses and rounded rectangles all stop being special.
+circles, ellipses, and rounded rectangles all stop being special.
 
 Both circles come from that one method, and they differ only in what paints them:
 
@@ -1188,7 +1188,7 @@ LaserGameBoardElement class >> openExampleWithLaserFired
 	^ self openOn: grid
 ```
 
-The comment mentions the beam, which this chapter does not draw. *Laser On Blank Cell*, much later,
+The comment mentions the beam, which this chapter does not draw. *Laser on blank cell*, much later,
 does, and the same example shows it then.
 
 ## Tests
@@ -1379,7 +1379,7 @@ LaserGameBoardElement openExampleWithLaserFired
 Twenty-five cells, ten with a mirror, and one with a crosshair, a ring and a disc that is pale blue
 in the first window and pale yellow in the second.
 
-# Assembling the Game Window
+# Assembling the game window
 
 Everything so far has been opened by a class method on a renderer or on the board. That is right for
 working on a drawing, and it is not a game. A game is a window: the board, a panel beside it for the
@@ -1418,7 +1418,7 @@ LaserGameElement class >> gameMargin
 	^ 10
 ```
 
-The panel width is a first version. In *Buttons Of One Width*, at the end of the book, the panel
+The panel width is a first version. In *Buttons of one width*, at the end of the book, the panel
 states its width from the buttons it has to hold instead of beside them, and the number becomes a
 hundred and thirty. Until then, a hundred and ten.
 
@@ -1439,7 +1439,7 @@ That is the third time this shape of arithmetic has appeared: `CellRenderer cell
 terms of the one below it, and nothing multiplies a cell size by a grid size twice. That is the
 whole trick to sizes that stay consistent.
 
-This version takes its height from the board. *Adding More Game Stats*, in the last part of the
+This version takes its height from the board. *Adding more game stats*, in the last part of the
 book, changes it to the height of the taller of the board and the panel, because four counters can
 stand taller than a board of few rows.
 
@@ -1465,7 +1465,7 @@ element once, and every child is placed inside it. Had we given each child a mar
 same constant would appear twice, and a change to it would have to be right in both places. Reach
 for padding when the space belongs to the container, and for a margin when it belongs to the child.
 
-*Add A Counter and Window Colors*, later in the book, replaces this method: the panel moves to the
+*Add a counter and window colours*, later in the book, replaces this method: the panel moves to the
 left of the board, and the flat background becomes a colour ramp.
 
 Setting the grid builds the two panes, so the same game element can be handed another grid:
@@ -1517,7 +1517,7 @@ LaserGameElement >> newControlPanel
 ```
 
 Writing it this way, and not waiting until there is something to put in it, is worth a word. The
-window arithmetic, the layout and the margins are all exercised *now*, with a rectangle standing in
+window arithmetic, the layout, and the margins are all exercised *now*, with a rectangle standing in
 for the panel. When the real panel arrives, the only new thing to get wrong is the panel itself.
 
 Two colours join `LaserGameColors`:
@@ -1537,7 +1537,7 @@ LaserGameColors class >> controlPanelColor
 	^ Color white
 ```
 
-The panel colour is a first version too: *Add A Counter and Window Colors* paints the panel
+The panel colour is a first version too: *Add a counter and window colours* paints the panel
 transparent, so that the ramp behind the window runs behind it. The rule of the colours chapter
 holds in both versions — neither colour is written as a literal anywhere else.
 
@@ -1585,7 +1585,7 @@ LaserGameElement class >> openExample
 ```
 
 The space is given the size the game asks for, so the window fits the game exactly and there is no
-second margin around it. *A Window The Player Can Resize* rewrites `openOn:` so that the game
+second margin around it. *A window the player can resize* rewrites `openOn:` so that the game
 follows the window when the player drags its corner; the version above is the one this chapter
 leaves in the image.
 
@@ -1689,7 +1689,7 @@ LaserGameElementTestCase >> testBoardShowsTheGridOfTheGame
 	self assert: game board children size equals: 25
 ```
 
-The last test reads back the size, the padding and the colour of the game itself:
+The last test reads back the size, the padding, and the colour of the game itself:
 
 ```st
 LaserGameElementTestCase >> testGameTakesTheExtentItCalculates
@@ -1726,7 +1726,7 @@ A ten pixel margin of the window colour around both.
 The examples on the renderers and on the board have done their job. From here the game opens itself,
 and the next chapter puts the controls in that white column.
 
-# Adding Controls
+# Adding controls
 
 The white column beside the board has been waiting since the last chapter. Two buttons go in it now.
 One quits the game, which is easy to describe and easy to write. The other fires the laser, and that
@@ -1765,13 +1765,13 @@ LaserGameControlPanelElement >> initialize
 ```
 
 `BlFrameLayout` is the third layout in the book, and the simplest to describe: every child says
-which corner, edge or centre of the frame it wants, and the layout puts it there. A grid layout
+which corner, edge, or centre of the frame it wants, and the layout puts it there. A grid layout
 places children in rows and columns, a linear layout places them one after another, and a frame
 layout places each one on its own. Buttons in the bottom left corner is one child in one corner, so
 a frame is what that needs. The counters that arrive in Section 4 take the top left corner of the
 same frame, and that is the reason a frame was chosen over a second linear layout.
 
-This version has no counters in its comment yet. *Add A Counter and Window Colors* adds them.
+This version has no counters in its comment yet. *Add a counter and window colours* adds them.
 
 ```smalltalk
 LaserGameControlPanelElement class >> on: aGame
@@ -1798,11 +1798,11 @@ well; only the game gets a setter.
 ## One method makes a button
 
 Toplo, the widget library that sits on Bloc, has the button. `ToButton` already knows how to look
-pressed, how to look hovered, how to look disabled and how to draw a label, because all of that
-comes from the skin of the current theme. What is left for us is the label, the size and what a
+pressed, how to look hovered, how to look disabled, and how to draw a label, because all of that
+comes from the skin of the current theme. What is left for us is the label, the size, and what a
 click does:
 
-> **Note.** *Buttons Of One Width*, at the end of the book, adds one line to this method so that a
+> **Note.** *Buttons of one width*, at the end of the book, adds one line to this method so that a
 > button centres its label. It is quoted here as it reads before that.
 
 ```st
@@ -1858,7 +1858,7 @@ again and watch the beam go out.
 Three numbers. A button is forty wide and twenty tall, and everything is ten pixels from everything
 else:
 
-> **Note.** *Buttons Of One Width*, at the end of the book, widens a button to fifty pixels, so that
+> **Note.** *Buttons of one width*, at the end of the book, widens a button to fifty pixels, so that
 > its longest labels fit inside it. It is quoted here as it reads before that.
 
 ```st
@@ -1938,8 +1938,8 @@ LaserGameControlPanelElement >> rebuild
 		@ (LaserGameBoardElement extentForGrid: self game grid) y
 ```
 
-Both of those are shown as this chapter writes them. *Add A Counter and Window Colors* puts a
-counter above the buttons, and *Add Move Counter And Randomizer* adds a third button and gives the
+Both of those are shown as this chapter writes them. *Add a counter and window colours* puts a
+counter above the buttons, and *Add move counter and randomizer* adds a third button and gives the
 panel a column of button rows rather than one row, so the finished game builds a row with
 `newRowOfButtons:` and `rebuild` fills a good many more variables than these two.
 
@@ -1980,7 +1980,7 @@ LaserGameElement >> quit
 A game built in a test has no space, so `ifNotNil:` is not caution for its own sake: it is the
 difference between a test that passes and a test that errors.
 
-*Add Move Counter And Randomizer* makes Quit ask before it closes, because by then Quit sits next to
+*Add move counter and randomizer* makes Quit ask before it closes, because by then Quit sits next to
 four other buttons and is easy to hit by accident. This method keeps its body and takes the name
 `close` there, and `quit` becomes the question.
 
@@ -1994,7 +1994,7 @@ LaserGameElement >> refresh
 
 One method that shows everything the model currently says. Every action on the game ends by sending
 it, which is why no action has to remember what it changed. `refresh` grows as the window grows —
-*Add A Counter and Window Colors* adds the counters to it — and the callers never change.
+*Add a counter and window colours* adds the counters to it — and the callers never change.
 
 There is a design choice hiding in the middle of `toggleLaser`, and it is worth naming. The
 alternative to one method that looks at the state is a button whose action block is *replaced* every
@@ -2101,7 +2101,7 @@ button column, `panel children first` is no longer the row, and both tests read 
 `panel buttonRow` instead.
 
 Notice what these two tests do *not* do: they never ask where the row actually ended up in pixels.
-They assert the alignment, the margin and the spacing — the three numbers we wrote — and leave the
+They assert the alignment, the margin, and the spacing — the three numbers we wrote — and leave the
 arithmetic to Bloc. A test that asserted a pixel position would be asserting Bloc's layout code,
 would need a laid-out element to do it, and would break the first time the panel changed width.
 
@@ -2199,7 +2199,7 @@ LaserGameElementTestCase >> testQuittingAGameThatIsNotOpenDoesNothing
 ```
 
 That last assertion is the test's real point: after quitting a game that is not open, the game is
-still intact — board and panel, two children. *Add Move Counter And Randomizer* drops this test:
+still intact — board and panel, two children. *Add move counter and randomizer* drops this test:
 once Quit asks before it closes, a game that was never opened answers the question instead of
 closing, and a test of that answer takes its place.
 
@@ -2216,7 +2216,7 @@ the target goes out and the button is *Fire* once more. Click *Quit* and the win
 The beam itself is still invisible — it is the target reacting that tells us the laser reached it.
 Drawing the beam is Section 4.
 
-# A Unit Test To Demonstrate A Bug
+# A unit test to demonstrate a bug
 
 The window works. The board is drawn, the buttons are there, *Fire* lights the target and *Stop* puts
 it out. That is a good moment to look for the bug, because a game that looks right is exactly where
@@ -2449,7 +2449,7 @@ Four habits, and they are the same four every time:
 Run the whole package. Every test is green, including the three laser tests of this chapter, and the
 grid now toggles correctly however many times it is asked to.
 
-Section 2 is finished. The game can be opened, it draws its board, its mirrors and its target, and
+Section 2 is finished. The game can be opened, it draws its board, its mirrors, and its target, and
 one button fires the laser and stops it again. What it cannot do is let the player touch anything on
 the board. That is the next section, where the cells start listening to the mouse.
 

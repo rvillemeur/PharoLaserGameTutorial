@@ -67,7 +67,7 @@ And in structure:
 | Difference | Worth changing | Why |
 |---|---|---|
 | Impersonal voice; the reader is rarely addressed | **Yes** | The book teaches TDD and bug-chasing, which are things the reader does, not things that happen. Their voice is better suited to this book's purpose than this book's own voice is. |
-| British spelling, 211 occurrences in prose and 80 inside gated `smalltalk` fences | **Yes, with one decision to take** | `STYLEGUIDE.md` requires en_US, and the book is already inconsistent with itself: chapter titles read *Communicate With Arrow Colors* and *Add A Counter and Window Colors* while the prose under them says "colour". See §6. |
+| British spelling, 211 occurrences in prose and 80 inside gated `smalltalk` fences | **Yes, with one decision to take** | `STYLEGUIDE.md` requires en_US, and the book is already inconsistent with itself: chapter titles read *Communicate with arrow colours* and *Add a counter and window colours* while the prose under them says "colour". See §6. |
 | 54 of the 61 chapter titles capitalise a word that sentence case would not | **Yes** | Sentence case is the one hard rule in `STYLEGUIDE.md`. Costs 153 italic cross-references as well as the titles. |
 | Oxford comma present in 27 lists, absent in roughly 60 | **Yes** | Required by `STYLEGUIDE.md`, cheap to fix. |
 | Paragraphs run 40 words to their 27–33; sentences 18.6 to their 14–16.6 | **Partly** | Not a rule, and the density is sometimes the point. Worth splitting the paragraphs that run past about 60 words, which are the ones that carry two ideas. |
@@ -101,7 +101,7 @@ Each phase is one commit of `doc/` only, verified before it is committed. No pha
 character inside a ` ```smalltalk ` fence: after every phase, re-run the fence gate of
 `REWRITE-PLAN.md` §8 and confirm 690 blocks, all matching.
 
-**Phase 1 — the mechanical rules.** Sentence-case the 54 chapter headings that need it, and update
+**Phase 1 — the mechanical rules. Done on 2026-10-03.** Sentence-case the 54 chapter headings that need it, and update
 the 153 italic cross-references to match. Add the Oxford comma to the three-item lists that lack it;
 a loose pattern finds 27 lists that have it and about 66 candidates that do not, and each candidate
 needs an eye, because the pattern also catches two clauses joined by "and". No heading gains or loses
@@ -110,6 +110,17 @@ a word; this is capitalisation only, so that the diff can be read.
 *Verified by:* every `#` heading matches `^# [A-Z][a-z]` with no later capitalised word that is not a
 class name or a proper noun; every italic cross-reference resolves to a heading that exists, checked
 by a script that extracts both sets and compares them.
+
+*What landed:* 55 chapter headings lowercased — the six left alone are *Introduction*, *Enhancing
+MirrorCell*, *Enhancing TargetCell*, *Grid*, *Undo* and *Reset*, which are a single word or a class
+name — and 177 cross-references rewritten with them, 152 in the book and 25 in `REWRITE-PLAN.md`,
+`STYLE-PLAN.md` and `PROJECT_MAP.md`. 54 Oxford commas added, chosen by reading every candidate the
+pattern found: a list of three or more parallel items gets one, a pair of clauses joined by "and"
+does not, and the CC BY-SA wording quoted in the introduction is left verbatim. 26 paragraphs were
+rewrapped where the added comma pushed a line past 100 columns. The chapter tables of
+`REWRITE-PLAN.md` §7 and the page lists of `PROJECT_MAP.md` §6 keep their Title Case, because they
+name the pages of the 2007 original, not our chapters. The gate is unchanged at 690 blocks: one
+quoted method comment cites a chapter title, and it is left as the image has it.
 
 **Phase 2 — the chapter openers.** Two or three sentences at the head of each of the 61 chapters,
 before the first `##`: what the reader will build, and what it revisits. Written in the voice phase 3
@@ -151,6 +162,13 @@ in the commit. Only worth doing if the book is going to keep being edited.
 normalising whitespace on both sides of the commit and diffing.
 
 ## 6. The decision this plan needs
+
+**Decided on 2026-10-03: option 4, the book stays British.** The deviation from `STYLEGUIDE.md` is
+deliberate and is recorded in `PROJECT_MAP.md` §8, so that the next reader does not take it for a
+slip. Words that echo a selector keep the selector's spelling, which is why the chapter *Add move
+counter and randomizer* is still a randomizer: the code it describes is `randomizeGrid:`. The two
+chapter titles that said *Colors* now say *colours*, matching the prose under them. Nothing in the
+image changed. The rest of this section is kept as the record of what was weighed.
 
 American spelling cannot be done in the Markdown alone. Of the 327 British spellings in the book,
 211 are in prose, 36 sit in ungated ` ```st ` and ` ```text ` fences, and **80 are inside gated

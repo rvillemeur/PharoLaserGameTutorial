@@ -1,4 +1,4 @@
-# Adding More Game Stats
+# Adding more game stats
 
 Two more numbers for the player: how many mirrors stand on the board, and how many of them the beam
 lights. The model can answer both already, so all of the work is in the panel — which turns out to
@@ -187,7 +187,7 @@ LaserGameControlPanelElement >> newMirrorsCounter
 
 	^ LaserGameCounterElement labelled: 'Mirrors' digits: 3
 ```
-> **Note.** *Counters Of One Width*, the last chapter but one, sends `newCounterLabelled:digits:`
+> **Note.** *Counters of one width*, the last chapter but one, sends `newCounterLabelled:digits:`
 > here instead, which gives every counter of the panel the same width.
 
 ```st
@@ -322,11 +322,11 @@ LaserGameControlPanelElement class >> contentHeight
 	   + (2 * self buttonHeight) + (3 * self buttonGap)) ceiling
 ```
 > **Note.** *Reset* states the button part of this over `buttonRowCount`, because it
-> adds a third row, and *Minor Cosmetic Tweaks* adds the divider above the buttons to the sum.
+> adds a third row, and *Minor cosmetic tweaks* adds the divider above the buttons to the sum.
 
 `measure:` is how you ask an element how big it wants to be without opening anything and without a
 layout pass. `BlExtentMeasurementSpec unspecified` means "no constraint, tell me what you would
-like", and `measuredExtent` is the answer. One counter is built, measured and thrown away, which is
+like", and `measuredExtent` is the answer. One counter is built, measured, and thrown away, which is
 all it takes: the four counters are alike, so one of them times four is the stack.
 
 The height of a counter is not a number anybody wrote down — a counter is as tall as the text in its
@@ -402,7 +402,7 @@ LaserGameControlPanelElementTestCase >> testPanelIsAPanelWideColumnAsTallAsTheBo
 		assert: panel constraints vertical resizer size
 		equals: LaserGameControlPanelElement contentHeight
 ```
-> **Note.** *A Missed Bug*, the next chapter, rewrites this test: as written here it says which of
+> **Note.** *A missed bug*, the next chapter, rewrites this test: as written here it says which of
 > the two cases the demo board is in, which is true at fifty pixel cells and false at a hundred.
 
 ```smalltalk
@@ -462,8 +462,8 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins
 			5 * CellRenderer cellExtent x + 110
 			@ LaserGameControlPanelElement contentHeight + 20
 ```
-> **Note.** *A Missed Bug* rewrites the second assertion so that it does not say which case the
-> board is in, and *Buttons Of One Width*, the last chapter, changes the `110` to `130` when it
+> **Note.** *A missed bug* rewrites the second assertion so that it does not say which case the
+> board is in, and *Buttons of one width*, the last chapter, changes the `110` to `130` when it
 > widens the buttons.
 
 The window is taller than it was by the difference, and a strip of it sits under the board where the
@@ -589,7 +589,7 @@ nothing in between had to go looking for a display.
 
 The suite is green. The next chapter asks what that is actually worth.
 
-# A Missed Bug
+# A missed bug
 
 The suite has been green at the end of every chapter so far. That is worth something, but it is
 worth less than it looks. Green means the code does what the tests say, and the tests were written
@@ -659,20 +659,20 @@ lesson.
 
 ## Four tests that wrote the answer down
 
-The window tests of *A Window The Player Can Resize* contain lines like this:
+The window tests of *A window the player can resize* contain lines like this:
 
 ```smalltalk
 self assert: game naturalExtent equals: 380 @ 270.
 game fitIn: 760 @ 540.
 ```
-> **Note.** This is how those tests were written in *A Window The Player Can Resize*. The two
+> **Note.** This is how those tests were written in *A window the player can resize*. The two
 > numbers are the extent of the demo board at the cell size of that chapter, and twice it.
 
 `380 @ 270` is not a fact about scaling. It is the answer the game gave on the day the test was
 written, copied into the test by hand. The test now says two things at once: that a window of twice
 the natural extent doubles the game, which is what the chapter was about, and that the natural
 extent is three hundred and eighty by two hundred and seventy, which the chapter never meant to
-claim. Change a cell, a margin, a button or a counter, and the test fails for the second reason
+claim. Change a cell, a margin, a button, or a counter, and the test fails for the second reason
 while the first is still perfectly true.
 
 The repair is to ask the game:
@@ -948,7 +948,7 @@ otherwise.
 
 ## Where the floor is
 
-With those seven repairs the suite is green at twenty six, thirty, forty, fifty, sixty four and a
+With those seven repairs the suite is green at twenty six, thirty, forty, fifty, sixty four, and a
 hundred pixels. Below twenty six it is not, and the reason is not a test:
 
 ```smalltalk
@@ -975,8 +975,8 @@ checked rather than a sentence somebody wrote.
 
 ## Checking it
 
-Keep the experiment as a habit. Run it whenever a size, a margin or a constant changes, and read the
-failures before fixing them — each one is telling you where a number was written down:
+Keep the experiment as a habit. Run it whenever a size, a margin, or a constant changes, and read
+the failures before fixing them — each one is telling you where a number was written down:
 
 ```smalltalk
 | source classes report |
@@ -1502,7 +1502,7 @@ and the player is charged for both moves.
 
 The next chapter moves the tests into a package of their own.
 
-# Tests In Their Own Package
+# Tests in their own package
 
 This chapter changes no code. It changes where the code lives, which matters the first time somebody
 other than you loads it: a person who wants to play the game should not have to take the tests with
@@ -1517,7 +1517,7 @@ the difference this chapter is about.
 Pharo has two levels of grouping, and they are easy to confuse because the browser shows them side
 by side.
 
-A **package** is the unit that gets loaded, committed and versioned. It is what a baseline names,
+A **package** is the unit that gets loaded, committed, and versioned. It is what a baseline names,
 what Iceberg writes to disk as a directory, and what somebody else asks for by name.
 
 A **tag** groups classes inside one package. It is a label for reading. A tag cannot be loaded on
@@ -1744,7 +1744,7 @@ GridTestCase >> testResetGrid
 	self assert: grid movesStack isEmpty
 ```
 
-It checks the board before the moves, after the moves and after the reset, which is more than it
+It checks the board before the moves, after the moves, and after the reset, which is more than it
 strictly needs and exactly what makes it readable: a failure tells you *which* of the three states
 was wrong. The stronger claim — any run of moves, undone, gives the board back — is the test of the
 last chapter, and this one is the same rule stated at one remove. Both are worth having. The general
@@ -1793,11 +1793,11 @@ LaserGameControlPanelElement >> newButtonColumn
 	column addChild: self newButtonRow.
 	^ column
 ```
-> **Note.** *Minor Cosmetic Tweaks* puts a divider bar in front of the three rows, as the first child
-> of this column.
+> **Note.** *Minor cosmetic tweaks* puts a divider bar in front of the three rows, as the first
+> child of this column.
 
 A row added to a column is the whole of the layout work. The column lays its children out one above
-another and takes its size from them, so a third row needs no coordinates, no offsets and no
+another and takes its size from them, so a third row needs no coordinates, no offsets, and no
 rearranging of the other two. That is what a layout is for, and it is the reason this chapter's
 geometry section is three methods long instead of thirty.
 
@@ -1813,7 +1813,7 @@ LaserGameControlPanelElement >> resetRow
 
 	^ self buttonColumn children first
 ```
-> **Note.** *Minor Cosmetic Tweaks* puts the divider bar in front of the rows, so this row becomes
+> **Note.** *Minor cosmetic tweaks* puts the divider bar in front of the rows, so this row becomes
 > the second child.
 
 ```smalltalk
@@ -1856,7 +1856,7 @@ LaserGameControlPanelElement class >> contentHeight
 	   + (self buttonRowCount * self buttonHeight)
 	   + ((self buttonRowCount + 1) * self buttonGap)) ceiling
 ```
-> **Note.** *Minor Cosmetic Tweaks* adds the divider bar to this sum.
+> **Note.** *Minor cosmetic tweaks* adds the divider bar to this sum.
 
 The two literals that were there — `2 * self buttonHeight` and `3 * self buttonGap` — have become
 `buttonRowCount` and `buttonRowCount + 1`, and that second one is worth looking at. A column of *n*
@@ -1964,7 +1964,7 @@ LaserGameControlPanelElementTestCase >> testResetButtonHasTheTopRowToItself
 	self assert: panel resetButton class equals: ToButton.
 	self assert: panel resetButton labelText asString equals: 'Reset'
 ```
-> **Note.** *Minor Cosmetic Tweaks* adds the divider bar to the column this test reads back.
+> **Note.** *Minor cosmetic tweaks* adds the divider bar to the column this test reads back.
 
 Somebody has to assert how many rows there are and in what order, and this is now the test that
 does. Giving up a claim in one test means finding it a home in another; dropped claims are how a
@@ -2057,7 +2057,7 @@ things in the window.
 
 The next chapter gives the laser's home cell something to show for itself.
 
-# Showing Where The Laser Comes From
+# Showing where the laser comes from
 
 A small chapter. The beam has been drawn for several chapters now, and it appears at the bottom of
 the first column as though out of nowhere. This adds a mark saying the laser lives there.
@@ -2370,12 +2370,12 @@ game := LaserGameElement on: GridFactory demoGrid.
 Two children in the board column, the mark being the lower of them, a bar one cell wide and one
 margin tall, and no padding at the bottom for it to sit outside of.
 
-The next chapter turns the cell-size experiment of *A Missed Bug* into something the suite runs by
+The next chapter turns the cell-size experiment of *A missed bug* into something the suite runs by
 itself.
 
-# A Less Brittle Test Design
+# A less brittle test design
 
-*A Missed Bug* ran an experiment by hand: recompile `cellExtent`, run everything, read the failures,
+*A missed bug* ran an experiment by hand: recompile `cellExtent`, run everything, read the failures,
 put the method back. It found three brittle tests and a design floor, which was worth the trouble.
 
 An experiment you run by hand is one you run when you remember to. This chapter turns it into
@@ -2541,7 +2541,7 @@ CellClickInsideRegionPushTestCase >> testThePushRegionTableHoldsAtEveryCellSize
 		self withCellExtent: size @ size do: [ self assertPushRegionTable ] ]
 ```
 
-Thirty, forty and eighty, and the choice is not arbitrary. Thirty is near the floor *A Missed Bug*
+Thirty, forty, and eighty, and the choice is not arbitrary. Thirty is near the floor *A missed bug*
 measured, where the inside region is only ten pixels square — small enough that a row nudged
 `+ (1 @ 3)` from a corner has to land in the right triangle by geometry rather than by luck. Eighty
 is a size nobody has opened the game at. If the table holds at both ends it holds in between.
@@ -2779,7 +2779,7 @@ two chapters ago.
 
 The next chapter goes back to the hint arrows and puts them where they belong.
 
-# Centring The Hint Arrows
+# Centring the hint arrows
 
 A hint arrow has to sit in the middle of the cell it belongs to. That sounds like a sentence nobody
 needs to write a chapter about, and it is the kind of thing that goes wrong quietly: an arrow a few
@@ -3037,7 +3037,7 @@ margin.
 The next chapter is a handful of small visual repairs, the kind that only become visible once
 everything else is right.
 
-# Minor Cosmetic Tweaks
+# Minor cosmetic tweaks
 
 Everything works. This chapter is about three things that only make a difference to the look of the
 game: a shadow under the board, a bar across the control panel above the buttons, and a board worth
@@ -3159,7 +3159,7 @@ LaserGameControlPanelElement class >> dividerHeight
 Two near whites, five pixels apart, darker at the top. A bar that shallow with a gradient that
 slight reads as a groove pressed into the panel, which is what it is for.
 
-The bar itself is an element with no children, a fixed height and a fixed width:
+The bar itself is an element with no children, a fixed height, and a fixed width:
 
 ```smalltalk
 LaserGameControlPanelElement >> newPanelDivider
@@ -3236,7 +3236,7 @@ in a column that reads downwards, and it stays above them however many rows are 
 Two costs, and the suite found both.
 
 The first is height. The panel states its own height, because the board beside it can be shorter
-than the panel's contents — that was the bug in *Adding More Game Stats*, where a counter was drawn
+than the panel's contents — that was the bug in *Adding more game stats*, where a counter was drawn
 over a button. A new child in the column means a new term in that sum:
 
 ```smalltalk
@@ -3265,7 +3265,7 @@ The panel's content height goes from 320 to 335, and the window of a game on the
 by 340 to 380 by 355. The eight by ten board is taller than the panel either way, so a standard game
 stays 530 by 520.
 
-> **Note.** *Buttons Of One Width*, the last chapter, widens the buttons and the panel with them, so
+> **Note.** *Buttons of one width*, the last chapter, widens the buttons and the panel with them, so
 > those two windows end the book twenty pixels wider: 400 by 355 and 550 by 520. The heights are this
 > chapter's.
 
@@ -3398,8 +3398,8 @@ LaserGameElement >> grid
 		  grid ]
 ```
 
-This is *lazy initialization*, and the game has used it before — the counters in *Adding More Game
-Stats* were built the same way. `ifNil:` takes a block that is evaluated only when the receiver is
+This is *lazy initialization*, and the game has used it before — the counters in *Adding more game
+stats* were built the same way. `ifNil:` takes a block that is evaluated only when the receiver is
 nil, and the block's value is the value of the whole expression. Note that it stores the grid
 through `grid:` rather than assigning the variable directly: `grid:` is the setter that rebuilds the
 board for the new grid, so the lazy default goes through exactly the path a grid given from outside
@@ -3466,7 +3466,7 @@ The suite is still green, at 280 runs:
 
 The next chapter goes back to the counters and makes them agree about how wide they are.
 
-# Counters Of One Width
+# Counters of one width
 
 The game is finished and it works. Then somebody looks at it properly, and says: the four counter
 boxes are not the same width, their right edges are ragged, and the words inside them sit against
@@ -3633,7 +3633,7 @@ Active Mirrors  (0.0@160.0) corner: (102.0@208.0)   display and caption centred 
 One width, one left edge, one right edge, everything centred on the middle. No size of the game
 changed: a counter's height is what it always was, and the panel's height counts heights.
 
-> **Note.** *Buttons Of One Width*, the next chapter, widens the panel from a hundred and ten pixels
+> **Note.** *Buttons of one width*, the next chapter, widens the panel from a hundred and ten pixels
 > to a hundred and thirty, so a counter ends the book a hundred and twenty two wide. It is the same
 > expression answering a bigger number, which is the whole point of writing it as one.
 
@@ -3729,7 +3729,7 @@ the middle of its box.
 
 The next chapter takes the same report's second half, which is about the buttons.
 
-# Buttons Of One Width
+# Buttons of one width
 
 The same look at the finished game that found the ragged counters found something about the buttons:
 the words *Reset* and *Undo* run into the right edge of the buttons they are painted in. A label
@@ -4008,7 +4008,7 @@ Finally, one older test knew the panel's width as a literal, and the literal cha
 			~T> max: LaserGameControlPanelElement contentHeight) + 20
 ```
 
-That is `testExtentIsTheBoardPlusThePanelPlusTheMargins`, from *A Missed Bug*, and the `110` in it
+That is `testExtentIsTheBoardPlusThePanelPlusTheMargins`, from *A missed bug*, and the `110` in it
 became `130`. A literal in a test is a decision to be told when something changes, and this is the
 telling: the test went red, the number was read, the new number was understood and written down.
 A test that had used `panelWidth` there would have stayed green and said nothing.

@@ -145,7 +145,7 @@ order. What changes is that no file or chapter is described by the tutorial sect
 | Management of Colors | keep |
 | Drawing The Target | keep |
 | Progress So Far | **delete.** Its subject is Squeak system categories against Pharo package tags |
-| Back to the LaserGame Morph | keep, **retitle** — nothing in it is a Morph. *Assembling the Game Window* |
+| Back to the LaserGame Morph | keep, **retitle** — nothing in it is a Morph. *Assembling the game window* |
 | Adding Controls | keep |
 | A Unit Test To Demonstrate A Bug | keep; core chapter |
 
@@ -161,7 +161,7 @@ All sixteen chapters keep their place and their titles, except:
 
 ### section4 — feedback and the laser beam
 
-All twelve chapters keep their place. *A Window The Player Can Resize* and *Counters The Player
+All twelve chapters keep their place. *A window the player can resize* and *Counters The Player
 Can Read* lose the line that marks them as additions of the port and become ordinary chapters.
 
 ### section5 — polish, and the bugs polish finds
@@ -199,7 +199,7 @@ rewritten, and left with no reference to the original and no unexplained vocabul
 section1 first, so the reader's path is rebuilt from the start. This is the bulk of the work.
 
 **Phase 3 — the missing beam path. Done.** Written new under this plan rather than adapted line by
-line, as two chapters, *The Path The Beam Takes* and *Chasing The Beam*. Two deviations from the
+line, as two chapters, *The path the beam takes* and *Chasing the beam*. Two deviations from the
 disposition above, both deliberate:
 
 - They are the **last two chapters of section1**, not the front of section2. The beam path is model
@@ -208,7 +208,7 @@ disposition above, both deliberate:
 - There is **no textual representation of the grid**, because the image has none: `Grid` has no
   `printOn:` and no cell answers a `stringRepresentation`. What the finished game has instead is
   `Cell >> printOn:` and the three inspector tabs `inspectionBoard:`, `inspectionCells:` and
-  `inspectionBeam:`, all of which are already written up in *Rotate A Mirror Cell* in section3. The
+  `inspectionBeam:`, all of which are already written up in *Rotate a mirror cell* in section3. The
   end of the *Grid* chapter now points the reader there, where the old text promised a text drawing
   of the board.
 
@@ -227,7 +227,7 @@ should.
 
 1. The legacy grep returns the two sanctioned places and nothing else: the paragraph in
    *Introduction* and the copyright line in *License* (section1), and the one Morphic reminder at
-   the head of *Game Graphics* (section2). Every other hit is an ordinary English word — "world",
+   the head of *Game graphics* (section2). Every other hit is an ordinary English word — "world",
    "display", "cursor" — or the Pharo *World menu*.
 2. No fence names a legacy class. Checked with a script that walks each file fence by fence and
    greps the eight names inside fences only.
@@ -241,7 +241,7 @@ should.
    - `Grid >> stackAction:forCell:` was quoted without the method comment it gained in phase 0;
    - section4's `testAGameTakesTheSizeOfWhateverBoardItIsGiven` is the version before the panel
      could stand taller than the board, so it is now an ```` ```st ```` fence with a `> **Note.**`
-     pointing at *Adding More Game Stats*, which holds the version in the image.
+     pointing at *Adding more game stats*, which holds the version in the image.
 
    A later pass tagged the 212 fences that carried no language at all, which is where three of those
    five per-file counts grew: 115 of them are method quotes the gate had never seen, and one of the
@@ -289,6 +289,12 @@ Phases 1 and 2 can run file by file; phase 0 must land before any block is requo
 5. Every chapter that introduces a pattern names it, in one voice: `> **The lesson as a sentence.**`
    followed by the explanation, in a blockquote of its own. `> **Note.**` stays what it is — an
    aside about the code in front of the reader, not a lesson.
+6. Chapter titles are in sentence case, with no terminating period, and an italic cross-reference to
+   a chapter spells the title exactly as the heading does. Three-item lists take the Oxford comma.
+   Spelling stays British, deliberately: see `doc/STYLE-PLAN.md` §6, where the choice is recorded.
+   The one exception the gate forces is a quoted method comment: `LaserGameBoardElement >>
+   clickedCell` cites *Determine Push Regions* in the old capitalisation, because the comment lives
+   in the image and no commit of mine changes code.
 
 ## 9. Consequences for other files
 
