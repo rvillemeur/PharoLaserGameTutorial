@@ -184,12 +184,6 @@ Now let us find the objects.
 
 # Discovery of Objects
 
-<!-- http://squeak.preeminent.org/tut2007/html/009.html
-     http://squeak.preeminent.org/tut2007/html/010.html
-     http://squeak.preeminent.org/tut2007/html/012.html
-     http://squeak.preeminent.org/tut2007/html/013.html
-     http://squeak.preeminent.org/tut2007/html/015.html -->
-
 When we look over the game drawings and think about what objects our game may need, a few come immediately to mind. There must be some kind of grid and several cells. There are different kinds of cells too.
 
 Cells and a grid are obvious objects of the game and we will probably discover other objects as we explore a little. It is perfectly fine to explore and then throw code away if we later learn we are not heading in the right direction.
@@ -253,9 +247,11 @@ Instances of `Grid` are responsible for the board and the overall management of 
 
 First we should define a package to hold our classes. Classes that work together belong together, and a package is what you load, save and commit as a whole.
 
-Open a System Browser, right-click the package list and choose *New package*. The original tutorial names its Squeak system category `Laser-Game-Model`. Pharo has two levels of grouping rather than one: a package, which is the unit of loading and versioning, and inside it *tags*, which are only a way of sorting the class list. This port therefore uses a single package `Laser-Game` with the tags `Model` and `Graphics`, and, later on, a second package `Laser-Game-Tests` for the tests.
+Open a System Browser, right-click the package list, choose *New package* and name it `Laser-Game`.
 
-> **Note.** The split of the tests into their own package is the subject of the chapter *Modify Package Definition* of Section 5, which is where the `BaselineOfLaserGame` baseline that loads both packages is written. Until then everything lives in `Laser-Game`.
+Pharo groups code at two levels. A **package** is the unit you load, save and commit as a whole. Inside a package, **tags** sort the class list into groups; a tag is a convenience for whoever reads the class list and has no effect on how the code runs. This book uses one package, `Laser-Game`, with the tags `Model` and `Graphics`, and adds a second package, `Laser-Game-Tests`, once there are enough tests to be worth keeping apart.
+
+> **Note.** Until that split, which is the subject of the chapter *Modify Package Definition*, everything lives in `Laser-Game`.
 
 ## Creating the model classes
 
@@ -268,7 +264,9 @@ Object << #Grid
 	package: 'Laser-Game'
 ```
 
-> **Note.** This is the Pharo 13 class definition syntax. The `Object subclass: #Grid instanceVariableNames: '' ...` message the original tutorial uses no longer exists; `Object << #Grid` answers a class builder, and accepting the definition in the browser installs it. The block above is the definition as it stands at this point in the tutorial, with no instance variables at all. `Grid` collects six of them as we go, and the finished definition is quoted in the chapter *Grid*.
+> **Note.** Reading that definition: `Object << #Grid` says *make a class named `Grid` whose superclass is `Object`*, and answers a class builder that the three following messages configure. `slots: {}` gives the class no instance variables — no state of its own — for now. `tag: 'Model'` files it under `Model` in the class list, and `package: 'Laser-Game'` says which package owns it. Accepting the definition in the browser is what actually creates the class.
+>
+> This is the definition as it stands at this point in the book. `Grid` collects six instance variables as we go, and its finished definition is in the chapter *Grid*.
 
 Then define the three cell classes the same way.
 
@@ -293,16 +291,11 @@ Object << #TargetCell
 	package: 'Laser-Game'
 ```
 
-> **Note.** All three are rewritten before Section 1 is over. `MirrorCell` gains a `leansLeft` instance variable in *Enhancing MirrorCell*, and that same chapter puts the three cells under a common superclass `Cell`, which is where the state they share ends up.
+> **Note.** All three definitions are rewritten before this section is over. `MirrorCell` gains a `leansLeft` instance variable in *Enhancing MirrorCell*, and that same chapter puts the three cells under a common superclass `Cell`, which is where the state they share ends up.
 
 Before implementing the behavior of our model we define tests that specify that behavior. The tests help us make sure our implementation is correct, and they document the behavior in a way that can be checked automatically.
 
 # Test Driven Development
-
-<!-- http://squeak.preeminent.org/tut2007/html/011.html
-     http://squeak.preeminent.org/tut2007/html/015A.html
-     http://squeak.preeminent.org/tut2007/html/018.html
-     http://squeak.preeminent.org/tut2007/html/019.html -->
 
 We use the SUnit testing framework to implement the game model. We will most likely not write unit tests for the behavior of the user interface, which is tedious to do; but there is plenty we can accomplish by driving the development of the game model from unit tests.
 
@@ -321,7 +314,7 @@ The `BlankCell` is an excellent place to begin. We want a package to hold our te
 
 Right-click the package list, choose *New package* and name it `Laser-Game-Tests`. The newly created package is selected and a class definition template appears in the code pane.
 
-By convention a test class is named after the class it tests. Pharo's own convention appends `Test`; the original tutorial appends `TestCase`, and this port keeps the original names, so the class we are about to write is `BlankCellTestCase`.
+By convention a test class is named after the class it tests, with `Test` or `TestCase` on the end. This book uses `TestCase`, so the class we are about to write is `BlankCellTestCase`.
 
 ```smalltalk
 TestCase << #BlankCellTestCase
@@ -348,7 +341,7 @@ BlankCellTestCase >> testCellOnState
 	self shouldnt: [ cell isOn ]
 ```
 
-> **Note.** The original names this test `testCellStateShouldBeOff`; the port keeps the name the 2007 sources actually carry, `testCellOnState`. `self shouldnt: [ ... ]` is the 2007 way of writing `self deny: ...` and it survives here because this is the code the tutorial's own change sets contain. In new tests this port writes `deny:`.
+> **Note.** Two things about that test. Its name begins with `test`, which is how the test framework recognises a test method — a method named anything else is never run. And `self shouldnt: [ cell isOn ]` and `self deny: cell isOn` both assert that something is false: `shouldnt:` takes a block, `deny:` takes the value. Either is correct, and later tests in this book mostly use `deny:`.
 
 If the method lands in a protocol named *as yet unclassified*, no protocol was selected when you accepted it. Drag it onto `tests` and it moves.
 
@@ -392,10 +385,6 @@ The Test Runner reports one failure and lists the method that failed. Click the 
 Navigate the call stack by clicking the lines of the top pane, and the variables listed below change with the selected frame. You can inspect any of them from their context menu, and you can select any piece of code in the method and inspect or evaluate it. Later we show that you can also change the method and carry on from where you were.
 
 # Getting Our First Test To Pass
-
-<!-- http://squeak.preeminent.org/tut2007/html/016.html
-     http://squeak.preeminent.org/tut2007/html/017.html
-     http://squeak.preeminent.org/tut2007/html/020.html -->
 
 Our first test is currently this one.
 
@@ -469,7 +458,7 @@ activeSegments
 
 Lazy initialization is useful in a live environment where instance variables are added to objects that already exist: their `initialize` has already run once and running it again would be awkward. It also helps when initializing everything at creation time costs too much, by paying for each variable only when it is really needed, at the price of one `ifNil:` check per access. Which approach wins depends on the application, and that is a question for a profiler.
 
-> **Note.** This game uses both. The cells initialize eagerly, as above. `LaserGameElement >> grid` in Section 5 is lazy, so that a game built with no board deals itself the standard one the first time it is asked for it.
+> **Note.** This game uses both. The cells initialize eagerly, as above. the game window's `grid` method, written much later in *A default board worth playing on*, is lazy, so that a game built with no board deals itself the standard one the first time it is asked for it.
 
 ## Getting the test green
 
@@ -505,26 +494,15 @@ Accept it and the mark is gone.
 
 # Saving Your Work
 
-Saving your packages is how you reload your work in another image and how you go back to an earlier state of the project. It is worth doing as soon as the tests are green, and this is a good moment to set it up.
+Your code lives in the image, and an image is an easy thing to lose. Saving means putting your packages somewhere outside it, so that you can load them into a fresh image or go back to an earlier state of the project. This is a good moment to set that up, because the tests are green.
 
-## What the original tutorial does
+Pharo does it with **Iceberg**, which is part of the standard image and commits your packages to a Git repository. It writes each package out as a directory of readable text files, one per class, so the game can be read, diffed and merged with the usual Git tools.
 
-The original saves its packages with Monticello to a SmalltalkHub repository, and then describes the *Versionner* tool, which writes a `ConfigurationOfLaserGame` class declaring the two packages and the dependency of the tests on the model.
+We will not explain Iceberg here, because a book already does it well and is kept up to date with the image: the booklet *Managing Your Code with Iceberg*, from <https://books.pharo.org>. It covers cloning a repository, putting a package into it, committing, branching, and the traps you can fall into.
 
-None of that is a live option any more. SmalltalkHub was retired, Monticello is no longer how Pharo code is shared, `ConfigurationOf` was superseded by Metacello baselines, and the Versionner tool is not in the image. The purpose behind them is unchanged, so this port keeps the purpose and replaces the tools.
+One habit matters more than the tool, and this book follows it from here on:
 
-## What this port does
-
-Source is kept in a git repository and managed from inside Pharo with **Iceberg**, which is part of the standard image. Iceberg writes each package as one directory of Tonel files under `src/`, so the code of the game is readable, diffable and mergeable with the usual git tools.
-
-Rather than repeat what is already well written, we point you at the Pharo booklet *Managing Your Code with Iceberg*, available from `http://books.pharo.org`. It covers cloning, adding a package to a working copy, committing, branching and the traps of a detached working copy, and it is kept up to date with the image.
-
-Two habits from the original are worth keeping.
-
-1. **Commit on green.** Save when the tests pass, so that every point you can go back to is a point the game works at. We follow this throughout the book.
-2. **Declare your dependencies.** It makes no sense to load the tests without the model. The Metacello *baseline* is where that is written down, and it is also where the external projects the game needs, Bloc and Toplo, are declared.
-
-> **Note.** The baseline of this game is `BaselineOfLaserGame`, and it is written in the chapter *Modify Package Definition* of Section 5, at the point where the original tutorial splits its tests into their own package. Until then the whole game is one package, `Laser-Game`, and one Iceberg working copy is all you need.
+**Commit when the tests are green.** Then every state you can go back to is a state in which the game worked.
 
 # Coding in the Debugger
 
@@ -576,11 +554,6 @@ We do not repeat this process in the rest of the tutorial, but we use it daily. 
 
 # Improving Our Model
 
-<!-- http://squeak.preeminent.org/tut2007/html/020.html
-     http://squeak.preeminent.org/tut2007/html/021.html
-     http://squeak.preeminent.org/tut2007/html/022.html
-     http://squeak.preeminent.org/tut2007/html/023.html -->
-
 Now that the first test is green we can add behavior, and we do it test first.
 
 ## Asking whether one segment is on
@@ -631,7 +604,7 @@ BlankCellTestCase >> testCellExitSides
 	self assert: exit equals: #east
 ```
 
-> **Note.** The original tutorial calls this message `exitFor:`; the sources it ships call it `exitSideFor:`, which says what it answers, and that is the name the port carries. The distinction that matters is the one this test makes: a beam entering by the north side of a blank cell leaves by the south side. It is about sides, not about directions.
+> **Note.** The message is `exitSideFor:`, not `exitFor:`, because it answers a *side*. Saying so in the name saves the reader a trip into the method body. And the distinction the name draws is the one this test makes: a beam entering by the north side of a blank cell leaves by the south side. This is about sides, not about directions.
 
 The cell needs somewhere to keep that mapping, so `BlankCell` gains a second instance variable, `exitSides`, holding a dictionary from the side a beam enters by to the side it leaves by. Add the slot to the class definition and create its accessors the way you did for `activeSegments`.
 
@@ -697,7 +670,7 @@ laserEntersFrom: aSymbol
 	self activeSegments at: exit put: true.
 ```
 
-> **Note.** The original tutorial then hides the two dictionary writes behind `setSegmentOnFor:` and `setSegmentOffFor:` and rewrites `laserEntersFrom:` in terms of them. The sources this port is built on never made that step, and nothing else in the game ever needs to set one segment on its own, so the two methods do not exist here. What the refactoring was after is real all the same: a method reads better when it says what it does rather than how it stores it.
+> **Note.** You could go one step further and hide the two dictionary writes behind methods named `setSegmentOnFor:` and `setSegmentOffFor:`, then write `laserEntersFrom:` in terms of those. Nothing else in the game ever needs to light one segment on its own, so this book stops here — but the idea is worth keeping: a method reads better when it says *what* it does than when it shows *how* it stores things.
 
 ## A word about directions
 
@@ -705,27 +678,21 @@ The design we have proposed uses symbols to represent the sides. That is fine, b
 
 One cheap improvement is to define the four symbols in one place, as class methods answering `#north`, `#south`, `#east` and `#west`, and use those everywhere instead of the literals. A good acid test of that design is that you could replace the symbol in each method by a number and the system would carry on working.
 
-A stronger answer is to make the directions real objects. That is where this game ends up: Section 2 introduces a `GridDirection` hierarchy with one subclass per direction, each knowing its own vector and the side of a cell a beam travelling that way enters by. It removes the last case statement from the beam path, and it is a good example of what you get for making a value into an object.
+A stronger answer is to make the directions real objects. That is where this game ends up: *Push A Cell* introduces a `GridDirection` hierarchy with one subclass per direction, each knowing its own vector and the side of a cell a beam travelling that way enters by. It removes the last case statement from the beam path, and it is a good example of what you get for making a value into an object.
 
 # Enhancing MirrorCell
-
-<!-- http://squeak.preeminent.org/tut2007/html/024.html
-     http://squeak.preeminent.org/tut2007/html/025.html
-     http://squeak.preeminent.org/tut2007/html/026.html
-     http://squeak.preeminent.org/tut2007/html/027.html
-     http://squeak.preeminent.org/tut2007/html/028.html -->
 
 A `MirrorCell` differs from a `BlankCell` in that it carries a mirror, and the mirror can be oriented to send the laser beam in different directions. Let us start with the class comment.
 
 ```
 I am a `Cell` with a mirror on one of its diagonals. `leansLeft` says which one. When I lean left the mirror runs from my top left corner to my bottom right one, and a beam entering from the north leaves by the east. When I lean right it runs from my top right corner to my bottom left one, and the same beam leaves by the west.
 
-`leanLeft` and `leanRight` set the lean and all four exit sides together, which is why `rotate` uses them instead of flipping `leansLeft` on its own: pages 107 to 110 of the original spend three pages on exactly that bug.
+`leanLeft` and `leanRight` set the lean and all four exit sides together, which is why `rotate` uses them instead of flipping `leansLeft` on its own. A lean changed without its exit sides is a bug that is hard to see: the mirror is drawn on the new diagonal while the beam still leaves by the old side.
 
 `rotateClockwise` and `rotateCounterClockwise` are both `rotate`. A diagonal has only two positions, so either direction lands on the other one.
 ```
 
-> **Note.** That comment describes the class as it stands at the end of the book; `rotate` and the pages it mentions belong to Section 3. Write the first two sentences now and come back to it.
+> **Note.** That is the comment the class ends up with. `rotate` and the two rotate messages do not exist yet — they arrive later in this chapter — so write the first paragraph now and come back for the rest.
 
 ## Capturing the orientation
 
@@ -779,7 +746,7 @@ I am abstract: a subclass fills `exitSides` in `initializeExitSides`. `BlankCell
 `printOn:` prints where I am and whether I am on; a subclass adds its own detail by overriding `printDetailsOn:`. Inspect me and the Sides tab lists my four sides with the side a beam leaves by and whether that side is lit.
 ```
 
-> **Note.** Again, that is the finished comment. The last two paragraphs are about the printing and the inspector tab of Section 3, and `gridLocation` is the instance variable `Grid` needs in the chapter *Grid*; at this point in the tutorial `Cell` has neither.
+> **Note.** Again, that is the comment the class ends up with. The last two paragraphs describe `printOn:` and the inspector tab, which we write later, and `gridLocation` is the instance variable `Cell` gains in the chapter *Grid*. At this point it has neither, so write what is true now and come back.
 
 Pharo comes with a powerful tool for restructuring code: the refactoring engine, reachable from the *Refactoring* item of the class list context menu in the System Browser. A refactoring is a behavior preserving transformation, which is to say that the program does the same thing after it as it did before. Smalltalk had the first working refactoring engine of any language, and moving code around a hierarchy is what it is best at.
 
@@ -916,7 +883,7 @@ Cell >> initializeExitSides
 	^ self subclassResponsibility
 ```
 
-> **Note.** The original tutorial writes this method as an empty one with the comment `"does nothing"`. `self subclassResponsibility` is the Pharo idiom for the same intention, and it turns a cell with no exit sides from a puzzling bug into an immediate error.
+> **Note.** `self subclassResponsibility` means *a subclass has to implement this*. It is how an abstract method is written in Pharo: if the method is ever reached, it raises an error naming the class and the method, so a cell that forgot to fill in its exit sides fails loudly and immediately instead of quietly misbehaving three steps later. Leaving the method body empty would have hidden the same mistake.
 
 Run the tests. They pass.
 
@@ -1044,7 +1011,7 @@ MirrorCell >> leanRight
 	self exitSides at: #west put: #north.
 ```
 
-> **Note.** Setting the lean and the four sides in one method is not a stylistic choice. Section 3 of the original tutorial spends three pages on a bug that comes from changing one without the other, and the fix is to route every change of orientation through these two methods. `MirrorCell >> rotate` does exactly that.
+> **Note.** Setting the lean and the four sides in one method is not a matter of taste. Changing one without the other is the bug the chapter *Rotate A Mirror Cell* spends its length hunting, and the fix is to route every change of orientation through these two methods. `MirrorCell >> rotate` does exactly that.
 
 A mirror fills its exit sides from whichever lean it is given, so its own `initializeExitSides` only has to create the dictionary, and `initialize` leans left by default.
 
@@ -1106,9 +1073,6 @@ Instead of testing the state all the time with `isLeft` and `isRight`, a cleaner
 This game keeps the flag. A mirror has exactly two states and it flips between them on every click, so two classes would mean replacing the cell in the grid on every rotation rather than telling it to turn. It is worth knowing which trade you are making.
 
 # Enhancing TargetCell
-
-<!-- http://squeak.preeminent.org/tut2007/html/029.html
-     http://squeak.preeminent.org/tut2007/html/030.html -->
 
 The `TargetCell` is the last of our cells. It is unique in that it has no exit: once the laser beam enters a target cell it does not leave and does not propagate any further. The design choice we make here is to answer `nil` for every exit side. Let us start with tests that say what we mean, and with a comment.
 
@@ -1228,15 +1192,9 @@ This port does not take that road, for one reason: an abstract superclass that s
 
 Using `nil` to say that there is no exit is not ideal, because it makes every client check whether it got a side or nothing. A good object-oriented answer is an object that accepts the same messages and does nothing, which is the *null object* pattern. It removes the `ifNil:` tests and follows the tell-do-not-ask style of really thinking in objects.
 
-We stay with `nil` here, and it turns out to be cheap: the beam path of Section 2 asks a cell for its exit side once and stops when there is none, so there is a single place in the whole game where the check happens. Keep the pattern in mind as a refactoring exercise all the same.
+We stay with `nil` here, and it turns out to be cheap: the beam path asks a cell for its exit side once and stops when there is none, so there is a single place in the whole game where the check happens. Keep the pattern in mind as a refactoring exercise all the same.
 
 # Grid
-
-<!-- http://squeak.preeminent.org/tut2007/html/031.html
-     http://squeak.preeminent.org/tut2007/html/032.html
-     http://squeak.preeminent.org/tut2007/html/033.html
-     http://squeak.preeminent.org/tut2007/html/034.html
-     http://squeak.preeminent.org/tut2007/html/035.html -->
 
 The cells know how a beam crosses them. What is still missing is the thing that holds them. From what we have seen so far, the `Grid` is responsible for keeping the cells in a matrix. It must let us put a particular cell at a particular place, it must let us ask which cell sits at a place, and it is the object that will fire the laser beam.
 
@@ -1252,7 +1210,7 @@ I am the model of the whole board: a dictionary of `Cell`s keyed by `column @ ro
 Cells are moved with the `pushCell...FromLocation:` methods, each guarded by its `canPushCell...FromLocation:`, and mirrors are turned with `rotateCellClockwiseAt:` and `rotateCellCounterClockwiseAt:`. Inspect me for a picture of the board and a list of the beam path.
 ```
 
-> **Note.** That is the finished comment, quoted from the image. Everything after the first paragraph is about work that has not happened yet: the beam of Section 2, the mouse pushes of Section 3 and the undo stack of Section 5. At this point in the tutorial a one-line comment says all there is to say — a grid holds a matrix of cells, gives access to them, and emits the laser beam.
+> **Note.** That is the comment the class ends up with. Everything after the first paragraph is about work still ahead of us: the beam path, the mouse pushes, the undo stack. For now a single line says all there is to say — a grid holds a matrix of cells, gives access to them, and fires the laser.
 
 ## The first test
 
@@ -1274,7 +1232,7 @@ GridTestCase >> testInitialConditions
 	self assert: cell class equals: BlankCell
 ```
 
-> **Note.** The original writes `self deny: grid laserIsActive`. The port uses `self shouldnt: [ grid laserIsActive ]` here, as it does in the cell tests, and `assert:equals:` rather than `assert:` on an equality, so that a failure reports both values instead of only `false`.
+> **Note.** `assert:equals:` is worth preferring to `assert:` whenever you are comparing two values. When it fails it reports both of them — *expected 3, got 4* — where `assert: a = b` can only report that something was `false`.
 
 ## The instance variables
 
@@ -1305,7 +1263,7 @@ Grid >> cells: anObject
 
 `laserIsActive`, `laserIsActive:`, `numberOfColumns:` and `numberOfRows:` are the same three lines each. The two getters `numberOfColumns` and `numberOfRows` are rewritten in a moment, so leave them as the refactoring wrote them for now.
 
-> **Note.** The finished class has two more instance variables, `laserBeamPath` and `movesStack`, which arrive with the beam path of Section 2 and the undo of Section 5. The definition in the image is therefore:
+> **Note.** The finished class has two more instance variables, `laserBeamPath` and `movesStack`, which arrive with the beam path in the next section and with *Undo* near the end of the book. The definition in the image is therefore:
 
 ```smalltalk
 Object << #Grid
@@ -1320,24 +1278,26 @@ We want to address cells inside the grid. Rather than hand out the dictionary an
 
 ```smalltalk
 Grid >> at: aPoint
-	"TODO sbw 05/21/2007 - We should add a more meaningful accessing technique here.  x@y is confusing."
+	"Answer the cell at aPoint, a column @ row location, or nil when I hold no cell there."
+
 	^self cells at: aPoint ifAbsent: []
 ```
 
 ```smalltalk
 Grid >> at: aPoint put: aCell
-	"TODO sbw 05/21/2007 - We should add a more meaningful accessing technique here.  x@y is confusing."
+	"Put aCell at aPoint, a column @ row location, and tell the cell where it now sits."
+
 	aCell gridLocation: aPoint.
 	self cells at: aPoint put: aCell
 ```
 
-The original `cells` and `cells:` accessors still expose the dictionary, so move them to a protocol named `private`, which says they are the grid's own business. A protocol has no effect on execution. It only helps a human read the class.
+The `cells` and `cells:` accessors still expose the dictionary, so move them to a protocol named `private`, which says they are the grid's own business. A protocol has no effect on execution. It only helps a human read the class.
 
 By convention a method parameter is named after the class it expects. Pharo has a built-in class `Point`, written `x@y`, and you get the parts of a point by sending it `x` and `y`: inspect `(2@3) x` and you get `2`.
 
 Note that storing cells in a dictionary keyed by their `Point` location is the quick way, not the proper one. An array or a matrix indexed by a small calculation — something in the spirit of `x + (y * numberOfColumns)` — would be the real answer. It is a fine first pass all the same, and that is exactly the point of `at:` and `at:put:`: because the dictionary is hidden behind them, we can change our minds later without touching the rest of the program.
 
-> **Note.** Two things in these two methods belong to later pages, and are quoted here as the image has them. `at:` answers `nil` for a location the grid does not hold, because of the `ifAbsent: []`; the original raises an error there, and we come back to it below. And `at:put:` tells the cell where it has been put, which is the `gridLocation` instance variable `Cell` gains with the beam path work of Section 2. The two `TODO` comments are the 2007 author's own, kept as they were written.
+> **Note.** Two details here point forward. `at:` answers `nil` for a location the grid does not hold, because of the `ifAbsent: []` — we come back below to why that matters. And `at:put:` tells the cell where it has been put, which needs the `gridLocation` instance variable that `Cell` gains with the beam path work of the next section.
 
 ## Initializing a grid
 
@@ -1391,7 +1351,7 @@ Grid >> numberOfRows
 
 In a live programming environment like Pharo lazy initialization is used a great deal, so that is the road we take. Pay attention, though: it only works if the code consistently goes through the getter. Read the instance variable directly and you get whatever it holds, which before the first send is `nil`.
 
-> **Note.** The original's default is 3 by 3 and the port's is 1 by 1, which is the value the 2007 sources we inherited carry. It makes no difference to the game — nothing ever plays on a default grid — and it makes the point of the lazy getter sharper: a grid you have not sized is as small as a grid can be.
+> **Note.** A grid nobody has sized is as small as a grid can be, 1 by 1. Nothing ever plays on a default grid, so the value hardly matters, but it does make the point of a lazy getter sharply: the grid has a usable size from the moment it exists, without anyone having to remember to set one.
 
 ## The bug the debugger finds
 
@@ -1439,7 +1399,7 @@ testNonDefaultGridSizeInitialConditions
 
 It fails, and it fails at `grid at: 4@4`. Making the numbers bigger does not create the missing locations; the dictionary holds only what `initializeCells` put there, which is the default board. Inspect the grid in the debugger and you can see it: the keys stop where the default stopped.
 
-> **Note.** In the original this is an error rather than a failure — *KeyNotFound: key 4@4 not found in Dictionary* — because its `at:` sends `Dictionary >> at:` bare. The port's `at:` answers `nil` for a location the grid does not hold, so the same mistake arrives as a plain assertion failure on `nil class = BlankCell`. Same lesson, quieter debugger.
+> **Note.** Because our `at:` answers `nil` for a location the grid does not hold, this mistake arrives as an ordinary assertion failure on `nil class = BlankCell`. Had `at:` sent `Dictionary >> at:` bare, the same mistake would have opened a debugger on *KeyNotFound: key 4@4 not found in Dictionary* instead — the same lesson, through a noisier door.
 
 ## A better way to make a grid
 
@@ -1492,7 +1452,7 @@ Grid class >> newOfSize: aPoint
 
 Run the tests and this time they are green.
 
-> **Note.** The original's class method is `numberOfColumns: colInteger numberOfRows: rowInteger`, two integers. The image takes one `Point`, `newOfSize: 4@4`, which is the name and the shape the rest of the game uses — `GridFactory` and every later test call it. The body is the original's, with the cascade already in it.
+> **Note.** `newOfSize:` takes one `Point` — `newOfSize: 4@4` — rather than two separate integers. A point is the shape the rest of the game already uses for a size and for a location, so one argument is both shorter to write and harder to get the wrong way round.
 
 ### Understanding `yourself`
 
@@ -1557,7 +1517,7 @@ testCellInteractions
 	self assert: cell isOff
 ```
 
-> **Note.** Both methods are shown as the original writes them. In the image the demo board has already moved out of the test class into `GridFactory class >> demoGrid` — which is what page 055 does, and it is quoted in the chapter *Drawing The Mirror* of Section 2 — so `generateDemoGrid` is now one line, and `testCellInteractions` has grown into the real beam test of Section 2:
+> **Note.** A hand-made board is useful well beyond this one test, so it does not stay in the test class for long. The chapter *Drawing The Mirror* moves it to `GridFactory class >> demoGrid`, where the examples can reach it too, and `generateDemoGrid` becomes one line:
 
 ```smalltalk
 GridTestCase >> generateDemoGrid
@@ -1567,8 +1527,8 @@ GridTestCase >> generateDemoGrid
 
 Writing the generator, it was easy to get confused about which half of `x@y` was the row and which the column. That is a tip-off: the names `at:` and `at:put:` are not saying enough, and we should go back and make them more intention-revealing. Perhaps we should have written this test *before* writing them — which is a clear advantage of writing tests first, since a test is the first client of the code and passes judgement on it.
 
-A way to print a grid as text, and to build one from a text drawing of it, would make all of this easier to debug. That is the first thing Section 2 does.
+A way to print a grid as text, and to build one from a text drawing of it, would make all of this easier to debug. That is the first thing the next section does.
 
 ## Conclusion
 
-All the structural pieces of the game are now in place and tested: three kinds of cell under a common superclass, and a grid that holds them and can be asked for any of them. What is left of the model is the interesting part — working out the path the beam takes through the board — and that is where Section 2 begins.
+All the structural pieces of the game are now in place and tested: three kinds of cell under a common superclass, and a grid that holds them and can be asked for any of them. What is left of the model is the interesting part — working out the path the beam takes through the board — and that is where the next section begins.
