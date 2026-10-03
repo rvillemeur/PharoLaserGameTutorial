@@ -92,6 +92,12 @@ class in front of it:
 3 + 4
 ```
 
+Some methods are written more than once. You write a first version that does what the chapter in
+front of you needs, and a later chapter replaces it when the game asks for more. The text always
+says when that happens, and a version that a later chapter supersedes is shown without syntax
+colouring, so a coloured block is always the final one. The last version of a method in the book is
+the one the finished game holds.
+
 ## Getting the finished code
 
 You can write every line of the game yourself, which is the point of the book. If you would rather
