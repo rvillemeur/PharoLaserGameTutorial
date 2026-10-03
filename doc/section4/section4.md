@@ -1,15 +1,19 @@
 # Communicate with arrow colours
 
 The game plays. From here on the chapters are a list of things that could be better, and the first
-one is what the player notices first. In this chapter we make the renderers answer a colour for each
-hint arrow, green where the click would work and red where it would not, so an arrow says both what
-a click does and whether the board will let it.
+one is what the player notices first.
+
+In this chapter we make the renderers answer a colour for each hint arrow, green where the click
+would work and red where it would not, so an arrow says both what a click does and whether the board
+will let it.
 
 A hint arrow says which way a click would move a cell. It says nothing about whether it could. Rest
 the pointer in the middle of the mirror at `4@1` of the demo grid and you get four push arrows on
 offer, one for each direction, and only two of those pushes can happen: north is off the board, and
-east is the target, which never moves. An arrow that promises a move the grid will refuse is worse
-than no arrow at all, because the only way you find out is to click.
+east is the target, which never moves.
+
+An arrow that promises a move the grid will refuse is worse than no arrow at all, because the only
+way you find out is to click.
 
 The grid already knows the answer. In this chapter we carry it to the player, in colour.
 
@@ -31,9 +35,10 @@ LaserGameColors class >> denyActionArrowColor
 	^Color red
 ```
 
-Plain green and plain red, which are too bright and too harsh over the cells. Keep them anyway. They
-are unmistakable while we build the behaviour, and the chapter *Add A Counter and Window Colors*
-gives the whole game a palette and tones them down then. Choosing a colour you can see is a
+Plain green and plain red, which are too bright and too harsh over the cells. Keep them anyway.
+
+They are unmistakable while we build the behaviour, and the chapter *Add A Counter and Window
+Colors* gives the whole game a palette and tones them down then. Choosing a colour you can see is a
 reasonable thing to do before choosing a colour you can live with.
 
 Note where we put them: `LaserGameColors`, with every other colour of the game. No `Color green`
@@ -57,8 +62,9 @@ mouse*, because a click had to be refused before it could be coloured:
 
 So we change nothing in the model here. A question that answers a value, asked of the object that
 holds the state, gets used by callers that did not exist when it was written — the click used it to
-refuse an action, and the arrow is about to use it to choose a colour. **Separating the question
-from the action is what makes the question reusable.**
+refuse an action, and the arrow is about to use it to choose a colour.
+
+**Separating the question from the action is what makes the question reusable.**
 
 That is worth noticing as a pattern, because the opposite is the normal mistake: a method named
 `push` that silently does nothing when it cannot, with no way to ask it in advance. The view then
@@ -97,10 +103,11 @@ MirrorCellRenderer >> hintColorAt: aPoint
 
 Read the shape of that method rather than its length. There is no test on the direction of the push,
 no test on what the neighbour is, and no test on the kind of the cell. There is one message sent to
-the region the point falls in, and two colours. Every rule about what can be pushed where is behind
-`canActOnCellAtPoint:cell:withinGrid:`, and a new rule — a wall, a cell that is nailed down, a
-second mirror that may be pushed only sideways — goes in there and reaches the screen without us
-opening this method again.
+the region the point falls in, and two colours.
+
+Every rule about what can be pushed where is behind `canActOnCellAtPoint:cell:withinGrid:`, and a
+new rule — a wall, a cell that is nailed down, a second mirror that may be pushed only sideways —
+goes in there and reaches the screen without us opening this method again.
 
 The grey the base renderer answers has been in `LaserGameShapes` since we drew the arrows:
 
@@ -143,16 +150,18 @@ LaserGameCellElement >> updateHintElement
 Two things in there are worth a sentence each.
 
 We read the colour at `hintPosition`, the point the pointer was last seen at, which we introduced in
-*Visual bug with push* so that a redraw could ask for the hint again. The same slot answers a second
-question now, and it answers it correctly for free: after a push, the cell under the pointer is a
-different cell, the renderer is a different renderer, and we read the colour from that one. Storing
-the question rather than the answer keeps paying.
+*Visual bug with push* so that a redraw could ask for the hint again.
+
+The same slot answers a second question now, and it answers it correctly for free: after a push, the
+cell under the pointer is a different cell, the renderer is a different renderer, and we read the
+colour from that one. Storing the question rather than the answer keeps paying.
 
 And we put `background:` inside the guarded block, not cascaded onto the expression above it.
 `hintElementOfExtent:` answers `nil` for a region with no picture — the ignore margin — and a
-cascade on the outer expression would send `background:` to that `nil`. When a method can answer
-nil, every use of its answer belongs inside an `ifNotNil:`, including the ones that look like
-formatting.
+cascade on the outer expression would send `background:` to that `nil`.
+
+When a method can answer nil, every use of its answer belongs inside an `ifNotNil:`, including the
+ones that look like formatting.
 
 Nothing else changes. `showPositionHintAt:` still rebuilds the arrow only when the region changes,
 which is enough: the board is still while the pointer moves within one region, so the colour cannot
@@ -192,6 +201,7 @@ LaserGameCellElementTestCase >> testAPushArrowIsColouredByWhetherThePushIsAllowe
 Each half asserts the region before it asserts the colour. That is not padding. If the point ever
 lands in another region — a changed cell size, a changed dividing line — you get a colour assertion
 that fails with no hint as to why, and the two-line form says *which* of the two claims broke.
+
 **When a test asserts something derived, assert the thing it was derived from first.**
 
 `element hintElement background paint color` is how we read a colour back off a Bloc element. The
@@ -234,9 +244,11 @@ LaserGameCellElementTestCase >> testARotateArrowIsAlwaysColouredAsAllowed
 ```
 
 The cell we pick is deliberate: `3@3` is a mirror with a mirror on every side of it, so every push
-from it is refused and every push arrow on it is red. Both rotate arrows are still green. A test of
-"always" is worth little on a cell where the answer would be green anyway — **pick the case where
-the wrong implementation would give the other answer.**
+from it is refused and every push arrow on it is red.
+
+Both rotate arrows are still green. A test of "always" is worth little on a cell where the answer
+would be green anyway — **pick the case where the wrong implementation would give the other
+answer.**
 
 ## Checking it
 
@@ -259,9 +271,10 @@ space show
 ```
 
 The arrow turns from green to red as the pointer crosses from the lower triangle of the inside
-region to the left one: south is allowed, east is the target. On the mirror at `3@3`, boxed in on
-all four sides, you get red on every push arrow and green on both rotate arrows. The player can now
-see which clicks are worth making.
+region to the left one: south is allowed, east is the target.
+
+On the mirror at `3@3`, boxed in on all four sides, you get red on every push arrow and green on
+both rotate arrows. The player can now see which clicks are worth making.
 
 The arrows are easier to read than they were, and the colours are indeed too bright. What we still
 miss is any mark of *where* the pointer is, which is the next chapter.
@@ -270,13 +283,17 @@ miss is any mark of *where* the pointer is, which is the next chapter.
 
 The arrows now say what a click would do and whether it would work. The thing in the way of reading
 them is the pointer itself: a cell is small, the arrow fills most of it, and the pointer sits
-exactly on top of the arrow it is asking about. Rather than change the pointer, we draw a small
-cross hair inside the cell at the place the pointer is, which means one more child element, one more
-number on the renderer, and three callers that each gain a single line.
+exactly on top of the arrow it is asking about.
+
+Rather than change the pointer, we draw a small cross hair inside the cell at the place the pointer
+is, which means one more child element, one more number on the renderer, and three callers that each
+gain a single line.
 
 There is a second reason to want a mark on the board, and it is the more important one. A mirror
-cell is cut into six regions, and a single pixel decides between a push north and a push west. The
-player has no way to see which point the click will be judged by. The tip of the pointer is a guess.
+cell is cut into six regions, and a single pixel decides between a push north and a push west.
+
+The player has no way to see which point the click will be judged by. The tip of the pointer is a
+guess.
 
 So we draw a small cross hair in the cell, centred on the point under the pointer, and show it
 exactly when a hint arrow is shown.
@@ -295,8 +312,10 @@ test every picture in it without a window.
 
 The second is that it would answer the wrong question. A different pointer shape still sits at the
 same place and still hides the same pixels; it tells the player *that* something can be clicked, not
-*where* the click lands. A mark drawn in the cell, under the pointer, answers both: it is visible
-beside the arrow, and it is at the point the regions are asked about.
+*where* the click lands.
+
+A mark drawn in the cell, under the pointer, answers both: it is visible beside the arrow, and it is
+at the point the regions are asked about.
 
 When a framework offers the obvious mechanism and you decide against it, write down which of the two
 reasons applies. A dependency you are avoiding and a question you are answering differently are not
@@ -320,6 +339,7 @@ CellRenderer class >> crossHairExtent
 
 A whole cell for a mark that is a third of a cell. That reads oddly until you remember the shape
 puts its arms at a third of whatever box it is given: the box is the measuring frame, not the ink.
+
 And answering `self cellExtent` means the mark follows the cell size for free, which the next
 chapter — *Making larger cells* — immediately cashes in.
 
@@ -369,15 +389,18 @@ Read it as three statements, in the order you meet them:
 
 That split matters, because of how often this method runs. The pointer sends a move event for every
 pixel it crosses. Building a fresh element per pixel would mean allocating, adding, and removing
-children dozens of times a second; moving one element is a position change. **When something changes
-continuously, build the element once and change the one property that moves.** The arrow, which only
-changes when the region does, is handled the other way round: it is rebuilt, rarely.
+children dozens of times a second; moving one element is a position change.
+
+**When something changes continuously, build the element once and change the one property that
+moves.** The arrow, which only changes when the region does, is handled the other way round: it is
+rebuilt, rarely.
 
 Note also the arithmetic, which is the whole of the centring: `hintPosition - (extent // 2)`. An
 element's `position:` is its top left corner, and the point we want at its centre is `hintPosition`,
-so the corner goes half an extent up and to the left. Two integer divisions and a subtraction, in
-one place, with no offsets to carry around — because `hintPosition` is already in the coordinates of
-this element.
+so the corner goes half an extent up and to the left.
+
+Two integer divisions and a subtraction, in one place, with no offsets to carry around — because
+`hintPosition` is already in the coordinates of this element.
 
 And the accessor, which the tests ask through:
 
@@ -418,8 +441,10 @@ LaserGameCellElement >> updateHintElement
 
 Dropping a child that is about to be built again looks wasteful, and it is there for a reason you
 cannot see in the method: **children are drawn in the order they were added.** The cross hair must
-be on top of the arrow, so we add it after the arrow. This method has just removed and re-added the
-arrow, which puts the arrow last — so we drop the cross hair and rebuild it to put it back on top.
+be on top of the arrow, so we add it after the arrow.
+
+This method has just removed and re-added the arrow, which puts the arrow last — so we drop the
+cross hair and rebuild it to put it back on top.
 
 This is worth knowing in general. In a tree of elements, overlap is decided by order of addition,
 not by any property you can set afterwards. When one child must stay over another, what you control
@@ -518,11 +543,12 @@ LaserGameCellElementTestCase >> testACrossHairMarksThePointWhereAHintIsShown
 ```
 
 The last two assertions read the element's `constraints` rather than its `extent` and `position`.
-That is not a detour, it is the only honest way we can test this outside a window. In Bloc,
-`extent:` and `position:` record what an element *asked for*, in its constraints; the values it
-actually gets are computed in a layout pass, and no layout pass happens for an element that was
-never drawn. A test that asserted `extent` would be asserting the default, and would pass whatever
-the code did.
+That is not a detour, it is the only honest way we can test this outside a window.
+
+In Bloc, `extent:` and `position:` record what an element *asked for*, in its constraints; the
+values it actually gets are computed in a layout pass, and no layout pass happens for an element
+that was never drawn. A test that asserted `extent` would be asserting the default, and would pass
+whatever the code did.
 
 > **Assert what the code decided, not what a later stage would have computed from it.**
 
@@ -595,10 +621,11 @@ LaserGameCellElementTestCase >> testTheCrossHairIsShownExactlyWhenAHintIs
 ```
 
 One test, five situations, in the order you would produce them as a player: into the cell, into the
-ignore margin, back in, out of the cell, and then onto a cell that has nothing to offer. A rule with
-the word *exactly* in it needs both halves tested — when it appears **and** when it does not — and
-the cheapest way to write that is one test that walks through the cases rather than five tests that
-each build a board.
+ignore margin, back in, out of the cell, and then onto a cell that has nothing to offer.
+
+A rule with the word *exactly* in it needs both halves tested — when it appears **and** when it does
+not — and the cheapest way to write that is one test that walks through the cases rather than five
+tests that each build a board.
 
 ## Two tests that now count two children
 
@@ -696,9 +723,11 @@ written down by hand.
 
 That is a claim, and this chapter is about the two things a claim like it is worth. First, what it
 buys: changing one method changes the size of the whole game, and the arrows, the regions, the
-target ring, and the board all follow. Second, how you find out whether it is true — because a size
-that was written down instead of derived does not announce itself. It sits there looking correct
-until the day the cell changes size, and then it is wrong by exactly the amount nobody noticed.
+target ring, and the board all follow.
+
+Second, how you find out whether it is true — because a size that was written down instead of
+derived does not announce itself. It sits there looking correct until the day the cell changes size,
+and then it is wrong by exactly the amount nobody noticed.
 
 The honest way for you to find those is to change the size and look. The better way is to change the
 size in a test and assert.
@@ -749,8 +778,9 @@ the cell is. Four pixels is right in a thirty pixel cell and right in an eighty 
 
 `insideRegionExtent` is the cell less twenty, so the ring around it keeps its width as the cell
 grows. `outsideRegionExtent` we do not write at all — it is the cell less the margin on each side,
-which is the sentence "the rotate region is everything but the margin" turned into code. The margin
-is the decision; the region is the consequence.
+which is the sentence "the rotate region is everything but the margin" turned into code.
+
+The margin is the decision; the region is the consequence.
 
 > **Write down the thing you decided, and derive everything that follows from it.** The question to
 > ask of every constant is: if the cell doubled, would this number still be right? If yes it is a
@@ -777,9 +807,10 @@ TargetCellRenderer >> innerRadius
 ```
 
 The clamp is the interesting half. At a thirty pixel cell you get a radius of seven; at forty you
-get ten; at fifty, or eighty, you still get ten. The target is not a disc that fills its cell, it is
-a small ring in the middle of one, and past a certain size growing it would make it a different
-thing.
+get ten; at fifty, or eighty, you still get ten.
+
+The target is not a disc that fills its cell, it is a small ring in the middle of one, and past a
+certain size growing it would make it a different thing.
 
 So there are three kinds of size in this game, and you want the vocabulary for them: ones that are
 decisions (`ignoreRegionOffset`), ones that are consequences (`outsideRegionExtent`), and ones that
@@ -812,6 +843,7 @@ CellRendererTestCase >> withCellExtent: anExtent do: aBlock
 
 That method recompiles a method, inside a test, and that owes you a justification rather than a
 shrug. The cell size is a class-side constant that the entire package reads through `CellRenderer`.
+
 There is no instance to configure, no parameter threaded through forty methods, and no injected
 object to replace — which is the price of a global constant, and the price is paid here. Recompiling
 it is the only way to ask "what would this geometry do at another size?" without changing the design
@@ -819,9 +851,10 @@ of the game to suit the test.
 
 Two details make it safe for you to do. `previous` holds the `CompiledMethod` itself, so the
 original source is restored exactly, comment and all. And the restore is in an `ensure:` block, so
-it happens even when an assertion inside `aBlock` fails. **Anything a test changes outside itself is
-restored in an `ensure:`, not at the end of the test body** — a failing assertion raises, and an
-end-of-test cleanup never runs.
+it happens even when an assertion inside `aBlock` fails.
+
+**Anything a test changes outside itself is restored in an `ensure:`, not at the end of the test
+body** — a failing assertion raises, and an end-of-test cleanup never runs.
 
 Then the experiment itself, which asks the geometry the questions your eye would ask:
 
@@ -917,17 +950,20 @@ We had written the classification as a `detect:` with nothing to answer when no 
 
 That is safe exactly as long as some region contains every point it is asked about, and the
 reasoning that made it look safe was sound: the ignore region covers the whole cell, so every point
-*of a cell* finds a region. The hole is in the part that was not stated — a point that is not in the
-cell at all. A cell element laid out at eighty pixels hands over points up to `79@79`, and the
-regions, recomputed at fifty, stop at `49@49`.
+*of a cell* finds a region.
+
+The hole is in the part that was not stated — a point that is not in the cell at all. A cell element
+laid out at eighty pixels hands over points up to `79@79`, and the regions, recomputed at fifty,
+stop at `49@49`.
 
 Two things for you to take from the shape of this bug.
 
 A `detect:` without `ifNone:` is an assertion written in the imperative. It says "this always finds
 something", and when the claim is about the *arguments* rather than about the collection, it is a
-claim the method cannot check. Ask what the method should answer in the case the claim excludes.
-Here, there is a good answer, and the ignore region already means it: a point a click can do nothing
-with.
+claim the method cannot check.
+
+Ask what the method should answer in the case the claim excludes. Here, there is a good answer, and
+the ignore region already means it: a point a click can do nothing with.
 
 And a mouse handler is not a place to raise. An error in a move handler fires again on the next
 pixel, and the walkback arrives dozens of times a second — which was how this made itself known.
@@ -977,9 +1013,10 @@ off-by-one you are better off writing a test about than reasoning about twice.
 
 No other classification needs the same guard. The four push regions answer the four combinations of
 two booleans, and the two rotate regions split on one, so those `detect:` calls always find exactly
-one subclass whatever point they are given. Only the outermost one could fail, and only outside the
-cell. If we fixed all six "for symmetry" we would add five dead `ifNone:` blocks that no test could
-ever reach.
+one subclass whatever point they are given.
+
+Only the outermost one could fail, and only outside the cell. If we fixed all six "for symmetry" we
+would add five dead `ifNone:` blocks that no test could ever reach.
 
 ## Checking it
 
@@ -1011,15 +1048,18 @@ of buttons, which is where we go next.
 
 Nothing in this chapter changes a rule of the game. We put a colour ramp behind the window, move the
 control panel to the left of the board, and add a small LED display at the top of the panel counting
-the cells the beam crosses. Eye candy, and it is worth a chapter for two reasons: the LED is a
-seven-rectangle element built and tested like any other, and the counter is the first thing in the
-game that has to be told when the board changes.
+the cells the beam crosses.
+
+Eye candy, and it is worth a chapter for two reasons: the LED is a seven-rectangle element built and
+tested like any other, and the counter is the first thing in the game that has to be told when the
+board changes.
 
 The first is that drawing a seven segment display is a good exercise for you in the lesson of the
-last chapter: every number in it is derived from one size. The second is the last section, which is
-the real work. A counter has to be told when the number it shows has changed, and the two moments
-when the beam can change are in two different objects — one of which has no business knowing that a
-counter exists at all.
+last chapter: every number in it is derived from one size.
+
+The second is the last section, which is the real work. A counter has to be told when the number it
+shows has changed, and the two moments when the beam can change are in two different objects — one
+of which has no business knowing that a counter exists at all.
 
 ## The window gets a ramp
 
@@ -1090,10 +1130,11 @@ LaserGameColors class >> controlPanelColor
 ```
 
 `Color transparent` is not the same as no colour. The panel still has a background; it is a
-background that draws nothing, which is how a child lets its parent show through. We say it
-explicitly rather than leaving the slot unset — an element whose background nobody ever set and an
-element deliberately painted transparent look the same on the screen and read very differently in
-the code.
+background that draws nothing, which is how a child lets its parent show through.
+
+We say it explicitly rather than leaving the slot unset — an element whose background nobody ever
+set and an element deliberately painted transparent look the same on the screen and read very
+differently in the code.
 
 ## The panel moves to the left
 
@@ -1146,9 +1187,11 @@ LaserGameLedElement class >> segmentsForDigit: anInteger
 
 Ten entries, indexed by the digit itself. `at: anInteger + 1` is the arithmetic that turns the digit
 zero into the first entry, and it is the only place in the game where we use a number as an index
-into a literal array. The alternative — a ten-branch conditional, or a `Dictionary` built at class
-initialisation — would be more code saying the same thing. A literal array *is* a lookup table, and
-reading the first entry as the shape of a zero is easy once you know the letters.
+into a literal array.
+
+The alternative — a ten-branch conditional, or a `Dictionary` built at class initialisation — would
+be more code saying the same thing. A literal array *is* a lookup table, and reading the first entry
+as the shape of a zero is easy once you know the letters.
 
 Where each segment sits is one method, and every number in it is derived:
 
@@ -1181,11 +1224,13 @@ gaps. Every other number is `thickness`, `width` or `arm`, and the three bars an
 where they have to.
 
 The last line is the else branch, and it raises. That is right here, and it is the opposite of what
-we did with `clickRegionForPoint:` in the previous chapter, so the difference is worth stating. A
-point outside a cell is a thing that happens — it arrives from the mouse, dozens of times a second,
-and there is a sensible answer for it. A segment named `#h` cannot arrive from anywhere but a typo
-in this package. **Answer the case that can happen; raise on the case that means the program is
-wrong.**
+we did with `clickRegionForPoint:` in the previous chapter, so the difference is worth stating.
+
+A point outside a cell is a thing that happens — it arrives from the mouse, dozens of times a
+second, and there is a sensible answer for it. A segment named `#h` cannot arrive from anywhere but
+a typo in this package.
+
+**Answer the case that can happen; raise on the case that means the program is wrong.**
 
 Three constants feed it:
 
@@ -1215,9 +1260,10 @@ LaserGameLedElement class >> digitGap
 
 Sixteen rather than fifteen, and the comment says why: three bars of two pixels and two arms between
 them need an even height to divide. Fifteen would leave an arm of four and a half pixels, and you
-would see the rounding as a display whose middle bar sits a pixel off centre. **When a size has to
-divide, choose a size that divides** — and say in the comment that this is what the number is for,
-or somebody will round it back down to the nicer-looking fifteen.
+would see the rounding as a display whose middle bar sits a pixel off centre.
+
+**When a size has to divide, choose a size that divides** — and say in the comment that this is what
+the number is for, or somebody will round it back down to the nicer-looking fifteen.
 
 We build a digit once, and after that only recolour it:
 
@@ -1497,9 +1543,10 @@ LaserGameControlPanelElement >> rebuild
 > The blocks above are the methods as this chapter leaves them.
 
 There is one counter, and it already goes in a column of its own. That is not over-engineering for
-its own sake: in the next chapter we add a second counter, and a column is where it will go. If it
-were one counter pinned to the top left corner of the panel, we would have to undo that in the next
-chapter before we could add anything.
+its own sake: in the next chapter we add a second counter, and a column is where it will go.
+
+If it were one counter pinned to the top left corner of the panel, we would have to undo that in the
+next chapter before we could add anything.
 
 The panel is a frame layout, so a column asks for its place with two alignments and a margin:
 `alignLeft` and `alignTop` put it in the top left corner, and the margin holds it one gap in from
@@ -1559,8 +1606,10 @@ A click on a mirror is the interesting one, and it is the one design decision of
 
 The click arrives at a cell element. The cell element tells its board. The board knows nothing about
 the panel, or about the game — which is exactly why you can open a board on its own with
-`LaserGameBoardElement openExample`. Giving the board a reference to the game, so that it could
-reach the panel, so that it could update a counter, would end that.
+`LaserGameBoardElement openExample`.
+
+Giving the board a reference to the game, so that it could reach the panel, so that it could update
+a counter, would end that.
 
 So the board does not reach for the counter. It says that a move was made, and whoever cares
 listens:
@@ -1594,9 +1643,10 @@ LaserGameCellElement >> clickAt: aPoint
 ```
 
 We give this pattern a name of its own. The board offers an *announcement* — one slot holding a
-block, one message to fill it, and a send guarded by `ifNotNil:`. Whoever assembles the two objects
-connects them, which here is `LaserGameElement >> rebuild` with its
-`board whenMoveMadeDo: [ self controlPanel updateCounters ]`. A board that nobody connected
+block, one message to fill it, and a send guarded by `ifNotNil:`.
+
+Whoever assembles the two objects connects them, which here is `LaserGameElement >> rebuild` with
+its `board whenMoveMadeDo: [ self controlPanel updateCounters ]`. A board that nobody connected
 announces to nobody and plays exactly as before.
 
 Compare it with the alternative in one line each. A board that holds the game asks you "which game?"
@@ -1605,8 +1655,9 @@ know about is free to listen.
 
 Notice also the middle line of `clickAt:`. `mouseUpAt:` answers nil when the click changed nothing,
 and the early return means no move is announced for a click on a blank cell. The counter is not
-touched, the cells are not redrawn, and in the next chapter the move count does not go up. **Let the
-thing that knows whether something happened be the thing that says so.**
+touched, the cells are not redrawn, and in the next chapter the move count does not go up.
+
+**Let the thing that knows whether something happened be the thing that says so.**
 
 ## The tests
 
@@ -1749,8 +1800,10 @@ change back, the assertions once more. Three states and a round trip, which is m
 
 One line in the middle earns its place. `self assert: panel laserPathCounter value > 0` looks
 redundant beside the equality above it — but if the beam path were empty, the equality would hold
-with both sides zero and the test would pass while showing nothing. **When a test compares two
-things the code computed, make sure the value is not the one a broken version would also produce.**
+with both sides zero and the test would pass while showing nothing.
+
+**When a test compares two things the code computed, make sure the value is not the one a broken
+version would also produce.**
 
 We check the game for the ramp and for both ways to the counter:
 
@@ -1823,9 +1876,11 @@ LaserGameElementTestCase >> testAMoveOnTheBoardSetsTheCounter
 
 That last test is the one that checks the announcement, and its last line is why it works. Turning
 the mirror at the foot of the first column sends the beam off the board earlier, and the path drops
-from nine cells to four. A test that only asserted that the counter equals the path would pass even
-if the block were never registered, because both would be read after the change. Asserting that the
-number *changed* is what proves something told the panel.
+from nine cells to four.
+
+A test that only asserted that the counter equals the path would pass even if the block were never
+registered, because both would be read after the change. Asserting that the number *changed* is what
+proves something told the panel.
 
 ## Checking it
 
@@ -1847,13 +1902,16 @@ follows it, without you touching the fire button.
 
 Two features. The first is a Moves counter, showing how many moves the player has made: the point of
 the game is to light the target in as few as possible, so the number is worth putting on the screen.
+
 The second is a random game generator, so that the board is a new puzzle each time, which brings
 with it a third button, a new game, and a question put to the player before the window closes.
 
 Both of them drag something else along. A random board needs a New button, and the panel was laid
 out for two buttons in one row; three buttons means we have to decide how a panel arranges buttons
-at all. And Quit, which used to sit alone, now has a neighbour that is easy to miss by a few pixels,
-so it ought to ask before it closes the window — which in Bloc is a more interesting problem than it
+at all.
+
+And Quit, which used to sit alone, now has a neighbour that is easy to miss by a few pixels, so it
+ought to ask before it closes the window — which in Bloc is a more interesting problem than it
 sounds.
 
 ## Counting the moves
@@ -1925,10 +1983,12 @@ tidiness. You can read `[ self moveMade ]` without knowing what a move does, and
 `moveMade` without a board.
 
 Now, what counts as a move? The board is told only when a click changed something, so a click on a
-blank cell is not counted. That is a decision, not an accident: the count is the number the player
-is asked to keep down, and a click that moved nothing did not cost the player anything. A test below
-holds the game to that reading, and it is the kind of test worth writing precisely because the
-behaviour is a choice rather than a consequence.
+blank cell is not counted.
+
+That is a decision, not an accident: the count is the number the player is asked to keep down, and a
+click that moved nothing did not cost the player anything. A test below holds the game to that
+reading, and it is the kind of test worth writing precisely because the behaviour is a choice rather
+than a consequence.
 
 ## A second counter
 
@@ -2063,14 +2123,16 @@ LaserGameControlPanelElement >> newButtonColumn
 
 A row of rows, and a button never learns where it is. The rows we add in later chapters — Undo
 beside New, Reset in a row of its own — fall in above these two without touching anything, because
-there is nothing to touch. **When a layout is a structure rather than a calculation, adding to it is
-adding a child.**
+there is nothing to touch.
+
+**When a layout is a structure rather than a calculation, adding to it is adding a child.**
 
 The column takes no margin, and the comment explains why, because we found that out through a bug. A
 linear layout spaces its cells from its own edges as well as from each other, so the cell spacing
-alone already holds the buttons one gap in on every side. Add a margin of the same gap on top and
-the left edge gets both: two buttons and their gaps then fill more than the panel, and you get the
-last button of the bottom row touching the board.
+alone already holds the buttons one gap in on every side.
+
+Add a margin of the same gap on top and the left edge gets both: two buttons and their gaps then
+fill more than the panel, and you get the last button of the bottom row touching the board.
 
 The widths work out exactly, and we give that a test of its own:
 
@@ -2091,9 +2153,10 @@ LaserGameControlPanelElementTestCase >> testARowOfTwoButtonsFitsInsideThePanel
 ```
 
 Two buttons and three gaps equal the panel width exactly. That is not a coincidence, it is where the
-panel width came from — and a test that says so turns a coincidence into a stated relationship. The
-second assertion says the other half: a third button in the same row would not fit, which is *why*
-the buttons are in rows at all.
+panel width came from — and a test that says so turns a coincidence into a stated relationship.
+
+The second assertion says the other half: a third button in the same row would not fit, which is
+*why* the buttons are in rows at all.
 
 The panel reads its rows back out of the column, so the names we use elsewhere keep working:
 
@@ -2218,15 +2281,19 @@ taken. The target corner starts at `true`; everything else starts at `false`.
 
 So `list at: pt` is the condition of the loop: draw a point, read its flag, and go round again while
 the flag says taken. The line that would look more natural — `list includesKey: pt` — is true for
-every location on the board, and you would get a loop that never ends. **A dictionary used as a set
-of flags is not a dictionary used as a set of keys, and the two read almost the same.** If a
-collection means "has it been taken", ask it for the value, never for the key.
+every location on the board, and you would get a loop that never ends.
+
+**A dictionary used as a set of flags is not a dictionary used as a set of keys, and the two read
+almost the same.** If a collection means "has it been taken", ask it for the value, never for the
+key.
 
 The loop is a retry: draw again until you draw a free one. That is fine at these densities — ten
 mirrors among twenty-five cells, thirty-two among eighty — and it is the simplest thing that cannot
-place two mirrors on one cell. It would be a bad idea on a board that is nearly full, where the
-draws would mostly hit taken cells; if you ever deal a board that dense, shuffle a list of the free
-locations and take from the front instead.
+place two mirrors on one cell.
+
+It would be a bad idea on a board that is nearly full, where the draws would mostly hit taken cells;
+if you ever deal a board that dense, shuffle a list of the free locations and take from the front
+instead.
 
 The generator is one per class, made on demand:
 
@@ -2256,11 +2323,14 @@ GridFactory class >> randomBoolean
 ```
 
 `randomNumberGenerator` is a lazily initialised class variable: the `isNil ifTrue:` builds it the
-first time and every later send answers the same one. `reSeed` exists for one reason, and it is a
-reason worth the method: because the generator is seeded, we can seed it in a test and get the same
-board every run, and `reSeed` is what puts the randomness back afterwards. **Make the random thing
-seedable and the tests stop being flaky.** The test case below seeds in `setUp` and calls `reSeed`
-in `tearDown`, and that is the whole of it.
+first time and every later send answers the same one.
+
+`reSeed` exists for one reason, and it is a reason worth the method: because the generator is
+seeded, we can seed it in a test and get the same board every run, and `reSeed` is what puts the
+randomness back afterwards.
+
+**Make the random thing seedable and the tests stop being flaky.** The test case below seeds in
+`setUp` and calls `reSeed` in `tearDown`, and that is the whole of it.
 
 `nextInteger:` answers one of 1 to the number asked for, which is exactly the range of a column or a
 row, so we need no `+ 1` anywhere in the drawing.
@@ -2281,18 +2351,21 @@ LaserGameElement >> newGame
 
 Five lines, and the order of the first and the fourth matters. `randomizeGrid:` writes a target and
 its mirrors onto the grid and clears nothing, so the cells have to be emptied first — otherwise you
-get the old board with ten more mirrors on it. The test below catches exactly that, by counting
-mirrors after a new game on a board that already had ten: the answer has to be ten, not twenty.
+get the old board with ten more mirrors on it.
+
+The test below catches exactly that, by counting mirrors after a new game on a board that already
+had ten: the answer has to be ten, not twenty.
 
 > **When a method writes onto something without clearing it, the caller owns the clearing, and the
 > test that proves it is a count.**
 
 The last line is `refresh`, which rebuilds the cell elements, relabels the fire button and sets the
 counters. Nothing here has to erase anything. Each cell is an element that draws its own cell, so a
-cell that was a mirror and is now blank draws itself blank. If the board were one shared picture,
-this is where we would have to start painting over what we drew before — a cell could no longer
-assume it was blank underneath, because for the first time a cell can lose contents as well as gain
-them.
+cell that was a mirror and is now blank draws itself blank.
+
+If the board were one shared picture, this is where we would have to start painting over what we
+drew before — a cell could no longer assume it was blank underneath, because for the first time a
+cell can lose contents as well as gain them.
 
 ## Asking before quitting
 
@@ -2324,8 +2397,10 @@ LaserGameConfirmElement >> initialize
 
 `ignoreByLayout` is the one Bloc detail that makes this work. The game lays its children out in a
 horizontal row; the question is a child of the game, and without that constraint it would become a
-third cell of the row and push the board sideways. Ignored by the layout, it sits where we put it —
-over the whole game — and the row stays a row of two.
+third cell of the row and push the board sideways.
+
+Ignored by the layout, it sits where we put it — over the whole game — and the row stays a row of
+two.
 
 ```smalltalk
 LaserGameConfirmElement >> newBox
@@ -2367,6 +2442,7 @@ LaserGameConfirmElement >> newAnswerRow
 
 A frame layout with both alignments set to centre is how a box ends up in the middle of what covers
 the game, and `fitContent` on both constraints is how it ends up the size of the question it holds.
+
 We build the box from the same three pieces as a counter — a background, a geometry, a padding — and
 that is not an accident worth hiding: a game that invents a new visual language for every element
 looks like several games.
@@ -2401,6 +2477,7 @@ LaserGameConfirmElement >> whenAnsweredDo: aBlock
 
 Read the comment on `answer:` again, because it is the design. The question does not know what its
 answer means, and it does not take itself off the game. It collects a yes or a no and passes it on.
+
 That is the same announcement pattern the board used for a move, and it buys the same thing: we can
 test this element on its own, and it can be used for the next question somebody wants to ask.
 
@@ -2537,8 +2614,10 @@ GridFactoryTestCase >> testTheMirrorsStandOneToACellAndAwayFromTheTarget
 
 One assertion, and it is the whole of the retry loop. We dealt ten mirrors; if two of them had
 landed on one cell there would be nine, and if one had landed on the target there would be ten with
-no target. Counting is how you test that a loop placed things *somewhere else each time* — you never
-have to know where.
+no target.
+
+Counting is how you test that a loop placed things *somewhere else each time* — you never have to
+know where.
 
 ```smalltalk
 GridFactoryTestCase >> testTheNumberOfMirrorsFollowsTheSizeOfTheBoard
@@ -2606,9 +2685,12 @@ LaserGameElementTestCase >> testAClickThatChangesNothingIsNoMove
 ```
 
 The second line of that test is doing real work. `self assert: (game grid at: 2 @ 2) class equals:
-BlankCell` asserts the *premise* — that the cell being clicked is blank. Without it, a change to the
-demo board that put a mirror at `2@2` would turn this into a test that quietly checks nothing: the
-click would count a move, the assertion would fail, and the failure would be a puzzle to you.
+BlankCell` asserts the *premise* — that the cell being clicked is blank.
+
+Without it, a change to the demo board that put a mirror at `2@2` would turn this into a test that
+quietly checks nothing: the click would count a move, the assertion would fail, and the failure
+would be a puzzle to you.
+
 **State the premise of a test as an assertion, so that a broken premise fails as a premise.**
 
 ```smalltalk
@@ -2781,8 +2863,10 @@ the game as it was; Yes closes the window.
 Five columns by five rows was a choice, and it is time to find out whether the game knows that. A
 tutorial game that only ever plays one board size tends to be full of fives nobody noticed: a loop
 that counts to five, a width worked out once on paper, a counter wide enough for the numbers the
-small board happens to produce. In this chapter we deal boards of any extent, hand one to the game
-instead of letting the game make its own, and then go looking for whatever still believes in five.
+small board happens to produce.
+
+In this chapter we deal boards of any extent, hand one to the game instead of letting the game make
+its own, and then go looking for whatever still believes in five.
 
 So this chapter is mostly a search. We ask the game for an eight by ten board and then look for
 everything that complains.
@@ -2805,9 +2889,11 @@ GridFactory class >> randomizedGridOfExtent: ext
 ```
 
 This is what deriving everything from one number buys, and it is worth stopping on because it is the
-whole return on the care we took earlier. We decided the size of the board in one place, told the
-grid, and computed every number that follows from the grid rather than writing it down. A feature
-that would otherwise be a day of hunting for fives is a method that was already there.
+whole return on the care we took earlier.
+
+We decided the size of the board in one place, told the grid, and computed every number that follows
+from the grid rather than writing it down. A feature that would otherwise be a day of hunting for
+fives is a method that was already there.
 
 Two tests, though, because until now nothing had ever asked for a board that was not five by five:
 
@@ -2846,9 +2932,10 @@ GridFactoryTestCase >> testTheTargetCornerIsMarkedUsedOnABoardOfAnySize
 The second test checks a line that was invisible on the small board. `emptyRandomLocationsFor:`
 marks the target corner used before a single mirror is dealt, and on a five by five board that line
 could have been wrong in a way nothing would show you: the corner is `5@1`, the grid is square, and
-an off-by-one between columns and rows looks the same from either side. On eight by ten it does not.
-A non-square board is worth testing with precisely because it tells `numberOfColumns` and
-`numberOfRows` apart.
+an off-by-one between columns and rows looks the same from either side.
+
+On eight by ten it does not. A non-square board is worth testing with precisely because it tells
+`numberOfColumns` and `numberOfRows` apart.
 
 > **The test that finds a confusion between two numbers is the test where the two numbers differ.**
 
@@ -2914,10 +3001,11 @@ GridFactory class >> defaultGrid
 	^self randomizedGridOfExtent: 8@10
 ```
 
-Each of those is a name over an expression, and that is the right amount of code for them. None of
-them decides anything: `onRandomOfExtent:` deals and hands over, `openRandomOfExtent:` deals and
-opens, `openStandardExample` names one particular size. If any of them had grown a second line of
-real work, we would have had to ask which existing method should have had it.
+Each of those is a name over an expression, and that is the right amount of code for them.
+
+None of them decides anything: `onRandomOfExtent:` deals and hands over, `openRandomOfExtent:` deals
+and opens, `openStandardExample` names one particular size. If any of them had grown a second line
+of real work, we would have had to ask which existing method should have had it.
 
 The old opener keeps the small board:
 
@@ -3004,9 +3092,10 @@ and thirty wide; ten rows of fifty and the margins is five hundred and twenty hi
 
 The last line of the comment is the detail that costs an afternoon if nobody writes it down. We read
 the sizes from `constraints horizontal resizer size`, not from `extent`, because `extent` is
-`0.0@0.0` until a space lays the element out. A test that asserts on `extent` without opening a
-window asserts on zero, and the first time you see that failure it looks like the size calculation
-is broken rather than the test.
+`0.0@0.0` until a space lays the element out.
+
+A test that asserts on `extent` without opening a window asserts on zero, and the first time you see
+that failure it looks like the size calculation is broken rather than the test.
 
 > **When a test reads a value a framework computes later, read the instruction instead of the
 > result.**
@@ -3051,9 +3140,10 @@ LaserGameElementTestCase >> testTheCountersStillHoldWhatABiggerBoardProduces
 ```
 
 That test is an odd shape and worth defending. It asserts an inequality — the path is shorter than a
-thousand — rather than a number, because the path length of a dealt board is not predictable. What
-it pins down is that three digits are *enough* for the boards this game deals, which is the thing
-you want to know and the thing a later change could break.
+thousand — rather than a number, because the path length of a dealt board is not predictable.
+
+What it pins down is that three digits are *enough* for the boards this game deals, which is the
+thing you want to know and the thing a later change could break.
 
 A board large enough to overflow three digits would have to be hundreds of cells across. If anybody
 ever wants one, `LaserGameCounterElement labelled:digits:` takes the digit count as an argument
@@ -3087,10 +3177,11 @@ becomes one in Section 5, when a fourth counter makes the panel taller than a sh
 # Drawing the laser beam
 
 The game is playable without the beam being drawn. The counter says how many cells the beam runs
-through, the target lights up when the beam reaches it, and the player works out the rest. That is
-enough to play, and it is a poor thing to look at, so in this chapter we build the shape of a beam —
-a pale band with a bright centre on it, horizontal and vertical — and test it before any cell asks
-for one.
+through, the target lights up when the beam reaches it, and the player works out the rest.
+
+That is enough to play, and it is a poor thing to look at, so in this chapter we build the shape of
+a beam — a pale band with a bright centre on it, horizontal and vertical — and test it before any
+cell asks for one.
 
 We build the beam as a shape. Nothing on the board draws it yet — we wire it into the cells in the
 next chapter — so the work here is one question: what *is* a laser beam, as geometry?
@@ -3117,6 +3208,7 @@ LaserGameColors class >> laserBeamCenterColor
 
 The pale one is almost white with a little yellow in it; the core is a yellow-green that reads as
 brighter than white against it. Neither is `Color yellow`, and that is worth a moment of your time.
+
 Pure named colours look like a diagram; two colours a few steps apart look like light. If a glow
 does not look like a glow, the usual reason is that the two parts are too far apart in colour, not
 that they are the wrong colours.
@@ -3176,9 +3268,10 @@ LaserGameShapesTestCase >> testABeamIsAPaleBandWithABrightCentreOnIt
 Three things in that test are habits you should pick up rather than details.
 
 We assert the order of the children — `children first` is the pale band, `children second` is the
-core — because in Bloc the order of children is the order they are drawn in. The core is on top
-because we add it second. A test that fetched the two bars by colour would pass with them the wrong
-way round, and the beam would be a pale band with a bright bar hidden under it.
+core — because in Bloc the order of children is the order they are drawn in.
+
+The core is on top because we add it second. A test that fetched the two bars by colour would pass
+with them the wrong way round, and the beam would be a pale band with a bright bar hidden under it.
 
 We assert the core to be *thinner* than the band, with `<`, not thinner by some number. We check the
 exact thicknesses in their own test below. Here the claim is the relationship, and a test that
@@ -3268,9 +3361,11 @@ LaserGameShapesTestCase >> testTheBeamGetsThickerWithTheCell
 > **Note.** *Laser on mirror cell* replaces this test too.
 
 Two cell sizes, as in *Making larger cells*: one claim about "this follows that" needs two values of
-"that". And the last assertion is the clamp — a cell of two pixels still gets a core of one pixel
-rather than none — which is the same kind of assertion as the mirror radius in that chapter. A clamp
-is a decision, so it gets its own line in a test.
+"that".
+
+And the last assertion is the clamp — a cell of two pixels still gets a core of one pixel rather
+than none — which is the same kind of assertion as the mirror radius in that chapter. A clamp is a
+decision, so it gets its own line in a test.
 
 ## The shapes
 
@@ -3320,8 +3415,10 @@ LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent within: anExtent color
 
 `(anExtent - aBarExtent) / 2` is the whole of "centred", in both directions at once. Point
 arithmetic again: subtract the bar from the cell and you have the leftover space, halve it and you
-have the offset. Writing it per axis — an x from the width, a y from the height — is four terms
-where there are two, and the second one is the one that gets mistyped.
+have the offset.
+
+Writing it per axis — an x from the width, a y from the height — is four terms where there are two,
+and the second one is the one that gets mistyped.
 
 And the two beams, which are now assemblies rather than drawings:
 
@@ -3384,11 +3481,13 @@ transparent: it occupies the cell, and the cell shows through everywhere the bar
 order is draw order, so the pale band goes on first and the core over it.
 
 The two methods are near-duplicates, and that is visible from here: the only difference is which
-coordinate gets the thickness and which gets the length. The right moment for us to merge them is
-when a third case arrives, and it does — a beam that enters a cell and turns needs half a bar, not a
-whole one, which is what *Laser on mirror cell* is about. **Two methods that differ in one axis are
-worth leaving alone; three are worth merging.** Merging too early means we guess at the parameter
-the third case will need.
+coordinate gets the thickness and which gets the length.
+
+The right moment for us to merge them is when a third case arrives, and it does — a beam that enters
+a cell and turns needs half a bar, not a whole one, which is what *Laser on mirror cell* is about.
+
+**Two methods that differ in one axis are worth leaving alone; three are worth merging.** Merging
+too early means we guess at the parameter the third case will need.
 
 ## Checking it
 
@@ -3421,10 +3520,11 @@ Change `cell` to 20 and run it again: you get a thinner beam but the proportions
 # Laser on blank cell
 
 Nobody builds the shapes of the last chapter yet. In this chapter we put the beam on the board,
-starting with the easiest cell: a blank one, which the beam goes straight through. What the beam
-does at a mirror and at the target is the work of the two chapters after this one, so the renderer
-gains one question, every cell answers it, and the element paints the answer under what is already
-there.
+starting with the easiest cell: a blank one, which the beam goes straight through.
+
+What the beam does at a mirror and at the target is the work of the two chapters after this one, so
+the renderer gains one question, every cell answers it, and the element paints the answer under what
+is already there.
 
 We take the three kinds of cell one chapter at a time, and that is the point rather than a
 convenience. Each kind has its own question to answer, and a cell that has not learned to draw the
@@ -3454,10 +3554,11 @@ BlankCellRenderer >> renderBeamOn: anElement
 > `CellRenderer`, so this method goes.
 
 Asking about the south segment alone is enough, and you should see why rather than take it on trust.
-A lit blank cell has exactly two lit sides, and they are opposite each other. If one of them is
-south, the other is north, and the beam runs down the cell; if neither is south, the two must be
-west and east, and the beam runs across. One question distinguishes two cases because the model has
-already ruled out everything else.
+A lit blank cell has exactly two lit sides, and they are opposite each other.
+
+If one of them is south, the other is north, and the beam runs down the cell; if neither is south,
+the two must be west and east, and the beam runs across. One question distinguishes two cases
+because the model has already ruled out everything else.
 
 > **Before writing a condition, work out how many cases can actually reach it.** Here it is two, so
 > the condition is one question. Later, when a mirror can be lit on two sides that are *not*
@@ -3497,14 +3598,17 @@ recurring: **put the questions that are the same for everybody on the superclass
 subclasses one thing to answer.**
 
 Both guards are early returns, and neither is a special case. The laser being off is the normal
-state of the game, and most cells are dark even while it fires. Had we written those two questions
-into `BlankCellRenderer >> renderBeamOn:`, the next two chapters would have copied them, and the
-third copy would eventually have disagreed with the other two.
+state of the game, and most cells are dark even while it fires.
+
+Had we written those two questions into `BlankCellRenderer >> renderBeamOn:`, the next two chapters
+would have copied them, and the third copy would eventually have disagreed with the other two.
 
 The empty method on `CellRenderer` is doing real work too, although it contains nothing. It is what
 lets a mirror and the target draw no beam without raising, and the comment says that this is a stage
-rather than an oversight. **An empty hook with a comment saying why it is empty is a design; an
-empty hook with no comment is a loose end.**
+rather than an oversight.
+
+**An empty hook with a comment saying why it is empty is a design; an empty hook with no comment is
+a loose end.**
 
 Two places build a cell, and both gain a line. A cell built for the first time:
 
@@ -3558,10 +3662,12 @@ LaserGameCellElement >> redraw
 
 Read the sentence about firing the laser, because it is the reason the beam has to be drawn in
 `redraw` and not only in `newElement`. Firing the laser changes *no cell*: the cells were always
-there, and lighting them sets a flag on each. So nothing is added or removed, and the only way the
-screen can follow is for every cell of the board to draw itself again. `toggleLaser` already
-refreshed the game and `moveMade` already redrew every cell, so we need no new wiring here — both
-paths go through `redraw`, and `redraw` now draws the beam.
+there, and lighting them sets a flag on each.
+
+So nothing is added or removed, and the only way the screen can follow is for every cell of the
+board to draw itself again. `toggleLaser` already refreshed the game and `moveMade` already redrew
+every cell, so we need no new wiring here — both paths go through `redraw`, and `redraw` now draws
+the beam.
 
 We add the beam after the contents and before the hint, so a hint arrow and its cross hair stay on
 top of it. On a blank cell the two orders look the same, since a blank cell draws no contents;
@@ -3625,8 +3731,10 @@ CellRendererTestCase >> testTheBeamCrossesABlankCellFromTopToBottom
 
 Both tests name the cell they use and say in the comment why that cell is the case being tested. On
 a hand-made board that is the difference between a test you can maintain and a test full of
-coordinates nobody dares touch. `2@5` means nothing on its own; you can find "the blank cell the
-beam crosses from west to east" again on any board.
+coordinates nobody dares touch.
+
+`2@5` means nothing on its own; you can find "the blank cell the beam crosses from west to east"
+again on any board.
 
 Both also assert `element children size equals: 1` before looking at the child. That assertion is
 what makes it safe for you to read `children first`, and it is the one that fails usefully: if a
@@ -3690,17 +3798,19 @@ LaserGameBoardElement openExampleWithLaserFired
 
 The beam comes in at the bottom left corner, runs east across two blank cells, and goes up the
 fourth column through three more. There are gaps where it turns and where it ends: the mirrors draw
-no beam yet, and neither does the target. Those gaps are what we fill in the next two chapters, and
-they are worth looking at first — a beam that stops at every mirror makes it very clear how much of
-the picture the mirrors own.
+no beam yet, and neither does the target.
+
+Those gaps are what we fill in the next two chapters, and they are worth looking at first — a beam
+that stops at every mirror makes it very clear how much of the picture the mirrors own.
 
 # Laser on target cell
 
 The target is the cell the beam ends in. It swallows the light, so the beam covers only half the
-cell, and the target has to stay visible through it. Two differences from the blank cell of the last
-chapter, and both of them are about the half of the picture that is *not* drawn: in this chapter we
-build a bar that fills half a cell, ask the cell which side the light arrives from, and put the beam
-under the target rather than over it.
+cell, and the target has to stay visible through it.
+
+Two differences from the blank cell of the last chapter, and both of them are about the half of the
+picture that is *not* drawn: in this chapter we build a bar that fills half a cell, ask the cell
+which side the light arrives from, and put the beam under the target rather than over it.
 
 ## Half a beam
 
@@ -3772,11 +3882,12 @@ The one line you should read closely is the placement:
 ```
 
 A half-length bar in a cell can be at one of two places: hard against the left edge, or hard against
-the right one. `0` and `anExtent x - length` are those two places. We write the second as a
-subtraction from the cell rather than as `anExtent x // 2`, and that matters when the cell size is
-odd: with a cell of 51, `length` is 25, and a bar at 25 would leave a pixel of light showing past
-the middle, while `51 - 25` puts the bar flush with the right edge where the player can see whether
-it is right.
+the right one. `0` and `anExtent x - length` are those two places.
+
+We write the second as a subtraction from the cell rather than as `anExtent x // 2`, and that
+matters when the cell size is odd: with a cell of 51, `length` is 25, and a bar at 25 would leave a
+pixel of light showing past the middle, while `51 - 25` puts the bar flush with the right edge where
+the player can see whether it is right.
 
 > **Place a thing by the edge it has to touch, not by the arithmetic that happens to land there.**
 
@@ -3812,8 +3923,9 @@ LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent within: anExtent color
 
 This is the ordinary way to generalize a method, and you want to do it exactly this way round. The
 new method is the general one, taking a position; the old method keeps its name and its callers, and
-becomes one line that computes the position it always computed. No caller changes, nothing is
-renamed, and the centring is still written down in exactly one place.
+becomes one line that computes the position it always computed.
+
+No caller changes, nothing is renamed, and the centring is still written down in exactly one place.
 
 > **Generalize by putting the general method underneath, not by adding a parameter to the method
 > everybody calls.** A new parameter means touching every call site, and every call site then says
@@ -3848,10 +3960,11 @@ TargetCellRenderer >> renderBeamOn: anElement
 
 A `detect:` with no `ifNone:` again, and this time it is defensible for the reason we gave in
 *Making larger cells*: it is an assertion. A lit target has exactly one lit side, because it absorbs
-the light instead of passing it on. If none of the four is lit, the cell should not have been drawn
-at all, and the two guards of the last chapter — laser off, cell dark — are what make sure of that.
-The raise would mean the guards are broken, which is precisely when you want a walkback rather than
-a blank cell.
+the light instead of passing it on.
+
+If none of the four is lit, the cell should not have been drawn at all, and the two guards of the
+last chapter — laser off, cell dark — are what make sure of that. The raise would mean the guards
+are broken, which is precisely when you want a walkback rather than a blank cell.
 
 Compare that with the `detect:` in the click regions, where a point outside the cell was a thing
 that *could* happen and needed `ifNone:`. The rule is not "always use `ifNone:`"; it is to know
@@ -3913,9 +4026,10 @@ overlap.
 
 It is worth noticing what this buys you over the alternative. If a cell were one picture, "the
 target must stay visible" would mean drawing the target, drawing the beam over it, and then drawing
-the target *again* — the same four shapes, a second time, in the right order. Here the ordering *is*
-the statement, it lives in one line, and the comment on both methods says why that line is where it
-is.
+the target *again* — the same four shapes, a second time, in the right order.
+
+Here the ordering *is* the statement, it lives in one line, and the comment on both methods says why
+that line is where it is.
 
 A blank cell draws no contents, so nothing about the last chapter changes. A mirror will draw its
 line over the beam in the next chapter. And we add the hint arrow with its cross hair after all of
@@ -3951,6 +4065,7 @@ LaserGameShapesTestCase >> testAHalfBeamCrossesHalfTheCellFromTheSideItComesFrom
 > instead of the pair of builders this test was written against.
 
 `{ #west -> 0. #east -> half }` is a table: each side paired with the position its bar must take.
+
 One loop, two cases, and you see the expected value next to the input it belongs to. Written as two
 blocks of assertions instead, the second block is a copy of the first with two numbers changed,
 which is the shape that rots.
@@ -4014,9 +4129,10 @@ south*. Without it, a change to the demo board that moved the beam would leave t
 things about a dark cell, and the failure would point you at the beam rather than at the board.
 
 Note too that the test needs no window, no hovering, and no repainting. A renderer is built from the
-model whenever one is asked for, so changing the grid and asking again is the whole experiment. That
-is worth more than it sounds: a view that caches what it drew has to be *told* to redraw, and you
-end up pretending to be a mouse to test it.
+model whenever one is asked for, so changing the grid and asking again is the whole experiment.
+
+That is worth more than it sounds: a view that caches what it drew has to be *told* to redraw, and
+you end up pretending to be a mouse to test it.
 
 And the ordering the chapter is about:
 
@@ -4046,9 +4162,11 @@ element sits among its siblings.
 
 One consequence to be aware of: three tests we wrote in earlier chapters read the disc of the target
 as the fourth child of the cell element, and a lit target now has five children. Those tests ask for
-the last child instead. When the shape of a drawing changes, the tests that index into it are the
-ones that break, which is an argument for asking for `children last` wherever the thing you want is
-in fact the last thing drawn.
+the last child instead.
+
+When the shape of a drawing changes, the tests that index into it are the ones that break, which is
+an argument for asking for `children last` wherever the thing you want is in fact the last thing
+drawn.
 
 ## Checking it
 
@@ -4061,15 +4179,19 @@ the ring, with the ring and its cross hairs plainly on top of it.
 
 Look closely at where the beam meets the cross hair of the target — or open the game and magnify
 that corner. The beam is centred on the cell, at 25 of 50; the cross hair is drawn along `cellExtent
-- 1 // 2`, which is 24. One pixel out. It is hard to see here and you will see it at the mirrors, where two half beams have to meet each other, so that is where we settle it.
+- 1 // 2`, which is 24.
+
+One pixel out. It is hard to see here and you will see it at the mirrors, where two half beams have
+to meet each other, so that is where we settle it.
 
 # Laser on mirror cell
 
 The mirror is the cell that turns the light. It is lit on two sides at a right angle to each other,
 so two half beams have to meet in the middle of the cell, and the two quarters of the cell the light
-never reaches have to stay empty. In this chapter we ask the cell which sides are lit, build one bar
-per axis from that answer, and end with a single method that draws the beam for every kind of cell
-there is.
+never reaches have to stay empty.
+
+In this chapter we ask the cell which sides are lit, build one bar per axis from that answer, and
+end with a single method that draws the beam for every kind of cell there is.
 
 That sounds like a third case of beam drawing, after the whole beam of the blank cell and the half
 beam of the target. It is not. Writing the mirror properly means noticing that all three cases are
@@ -4080,9 +4202,10 @@ there is.
 
 Look at what each kind of cell has in common. A cell the beam goes straight through is lit on two
 opposite sides. A mirror is lit on two sides at a right angle. A target is lit on one side. A cell
-the beam crosses twice is lit on all four. In every one of those cases the sides that carry light
-are exactly what is drawn, and nothing else about the cell matters: not its class, not the lean of
-its mirror, not whether it is the target.
+the beam crosses twice is lit on all four.
+
+In every one of those cases the sides that carry light are exactly what is drawn, and nothing else
+about the cell matters: not its class, not the lean of its mirror, not whether it is the target.
 
 So we ask the cell for its lit sides, and for nothing else:
 
@@ -4102,6 +4225,7 @@ claim we build the rest of the chapter on.
 
 The literal array fixes the order, which matters more than you would think. `select:` keeps the
 order of what it is given, so `litSides` always answers north before east before south before west.
+
 A method that answers a collection in an order nobody wrote down invites a test that passes for the
 wrong reason, and later a bug when the order changes.
 
@@ -4139,8 +4263,11 @@ LaserGameShapes class >> horizontalLaserBeamBarOfExtent: anExtent sides: aCollec
 ```
 
 Read the two assignments as two independent questions. `length` asks how far the light goes: the
-whole width, or half of it. `left` asks which end it starts at: the west edge at `0`, or `anExtent x
-- length`, which is the east edge when the bar is half long and `0` again when it is whole. Neither question needs to know the answer to the other, which is why we need no case of four branches here.
+whole width, or half of it.
+
+`left` asks which end it starts at: the west edge at `0`, or `anExtent x - length`, which is the
+east edge when the bar is half long and `0` again when it is whole. Neither question needs to know
+the answer to the other, which is why we need no case of four branches here.
 
 The vertical bar is the same method with the axes exchanged:
 
@@ -4215,24 +4342,29 @@ whichever of `#west` and `#east` are lit, `down` whichever of `#north` and `#sou
 from there we hand each bar builder only the sides that concern it.
 
 `ifNotEmpty:` is what makes the empty quarters of a mirror empty. An axis no light runs along
-contributes no bar at all, so nothing is drawn there and nothing has to be taken away again. The
-target cell draws one bar per colour because only one of its axes is lit; the mirror draws two, one
-per axis; a cell crossed twice draws two whole ones.
+contributes no bar at all, so nothing is drawn there and nothing has to be taken away again.
+
+The target cell draws one bar per colour because only one of its axes is lit; the mirror draws two,
+one per axis; a cell crossed twice draws two whole ones.
 
 The literal array of two associations — thickness pointing at colour — is the drawing order. The
-loop runs twice: once for the pale wide band, once for the bright narrow core. Both bands are added
-before either core, so where two beams cross, both cores lie on top and the crossing looks like two
-beams rather than one beam cut by the other. Pair the numbers with the colours in a collection and
-loop, rather than writing the four `addChild:` sends out by hand; you then see the order in one
-place and the four sends cannot drift apart.
+loop runs twice: once for the pale wide band, once for the bright narrow core.
+
+Both bands are added before either core, so where two beams cross, both cores lie on top and the
+crossing looks like two beams rather than one beam cut by the other.
+
+Pair the numbers with the colours in a collection and loop, rather than writing the four `addChild:`
+sends out by hand; you then see the order in one place and the four sends cannot drift apart.
 
 Three builders from the last two chapters are now special cases of this one: the whole beam of
-*Laser on blank cell* and the two half beams of *Laser on target cell*. They go, and so does
-`laserBeamBarOfExtent:within:color:`, which centred a bar in a cell — the two new builders place
-every bar themselves, with `laserBeamBarOfExtent:at:color:`. **When several methods turn out to be
-cases of one, write the one and delete the several.** The time to do it is when you can see the
-general method, not before: we could only see the general shape of this one once we had looked at
-the mirror.
+*Laser on blank cell* and the two half beams of *Laser on target cell*.
+
+They go, and so does `laserBeamBarOfExtent:within:color:`, which centred a bar in a cell — the two
+new builders place every bar themselves, with `laserBeamBarOfExtent:at:color:`.
+
+**When several methods turn out to be cases of one, write the one and delete the several.** The time
+to do it is when you can see the general method, not before: we could only see the general shape of
+this one once we had looked at the mirror.
 
 ## One method for every kind of cell
 
@@ -4272,8 +4404,9 @@ hook is a promise that the subclasses will disagree, and here they stopped disag
 
 And the mirror needs no drawing code of its own at all. `MirrorCellRenderer >> renderContentsOn:`
 already draws the mirror line, and the order we settled in the last chapter adds the beam before the
-contents, so the mirror lies over the light it turns. The chapter that was going to be about the
-mirror turns out to add nothing to the mirror.
+contents, so the mirror lies over the light it turns.
+
+The chapter that was going to be about the mirror turns out to add nothing to the mirror.
 
 ## The one pixel from the last chapter
 
@@ -4282,10 +4415,14 @@ mirror is where two bars have to meet each other.
 
 The cell is fifty pixels wide, and a fifty-pixel cell has no middle pixel. Its middle is the
 boundary between pixel 24 and pixel 25. The two shapes that have to agree answer that differently on
-purpose. We place a bar by `(anExtent - aThickness) / 2`, which puts the bright core of the beam at
-21 and makes it eight pixels tall: rows 21 to 28, centred exactly on the boundary. The cross hair of
-the target is a line one pixel wide, and a line has to be *on* a pixel rather than on a boundary, so
-it is drawn along `cellExtent - 1 // 2`, which is 24 — the pixel just above the middle.
+purpose.
+
+We place a bar by `(anExtent - aThickness) / 2`, which puts the bright core of the beam at 21 and
+makes it eight pixels tall: rows 21 to 28, centred exactly on the boundary.
+
+The cross hair of the target is a line one pixel wide, and a line has to be *on* a pixel rather than
+on a boundary, so it is drawn along `cellExtent - 1 // 2`, which is 24 — the pixel just above the
+middle.
 
 So nothing is wrong, and nothing moves. The line sits inside the core of the beam with three pixels
 of core above it and four below, which no player will ever see, and both formulas are right about
@@ -4332,9 +4469,11 @@ LaserGameShapesTestCase >> testABeamThatArrivesFromTwoSidesTurnsInTheMiddle
 ```
 
 Four children, two of them half the width and starting at the west edge, two of them half the height
-and starting at the north edge: that is the turn. The two loops at the end are the drawing order,
-and they are the assertion that matters most in the chapter, because the order is the only thing in
-`laserBeamElementOfExtent:fromSides:` that you cannot check by looking at a shape.
+and starting at the north edge: that is the turn.
+
+The two loops at the end are the drawing order, and they are the assertion that matters most in the
+chapter, because the order is the only thing in `laserBeamElementOfExtent:fromSides:` that you
+cannot check by looking at a shape.
 
 ```smalltalk
 LaserGameShapesTestCase >> testABeamThatCrossesItsOwnPathDrawsBothCoresOverBothBands
@@ -4369,9 +4508,10 @@ this bar" without a case for horizontal and vertical.
 
 Six tests we wrote in the last three chapters asked the three builders that have just gone. They now
 ask the one builder, with `#( #west #east )` for a whole beam across, `#( #north #south )` for a
-whole beam down, two sides at a right angle for a turn, and one side for a half beam. What each of
-them claims is unchanged, which is the point: a test that has to be rewritten because the code was
-merged should still assert the same thing afterwards.
+whole beam down, two sides at a right angle for a turn, and one side for a half beam.
+
+What each of them claims is unchanged, which is the point: a test that has to be rewritten because
+the code was merged should still assert the same thing afterwards.
 
 ```smalltalk
 LaserGameShapesTestCase >> testABeamIsAPaleBandWithABrightCentreOnIt
@@ -4619,9 +4759,11 @@ CellRendererTestCase >> testABlankCellCrossedTwiceShowsBothBeams
 ```
 
 Those last two tests cost four lines each to set up and they cover the case a player hits once in a
-while and never reports properly. **A state that is awkward to reach by playing is a state to build
-directly in a test.** Building it by hand is not cheating: `laserEntersFrom:` and `laserIsActive:`
-are the same messages the game itself sends.
+while and never reports properly.
+
+**A state that is awkward to reach by playing is a state to build directly in a test.** Building it
+by hand is not cheating: `laserEntersFrom:` and `laserIsActive:` are the same messages the game
+itself sends.
 
 ## Checking it
 
@@ -4630,9 +4772,11 @@ LaserGameBoardElement openExampleWithLaserFired
 ```
 
 The beam leaves the laser, turns at the mirror of 4@5, turns again at 4@1 and stops in the middle of
-the target. Look at the two elbows: you see square corners, with no notch between the end of one bar
-and the side of the other, because the two bars overlap in the middle of the cell instead of being
-cut apart there.
+the target.
+
+Look at the two elbows: you see square corners, with no notch between the end of one bar and the
+side of the other, because the two bars overlap in the middle of the cell instead of being cut apart
+there.
 
 The beam is now drawn for every cell it can cross, by one method that asks each cell one question,
 and the game is complete: a board of any size, dealt at random, played with the mouse, counted, and
@@ -4643,17 +4787,21 @@ itself — making it resize, and making its counters readable.
 
 The board can be any size since the last chapter, but the window it opens in cannot. `openOn:` gives
 the space the extent the grid asks for, and dragging the corner of that window leaves the game the
-size it was, with the desktop colour filling the rest of the frame. In this chapter we give the game
-a natural extent and a scale, so that it grows to fill whatever window it is given and keeps its
-shape in a window of another shape.
+size it was, with the desktop colour filling the rest of the frame.
+
+In this chapter we give the game a natural extent and a scale, so that it grows to fill whatever
+window it is given and keeps its shape in a window of another shape.
 
 That is worth fixing, and it is cheap to fix, for a reason that goes back to the first drawing
 chapter. A cell is a set of geometries rather than a picture, so it is drawn from its own
-coordinates every frame and has no resolution of its own. And an element carries a transformation
-that the whole of its subtree is drawn and hit-tested through. So we scale the game by setting one
-of those transformations, and the beam, the arrows and the LED digits all follow it at full
-sharpness. Nothing in the drawing code changes, and no number we wrote down in the earlier chapters
-moves: the cell is still fifty pixels, the panel still a hundred and ten, and the margin still ten.
+coordinates every frame and has no resolution of its own.
+
+And an element carries a transformation that the whole of its subtree is drawn and hit-tested
+through. So we scale the game by setting one of those transformations, and the beam, the arrows and
+the LED digits all follow it at full sharpness.
+
+Nothing in the drawing code changes, and no number we wrote down in the earlier chapters moves: the
+cell is still fifty pixels, the panel still a hundred and ten, and the margin still ten.
 
 ## The size the game is drawn at
 
@@ -4692,10 +4840,11 @@ Two ratios, and the smaller of them wins. Take the larger and you get a game tha
 in one direction and runs off the edge in the other.
 
 `asFloat` is there because the two ratios are fractions. Pharo divides integers exactly, so `760 /
-380` is the fraction `2` and `761 / 380` is the fraction `761/380`, not `2.00263...`. Exact
-arithmetic is a gift everywhere else in this game — it is why the beam is centred to the pixel — but
-a scale factor goes into a transformation matrix, which wants a float, and a chain of unreduced
-fractions through a matrix is slower than it is worth. Convert where the number leaves the
+380` is the fraction `2` and `761 / 380` is the fraction `761/380`, not `2.00263...`.
+
+Exact arithmetic is a gift everywhere else in this game — it is why the beam is centred to the pixel
+— but a scale factor goes into a transformation matrix, which wants a float, and a chain of
+unreduced fractions through a matrix is slower than it is worth. Convert where the number leaves the
 arithmetic.
 
 Taking the tighter direction leaves the looser one with a strip of space over, and the game looks
@@ -4732,15 +4881,21 @@ LaserGameElement >> fitIn: anExtent
 
 `transformDo:` hands out a builder rather than a matrix, and `topLeftOrigin` says which point of the
 element the scale keeps still — the top left corner, since the position set on the next line is
-where that corner goes. A builder *replaces* the transformation rather than adding to it, which is
-what makes `fitIn:` safe to send again: a second call scales from the natural size once more and not
-from the size the game is already at. A method that doubles the effect when it is called twice is a
-bug waiting for a player who drags a corner, and dragging a corner sends a stream of these.
+where that corner goes.
+
+A builder *replaces* the transformation rather than adding to it, which is what makes `fitIn:` safe
+to send again: a second call scales from the natural size once more and not from the size the game
+is already at.
+
+A method that doubles the effect when it is called twice is a bug waiting for a player who drags a
+corner, and dragging a corner sends a stream of these.
 
 The guard on the first line is not defensive programming either. A space announces its extent while
-it is opening, and the first extent it announces is `0@0`. Scaling by zero collapses the game to a
-point it never comes back from, because the next scale is computed from the natural extent and
-multiplied into a matrix that is already zero in both directions.
+it is opening, and the first extent it announces is `0@0`.
+
+Scaling by zero collapses the game to a point it never comes back from, because the next scale is
+computed from the natural extent and multiplied into a matrix that is already zero in both
+directions.
 
 ## Following the window
 
@@ -4776,9 +4931,11 @@ We still open the space at the natural extent, so a game nobody resizes looks ex
 every earlier chapter.
 
 The `fitIn:` before `show` is there for the same reason the guard is. It sets the scale once, from
-the extent the space was given, rather than waiting for a resize that may never come. **Subscribing
-to an event tells you about changes; it does not tell you the state you started in.** Whenever you
-add a handler for "this changed", ask whether the first value needs to be handled as well.
+the extent the space was given, rather than waiting for a resize that may never come.
+
+**Subscribing to an event tells you about changes; it does not tell you the state you started in.**
+Whenever you add a handler for "this changed", ask whether the first value needs to be handled as
+well.
 
 And the game is no longer added and forgotten: `openOn:` keeps it in a temporary so that the handler
 block can reach it. The block holds on to `element` and to `space`, which is why we name both here
@@ -4788,8 +4945,10 @@ rather than chaining them into one expression.
 
 Four tests, all headless. None of them opens a space. We ask `fitIn:` of a detached element, and
 read back what it did from the transformation matrix and from `constraints position`, which is where
-`position:` writes and what a layout pass later reads. The `position` and the `extent` of a detached
-element are both still `0@0`, which is why we assert neither.
+`position:` writes and what a layout pass later reads.
+
+The `position` and the `extent` of a detached element are both still `0@0`, which is why we assert
+neither.
 
 A window of exactly twice the extent is the simple case:
 
@@ -4926,17 +5085,20 @@ the only thing left is the drawing.
 ## A zero that reads as an eight
 
 A seven-segment digit shows a zero by lighting six of its segments and leaving the middle bar dark.
-It shows an eight by lighting all seven. So a zero that reads as an eight means the dark segment is
-not dark — every digit is showing all seven of its segments, the lit ones in pale lavender and the
-unlit ones in a dark lavender, and both of them plainly visible.
+It shows an eight by lighting all seven.
+
+So a zero that reads as an eight means the dark segment is not dark — every digit is showing all
+seven of its segments, the lit ones in pale lavender and the unlit ones in a dark lavender, and both
+of them plainly visible.
 
 Which raises the question of what an unlit segment is supposed to look like. Paint it in nothing at
 all and you get a hole in the digit, showing whatever is behind the counter. Behind the counter is
 the bright ramp of the control panel, so a hole would be as visible as a lit segment, and brighter.
 
 The answer is that a display is not a row of digits floating on the panel. It is a dark slab with
-digits on it, and an unlit segment is painted the colour of that slab, so it vanishes into it. In
-the counter chapter we wrote the colour and forgot the slab: `counterDigitOffColor` was a dark
+digits on it, and an unlit segment is painted the colour of that slab, so it vanishes into it.
+
+In the counter chapter we wrote the colour and forgot the slab: `counterDigitOffColor` was a dark
 lavender we chose to disappear into a background nothing ever drew, so it sat on bright cyan
 instead, where a dark lavender is the most visible thing on the panel.
 
@@ -4960,9 +5122,11 @@ LaserGameColors class >> counterDigitOffColor
 ```
 
 That second method is the fix, and it is three words long. Note what it is *not*: it is not the same
-literal colour written a second time. **When two colours have to be equal, write one of them as the
-other.** Two identical literals are two numbers that will drift apart the first time somebody
-adjusts one of them, and the drift shows up as exactly the bug this chapter is about.
+literal colour written a second time.
+
+**When two colours have to be equal, write one of them as the other.** Two identical literals are
+two numbers that will drift apart the first time somebody adjusts one of them, and the drift shows
+up as exactly the bug this chapter is about.
 
 Then the display carries the slab:
 
@@ -4990,8 +5154,10 @@ too.
 
 The same look at the screen settles a second colour. The counter of the beam is meant to brighten
 while the laser fires, and it did change colour: the highlight was the LED lavender, and the normal
-state was that same lavender darkened by a few per cent. Two shades of the same thing, side by side,
-on a dark slab. The code was doing exactly what we told it and the effect was invisible.
+state was that same lavender darkened by a few per cent.
+
+Two shades of the same thing, side by side, on a dark slab. The code was doing exactly what we told
+it and the effect was invisible.
 
 A highlight has to be a difference your eye reads without being asked to compare:
 
@@ -5023,9 +5189,11 @@ When we read the digit positions in the inspector we turned up a third fault, an
 arithmetic rather than colour.
 
 A display of three digits is thirty-four pixels wide: three digits of ten, and two gaps of two. Its
-digits stood at 2, 14, and 26. Ten pixels from 26 is 36, which is two pixels past the right edge of
-a thirty-four-pixel element — and Bloc clips a child to the bounds of its parent, so the third digit
-lost its last two columns. That is the `E` at the end of `88E`: a clipped eight.
+digits stood at 2, 14, and 26.
+
+Ten pixels from 26 is 36, which is two pixels past the right edge of a thirty-four-pixel element —
+and Bloc clips a child to the bounds of its parent, so the third digit lost its last two columns.
+That is the `E` at the end of `88E`: a clipped eight.
 
 The gap was the `cellSpacing` of the row, and a `BlLinearLayout` puts its cell spacing *around* the
 cells as well as between them: one gap before the first digit, one between each pair, and one after
@@ -5060,8 +5228,10 @@ claimed to be.
 
 Three tests hold the three facts, and all three are tests we could not have written before we looked
 at the screen. That is the honest order of events, and it is worth saying plainly: these are tests
-we wrote *after* the bug, to hold the fix. Tests written first catch the faults you can imagine.
-Reading the screen catches the rest, and then you write the test.
+we wrote *after* the bug, to hold the fix.
+
+Tests written first catch the faults you can imagine. Reading the screen catches the rest, and then
+you write the test.
 
 What is behind an unlit segment is as much a part of the display as the segment itself:
 
@@ -5088,8 +5258,10 @@ LaserGameLedElementTestCase >> testUnlitSegmentsVanishIntoTheBody
 
 The last assertion looks to you like a test of nothing — one method answers another, and the test
 says so. It is the one assertion in the chapter that would have caught this fault before a player
-saw it. The other two say the slab and the segment are the same colour *today*; this one says they
-are the same colour by construction.
+saw it.
+
+The other two say the slab and the segment are the same colour *today*; this one says they are the
+same colour by construction.
 
 The arithmetic that was wrong is the arithmetic the next test does: the width the row claims,
 against the width its cells, their margins, and its own spacing actually take.
@@ -5116,9 +5288,10 @@ LaserGameLedElementTestCase >> testTheDigitsFitInsideTheDisplay
 ```
 
 Read the expression for `used`. It counts the spacing the way the layout counts it — `size + 1`
-gaps, not `size - 1` — and then adds every cell with its own margins. If you put the gap back into
-`cellSpacing`, `used` grows by four and the first assertion fails, which is the clipping caught in
-arithmetic instead of in pixels.
+gaps, not `size - 1` — and then adds every cell with its own margins.
+
+If you put the gap back into `cellSpacing`, `used` grows by four and the first assertion fails,
+which is the clipping caught in arithmetic instead of in pixels.
 
 Note also that the test asks `led layout cellSpacing` rather than assuming it is zero. A test that
 spells out the value it expects would have to be edited if we ever used the spacing for something
@@ -5164,11 +5337,14 @@ LaserGameElement openExample
 ```
 
 You get both counters reading `0` on a dark slab, with two blank digits in front of it. Fire the
-laser: the counter of the beam turns almost white and shows the length of the path. Stop it and it
-goes back to zero and to lavender. Click a mirror and the move counter follows, one digit at a time,
-up to three digits.
+laser: the counter of the beam turns almost white and shows the length of the path.
+
+Stop it and it goes back to zero and to lavender. Click a mirror and the move counter follows, one
+digit at a time, up to three digits.
 
 That closes the game as we first sketched it: a board, a laser, mirrors that turn it, counters you
-can read, and a window you can resize. The next section is about what happens afterwards — the bug
-our tests in this section did not catch, the features a player asks for once the game works, and the
-cleaning up that each of them turns out to need.
+can read, and a window you can resize.
+
+The next section is about what happens afterwards — the bug our tests in this section did not catch,
+the features a player asks for once the game works, and the cleaning up that each of them turns out
+to need.
