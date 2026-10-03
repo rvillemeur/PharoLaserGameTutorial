@@ -8,7 +8,7 @@ hierarchy of regions — `CellClickRegionInside`, `CellClickRegionOutside` and `
 — let priority rather than geometry settle the overlaps, and give the cell element the job of
 answering which region a point falls in. No test in it names a pixel.
 
-A cell is divided into three areas, one inside the next:
+We divide a cell into three areas, one inside the next:
 
 - an **inside** region, a square around the centre. A click here pushes the cell.
 - an **outside** region, the ring around it. A click here rotates the cell.
@@ -16,13 +16,13 @@ A cell is divided into three areas, one inside the next:
   that close to an edge is probably aiming at the cell next door, and guessing would be worse than
   dropping the click.
 
-This chapter builds that classification and its tests. Nothing is wired to the mouse yet — that is
-the next chapter — but by the end of this one a cell element can be handed a point and will say
+In this chapter we build that classification and its tests. Nothing is wired to the mouse yet — that
+is the next chapter — but by the end of this one we can hand a cell element a point and it will say
 which region it fell in.
 
 ## The constants live with the cell size
 
-The numbers go on the class side of `CellRenderer`, which already holds the size of a cell, in a
+We put the numbers on the class side of `CellRenderer`, which already holds the size of a cell, in a
 protocol called `constants`:
 
 ```smalltalk
@@ -59,8 +59,8 @@ CellRenderer class >> outsideRegionExtent
 ```
 
 Only two of those four are numbers. `cellExtent` is the size of a cell and `ignoreRegionOffset` is
-the width of the dead margin; the other two are arithmetic on them. With a cell of 50 by 50 the
-inside square is 30 by 30, the outside square is 42 by 42, and the ignore margin is 4 pixels all
+the width of the dead margin; the other two are arithmetic on them. With a cell of 50 by 50 you get
+an inside square of 30 by 30, an outside square of 42 by 42, and an ignore margin of 4 pixels all
 round.
 
 That split is deliberate, and it is the reason a later chapter can make the cells bigger by changing
@@ -71,7 +71,7 @@ size.
 
 ## A class per region
 
-The three regions are classes, and nothing is ever instantiated from them. There is nothing for an
+We make the three regions classes, and never instantiate one. There is nothing for an
 instance to carry: the regions are the same three shapes for every cell in the game, so what the
 code needs is three *names* that can answer questions, and a class is a name that can answer
 questions.
@@ -94,8 +94,8 @@ CellClickRegion class >> sortIndex
 ```
 
 `subclassResponsibility` is the way a superclass says "I have no answer, and a subclass must". It is
-not a comment: a subclass that forgets to implement the method gets an error naming it, which is
-better than a silent wrong answer. Write it in the superclass for every message the subclasses are
+not a comment: a subclass that forgets to implement the method gets an error naming it, which tells
+you more than a silent wrong answer. Write it in the superclass for every message the subclasses are
 *required* to answer, and the hierarchy documents itself.
 
 Each concrete region then derives its rectangle from the constants:
@@ -124,19 +124,19 @@ CellClickRegionIgnore class >> regionRectangle
 ```
 
 The first line of each of the first two is a comment that is really a snippet: select it in the
-browser, print it, and see the rectangle. That is a habit worth picking up for any method whose
-answer is easier to look at than to describe.
+browser, print it, and see the rectangle. That is a habit worth picking up in your own code for any
+method whose answer is easier to look at than to describe.
 
 `0@0 extent: CellRenderer cellExtent` is the whole cell, and `insetBy:` shrinks a rectangle equally
 on all four sides. Half the difference on each side is what centres the smaller square in the
 larger. And the ignore region's rectangle is the entire cell — not the margin. That looks wrong
-until the next method.
+until you read the next method.
 
 ## Priority decides, not geometry
 
 The three rectangles are nested, so a point near the centre of a cell is inside all three of them,
 and "which rectangle contains this point" has three right answers. Geometry alone cannot choose.
-What chooses is an order: ask the innermost region first and take the first match.
+What chooses is an order: you ask the innermost region first and take the first match.
 
 ```smalltalk
 CellClickRegion class >> sortedSubclasses
@@ -164,17 +164,17 @@ margin; being last and being everything is the same thing.
 
 `self subclasses` is the other half of the trick. Nothing lists the three regions anywhere: the
 hierarchy *is* the list. A fourth region added later needs a `regionRectangle`, a `sortIndex` and
-nothing else, and the dispatcher above picks it up.
+nothing else, and the dispatcher above picks it up without you touching it.
 
 ## Tests that name no pixel
 
-Now the tests, and there is a trap to avoid in them. The obvious way to test a region is to pick a
-point that ought to be in it — 13 by 13, say — and assert the answer. Do that and you have written
-down the cell size twice: once in `cellExtent` and once in your head. Change the cell size and the
-test fails without anything being wrong.
+Now the tests, and there is a trap we have to avoid in them. The obvious way to test a region is to
+pick a point that ought to be in it — 13 by 13, say — and assert the answer. Do that and you have
+written down the cell size twice: once in `cellExtent` and once in your head. Change the cell size
+and the test fails without anything being wrong.
 
-So not one of these tests names a pixel. They ask the rectangles where they are, and assert about
-the corners the rectangles answer:
+So not one of the tests we write names a pixel. They ask the rectangles where they are, and assert
+about the corners the rectangles answer:
 
 ```st
 CellClickRegionTestCase >> testClicksInIgnoreRegion
@@ -203,8 +203,8 @@ CellClickRegionTestCase >> testClicksInIgnoreRegion
 Read the four assertions as a shape, because every boundary test in this book has it: the first
 pixel that *is* in the region, the last pixel that is in it, the pixel just outside it, and one
 point that must belong to somebody else. `bottomRight - (1@1)` is the last pixel inside a rectangle,
-because a rectangle does not contain its bottom and right edges — a detail that bites once and then
-never again.
+because a rectangle does not contain its bottom and right edges — a detail that bites you once and
+then never again.
 
 The same shape covers the outside region, the ring between the ignore margin and the inside square:
 
@@ -242,10 +242,10 @@ corner, its centre, and its last pixel, and owns nothing beyond them.
 A click arrives somewhere on the screen, and the game has to answer two questions about it: *which
 cell?* and *where in that cell?* Both are free here, because every cell is already an element of its
 own and Bloc hands an event handler the position in the coordinates of the element that received it.
-There is no board-wide coordinate to convert.
+There is no board-wide coordinate for you to convert.
 
-What is missing is the other direction: given the element, which cell of the model is it? So the
-cell element becomes a class of its own, holding the renderer that built it:
+What is missing is the other direction: given the element, which cell of the model is it? So we give
+the cell element a class of its own, holding the renderer that built it:
 
 ```smalltalk
 LaserGameCellElement >> cell
@@ -271,9 +271,9 @@ LaserGameCellElement >> clickRegionAt: aPoint
 
 The element holds the *renderer* and not the cell, which is worth a sentence. The renderer already
 knows the grid and the location within it, and it is the thing that redraws the cell when the model
-changes. Holding it is what lets a later chapter refresh a single cell in place instead of rebuilding
-the whole board — and it is why `cell` is a question the element passes on rather than a variable it
-keeps. A variable would be a copy of something that is allowed to change.
+changes. Holding it is what lets a later chapter refresh a single cell in place instead of
+rebuilding the whole board — and it is why `cell` is a question the element passes on rather than a
+variable it keeps. A variable would be a copy of something that is allowed to change.
 
 The renderer builds that element instead of a plain one:
 
@@ -324,7 +324,7 @@ LaserGameBoardElement >> cellElementAt: aPoint
 
 ## Tests
 
-Five tests, and they are about identity and coordinates rather than about drawing:
+We write five tests, and they are about identity and coordinates rather than about drawing:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testACellElementKnowsTheCellItShows
@@ -416,12 +416,12 @@ element clickRegionAt: CellClickRegionInside regionRectangle center
 ```
 
 answers `CellClickRegionInside`, and `0 @ 0` on the same element answers `CellClickRegionIgnore`.
-The window itself looks exactly as it did at the end of the last section — this chapter changed what
-the cells *are*, not what they show. The next one gives them mouse events.
+You see the window exactly as it was at the end of the last section — in this chapter we changed
+what the cells *are*, not what they show. The next one gives them mouse events.
 
 # Handle mouse events
 
-A cell can classify a point. Now it has to be given one, which means the mouse. In this chapter
+A cell can classify a point. Now we have to give it one, which means the mouse. In this chapter
 `LaserGameCellElement` listens for enter, leave, move and click, the board remembers which cell the
 pointer is over and which one was clicked last, and the tests send real Bloc events instead of
 calling the handlers by hand.
@@ -429,18 +429,18 @@ calling the handlers by hand.
 Think for a moment about what that would take if the board were a single picture. The pointer would
 report a position on the screen; the position of the window, the margin around the board and the
 width of the control panel would all have to be subtracted; the remainder would be divided by the
-cell size to get a column and a row. Every one of those terms is a chance to be wrong, and every
-change to the window layout breaks the arithmetic.
+cell size to get a column and a row. Every one of those terms is a chance for you to be wrong, and
+every change to the window layout breaks the arithmetic.
 
-None of that is needed here, and the reason is a decision taken two chapters ago: every cell is an
+We need none of that here, and the reason is a decision we took two chapters ago: every cell is an
 element of its own. Bloc delivers a mouse event to the element the pointer is over, and it hands the
 handler the position in that element's own coordinates. So the cell that should react is the cell
 that gets told, and the point is already a point in a cell.
 
 ## A cell listens for itself
 
-Four events are enough for this game: the pointer coming in, the pointer going out, the pointer
-moving inside, and a click. The cell element installs a handler for each of them when it is created:
+We need four events for this game: the pointer coming in, the pointer going out, the pointer moving
+inside, and a click. The cell element installs a handler for each of them when it is created:
 
 ```smalltalk
 LaserGameCellElement >> initialize
@@ -455,11 +455,11 @@ LaserGameCellElement >> initialize
 ```
 
 `addEventHandlerOn:do:` takes an event class and a block. The block gets the event, and all four of
-these blocks do the same thing with it: send one message to the element itself. That is a habit worth
-keeping. A handler block is hard to find, hard to name, and hard to test; a method is none of those.
-Keep the block to one line and put the work in the method it calls.
+these blocks do the same thing with it: send one message to the element itself. That is a habit
+worth keeping. A handler block is hard to find, hard to name, and hard to test; a method is none of
+those. Keep the block to one line and put the work in the method it calls.
 
-The methods are one line each, because there is nothing left to work out:
+The methods are one line each, because you have nothing left to work out:
 
 ```smalltalk
 LaserGameCellElement >> mouseEnter: anEvent
@@ -495,21 +495,21 @@ LaserGameCellElement >> board
 ```
 
 That nil is not an oversight to be tidied away later. An element exists before it is added to
-anything, and a test wants to build one on its own; `ifNotNil:` in the three handlers is what lets
-both happen without a special case. Whenever a method can honestly answer "I have none", let it, and
-guard at the one place that cares.
+anything, and you want a test that builds one on its own; `ifNotNil:` in the three handlers is what
+lets both happen without a special case. Whenever a method can honestly answer "I have none", let
+it, and guard at the one place that cares.
 
 ## Click is a message Bloc already works out
 
 `BlClickEvent` deserves a sentence of its own, because it is doing more than it looks.
 
-A click is not a button press. It is a press and a release *in the same place*. If the player presses
-on one cell, drags the pointer off it and lets go somewhere else, that is not a click on either cell
-and must do nothing. Tracking that by hand means handling the press, storing which cell it landed
-in, handling the release, and comparing the two.
+A click is not a button press. It is a press and a release *in the same place*. If the player
+presses on one cell, drags the pointer off it and lets go somewhere else, that is not a click on
+either cell and must do nothing. Tracking that by hand would mean we handle the press, store which
+cell it landed in, handle the release, and compare the two.
 
-Bloc sends `BlClickEvent` only when the press and the release both land on the same element. The rule
-is already written, so the game keeps the behaviour and never writes the bookkeeping:
+Bloc sends `BlClickEvent` only when the press and the release both land on the same element. The
+rule is already written, so the game keeps the behaviour and we never write the bookkeeping:
 
 ```st
 LaserGameCellElement >> click: anEvent
@@ -520,9 +520,9 @@ LaserGameCellElement >> click: anEvent
 > **Note.** *Click and rotate a cell* replaces this body: once the click regions exist, the cell
 > acts on the click itself rather than only reporting it.
 
-Look for this before writing event code. The press-and-release pair, the double click, the drag, the
-enter and leave of an element — those are events Bloc sends, not states to track. Code that tracks a
-state the framework already tracks is code that can disagree with the framework.
+Look for this before you write event code. The press-and-release pair, the double click, the drag,
+the enter and leave of an element — those are events Bloc sends, not states to track. Code that
+tracks a state the framework already tracks is code that can disagree with the framework.
 
 ## The board remembers what the mouse is doing
 
@@ -557,9 +557,9 @@ LaserGameBoardElement >> clickCellElement: aCellElement
 ```
 
 The guard in `unhoverCellElement:` is the one piece of event handling in this chapter that needs
-care, and it is worth understanding rather than copying. Moving the pointer from one cell to the next
-produces two events: a leave on the old cell and an enter on the new one. Nothing promises which
-arrives first. Write the obvious version —
+care, and you should understand it rather than copy it. Moving the pointer from one cell to the
+next produces two events: a leave on the old cell and an enter on the new one. Nothing promises
+which arrives first. Write the obvious version —
 
 ```st
 	hoveredCellElement := nil
@@ -598,14 +598,14 @@ LaserGameBoardElement >> clickedCell
 	^ clickedCell
 ```
 
-Nothing acts on `clickedCell` yet, and that is deliberate. This chapter delivers the events and
-records them, and stops there. Deciding what a click *does* needs the push and rotate regions, which
-are the next few chapters. Splitting the work that way means every step of it can be tested on its
+Nothing acts on `clickedCell` yet, and that is deliberate. In this chapter we deliver the events and
+record them, and stop there. Deciding what a click *does* needs the push and rotate regions, which
+are the next few chapters. Splitting the work that way means we can test every step of it on its
 own.
 
 ## Tests: send real events
 
-Six tests, and they do not call `mouseEnter:` and friends directly. They send the events:
+Six tests, and they do not call `mouseEnter:` and friends directly. We send the events instead:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testEnteringACellElementMakesItTheHoveredCell
@@ -620,7 +620,7 @@ LaserGameCellElementTestCase >> testEnteringACellElementMakesItTheHoveredCell
 ```
 
 `dispatchEvent:` hands an element an event as though the mouse had produced it, and it works on an
-element that is not in any window. That single message is what makes mouse handling testable: the
+element that is not in any window. That single message is what makes mouse handling testable: your
 test covers the handler, the block, the method it calls, and the board's reply, without a space, a
 window or a pointer. Prefer it over calling the handler method yourself — a handler installed on the
 wrong event class is a real bug, and only the dispatch catches it.
@@ -638,8 +638,8 @@ LaserGameCellElementTestCase >> testLeavingTheHoveredCellElementClearsTheHover
 	self assert: board hoveredCell isNil
 ```
 
-Then the awkward case, which gets a test of its own because it is the only thing here that can be
-written the obvious way and be wrong:
+Then the awkward case, which gets a test of its own because it is the only thing here that you can
+write the obvious way and get wrong:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testLeavingACellElementThatIsNotHoveredKeepsTheHover
@@ -659,8 +659,8 @@ LaserGameCellElementTestCase >> testLeavingACellElementThatIsNotHoveredKeepsTheH
 Read the three dispatches: enter the old cell, enter the new one, *then* leave the old one. That
 order is the one the obvious version gets wrong, and writing it down in a test is how the guard
 survives the next person who reads `unhoverCellElement:` and thinks the `ifTrue:` is redundant.
-Whenever you add a guard against an order of events, add the test that puts the events in that order.
-A guard without such a test is a comment.
+Whenever you add a guard against an order of events, add the test that puts the events in that
+order. A guard without such a test is a comment.
 
 ```smalltalk
 LaserGameCellElementTestCase >> testMovingOverACellElementMakesItTheHoveredCell
@@ -691,8 +691,8 @@ LaserGameCellElementTestCase >> testClickingACellElementRecordsItsCell
 ```
 
 The move and the click events carry a `position:`, because the handlers will read it in a later
-chapter; the enter and the leave do not need one. And one test for the state before anything happens
-at all:
+chapter; the enter and the leave do not need one. And we write one test for the state before
+anything happens at all:
 
 ```smalltalk
 LaserGameBoardElementTestCase >> testANewBoardHoversNothingAndHasNoClick
@@ -706,7 +706,7 @@ LaserGameBoardElementTestCase >> testANewBoardHoversNothingAndHasNoClick
 ```
 
 A test of the initial state looks too easy to be worth writing. Write it anyway: it is the test that
-fails when somebody gives an instance variable a default it should not have had.
+fails when somebody gives an instance variable a default you did not want.
 
 ## Checking it
 
@@ -718,21 +718,21 @@ element := LaserGameElement openExample.
 element board hoveredCell
 ```
 
-Evaluate the second line again with the pointer in different places and the answer follows it — `a
-MirrorCell`, `a BlankCell`, `a TargetCell` — and it is nil as soon as the pointer leaves the board.
-Click a cell and `element board clickedCell` is that cell.
+Evaluate the second line again with the pointer in different places and you see the answer follow it
+— `a MirrorCell`, `a BlankCell`, `a TargetCell` — and it is nil as soon as the pointer leaves the
+board. Click a cell and `element board clickedCell` is that cell.
 
-Nothing on the screen moves yet. This chapter delivered the events; the next one lets a cell work out
-what the pointer is asking for.
+Nothing on the screen moves yet. In this chapter we delivered the events; the next one lets a cell
+work out what the pointer is asking for.
 
 # Detecting mirror cell click regions
 
-The events arrive, and the regions can classify a point. This chapter joins the two: while the
+The events arrive, and the regions can classify a point. In this chapter we join the two: while the
 pointer moves over the board, the cell under it works out which of its regions the pointer is in.
 The renderer answers the region, the cell element keeps the answer, and only a mirror answers at all
 — which is the first time the drawing side of the game has an opinion about the model.
 
-That answer will become the arrow the player sees, but not yet. Here it is only computed and kept,
+That answer will become the arrow the player sees, but not yet. Here we only compute it and keep it,
 and the chapter is about *where* the question is asked.
 
 ## Ask the renderer, not the cell
@@ -744,7 +744,7 @@ hint to offer. The obvious way to say that is a test on the class of the cell:
 	cell class = MirrorCell ifTrue: [ ... ]
 ```
 
-Resist it. Every renderer is asked the same question instead, and the answer differs because the
+Resist it. We ask every renderer the same question instead, and the answer differs because the
 renderers differ:
 
 ```smalltalk
@@ -771,19 +771,19 @@ That is the same move as the click regions two chapters ago, from the other side
 with three answers became three classes. Here, a question with two answers becomes a method on the
 superclass and an override on the one subclass that has something to say.
 
-Two things come out of writing it this way. There is no list of cell kinds anywhere to keep in step
+Two things come out of writing it this way. We have no list of cell kinds anywhere to keep in step
 with the cell hierarchy, and a renderer added later answers `nil` without being told to. And the
 `nil` in the superclass is not a placeholder: "I offer no hint" is a real answer, and the caller
 already has to handle it, because the pointer is off the board most of the time anyway.
 
-Note also what the renderer does *not* do. It is asked a question and it answers a value. It does not
-draw anything, it does not change the cell, and it does not remember being asked. A method that
-answers can be tested with one assertion; a method that acts has to be tested by looking at what it
+Note also what the renderer does *not* do. It is asked a question and it answers a value. It does
+not draw anything, it does not change the cell, and it does not remember being asked. A method that
+answers you can test with one assertion; a method that acts has to be tested by looking at what it
 did. Given the choice, write the question.
 
 ## The element keeps the answer
 
-The cell element asks its renderer, and holds what comes back:
+We have the cell element ask its renderer, and hold what comes back:
 
 ```st
 LaserGameCellElement >> showPositionHintAt: aPoint
@@ -811,7 +811,7 @@ LaserGameCellElement >> hintRegion
 	^ hintRegion
 ```
 
-And the two handlers from the last chapter each gain their second line:
+And we give the two handlers from the last chapter their second line:
 
 ```smalltalk
 LaserGameCellElement >> mouseMove: anEvent
@@ -832,16 +832,16 @@ LaserGameCellElement >> mouseLeave: anEvent
 
 `anEvent localPosition` is the point of the event in the coordinates of the element that is handling
 it. Not the screen, not the window, not the board: this cell, with `0@0` at its own top left corner.
-That is why `hintRegionAt:` can hand the point straight to the regions, which were defined against a
+That is why `hintRegionAt:` can hand the point straight to the regions, which we defined against a
 rectangle starting at `0@0` as well.
 
-Two things in the same coordinate system meet without arithmetic. When a geometry calculation starts
-collecting terms to subtract, the thing to question is not the arithmetic but the choice of
-coordinate system that made it necessary.
+Two things in the same coordinate system meet without arithmetic. When a geometry calculation of
+yours starts collecting terms to subtract, the thing to question is not the arithmetic but the
+choice of coordinate system that made it necessary.
 
 ## Tests
 
-The mirror renderer answers a region for a point of its cell:
+We check that the mirror renderer answers a region for a point of its cell:
 
 ```st
 MirrorCellRendererTestCase >> testAMirrorAnswersTheClickRegionOfAPoint
@@ -862,8 +862,8 @@ MirrorCellRendererTestCase >> testAMirrorAnswersTheClickRegionOfAPoint
 > `testAMirrorAnswersThePushRegionOfAPointInsideIt`, which expects a push region in the middle of the
 > cell, because that is what a mirror answers once the inside region refines its hint.
 
-Then the claim the design rests on gets a test of its own, which is worth doing whenever a design
-rests on a claim:
+Then we give the claim the design rests on a test of its own, which is worth doing whenever your
+design rests on a claim:
 
 ```st
 CellRendererTestCase >> testOnlyAMirrorAnswersAHintRegion
@@ -891,7 +891,8 @@ One point, three renderers, and the assertions say which ones are silent. A test
 and it keeps the override honest: if the `nil` ever moved to a conditional in the caller, this test
 would still pass, and that is a sign it should be read alongside the next one.
 
-Then the same thing through a real event, which is what ties the two halves of the chapter together:
+Then we do the same thing through a real event, which is what ties the two halves of the chapter
+together:
 
 ```st
 LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion
@@ -913,9 +914,9 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion
 > `CellClickRegionPushNorth`.
 
 Notice that the test sets `position:` and reads `hintRegion`, with the handler, the renderer, and
-the regions all in between. That is one test covering the whole chain. The unit tests above pin down
-each link, and this one pins down that they are actually connected — which is the bug the per-link
-tests cannot catch.
+the regions all in between. With that we cover the whole chain in one test. The unit tests above pin
+down each link, and this one pins down that they are actually connected — which is the bug the
+per-link tests cannot catch.
 
 ```st
 LaserGameCellElementTestCase >> testMovingOverACellThatIsNotAMirrorRecordsNoHint
@@ -964,13 +965,13 @@ element := LaserGameElement openExample.
 element board hoveredCellElement hintRegion
 ```
 
-Evaluate the last line with the pointer near the middle of a mirror and it answers
+Evaluate the last line with the pointer near the middle of a mirror and you get
 `CellClickRegionInside`; near the edge of the same cell, `CellClickRegionOutside`; in the four-pixel
 margin, `CellClickRegionIgnore`. Over a blank or target cell it answers nil, and
 `hoveredCellElement` itself is nil as soon as the pointer leaves the board.
 
-Nothing is drawn yet. The arrow that will make this hint visible needs shapes to draw it with, which
-is the next chapter.
+We have drawn nothing yet. The arrow that will make this hint visible needs shapes to draw it with,
+which is the next chapter.
 
 # Creating custom shapes
 
@@ -980,8 +981,8 @@ the pointer is at. We write each shape as a class-side list of points, scale it 
 numbers to any cell size, and meet the Bloc trap that catches everybody once: a fresh element has no
 extent yet.
 
-This chapter builds them. It is the first place in the book where something is drawn that is not a
-rectangle, and the lesson is how a shape is described in Bloc — as numbers, not as pixels.
+In this chapter we build them. It is the first place in the book where we draw something that is not
+a rectangle, and the lesson is how a shape is described in Bloc — as numbers, not as pixels.
 
 ## An arrow is seven points
 
@@ -1028,12 +1029,12 @@ closes itself back to the tip. In Bloc, `y` grows downwards, so `0` is the top o
 It is the right notation here because `100 @ 0` is an expression, not a literal; `#( ... )` would
 only accept literals.
 
-These four methods are the whole of the drawing. There is no picture file anywhere in this game.
+These four methods are the whole of the drawing, and we need no picture file anywhere in this game.
 
 ## Why these are class-side methods
 
 `LaserGameShapes` has no instance variables and is never instantiated. Every method on it is on the
-class side, and it is used by name: `LaserGameShapes northArrowPoints`.
+class side, and we use it by name: `LaserGameShapes northArrowPoints`.
 
 A class used this way is the Pharo answer to a library of functions. It gives the numbers a name, a
 place, a protocol in the browser, and a test case of their own, and it costs nothing — no object to
@@ -1044,7 +1045,7 @@ class is a *place where answers live*.)
 
 ## Any size, from one set of numbers
 
-The arrays are written at around 260 pixels. The hint arrow inside a cell is about a dozen pixels,
+We write the arrays at around 260 pixels. The hint arrow inside a cell is about a dozen pixels,
 and the checking snippet at the end of this chapter wants one of 120. So the points have to be moved
 to the origin and stretched onto the rectangle the caller asks for:
 
@@ -1063,9 +1064,9 @@ LaserGameShapes class >> pointsOf: anArrayOfPoints scaledToExtent: anExtent
 ```
 
 Three lines, and each does one thing. `Rectangle encompassing:` is the smallest rectangle containing
-all the points — the box the drawing actually fills. `scale` is a point, one factor per axis, because
-the caller may ask for a rectangle of different proportions. Then each point moves by the box origin
-so that the drawing starts at `0@0`, and multiplies by the scale.
+all the points — the box the drawing actually fills. `scale` is a point, one factor per axis,
+because the caller may ask for a rectangle of different proportions. Then each point moves by the
+box origin so that the drawing starts at `0@0`, and multiplies by the scale.
 
 Multiplying a point by a point multiplies the two axes separately, which is what makes this fit in
 one expression. `asFloatPoint` keeps the result exact rather than rounding each vertex to a whole
@@ -1089,17 +1090,17 @@ LaserGameShapes class >> arrowElementFromPoints: anArrayOfPoints ofExtent: anExt
 ```
 
 This is worth dwelling on, because it is how all drawing in Bloc works. An element has a *geometry*,
-which is its shape, and a *background*, which is what fills that shape. Up to now every element in
-this game has had the default geometry, a rectangle, so a background looked like a coloured box.
-Give the same element a polygon geometry and the same background fills an arrow instead. The border
+which is its shape, and a *background*, which is what fills that shape. Up to now every element we
+built has had the default geometry, a rectangle, so a background looked like a coloured box. Give
+the same element a polygon geometry and the same background fills an arrow instead. The border
 follows the geometry too, and so does hit testing: a click lands on the element only where the shape
 actually is.
 
-So there is no drawing code in this game. No "draw this shape" method, no pen, no canvas. A shape is
+So we write no drawing code in this game. No "draw this shape" method, no pen, no canvas. A shape is
 a value you hand to an element, and the renderer fills it — at any size, as sharply as the screen
 allows.
 
-One accessor per direction, each naming its own array:
+We write one accessor per direction, each naming its own array:
 
 ```smalltalk
 LaserGameShapes class >> northArrowElementOfExtent: anExtent
@@ -1115,9 +1116,10 @@ LaserGameShapes class >> eastArrowElementOfExtent: anExtent
 	^ self arrowElementFromPoints: self eastArrowPoints ofExtent: anExtent
 ```
 
-`southArrowElementOfExtent:` and `westArrowElementOfExtent:` are the same line with their own arrays.
+`southArrowElementOfExtent:` and `westArrowElementOfExtent:` are the same line with their own
+arrays.
 
-The colour is a default, not a decision:
+We make the colour a default, not a decision:
 
 ```smalltalk
 LaserGameShapes class >> arrowColor
@@ -1127,22 +1129,23 @@ LaserGameShapes class >> arrowColor
 	^ Color gray
 ```
 
-An arrow here does not know whether the move it hints at is legal — that is the board's business, two
-chapters on. So the shape answers grey, and the caller that knows better overwrites the background of
-the element it was given. Giving a value a sensible default and letting the informed caller override
-it keeps the knowledge in one place without making every caller pass an argument it may not have.
+An arrow here does not know whether the move it hints at is legal — that is the board's business,
+two chapters on. So the shape answers grey, and the caller that knows better overwrites the
+background of the element it was given. Giving a value a sensible default and letting the informed
+caller override it keeps the knowledge in one place without making every caller pass an argument it
+may not have.
 
 ## Two things Bloc could have done, and why it does not
 
-A reader who knows Bloc will object twice here. Both objections are good, and the answer is the same
+If you know Bloc you will object twice here. Both objections are good, and the answer is the same
 both times.
 
 **Why scale the points? An element can be scaled.** `anElement transformation` takes a matrix and
 `scaleBy:` is one line.
 
 Because a polygon geometry does not follow the extent of its element. Some geometries are written in
-normalized coordinates and stretch to whatever element they are given; `BlPolygonGeometry` is not one
-of them. Its vertices are element-local and absolute. One evaluation proves it:
+normalized coordinates and stretch to whatever element they are given; `BlPolygonGeometry` is not
+one of them. Its vertices are element-local and absolute. One evaluation proves it to you:
 
 ```smalltalk
 | element |
@@ -1166,25 +1169,26 @@ and none of the click code needs adjusting, because Bloc hit-tests through the s
 it draws through. And it is exactly what makes it the wrong tool for one arrow. An arrow is a child
 of a cell, placed by the cell, and placement reads `extent`: an arrow authored at `200@260` and
 squeezed into a thirty-pixel cell by a matrix still reports itself as 200 by 260, and every method
-that positions it would have to divide the matrix back out. Rotation is worse, because a quarter turn
-swaps the two numbers while the element keeps the extent it started with.
+that positions it would have to divide the matrix back out. Rotation is worse, because a quarter
+turn swaps the two numbers while the element keeps the extent it started with.
 
 So the rule the game follows is: **a transformation scales a finished tree; arithmetic on vertices
 builds a shape at the size it was asked for.** Inside `LaserGameShapes`, an element's extent is
-always the ink it actually covers. That is what lets a cell place an arrow by asking for a rectangle,
-and it is a claim a test can check directly — `testEveryArrowFillsTheRectangleItIsGiven` takes all
-six arrows at three sizes and compares the bounds of the vertices with the extent asked for.
+always the ink it actually covers. That is what lets a cell place an arrow by asking for a
+rectangle, and it is a claim a test can check directly — `testEveryArrowFillsTheRectangleItIsGiven`
+takes all six arrows at three sizes and compares the bounds of the vertices with the extent asked
+for.
 
 Keeping four arrays rather than deriving three of them is a smaller decision, and it is about
-reading. Seven points per direction, written out, can be checked against a sketch on paper. A
+reading. Seven points per direction, written out, you can check against a sketch on paper. A
 `rotatedBy:` would save twenty-one numbers and cost that check. Where the game does derive one shape
 from another, it is because the shapes genuinely are each other: the clockwise rotate arrow, in
 *Using "Halt Once"*, is the anticlockwise one flipped, and writing it as a flip says so.
 
 ## The cross hair
 
-The cross hair is two bars crossing at the centre. That is not a polygon, so it is an element with
-two children:
+The cross hair is two bars crossing at the centre. That is not a polygon, so we build an element
+with two children:
 
 ```smalltalk
 LaserGameShapes class >> crossHairElementOfExtent: anExtent
@@ -1221,24 +1225,24 @@ LaserGameShapes class >> crossHairColor
 	^ Color black
 ```
 
-The two bars are the same method called twice with its arguments the other way round:
+The two bars come from the same method we call twice, with its arguments the other way round:
 `span @ thickness` is the horizontal bar, `thickness @ span` the vertical one. `position:` places a
 child at an offset inside its parent, and `(anExtent - aBarExtent) / 2` is the offset that centres
 anything in anything — half the space left over.
 
 Note `(span // 5) max: 1`. Integer division truncates, so a cross hair asked for at a tiny size
 would compute a thickness of zero and draw nothing at all. `max: 1` is the floor that keeps the
-shape visible. Any size computed by dividing deserves that guard; a shape that silently disappears
-below some size is a bug that only shows up on somebody else's screen.
+shape visible. Any size you compute by dividing deserves that guard; a shape that silently
+disappears below some size is a bug that only shows up on somebody else's screen.
 
-The holder itself is transparent, which matters: it is a box the size of a cell with two visible bars
-in it, and anything behind it must show through.
+We make the holder itself transparent, which matters: it is a box the size of a cell with two
+visible bars in it, and anything behind it must show through.
 
 ## Tests
 
-The tests cover the two things that can be wrong about a shape: the numbers, and the size.
+We test the two things that can be wrong about a shape: the numbers, and the size.
 
-First, the numbers are an arrow at all:
+First, we check that the numbers are an arrow at all:
 
 ```smalltalk
 LaserGameShapesTestCase >> testEachArrowIsSevenVerticesWideEnoughToBeAnArrow
@@ -1252,8 +1256,9 @@ LaserGameShapesTestCase >> testEachArrowIsSevenVerticesWideEnoughToBeAnArrow
 		points do: [ :each | self assert: each isPoint ] ]
 ```
 
-Then that each arrow points where its name says, which is the mistake worth guarding against — two
-of twenty-eight numbers swapped gives an arrow pointing the wrong way, and the code still runs:
+Then we check that each arrow points where its name says, which is the mistake worth guarding
+against — two of twenty-eight numbers swapped gives an arrow pointing the wrong way, and the code
+still runs:
 
 ```smalltalk
 LaserGameShapesTestCase >> testEachArrowHasOneTipAndItIsCentredOnTheOtherAxis
@@ -1272,12 +1277,12 @@ LaserGameShapesTestCase >> testEachArrowHasOneTipAndItIsCentredOnTheOtherAxis
 				equals: 1 ]
 ```
 
-That one is worth reading twice, because it shows a technique. Each entry pairs an array with a block
-that says what "the tip" means for that direction, and the loop then runs the same three lines four
-times. The alternative is four nearly identical tests. When several cases differ only in one
-predicate, make the predicate the data.
+That one is worth reading twice, because it shows a technique. Each entry pairs an array with a
+block that says what "the tip" means for that direction, and the loop then runs the same three lines
+four times. The alternative is four nearly identical tests. When several of your cases differ only
+in one predicate, make the predicate the data.
 
-Then the scaling, which is the only method here with arithmetic in it:
+Then we test the scaling, which is the only method here with arithmetic in it:
 
 ```smalltalk
 LaserGameShapesTestCase >> testPointsScaleToFillTheRequestedExtent
@@ -1295,7 +1300,7 @@ LaserGameShapesTestCase >> testPointsScaleToFillTheRequestedExtent
 			equals: (0 @ 0 corner: extent) ]
 ```
 
-One assertion says it all: the box around the scaled points *is* the rectangle asked for. Not
+One assertion says it all: the box around the scaled points *is* the rectangle you asked for. Not
 approximately, not a bit smaller — exactly. The third size, `200 @ 120`, is not square on purpose:
 it is the one that catches a scale computed from one axis only.
 
@@ -1334,10 +1339,10 @@ LaserGameShapesTestCase >> testEveryArrowElementUsesTheVerticesOfItsDirection
 				equals: (LaserGameShapes pointsOf: each value scaledToExtent: extent) asArray ]
 ```
 
-That second test looks pedantic until you consider the bug it catches: four accessors, each a copy of
-the last with two words changed, and one of them still naming the array it was copied from. Nothing
-would fail, the cells would just hint the wrong way. Whenever code is written by copying, write the
-test that the copies were finished.
+That second test looks pedantic until you consider the bug it catches: four accessors, each a copy
+of the last with two words changed, and one of them still naming the array it was copied from.
+Nothing would fail, the cells would just hint the wrong way. Whenever code is written by copying,
+write the test that the copies were finished.
 
 ```smalltalk
 LaserGameShapesTestCase >> testACrossHairIsTwoBarsCrossingAtTheCentre
@@ -1380,7 +1385,7 @@ LaserGameShapesTestCase >> testShapesAreBuiltAtWhateverSizeIsAsked
 
 ## The Bloc trap: a fresh element has no extent
 
-Every one of those tests reads the size through a helper, and it is time to say why:
+Every one of those tests reads the size through a helper, and it is time we said why:
 
 ```smalltalk
 LaserGameShapesTestCase >> requestedExtentOf: anElement
@@ -1396,16 +1401,16 @@ computed when the element is laid out, which happens inside a space, and until t
 answers `0 @ 0`.
 
 So a test that builds an element and asserts `element extent equals: 40 @ 40` fails, and the failure
-reads as though the code were wrong when it is the test that asked the wrong object. What was asked
+reads as though the code were wrong when it is your test that asked the wrong object. What was asked
 for lives in the constraints, as the resizer size, and that is what the helper reads.
 
-This will come up again in every chapter that tests an element without opening a window. Remember
-the shape of it: **before a layout pass, ask the constraints what was requested, not the element what
-it is.**
+This will come up again in every chapter where we test an element without opening a window. Remember
+the shape of it: **before a layout pass, ask the constraints what was requested, not the element
+what it is.**
 
 ## Checking it
 
-A space with every shape in it, at three sizes:
+We open a space with every shape in it, at three sizes:
 
 ```smalltalk
 | row space |
@@ -1430,19 +1435,19 @@ space show
 `perform: selector with:` sends a message whose name is held in a variable — handy in a checking
 snippet, and best avoided in the game itself, where a plain send can be found by the browser.
 
-Twelve arrows and three cross hairs appear, and the small ones are as clean as the large ones. That
+You get twelve arrows and three cross hairs, and the small ones are as clean as the large ones. That
 is the payoff of describing a shape as numbers instead of pixels.
 
 ## Which arrow should a hint show?
 
-One question is left, and it is a game design question rather than a Bloc one. A cell has an outside
-ring and an inside square. A click in the ring rotates a mirror; a click near the middle pushes it.
-But a push needs a *direction* — north, east, south, or west — and so far the inside region is one
-undivided square.
+We have one question left, and it is a game design question rather than a Bloc one. A cell has an
+outside ring and an inside square. A click in the ring rotates a mirror; a click near the middle
+pushes it. But a push needs a *direction* — north, east, south, or west — and so far the inside
+region is one undivided square.
 
-The answer is to divide it along its two diagonals, into four triangles, one per direction. And the
-technique for that is the one the click regions already used: a subclass per case, and a selector
-that asks them.
+The answer is to divide it along its two diagonals, into four triangles, one per direction. And we
+use the technique the click regions already gave us: a subclass per case, and a selector that asks
+them.
 
 ```smalltalk
 CellClickRegionInside class >> pushRegionForPoint: aPoint
@@ -1457,14 +1462,14 @@ the tests that no point of the inside region belongs to two of them or to none.
 # Determine push regions
 
 The inside region of a cell is divided into four push regions, and so far every one of them answers
-`true` to `containsPoint:`. The hierarchy is in place; the geometry is not. This chapter works out
-which of the four triangles a point falls in, checks the answer with tests, and then puts it to use:
-a mirror asked what hint applies at a point answers a push region. One of the tests turns out to be
-wrong before the code is, and the detour that finds it is worth the two pages it takes.
+`true` to `containsPoint:`. The hierarchy is in place; the geometry is not. In this chapter we work
+out which of the four triangles a point falls in, check the answer with tests, and then put it to
+use: a mirror asked what hint applies at a point answers a push region. One of our tests turns out
+to be wrong before the code is, and the detour that finds it is worth the two pages it takes.
 
-The whole chapter is arithmetic with two straight lines in it, so it is worth being careful about
-one thing before starting. On the screen *x* grows to the right, as on paper, but *y* grows
-**downwards**. A point with a smaller *y* is higher up. Every "above" and "below" below means that.
+The whole chapter is arithmetic with two straight lines in it, so we are careful about one thing
+before we start. On the screen *x* grows to the right, as on paper, but *y* grows **downwards**. A
+point with a smaller *y* is higher up. Every "above" and "below" you read below means that.
 
 ## The rectangle the region occupies
 
@@ -1480,7 +1485,7 @@ CellClickRegionInside class >> regionRectangle
 ```
 
 With the cell at 50 by 50 and the inside region 20 pixels smaller, the rectangle runs from `10@10`
-to `40@40`. Those are the numbers *today*. Nothing in this chapter writes them down, and that is
+to `40@40`. Those are the numbers *today*. We write none of them down in this chapter, and that is
 deliberate: the two sizes in `CellRenderer` are the only place a number lives, and everything else
 asks.
 
@@ -1496,8 +1501,8 @@ click near the left edge pushes the cell east, a click near the top edge pushes 
 the one piece of game design in this chapter, and it is the reason the region names read the way
 they do.
 
-Now the lines. Take the diagonal from the top left corner of the cell to the bottom right one. With
-`y = mx + b` and two of its points, `(0,0)` and `(50,50)`:
+Now the lines. We take the diagonal from the top left corner of the cell to the bottom right one.
+With `y = mx + b` and two of its points, `(0,0)` and `(50,50)`:
 
 ```text
 m = (50 - 0) / (50 - 0) = 1
@@ -1515,8 +1520,8 @@ y = 50 - x
 ```
 
 The first line is named for the direction it takes on the screen with *y* downwards: it heads *down*
-to the right. The second heads *up*. Each becomes one method, which answers the *y* of its line at a
-given *x*:
+to the right. The second heads *up*. We make each one a method, which answers the *y* of its line at
+a given *x*:
 
 ```smalltalk
 CellClickRegionInside class >> yForHeadingUpLineWith: x
@@ -1535,12 +1540,12 @@ CellClickRegionInside class >> yForHeadingDownLineWith: x
 	^CellRenderer cellExtent x - x
 ```
 
-Look at the second body: `CellRenderer cellExtent x - x`, not `50 - x`. The `50` was true while the
-cell was 50 wide. The send stays true. This is the same `b` of the equation, asked for instead of
-remembered, and it is why a later chapter can double the cell size and these two lines still arrive
-exactly at its corners.
+Look at the second body: we send `CellRenderer cellExtent x - x`, not `50 - x`. The `50` was true
+while the cell was 50 wide. The send stays true. This is the same `b` of the equation, asked for
+instead of remembered, and it is why a later chapter can double the cell size and these two lines
+still arrive exactly at its corners.
 
-Two more methods place a point against a line:
+We add two more methods to place a point against a line:
 
 ```smalltalk
 CellClickRegionInside class >> pointIsUnderHeadingUpLine: aPoint
@@ -1561,26 +1566,26 @@ CellClickRegionInside class >> pointIsUnderHeadingDownLine: aPoint
 	^ realY < lineY
 ```
 
-Compute where the line is at the *x* of the point, then compare the two *y* values. Both ask `<`,
+We compute where the line is at the *x* of the point, then compare the two *y* values. Both ask `<`,
 never `<=`. A point that sits exactly *on* a line is therefore not under it. That looks like a
-detail. It costs a failing test two sections down, and it is worth remembering now: every
+detail. It costs us a failing test two sections down, and it is worth remembering now: every
 comparison in a geometry method is also a decision about its boundary.
 
 ## The truth table
 
 A point is over or under each of the two lines. Two questions with two answers each make four
-combinations, and there are exactly four push regions. So each region is one row of a table:
+combinations, and there are exactly four push regions. So we give each region one row of a table:
 
 | Line | Push North | Push East | Push South | Push West |
 | --- | --- | --- | --- | --- |
 | heading-up | Over | Over | Under | Under |
 | heading-down | Over | Under | Under | Over |
 
-Read a column to get a class. Push North is over both lines; with *y* growing downwards, "over
+Read a column and you get a class. Push North is over both lines; with *y* growing downwards, "over
 both" is the triangle at the bottom of the cell, and a click at the bottom pushes the cell north,
 away from the edge it is nearest.
 
-Asking the four is a `detect:`, the same shape as the three regions themselves:
+We ask the four with a `detect:`, the same shape as the three regions themselves:
 
 ```smalltalk
 CellClickRegionInside class >> pushRegionForPoint: aPoint
@@ -1621,10 +1626,10 @@ CellClickRegionPushWest class >> containsPoint: aPoint
 	^underHeadingDown not and: [underHeadingUp]
 ```
 
-Four methods, same two lines of setup, one differing expression. A reader can hold the table and the
-code in view at the same time, and there is no `ifTrue:` anywhere deciding a direction. That matters
-more than the four duplicated lines: a conditional that picks a class is a place a fifth case has to
-be added by hand, and these four are a place a fifth case adds itself.
+Four methods, same two lines of setup, one differing expression. You can hold the table and the code
+in view at the same time, and there is no `ifTrue:` anywhere deciding a direction. That matters more
+than the four duplicated lines: a conditional that picks a class is a place a fifth case has to be
+added by hand, and these four are a place a fifth case adds itself.
 
 The superclass answers the question by saying who should have answered it:
 
@@ -1642,46 +1647,46 @@ next reader that an abstract class was used where a concrete one was meant.
 
 ## When the test is the thing that is wrong
 
-Here is the first test to write for the table — the obvious one. Pick points of the region, say what
-each should answer, and assert it. Pick the corners and the centre, because corners are where
-geometry goes wrong.
+Here is the first test we write for the table — the obvious one. We pick points of the region, say
+what each should answer, and assert it. We pick the corners and the centre, because corners are
+where geometry goes wrong.
 
-Run it, and it fails on the top right corner of the inside region, `40@10`: the test expects Push
-South, the code answers Push West.
+Run it, and you get a failure on the top right corner of the inside region, `40@10`: the test
+expects Push South, the code answers Push West.
 
 Stop. Something is wrong, and it is one of two things. Either the code computes the wrong region, or
-the test expects the wrong one. A failing test is not proof that the code is broken. It is proof
+your test expects the wrong one. A failing test is not proof that the code is broken. It is proof
 that the code and the test disagree.
 
-So work it out by hand, which is possible because all four methods are three lines. At `x = 40`:
+So we work it out by hand, which we can do because all four methods are three lines. At `x = 40`:
 
 - the heading-up line is at `y = 40`. The point has `y = 10`, and `10 < 40`, so the point *is*
   under the heading-up line.
 - the heading-down line is at `y = 50 - 40 = 10`. The point has `y = 10`, and `10 < 10` is false,
   so the point is *not* under the heading-down line.
 
-Under the up line, over the down line: read the table, and that column is Push West. The code is
+Under the up line, over the down line: we read the table, and that column is Push West. The code is
 right. The expectation was a guess, made while looking at a drawing, about a point that sits exactly
 on one of the two lines — and the `<` in `pointIsUnderHeadingDownLine:` already decided that case.
 
-Fix the test. And notice what the corrected expectation now records: not a measurement, but a
+Fix the test. Then notice what your corrected expectation now records: not a measurement, but a
 decision. A point on both lines, like the centre of the region, is under neither, so it pushes
 north. Nothing in the game cares which way that one pixel goes; what matters is that the code and
 the test agree on it, and that the agreement is written down where the next reader will see it.
 
-This happens often enough to be a habit. When a test fails on a boundary value, suspect the test
-first. When you then decide what the boundary should do, put *that* in the test, with a name that
-says it is a decision.
+This happens often enough that we make it a habit. When a test fails on a boundary value, suspect
+the test first. When you then decide what the boundary should do, put *that* in the test, with a
+name that says it is a decision.
 
 ## Tests that hold at any cell size
 
 A table of hand-picked points is a weak test, for two reasons. Its numbers are the numbers of one
-cell size, so raising the cell size breaks the test rather than the code. And a handful of points
-leaves every pixel between them unchecked.
+cell size, so when you raise the cell size you break the test rather than the code. And a handful of
+points leaves every pixel between them unchecked.
 
-So the tests below derive the points they need from `regionRectangle`, and the first one checks
-every point there is. The property it asserts is the one the four triangles exist for: they cover
-the inside region and they do not overlap.
+So the tests we write below derive the points they need from `regionRectangle`, and the first one
+checks every point there is. The property it asserts is the one the four triangles exist for: they
+cover the inside region and they do not overlap.
 
 ```smalltalk
 CellClickInsideRegionPushTestCase >> testEveryPointOfTheInsideRegionIsInExactlyOnePushRegion
@@ -1703,15 +1708,15 @@ CellClickInsideRegionPushTestCase >> testEveryPointOfTheInsideRegionIsInExactlyO
 
 `select:` keeps the regions that claim the point and `size equals: 1` is the whole assertion.
 Exactly one claimant means both halves at once: at least one, so the four cover the region; at most
-one, so they do not overlap. Nine hundred assertions out of six lines, and not a coordinate among
-them.
+one, so they do not overlap. You get nine hundred assertions out of six lines, and not a coordinate
+among them.
 
-Think about writing that test for a rule rather than for a case, because the loop is what makes it
-possible. "Every point belongs to one region" is a sentence about the design. Asserting it over the
-whole region is a `to:do:` away, and it will catch a bad `<` in a line method that no table of nine
-points would meet.
+We write that test for a rule rather than for a case, because the loop is what makes it possible.
+"Every point belongs to one region" is a sentence about the design. Asserting it over the whole
+region is a `to:do:` away, and it will catch a bad `<` in a line method that no table of nine points
+would meet.
 
-The second test states the game design decision, which no assertion on a corner can say plainly:
+Our second test states the game design decision, which no assertion on a corner can say plainly:
 
 ```smalltalk
 CellClickInsideRegionPushTestCase >> testThePushRegionIsTheOneOfTheEdgeThePointIsNearest
@@ -1730,11 +1735,11 @@ CellClickInsideRegionPushTestCase >> testThePushRegionIsTheOneOfTheEdgeThePointI
 			equals: each value ]
 ```
 
-A brace array of associations, walked with `do:`, is the right shape for a table of cases: the rows
-are readable as rows, and adding one is adding a line. Each point is the centre of an edge moved one
+A brace array of associations, walked with `do:`, is the right shape for a table of cases: you read
+the rows as rows, and adding one is adding a line. Each point is the centre of an edge moved one
 pixel inwards, so each is unambiguously inside its triangle and nowhere near a line.
 
-The third keeps the boundary decision of the last section:
+The third keeps the boundary decision we made in the last section:
 
 ```smalltalk
 CellClickInsideRegionPushTestCase >> testAPointOnALineIsNotUnderIt
@@ -1766,7 +1771,7 @@ It asserts the two line questions *and* the region they produce. That is on purp
 only asserted the region would pass again if somebody changed both `<` signs to `<=` and the table
 along with them; this one says where the boundary is and what follows from it.
 
-The fourth is the reason the first three can be written without numbers:
+The fourth is the reason we can write the first three without numbers:
 
 ```smalltalk
 CellClickInsideRegionPushTestCase >> testTheLinesRunThroughTheCornersOfTheInsideRegion
@@ -1791,11 +1796,11 @@ CellClickInsideRegionPushTestCase >> testTheLinesRunThroughTheCornersOfTheInside
 ```
 
 The two lines are equations of the *cell*; the region they cut is a different rectangle. That they
-meet its four corners is a claim, and a claim a design rests on should be a test. If the inside
+meet its four corners is a claim, and a claim your design rests on should be a test. If the inside
 margin ever stopped being equal on all four sides, this is the test that would go red, and it would
 go red with a message about corners rather than about a hint arrow pointing the wrong way.
 
-The table of cases is kept as well, in a method of its own so that it can be run at more than one
+We keep the table of cases as well, in a method of its own so that we can run it at more than one
 size:
 
 ```smalltalk
@@ -1844,19 +1849,19 @@ CellClickInsideRegionPushTestCase >> testThePushRegionTableHoldsAtEveryCellSize
 		self withCellExtent: size @ size do: [ self assertPushRegionTable ] ]
 ```
 
-A test method whose body is one send to an `assert...` method is a pattern worth copying. The
+A test method whose body is one send to an `assert...` method is a pattern you should copy. The
 assertion method is not a test — it has no `test` prefix, so the framework never runs it on its own
 — and that lets two tests share it: one at the real cell size, one inside the `withCellExtent:do:`
 helper that changes the size and puts it back. The claim is written once and checked four times.
 
 ## Asking a region for its hint
 
-Now use it. A mirror already answers `hintRegionAt:` with the region a point falls in, and the cell
-element keeps the answer. What it does not do yet is refine it: `CellClickRegionInside` is not a
-hint, because there are four hints inside it.
+Now we use it. A mirror already answers `hintRegionAt:` with the region a point falls in, and the
+cell element keeps the answer. What it does not do yet is refine it: `CellClickRegionInside` is not
+a hint, because there are four hints inside it.
 
-The fix is the same move as the renderers two chapters ago. Add a message every region answers, and
-let one subclass override it:
+The fix is the same move we made with the renderers two chapters ago. We add a message every region
+answers, and let one subclass override it:
 
 ```smalltalk
 CellClickRegion class >> hintRegionForPoint: aPoint
@@ -1875,8 +1880,8 @@ CellClickRegionInside class >> hintRegionForPoint: aPoint
 	^ self pushRegionForPoint: aPoint
 ```
 
-`^ self` in the superclass is the whole trick, and it is worth a second look because it is easy to
-misread as a stub. A class answering itself says "my own name is the finest answer I have". The
+`^ self` in the superclass is the whole trick, and it is worth a second look because you can easily
+misread it as a stub. A class answering itself says "my own name is the finest answer I have". The
 ignore region means it permanently. The inside region does not, so it says something better. The
 caller asks one question and never finds out which kind of region it got.
 
@@ -1896,7 +1901,7 @@ MirrorCellRenderer >> hintRegionAt: aPoint
 Which region contains the point, and what that region makes of the point. Nothing else in the game
 changes — not the handlers, not the cell element, not the board. A method that answered a coarse
 value now answers a fine one, and because every caller was already asking rather than testing the
-class of the answer, there is nothing to update.
+class of the answer, you have nothing to update.
 
 The first test is the polymorphism itself: one message, every region answers, one of them refines.
 
@@ -1922,7 +1927,7 @@ CellClickRegionTestCase >> testOnlyTheInsideRegionRefinesTheHintItAnswers
 > **Note.** *Determine rotate regions* gives the outside region a refinement of its own, and
 > rewrites this test as `testTheInsideAndOutsideRegionsRefineTheHintTheyAnswer`.
 
-The second asks a mirror about points of its cell, which is the path the mouse will take:
+The second asks a mirror about points of its cell, which is the path your mouse will take:
 
 ```st
 MirrorCellRendererTestCase >> testAMirrorAnswersThePushRegionOfAPointInsideIt
@@ -1998,7 +2003,7 @@ before carrying on.
 
 ## Checking it
 
-No window is needed to watch a hint follow the pointer, because the renderer answers a value:
+We need no window to watch a hint follow the pointer, because the renderer answers a value:
 
 ```smalltalk
 | grid renderer rect |
@@ -2010,33 +2015,33 @@ rect := CellClickRegionInside regionRectangle.
 	each -> (renderer hintRegionAt: each) ]
 ```
 
-It answers east, south, west, north, north, and the ignore region. The same expression on the blank
+You get east, south, west, north, north, and the ignore region. The same expression on the blank
 cell at `1@1` or the target at `5@1` answers `nil` six times.
 
-The hint is still only a class. The next chapter gives it a picture: the arrows built two chapters
-ago, drawn inside the cell the pointer is over.
+The hint is still only a class. The next chapter gives it a picture: the arrows we built two
+chapters ago, drawn inside the cell the pointer is over.
 
 # Drawing push hints on the game board
 
-The pointer moves inside a mirror cell, and the game knows which way that cell would be pushed. This
-chapter shows the player: the arrow of the push region appears in the cell under the pointer, and
-goes when the pointer does. The region answers its own picture, the cell element places it from
+The pointer moves inside a mirror cell, and the game knows which way that cell would be pushed. In
+this chapter we show the player: the arrow of the push region appears in the cell under the pointer,
+and goes when the pointer does. The region answers its own picture, the cell element places it from
 `hintArrowExtent` and `hintArrowOffset`, and the board shows at most one arrow at a time.
 
-Four things have to be settled to draw a hint on a board:
+We have four things to settle before we draw a hint on a board:
 
 - the arrow has to be the right size for a cell;
 - the exact place in the cell it sits at has to be known;
 - it has to appear over the correct cell;
 - and an old arrow must not be left behind when a new one is shown.
 
-Two of them are already answered, and by decisions taken for other reasons. The arrows are polygons
-built at the size they are asked for, so size is a number to pass, not a problem to solve. And "the
-correct cell" is the element the pointer is in, because Bloc delivered the event to it.
+Two of them we have already answered, with decisions we took for other reasons. The arrows are
+polygons built at the size they are asked for, so size is a number to pass, not a problem to solve.
+And "the correct cell" is the element the pointer is in, because Bloc delivered the event to it.
 
-That is worth pausing on, because it is the return on the two design decisions of this section. One
-element per cell, and shapes that scale to their extent. Neither was made with this chapter in mind,
-and between them they cross two items off the list.
+That is worth pausing on, because it is the return on the two design decisions we made in this
+section. One element per cell, and shapes that scale to their extent. We made neither with this
+chapter in mind, and between them they cross two items off the list.
 
 ## Asking the region for its picture
 
@@ -2083,8 +2088,8 @@ CellClickRegionPushWest class >> hintElementOfExtent: anExtent
 ```
 
 Four one-line methods, each naming a direction twice: once in the class and once in the shape. That
-is not duplication to be factored out. Trying to derive the shape from the class name — taking the
-last word of the class and building a selector out of it — would turn a readable method into a trick,
+is not duplication to be factored out. If we derived the shape from the class name — taking the last
+word of the class and building a selector out of it — we would turn a readable method into a trick,
 and the compiler would stop checking that the selector exists.
 
 Notice also what the push region answers: an element, not a drawing. No region in this game has a
@@ -2093,7 +2098,7 @@ to appear.
 
 ## How big, and where
 
-Two numbers, and they live with the other cell measurements rather than in the method that uses
+Two numbers, and we keep them with the other cell measurements rather than in the method that uses
 them:
 
 ```smalltalk
@@ -2116,14 +2121,14 @@ The second one is the whole of "centre it": the cell has two pixels over the arr
 each side. Written as `^ 1` it would be the same answer today and wrong the moment the first method
 changed. Written this way, `hintArrowExtent` is the only decision and the offset follows it.
 
-Both are class methods of `CellRenderer`, next to `cellExtent` and `insideRegionExtent`. Keeping
-every measurement of a cell in one class is worth more than keeping each one near its use: when a
-later chapter raises the cell size, there is one place to look and nothing to search for.
+We put both as class methods of `CellRenderer`, next to `cellExtent` and `insideRegionExtent`.
+Keeping every measurement of a cell in one class is worth more than keeping each one near its use:
+when a later chapter raises the cell size, you have one place to look and nothing to search for.
 
 ## One arrow at a time
 
-The last item on the list is the one that takes care. A cell element holds the picture of the hint it
-holds, and showing a new one means taking the old one away:
+The last item on our list is the one that takes care. A cell element holds the picture of the hint
+it holds, and we show a new one by taking the old one away:
 
 ```st
 LaserGameCellElement >> updateHintElement
@@ -2145,13 +2150,13 @@ Read the three statements as remove, build, add. The removal is unconditional an
 answer nothing, so every case comes out right: no hint before and none now, a hint replaced by
 another, a hint replaced by nothing.
 
-This is where the element tree earns its keep. If the arrow were painted into a picture of the
-board, showing a new one would mean repainting the cell underneath first, and *that* is a whole
-class of bug: an arrow left on the board, a cell repainted a frame late, two arrows visible at once.
-Here the arrow is a child. Removing a child removes what it drew, because what it drew was never
-anywhere else.
+This is where the element tree earns its keep. If we painted the arrow into a picture of the board,
+showing a new one would mean repainting the cell underneath first, and *that* is a whole class of
+bug: an arrow left on the board, a cell repainted a frame late, two arrows visible at once. Here the
+arrow is a child. Removing a child removes what it drew, because what it drew was never anywhere
+else.
 
-The two methods of *Detecting mirror cell click regions* now each end in `updateHintElement`:
+Our two methods from *Detecting mirror cell click regions* now each end in `updateHintElement`:
 
 ```st
 LaserGameCellElement >> showPositionHintAt: aPoint
@@ -2184,8 +2189,8 @@ across one triangle. Without the comparison, each of them would remove a polygon
 identical one. With it, the work happens when the *answer* changes, which is what the player can
 see.
 
-Write that guard as `region = hintRegion ifTrue: [ ^ self ]`, at the top, before any state is
-touched. A method that begins by asking whether it has anything to do is easy to read and easy to
+Write that guard as `region = hintRegion ifTrue: [ ^ self ]`, at the top, before you touch any
+state. A method that begins by asking whether it has anything to do is easy to read and easy to
 trust. The same method with the comparison buried in the middle, around the part that rebuilds, is
 neither.
 
@@ -2207,13 +2212,13 @@ LaserGameCellElement >> mouseLeave: anEvent
 	self clearPositionHint
 ```
 
-A chapter that adds a visible feature and changes no event handler is a sign the earlier split was
-right. The handlers say what happened; `clearPositionHint` says what that means; `updateHintElement`
-says what it looks like. Only the last one had to learn anything new.
+A chapter that adds a visible feature and changes no event handler is a sign the split we made
+earlier was right. The handlers say what happened; `clearPositionHint` says what that means;
+`updateHintElement` says what it looks like. Only the last one had to learn anything new.
 
 ## Tests
 
-The first test asks each region for a picture, and checks the arrow it gets by its vertices:
+Our first test asks each region for a picture, and checks the arrow it gets by its vertices:
 
 ```st
 CellClickRegionTestCase >> testOnlyAPushRegionAnswersAHintElement
@@ -2239,13 +2244,13 @@ CellClickRegionTestCase >> testOnlyAPushRegionAnswersAHintElement
 > **Note.** *Determine rotate regions* adds the two rotate regions to the table and renames the test
 > `testEachRegionWithAPictureAnswersTheArrowOfItsDirection`.
 
-Asserting on `geometry vertices` is the move to copy whenever a test has to recognise a shape. The
+Asserting on `geometry vertices` is the move you copy whenever a test has to recognise a shape. The
 alternative is to assert that the element is a `BlElement`, which proves nothing, or to compare
 pictures, which is slow and brittle. The vertices are the shape, exactly, and the expected value is
 the same expression the production code used — which sounds circular but is not: the test is
 checking that the *north* region answers the *north* points, and that is the mistake worth catching.
 
-Then the same thing through an event, which is how a player will reach it:
+Then we do the same thing through an event, which is how a player will reach it:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testMovingInsideAMirrorCellShowsTheArrowOfItsPushRegion
@@ -2270,12 +2275,13 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellShowsTheArrowOfItsPus
 		equals: CellRenderer hintArrowOffset
 ```
 
-Three assertions, and they are the three items of the list at the top of the chapter: the arrow is a
-child of the right cell, it has the vertices of the right direction at the right size, and it sits at
-the right offset. Note `constraints position` rather than `position`: the element has not been laid
-out, so what the test can read is what was asked for, exactly as in *Creating custom shapes*.
+Three assertions, and they are the three items of the list we made at the top of the chapter: the
+arrow is a child of the right cell, it has the vertices of the right direction at the right size,
+and it sits at the right offset. Note `constraints position` rather than `position`: the element has
+not been laid out, so what the test can read is what we asked for, exactly as in *Creating custom
+shapes*.
 
-The fourth item needs a test of its own, and the thing to assert is a count:
+The fourth item needs a test of its own, and what we assert is a count:
 
 ```st
 LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime
@@ -2303,7 +2309,7 @@ LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime
 > **Note.** *Better cursor management* counts two children per hint, since the cross hair comes with
 > the arrow.
 
-`childCount` is read before anything happens rather than written as a number. A cell element already
+We read `childCount` before anything happens rather than writing a number. A cell element already
 has children — the cell is drawn with them — and how many is not this test's business. What this
 test claims is that a hint costs *one more*, three moves in a row.
 
@@ -2312,7 +2318,7 @@ assert the count went up by what one of them costs. A test that asserted `equals
 asserting something it does not care about, and it would fail for a reason that has nothing to do
 with left-over arrows.
 
-And the arrow has to go when the hint does, in both ways that can happen:
+And the arrow has to go when the hint does, in both ways you can make that happen:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testTheArrowGoesWhenThePointerLeavesOrReachesARegionWithoutOne
@@ -2339,11 +2345,11 @@ LaserGameCellElementTestCase >> testTheArrowGoesWhenThePointerLeavesOrReachesARe
 	self assert: element children size equals: childCount
 ```
 
-Two endings in one test, because they are one claim: a hint that is gone has no picture and no child.
-Asserting the variable *and* the count matters — a method that sets `hintElement` to nil without
-removing the child would pass the first assertion and leave an arrow on the board.
+Two endings in one test, because they are one claim: a hint that is gone has no picture and no
+child. Asserting the variable *and* the count matters — a method that sets `hintElement` to nil
+without removing the child would pass the first assertion and leave an arrow on the board.
 
-Finally, the test for cells that are not mirrors gains the same two assertions:
+Finally, we give the test for cells that are not mirrors the same two assertions:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testMovingOverACellThatIsNotAMirrorRecordsNoHint
@@ -2373,29 +2379,29 @@ chapter gives every cell a hint it should not have had.
 LaserGameElement openExample
 ```
 
-Move the pointer around inside a mirror cell. A grey arrow appears in it, pointing the way that cell
+Move the pointer around inside a mirror cell. You get a grey arrow in it, pointing the way that cell
 would be pushed, and it changes as the pointer crosses a diagonal. Move out to the rim of the cell,
 or off the cell entirely, and the arrow goes. Blank cells and the target show nothing.
 
 The arrow is grey because nothing has told it otherwise yet. Whether the push it offers is even
 legal — a mirror cannot be pushed off the board, or into another mirror — is a question no part of
 the game asks so far. The next chapter is about finding out *when* a method runs, which is the tool
-that question needs.
+you need for that question.
 
 # Stopping code that runs too often
 
-The hint drawing of the last chapter works, and it is also the first code in this game that is hard
-to watch. A mouse move arrives for every pixel the pointer crosses, so `showPositionHintAt:` and
-`updateHintElement` run dozens of times a second. This chapter is a short detour about the tools for
-that, because sooner or later a hint will appear in the wrong place and you will want to stand
-inside the method while it happens. It is three short sections: why `self halt` is no help here,
-what `haltOnce` does instead, and the better answer, which is to ask the objects rather than watch
-them run.
+The hint drawing we wrote in the last chapter works, and it is also the first code in this game that
+is hard to watch. A mouse move arrives for every pixel the pointer crosses, so `showPositionHintAt:`
+and `updateHintElement` run dozens of times a second. This chapter is a short detour about the tools
+we use for that, because sooner or later a hint will appear in the wrong place and you will want to
+stand inside the method while it happens. It is three short sections: why `self halt` is no help
+here, what `haltOnce` does instead, and the better answer, which is to ask the objects rather than
+watch them run.
 
 ## Why `self halt` is no help here
 
-`self halt` is the usual way to stop in a method. Put it anywhere, run the code, and a debugger
-opens on that line with the whole stack and every variable in reach.
+`self halt` is the usual way to stop in a method. Put it anywhere, run the code, and you get a
+debugger on that line with the whole stack and every variable in reach.
 
 Put it in `updateHintElement` and the game becomes unusable. The debugger opens; closing it lets the
 pointer move; the pointer moving runs the method again; the debugger opens again. You cannot read a
@@ -2423,7 +2429,7 @@ Re-arm it when you want another look:
 Halt resetOnce
 ```
 
-Three more are worth knowing, and all of them are on `Object`:
+Three more are worth knowing, and you find all of them on `Object`:
 
 ```smalltalk
 self haltOnCount: 20
@@ -2437,27 +2443,28 @@ self haltIf: [ hintRegion isNil ]
 ```
 
 stops only when the condition holds. This is the one that finds "it goes wrong when the pointer
-comes in from the left": state the case as a block and ignore every other pass through the method.
+comes in from the left": you state the case as a block and ignore every other pass through the
+method.
 
 ```smalltalk
 self halt: 'hint region changed to ', hintRegion printString
 ```
 
-stops with a message in the title of the debugger, which is enough to tell apart two halts in the
-same method.
+stops with a message in the title of the debugger, which is enough for you to tell apart two halts
+in the same method.
 
-Each of them is one line, typed into the method, used, and deleted. That last step is the one to be
-careful about. A `halt` left in a method is not caught by the tests — the tests do not drive the
-screen, and a halt that is never reached changes nothing — so it survives until a player finds it.
-Search the package for `halt` before you call a session finished.
+Each of them is one line, which you type into the method, use, and delete. That last step is the one
+to be careful about. A `halt` left in a method is not caught by the tests — the tests do not drive
+the screen, and a halt that is never reached changes nothing — so it survives until a player finds
+it. Search the package for `halt` before you call a session finished.
 
 ## The better answer: ask instead of watch
 
-Now compare that with how the last four chapters were actually checked.
+Now compare that with how we actually checked the last four chapters.
 
 `hintRegionAt:` answers a region. `hintElementOfExtent:` answers an element. `pushRegionForPoint:`
-answers a class. Not one of them needed a debugger, because a method that answers a value can be
-sent in a playground, or in a test, and its answer looked at:
+answers a class. Not one of them needed a debugger, because you can send a method that answers a
+value in a playground, or in a test, and look at its answer:
 
 ```smalltalk
 | grid renderer |
@@ -2467,7 +2474,7 @@ renderer hintRegionAt: CellClickRegionInside regionRectangle center
 ```
 
 That is the whole of "see what it does", and it runs when you ask it to rather than when the pointer
-moves. The debugger was needed for exactly one method in this chain, `updateHintElement`, and that
+moves. We needed the debugger for exactly one method in this chain, `updateHintElement`, and that
 is the one method that acts instead of answering.
 
 So the habit the chapter is really about is the one from *Detecting mirror cell click regions*, seen
@@ -2482,19 +2489,19 @@ has one of those waiting in *Clean up left-over hints*.
 # Curved arrows for rotation
 
 A click near the rim of a mirror cell will turn the mirror rather than push it, and a turn needs a
-picture of its own: an arrow bent round a circle, one for each direction. This chapter builds it,
-and it is the last shape work in the section. The arrow is an arc built from a fixed number of
+picture of its own: an arrow bent round a circle, one for each direction. In this chapter we build
+it, and it is the last shape work in the section. The arrow is an arc built from a fixed number of
 corners, closed into a single outline, and the test asks a curve the kind of question a curve can
 answer.
 
 The four straight arrows were seven points in an array. A curve is not, and that is the whole
-problem of the chapter: `BlPolygonGeometry` joins points with straight lines, so a circle has to
-become a list of corners before it can be drawn. Everything below follows from that one fact.
+problem of the chapter: `BlPolygonGeometry` joins points with straight lines, so we have to turn a
+circle into a list of corners before we can draw it. Everything below follows from that one fact.
 
 ## The shape, in pieces
 
 The arrow is a ring with a head on it. Three decisions describe the ring — where its centre is, and
-the two radii it runs between — and they are three methods:
+the two radii it runs between — and we write each one as a method:
 
 ```smalltalk
 LaserGameShapes class >> rotateArrowCenter
@@ -2517,8 +2524,8 @@ LaserGameShapes class >> rotateArrowInnerRadius
 	^ 160
 ```
 
-The head is the south arrow of *Creating custom shapes* with its stem cut down to almost nothing,
-because the ring is the stem:
+The head is the south arrow we built in *Creating custom shapes* with its stem cut down to almost
+nothing, because the ring is the stem:
 
 ```smalltalk
 LaserGameShapes class >> rotateArrowHeadPoints
@@ -2530,9 +2537,9 @@ LaserGameShapes class >> rotateArrowHeadPoints
 		  collect: [ :each | each + (2 @ 100) ]
 ```
 
-Those numbers are in the 450 by 450 square all the shapes of this class are drawn in. They are
-never used at that size — `pointsOf:scaledToExtent:` shrinks them to whatever a cell is — so think
-of the square as graph paper, not as a size.
+Those numbers are in the 450 by 450 square all the shapes of this class are drawn in. We never use
+them at that size — `pointsOf:scaledToExtent:` shrinks them to whatever a cell is — so think of the
+square as graph paper, not as a size.
 
 The ring does not go all the way round. It stops where the head sits, and the angle it stops at is
 not a number to type:
@@ -2559,7 +2566,7 @@ most common cause of a shape that comes out upside down.
 
 ## An arc made of corners
 
-Now the one real decision of the chapter: how many corners is a quarter circle?
+Now the one real decision of the chapter: how many corners do we give a quarter circle?
 
 ```smalltalk
 LaserGameShapes class >> rotateArrowArcSteps
@@ -2570,10 +2577,10 @@ LaserGameShapes class >> rotateArrowArcSteps
 ```
 
 There is no right answer, only a trade: more corners look rounder and cost more to draw. Twenty-four
-is smooth at 120 pixels, which is larger than this game ever draws a cell, and it is a method rather
-than a literal so that the next person can try `48` in a playground and see.
+is smooth at 120 pixels, which is larger than this game ever draws a cell, and we write it as a
+method rather than a literal so that the next person can try `48` in a playground and see.
 
-With the count settled, an arc is a `collect:` over the steps:
+With the count settled, we build an arc with a `collect:` over the steps:
 
 ```smalltalk
 LaserGameShapes class >> arcPointsFromAngle: startDegrees toAngle: stopDegrees radius: aRadius
@@ -2596,14 +2603,14 @@ the arc are included. An off-by-one here shows up as a gap in the ring, so count
 rather than the panels.
 
 The method takes its start and stop as arguments and does not care which way round they are. Pass
-the larger angle first and the step is negative and the arc runs backwards. That is used in the next
+the larger angle first and the step is negative and the arc runs backwards. We use that in the next
 method, and it is the reason this one has no `abs` and no sorting in it: a general method that runs
 either way is simpler than a method that normalises its arguments.
 
 ## One closed outline
 
-A polygon is a single loop of points. The ring, the cut, and the head therefore have to be walked
-*once*, in order, ending where it started:
+A polygon is a single loop of points. So we walk the ring, the cut, and the head *once*, in order,
+ending where we started:
 
 ```smalltalk
 LaserGameShapes class >> counterClockwiseArrowPoints
@@ -2628,7 +2635,7 @@ LaserGameShapes class >> counterClockwiseArrowPoints
 Trace it with a finger. Three points down the tip of the head and out to its left corner; the outer
 arc from due west round to the cut; then straight back along the inner arc, from the cut to due
 west, which is the second arc with its angles swapped; and two points to climb the other side of the
-head. The two middle points of the head — the top of its stem — are deliberately left out, because
+head. We leave the two middle points of the head — the top of its stem — out deliberately, because
 the arcs arrive exactly where they were.
 
 That last claim is what makes the shape closed rather than two separate drawings, and it holds
@@ -2647,12 +2654,12 @@ LaserGameShapes class >> clockwiseArrowPoints
 		  each x negated @ each y ]
 ```
 
-Negate every *x* and the shape is mirrored. The points now have negative coordinates, and nothing
-cares: `pointsOf:scaledToExtent:` takes the bounding rectangle of whatever it is given and scales
-*that* into the extent asked for. A shape in this class may be drawn anywhere in the plane, which is
-why mirroring is allowed to be this careless.
+Negate every *x* and you have the shape mirrored. The points now have negative coordinates, and
+nothing cares: `pointsOf:scaledToExtent:` takes the bounding rectangle of whatever it is given and
+scales *that* into the extent asked for. A shape in this class may be drawn anywhere in the plane,
+which is why mirroring is allowed to be this careless.
 
-The two elements are built by the same method as the four straight arrows:
+We build the two elements with the same method as the four straight arrows:
 
 ```smalltalk
 LaserGameShapes class >> counterClockwiseArrowElementOfExtent: anExtent
@@ -2674,7 +2681,7 @@ LaserGameShapes class >> clockwiseArrowElementOfExtent: anExtent
 
 Six shapes now go through `arrowElementFromPoints:ofExtent:`, and the two hardest of them needed no
 new drawing code at all. A shape in this game is an array of points, and everything that turns
-points into something on the screen was written once.
+points into something on the screen we wrote once.
 
 ## Testing a curve
 
@@ -2685,8 +2692,8 @@ Not by comparing pictures. A test that renders the arrow and compares pixels fai
 changes, when antialiasing changes, when the colour changes — it fails for every reason except the
 one you care about, and when it fails it tells you nothing about why.
 
-Test the *properties* the shape is built from instead. Every point of the outline is either a point
-of the head or a point of one of the two circles, and nothing else is allowed:
+We test the *properties* the shape is built from instead. Every point of the outline is either a
+point of the head or a point of one of the two circles, and nothing else is allowed:
 
 ```smalltalk
 LaserGameShapesTestCase >> testTheRotateArrowIsARingBetweenTwoCirclesWithAHeadOnIt
@@ -2739,11 +2746,11 @@ LaserGameShapesTestCase >> testTheRingOfTheRotateArrowIsAsWideAsTheStemOfItsHead
 
 Three assertions: the ring is as wide as the stem, and each of the two radii lands on the side of
 the stem it should. Those are the relations that make four unrelated-looking numbers into one shape.
-Write a test like this whenever a shape depends on two numbers agreeing — it is the difference
-between "someone changed 160 and the arrow broke" and "someone changed 160 and a test said which
-other number had to change with it".
+Write a test like this whenever one of your shapes depends on two numbers agreeing — it is the
+difference between "someone changed 160 and the arrow broke" and "someone changed 160 and a test
+said which other number had to change with it".
 
-The mirror is one assertion per point:
+We test the mirror with one assertion per point:
 
 ```smalltalk
 LaserGameShapesTestCase >> testTheClockwiseArrowIsTheCounterClockwiseOneMirrored
@@ -2782,15 +2789,15 @@ LaserGameShapesTestCase >> testTheRotateArrowElementsArePolygonsOfTheSizeAsked
 					(LaserGameShapes pointsOf: each value scaledToExtent: extent) ] ]
 ```
 
-`requestedExtentOf:` is the helper of *Creating custom shapes*, reading the size an element was
-asked for rather than the extent it has not been given yet. Three sizes, two arrows, and the same
-two claims as the straight arrows: the element is the size it was asked for, and its vertices are
-the shape scaled into that size.
+`requestedExtentOf:` is the helper we wrote in *Creating custom shapes*, reading the size an element
+was asked for rather than the extent it has not been given yet. Three sizes, two arrows, and the
+same two claims as the straight arrows: the element is the size it was asked for, and its vertices
+are the shape scaled into that size.
 
 ## Checking it
 
 Four green tests are a good reason to believe the shape is built correctly, and no reason at all to
-believe it looks like an arrow. For that, put six of them in a window:
+believe it looks like an arrow. For that, we put six of them in a window:
 
 ```smalltalk
 | row space |
@@ -2810,28 +2817,28 @@ space title: 'Rotate arrows'.
 space show
 ```
 
-Six curved arrows, three turning each way, every one clean at its own size. Raise
+You get six curved arrows, three turning each way, every one clean at its own size. Raise
 `rotateArrowArcSteps` to `48` and run it again, then drop it to `6`, and you can see what the number
 buys — which is the only way to choose it, and exactly why it is a method.
 
-The shapes are finished. The next chapter divides the rim of a cell between them.
+Our shapes are finished. The next chapter divides the rim of a cell between them.
 
 # Determine rotate regions
 
 A click in the inside region pushes a cell. A click in the outside region turns a mirror, one way or
-the other, and this chapter decides which. It is the same walk as the last three chapters, one ring
-further out: divide the region, name the halves, give each one a hint. By the end of it a click
-anywhere on a mirror cell has a meaning, and a hint to go with it.
+the other, and in this chapter we decide which. It is the same walk as the last three chapters, one
+ring further out: we divide the region, name the halves, and give each one a hint. By the end of it
+a click anywhere on a mirror cell has a meaning, and a hint to go with it.
 
 Doing the same walk twice is the point. By the end of the chapter the whole of the rotate behaviour
-will be four short methods and a handful of tests, because every piece of machinery it needs was
-built for the push regions and none of it had to be told about this one.
+will be four short methods and a handful of tests, because we built every piece of machinery it
+needs for the push regions and had to tell none of it about this one.
 
 ## One line, two halves
 
-The division is as simple as it is allowed to be: a horizontal line across the middle of the cell.
-Above it the mirror turns clockwise, below it anticlockwise. Which way the mirror leans makes no
-difference, exactly as it made none for the pushes.
+We keep the division as simple as it is allowed to be: a horizontal line across the middle of the
+cell. Above it the mirror turns clockwise, below it anticlockwise. Which way the mirror leans makes
+no difference, exactly as it made none for the pushes.
 
 ```smalltalk
 CellClickRegionRotateClockwise class >> containsPoint: aPoint
@@ -2851,19 +2858,19 @@ CellClickRegionRotateCounterClockwise class >> containsPoint: aPoint
 ```
 
 Two methods, one line each, and read them together: `<=` on one side and `>` on the other. That is
-the boundary decision of *Determine push regions* made deliberately this time — a point exactly on
-the line belongs to the upper half — and the pair of comparisons is what makes the two halves cover
-the region without overlapping.
+the boundary decision of *Determine push regions*, which we make deliberately this time — a point
+exactly on the line belongs to the upper half — and the pair of comparisons is what makes the two
+halves cover the region without overlapping.
 
 Get into the habit of reading a pair of range checks as a pair. `<=` with `>=` leaves a point in
 both halves; `<` with `>` leaves it in neither, and `detect:` then fails with an error rather than
-answering a region. Exactly one of the two comparisons takes the boundary, and which one it is
-should be stated in a comment, because nothing in the code can say it.
+answering a region. Exactly one of the two comparisons takes the boundary, and you state which one
+it is in a comment, because nothing in the code can say it.
 
 The line is `CellRenderer cellExtent y // 2`, not `25`. Half the height of the cell is the decision;
 25 is what it happens to be today.
 
-Asking which half a point is in is the counterpart of `pushRegionForPoint:`:
+We ask which half a point is in with the counterpart of `pushRegionForPoint:`:
 
 ```smalltalk
 CellClickRegionOutside class >> rotateRegionForPoint: aPoint
@@ -2883,7 +2890,7 @@ CellClickRegionOutside class >> containsPoint: aPoint
 ## The hint
 
 A region that can be clicked needs a picture, and a region that refines itself needs to say so. Both
-messages already exist, so both are one-line overrides.
+messages already exist, so we write two one-line overrides.
 
 ```smalltalk
 CellClickRegionOutside class >> hintRegionForPoint: aPoint
@@ -2910,17 +2917,17 @@ CellClickRegionRotateCounterClockwise class >> hintElementOfExtent: anExtent
 	^ LaserGameShapes counterClockwiseArrowElementOfExtent: anExtent
 ```
 
-And that is the chapter's feature finished. Nothing else changes. `updateHintElement` asks whatever
+And that is our chapter's feature finished. Nothing else changes. `updateHintElement` asks whatever
 region it holds for an element of the arrow size, and it has never known or cared which kind of
 region that is; the cell element, the handlers, and the board are untouched. Curved arrows now
 appear on the rim of a mirror cell because two classes learned to answer a message the rest of the
 game was already sending.
 
-That is what the two chapters of groundwork bought, and it is worth naming the property that did it:
+That is what our two chapters of groundwork bought, and it is worth naming the property that did it:
 every one of those methods answers a value and none of them asks what it is talking to. A design
 made of questions grows by adding answers.
 
-The only existing method that changes is a comment, on the superclass, now that six regions can
+The only existing method we change is a comment, on the superclass, now that six regions can
 answer a picture instead of four:
 
 ```smalltalk
@@ -2935,9 +2942,9 @@ CellClickRegion class >> hintElementOfExtent: anExtent
 
 ## Tests
 
-The rotate regions get the same four tests as the push regions, for the same reasons, and they are
-worth comparing side by side with *Determine push regions* — the shape of a test follows the shape
-of the thing it checks.
+We give the rotate regions the same four tests as the push regions, for the same reasons, and they
+are worth comparing side by side with *Determine push regions* — the shape of a test follows the
+shape of the thing it checks.
 
 Every point of the region turns the mirror one way and not both:
 
@@ -2986,7 +2993,7 @@ Note the point one pixel below the line, asserted to belong to the other half. A
 only checks the boundary itself passes just as happily when *both* comparisons take the line. Check
 the pixel on each side of it; that is two assertions and it pins the decision down completely.
 
-The table of cases lives in its own method, so that it can be run at more than one cell size:
+We keep the table of cases in its own method, so that we can run it at more than one cell size:
 
 ```smalltalk
 CellClickOutsideRegionRotateTestCase >> assertRotateRegionTable
@@ -3048,7 +3055,7 @@ CellClickOutsideRegionRotateTestCase >> testTheRotateRegionTableHoldsAtEveryCell
 ```
 
 Fifteen rows, and they are not there for coverage — the walk over every point already has that. They
-are there because the rim of a cell is a ring, and a ring has places a reader will want to look up:
+are there because the rim of a cell is a ring, and a ring has places you will want to look up:
 the four corners, the four edge centres, the inner rectangle, and the outer one. A table of named
 points is documentation that fails when it stops being true.
 
@@ -3093,8 +3100,8 @@ MirrorCellRendererTestCase >> testAMirrorAnswersThePushRegionOfAPointInsideIt
 ```
 
 Two tests of the last two chapters were written while the outside region had nothing to say, and
-said so in their names. Both are rewritten here, and the rewrite is worth watching: the claims do
-not change, only the expectations and the names.
+said so in their names. We rewrite both here, and the rewrite is worth watching: the claims do not
+change, only the expectations and the names.
 
 ```smalltalk
 CellClickRegionTestCase >> testEachRegionWithAPictureAnswersTheArrowOfItsDirection
@@ -3122,8 +3129,8 @@ CellClickRegionTestCase >> testEachRegionWithAPictureAnswersTheArrowOfItsDirecti
 			equals: (LaserGameShapes pointsOf: each value scaledToExtent: extent) ]
 ```
 
-Two rows added to a table, and the name went from "only a push region" to "each region with a
-picture". A test whose name states a count — *only one*, *the four of them* — will need renaming
+We added two rows to a table, and the name went from "only a push region" to "each region with a
+picture". A test whose name states a count — *only one*, *the four of them* — makes you rename it
 every time the count changes. A name that states the rule does not.
 
 ```smalltalk
@@ -3146,7 +3153,7 @@ CellClickRegionTestCase >> testTheInsideAndOutsideRegionsRefineTheHintTheyAnswer
 		equals: CellClickRegionPushEast
 ```
 
-Last, the cell element draws the curved arrow when the pointer is on the rim:
+Last, we check that the cell element draws the curved arrow when the pointer is on the rim:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testMovingInTheOutsideRegionOfAMirrorCellShowsARotateArrow
@@ -3210,30 +3217,30 @@ space show
 ```
 
 Three copies of the demo board, each with its mirror hinted at a different point: the clockwise
-arrow, the anticlockwise one, and a push arrow for comparison. Building three boards and hinting
-them by hand, rather than opening the game and moving the pointer, means all three states are on the
+arrow, the anticlockwise one, and a push arrow for comparison. We build three boards and hint them
+by hand, rather than opening the game and moving the pointer, so that all three states are on the
 screen at once — which is the only way to compare them.
 
-Then open the game and hover a mirror for real. Every hint the game can show now appears, and not
+Then open the game and hover a mirror for real. You now get every hint the game can show, and not
 one of them does anything yet. The next chapter makes a mirror turn.
 
 # Rotate a mirror cell
 
-The board can tell which region a click falls in. The next thing is a mirror that turns — and this
-chapter never touches an element or an event. Work on the model first and the interface after. A
-mirror that turns correctly is something you can test in three lines; a mirror that turns when
-clicked is something you have to test with a mouse. On the way the cells learn to print themselves
-properly and the grid gains an inspector tab, because the quickest way through a bug like this one
-is to make the objects say more.
+The board can tell which region a click falls in. The next thing is a mirror that turns — and in
+this chapter we never touch an element or an event. We work on the model first and the interface
+after. A mirror that turns correctly is something you can test in three lines; a mirror that turns
+when clicked is something you have to test with a mouse. On the way the cells learn to print
+themselves properly and the grid gains an inspector tab, because the quickest way through a bug like
+this one is to make the objects say more.
 
-It is also the chapter where a bug gets introduced on purpose, because the bug is a good one: a
+It is also the chapter where we introduce a bug on purpose, because the bug is a good one: a
 mirror that turns its picture and forgets to turn its behaviour. Finding it is most of the work
 here, and the method for finding it is the part worth keeping.
 
 ## A message every cell understands
 
-Start with the message, before deciding what it does. The rotate methods go on `Cell`, where they
-do nothing at all:
+We start with the message, before we decide what it does. The rotate methods go on `Cell`, where
+they do nothing at all:
 
 ```smalltalk
 Cell >> rotateClockwise
@@ -3249,7 +3256,7 @@ Cell >> rotateCounterClockwise
 ```
 
 A method with a comment and no code. It answers the receiver and does nothing, which is exactly the
-behaviour wanted, and it is worth being clear that this is a decision and not a stub left behind.
+behaviour we want, and it is worth being clear that this is a decision and not a stub left behind.
 
 The reason is the caller. The outside region of *any* cell answers a rotate region — the regions
 know about rectangles, not about mirrors — so the click handler will send `rotateClockwise` to
@@ -3264,7 +3271,7 @@ One empty method, or a test in every caller for ever. This pattern has a name �
 and it is the same move as `CellRenderer >> hintRegionAt:` answering nil: put the harmless answer on
 the superclass and let the one subclass that cares override it.
 
-Doing nothing is a behaviour, so it gets a test:
+Doing nothing is a behaviour, so we test it:
 
 ```smalltalk
 BlankCellTestCase >> testRotatingACellThatIsNotAMirrorDoesNothing
@@ -3291,7 +3298,7 @@ naming the things that must not change.
 ## Two directions, one turn
 
 A mirror sits on one of two diagonals, and a quarter turn either way lands it on the other one. So
-both directions do the same thing to a mirror. The two methods stay apart anyway, and one method
+both directions do the same thing to a mirror. We keep the two methods apart anyway, and one method
 underneath does the work:
 
 ```smalltalk
@@ -3311,17 +3318,17 @@ MirrorCell >> rotateCounterClockwise
 	self rotate
 ```
 
-Two methods that are identical today, kept separate because they mean different things. The caller
-says which way the player asked for; whether the mirror can tell the difference is the mirror's
-business. If the turn is ever animated, or if a cell ever has four positions instead of two, the
-change is inside `MirrorCell` and no caller moves.
+Two methods that are identical today, which we keep separate because they mean different things. The
+caller says which way the player asked for; whether the mirror can tell the difference is the
+mirror's business. If the turn is ever animated, or if a cell ever has four positions instead of
+two, the change is inside `MirrorCell` and no caller moves.
 
 The judgement here is worth naming, because it cuts the other way just as often. Two methods with
 the same body are usually one method too many. They are two when the *names* carry information the
 body does not — here, a direction a player chose. Keep them apart then, and keep the shared body in
 one place so that they cannot drift.
 
-And the obvious body:
+And we write the obvious body:
 
 ```st
 rotate
@@ -3330,7 +3337,7 @@ rotate
 > **Note.** That is the version with the bug of this chapter in it. The end of the chapter replaces
 > it.
 
-A test to go with it, asking the mirror which way it leans:
+We write a test to go with it, asking the mirror which way it leans:
 
 ```st
 testCellRotate
@@ -3359,7 +3366,7 @@ The demo grid sends its beam east along the top row into the mirror at `4@1`, wh
 turns the beam south into the target at `5@1`. Turn that mirror and the beam should go west instead,
 leaving the target dark.
 
-Two tests say so, and both of them read the cells rather than the mirror:
+Our two tests say so, and both of them read the cells rather than the mirror:
 
 ```smalltalk
 GridTestCase >> testFireLaserAfterMirrorRotation
@@ -3403,25 +3410,25 @@ GridTestCase >> testFireLaserDuringMirrorRotation
 	self assert: cell isOff
 ```
 
-The first turns the mirror with the laser off and fires again; the second turns it while the laser is
-on. Both end with the same assertion, `self assert: cell isOff` on the target, and against the one
-line version of `rotate` both of them fail there. The target stays lit.
+The first turns the mirror with the laser off and fires again; the second turns it while the laser
+is on. Both end with the same assertion, `self assert: cell isOff` on the target, and against the
+one line version of `rotate` both of them fail there. The target stays lit.
 
-So there is a symptom: the mirror reports the new lean, the beam behaves as though it had the old
-one. That is the whole of the information available, and it is two objects away from the fault. The
-rest of the chapter is about closing that distance.
+So we have a symptom: the mirror reports the new lean, the beam behaves as though it had the old
+one. That is the whole of the information we have, and it is two objects away from the fault. In the
+rest of the chapter we close that distance.
 
 ## Make the objects say more before stepping through them
 
-The first instinct on a failing test is to open the debugger and step. Do that, and the bottom pane
+Your first instinct on a failing test is to open the debugger and step. Do that, and the bottom pane
 shows `a MirrorCell`. Which mirror? Leaning which way? Lit or not? None of that is on the screen,
-and the next twenty minutes go on inspecting variables one at a time to find out.
+and you spend the next twenty minutes inspecting variables one at a time to find out.
 
-So fix the tools first. It takes two short methods and it pays for itself inside one bug.
+So we fix the tools first. It takes two short methods and it pays for itself inside one bug.
 
-`printOn:` is the method every object uses to describe itself — in a list, in an inspector header, in
-the result of a code pane, in the failure message of a test. All of those have room for one line, so
-the cell says its facts on one line:
+`printOn:` is the method every object uses to describe itself — in a list, in an inspector header,
+in the result of a code pane, in the failure message of a test. All of those have room for one line,
+so the cell says its facts on one line:
 
 ```smalltalk
 Cell >> printOn: aStream
@@ -3466,11 +3473,11 @@ MirrorCell >> printDetailsOn: aStream
 
 Two methods instead of one, and the split is the point. `printOn:` owns the frame — the class name,
 the brackets, the lit state, the punctuation — and every subclass inherits it. `printDetailsOn:`
-owns the one detail that varies, and a subclass adds to it with `super` and one line. Had `MirrorCell`
-overridden `printOn:` instead, it would have had to repeat the brackets and the lit state, and a
-change to the frame would then have to be made twice.
+owns the one detail that varies, and a subclass adds to it with `super` and one line. Had
+`MirrorCell` overridden `printOn:` instead, it would have had to repeat the brackets and the lit
+state, and a change to the frame would then have to be made twice.
 
-That is a pattern to reach for whenever subclasses need to vary *part* of a method: write the whole
+That is a pattern you reach for whenever subclasses need to vary *part* of a method: write the whole
 thing on the superclass and send one message out to the part that differs. The superclass keeps
 control of the shape; the subclass fills in a hole.
 
@@ -3505,12 +3512,12 @@ MirrorCellTestCase >> testPrintStringSaysWhereTheCellIsHowItLeansAndWhetherItIsO
 	self assert: cell printString equals: 'a MirrorCell(4@1 leans right, on)'
 ```
 
-Yes, test the print string. It is read by every debugger, every inspector, and every failure message
-from here to the end of the book, and a print method that stops saying the lean is a quiet loss. Two
-assertions on a string is a cheap guard on something a lot of later work leans on.
+Yes, test the print string. You read it in every debugger, every inspector, and every failure
+message from here to the end of the book, and a print method that stops saying the lean is a quiet
+loss. Two assertions on a string is a cheap guard on something a lot of later work leans on.
 
-A step of the beam gets the same treatment, and it names its cell rather than describing it, so the
-cell's own print method does that part:
+We give a step of the beam the same treatment, and it names its cell rather than describing it, so
+the cell's own print method does that part:
 
 ```smalltalk
 LaserPathElement >> printOn: aStream
@@ -3542,13 +3549,14 @@ LaserPathElementTestCase >> testPrintStringNamesTheCellAndTheSideTheBeamEntersFr
 ```
 
 `print:` is `printOn:` applied to another object, so one print method composes with the next. The
-result — `a LaserPathElement(a MirrorCell(4@1 leans right, off) from south)` — is a whole step of the
-beam in one line, and a list of them is a readable trace of the beam.
+result — `a LaserPathElement(a MirrorCell(4@1 leans right, off) from south)` — is a whole step of
+the beam in one line, and a list of them gives you a readable trace of the beam.
 
 ## What will not fit on one line goes in an inspector tab
 
-One line is not much. The state of all four sides of a cell will not fit, and that is the table this
-bug needs. In Pharo that belongs in an inspector tab, which costs one method and a pragma:
+One line is not much. The state of all four sides of a cell will not fit, and that is the table we
+need for this bug. In Pharo that belongs in an inspector tab, which costs us one method and a
+pragma:
 
 ```smalltalk
 Cell >> inspectionSides: aBuilder
@@ -3574,12 +3582,12 @@ Cell >> inspectionSides: aBuilder
 
 The `<inspectorPresentationOrder: 1 title: 'Sides'>` pragma is the whole of the wiring. Any method
 carrying it becomes a tab on the inspector of that object, named by the title and placed by the
-number, and it works on every subclass because it is inherited. `aBuilder newTable` builds the table;
-each `addColumn:` takes a title and a block that is evaluated per row.
+number, and it works on every subclass because it is inherited. `aBuilder newTable` builds the
+table; each `addColumn:` takes a title and a block that is evaluated per row.
 
 Inspect a mirror now and the *Sides* tab says, in four rows, exactly what the bug is about. Turn the
 mirror from the code pane, look again, and the lean in the header has changed while the *Leaves by*
-column has not. The bug is on the screen, in a table, before any stepping has been done.
+column has not. The bug is on the screen, in a table, before you step through anything.
 
 ```smalltalk
 MirrorCellTestCase >> testTheSidesTabListsTheFourSidesOfTheCell
@@ -3597,13 +3605,13 @@ MirrorCellTestCase >> testTheSidesTabListsTheFourSidesOfTheCell
 	self assert: table columns size equals: 3
 ```
 
-An inspector tab is a method, so it can be tested like one: hand it a builder, and check the table it
+An inspector tab is a method, so we test it like one: hand it a builder, and check the table it
 answers. Not the pixels — the rows and the number of columns. That is enough to catch the tab
-throwing an error, which is the only way a tab really breaks, and it will not need rewriting when a
-column title changes.
+throwing an error, which is the only way a tab really breaks, and you will not have to rewrite it
+when a column title changes.
 
-A grid can do better than describe itself, because it already has an element that draws it. One tab
-is the board as a picture, the other is the beam, one row per step:
+A grid can do better than describe itself, because it already has an element that draws it. We make
+one tab the board as a picture, and the other the beam, one row per step:
 
 ```smalltalk
 Grid >> inspectionBoard: aBuilder
@@ -3653,15 +3661,15 @@ GridTestCase >> testTheInspectorTabsOfAGridShowTheBoardAndTheBeam
 *Board* tab is the single most useful debugging tool in this whole game: a picture of the model,
 drawn by the same element the window uses, available on any grid anywhere — in a test, in a
 playground, in a debugger halfway through a method. When the board in the tab is wrong, the fault is
-in the model; when the tab is right and the window is wrong, the fault is in the drawing. That
-question gets asked over and over in the next two sections, and this tab answers it in a glance.
+in the model; when the tab is right and the window is wrong, the fault is in the drawing. We ask
+that question over and over in the next two sections, and this tab answers it in a glance.
 
 `ifNil: [ #() ]` in the beam tab is there because a grid that has not fired has no path, and an
 inspector must never be the thing that raises an error. Guard the display, not the model.
 
 ## The test that names the fault
 
-Now the bug, with the tools in place. The beam is built one step at a time by this method:
+Now the bug, with our tools in place. The beam is built one step at a time by this method:
 
 ```smalltalk
 LaserPathElement >> nextElementIn: aGrid
@@ -3686,7 +3694,7 @@ is correct arithmetic on a wrong answer.
 There is the fault, and it has a name: the way a mirror leans is written down **twice** — once in
 `leansLeft`, once in the four entries of `exitSides` — and `rotate` changed one copy.
 
-Having found it, ask it as a test, at the method where it shows:
+Having found it, we ask it as a test, at the method where it shows:
 
 ```smalltalk
 LaserPathElementTestCase >> testTheNextElementFollowsTheMirrorAfterItIsRotated
@@ -3709,16 +3717,16 @@ LaserPathElementTestCase >> testTheNextElementFollowsTheMirrorAfterItIsRotated
 		equals: (grid at: 3 @ 1)
 ```
 
-Compare it with the grid tests that failed first. Those fire a laser, walk nine cells and assert on a
-target two objects away from the fault; this one builds a mirror, asks for the next step, turns the
-mirror and asks again. Same bug, four lines, and the name of the test says what is broken instead of
-what the player noticed.
+Compare it with the grid tests that failed first. Those fire a laser, walk nine cells and assert on
+a target two objects away from the fault; this one builds a mirror, asks for the next step, turns
+the mirror and asks again. Same bug, four lines, and the name of the test says what is broken
+instead of what the player noticed.
 
 That is the move to practise. A failing test at the level of the whole system tells you *that*
-something is wrong. Once you know *what* is wrong, write the test one level down, where the fault is,
-and keep both: the low one tells you what broke, the high one tells you that it matters.
+something is wrong. Once you know *what* is wrong, write the test one level down, where the fault
+is, and keep both: the low one tells you what broke, the high one tells you that it matters.
 
-And the mirror's own test is rewritten to ask the question it should have asked in the first place:
+And we rewrite the mirror's own test to ask the question it should have asked in the first place:
 
 ```smalltalk
 MirrorCellTestCase >> testCellRotate
@@ -3736,14 +3744,14 @@ MirrorCellTestCase >> testCellRotate
 	self assert: (cell exitSideFor: #south) equals: #west
 ```
 
-Three assertions added, interleaved with the three that were there: after every change of lean, ask
+We add three assertions, interleaved with the three that were there: after every change of lean, ask
 where a beam goes. Now the test reads a fact that `rotate` does not write directly, which is what
 makes it able to fail.
 
 ## The fix
 
-`MirrorCell` already has two methods that set the lean and the four exit sides together, written when
-the model was built and used by `GridFactory` ever since:
+`MirrorCell` already has two methods that set the lean and the four exit sides together, written
+when we built the model and used by `GridFactory` ever since:
 
 ```smalltalk
 MirrorCell >> leanLeft
@@ -3787,9 +3795,9 @@ keeps the whole of the object consistent. Here two did, and they had been there 
 
 ## Two small tidies
 
-Reading the class closely for this bug turns up two other things worth correcting.
+Reading the class closely for this bug turns up two other things we should correct.
 
-The class-side constructors send `super new` where `self new` is meant:
+The class-side constructors send `super new` where we meant `self new`:
 
 ```smalltalk
 MirrorCell class >> leanLeft
@@ -3826,8 +3834,8 @@ grid fireLaser.
 grid inspect
 ```
 
-The *Board* tab shows the beam crossing the top row into the target; the *Beam* tab lists the path a
-step at a time, each row printing its cell. Then turn the mirror and inspect again:
+You get the beam crossing the top row into the target in the *Board* tab, and the *Beam* tab lists
+the path a step at a time, each row printing its cell. Then turn the mirror and inspect again:
 
 ```smalltalk
 | grid |
@@ -3846,25 +3854,25 @@ is short, because the model is finished and the click already arrives.
 
 # Click and rotate a cell
 
-A mirror knows how to turn. The board knows which region a click falls in. This chapter joins the
-two, and at the end of it the game is playable with a mouse. The click asks its region whether it
-can act, the region acts, and the cell redraws the one thing that changed.
+A mirror knows how to turn. The board knows which region a click falls in. In this chapter we join
+the two, and at the end of it the game is playable with a mouse. The click asks its region whether
+it can act, the region acts, and the cell redraws the one thing that changed.
 
 It is a short chapter, and that is the whole point of the four before it. Every piece is already
-written; what is left is to send one message along a chain that already exists.
+written; all we do is send one message along a chain that already exists.
 
 ## What a click has to mean
 
-Start with the rule, because it is easy to get wrong. A click is not a button release. If the player
-presses the button on one cell, drags the pointer into the next one and lets go, that is a click on
-neither: the release landed somewhere the press did not.
+We start with the rule, because it is easy to get wrong. A click is not a button release. If the
+player presses the button on one cell, drags the pointer into the next one and lets go, that is a
+click on neither: the release landed somewhere the press did not.
 
 Written by hand that is four pieces of work — handle the press, remember which cell it landed in,
 handle the release, compare the two, and clear the memory afterwards whatever happens. An instance
 variable that holds the cell of the press is a variable that can be left behind, and every method
 that resets the game then has to remember to clear it too.
 
-None of that gets written here, because `BlClickEvent` *is* that rule. Bloc raises it only when the
+We write none of that here, because `BlClickEvent` *is* that rule. Bloc raises it only when the
 press and the release both land on the same element. The cell element has listened for it since
 *Handle mouse events*, and the handler is unchanged:
 
@@ -3881,13 +3889,13 @@ drag, the enter and leave of an element — those are events Bloc raises, not st
 that tracks a state the framework already tracks is code that can disagree with the framework, and
 the disagreement always shows up as something that happens one time in twenty.
 
-`anEvent localPosition` is the point of the click in the coordinates of the cell it landed in, so the
-click arrives already expressed in the only terms the regions understand.
+`anEvent localPosition` is the point of the click in the coordinates of the cell it landed in, so
+the click arrives already expressed in the only terms the regions understand.
 
 ## The same chain, one event later
 
-Trace what a hint does, because the click is about to walk the identical path. The pointer moves; the
-cell element asks its renderer for a hint region; the renderer — if it is a mirror's — asks
+Trace what a hint does, because the click is about to walk the identical path. The pointer moves;
+the cell element asks its renderer for a hint region; the renderer — if it is a mirror's — asks
 `CellClickRegion` which region the point falls in; the region answers a picture. Four objects, each
 asked one question, and not one `ifTrue:` on the class of anything.
 
@@ -3927,24 +3935,25 @@ MirrorCellRenderer >> mouseUpAt: aPoint
 
 That is `hintRegionAt:` again, with a different message: every renderer is asked, all but the mirror
 answer nothing, and the mirror asks the region. The two pairs of methods are not similar by accident
-— the second was written by copying the shape of the first, which is the cheapest kind of design
-work there is.
+— we wrote the second by copying the shape of the first, which is the cheapest kind of design work
+there is.
 
 Two things in the mirror's version deserve reading closely.
 
 The cell and the grid travel **down** with the message. A region is geometry with an opinion about
-what a click there means; it has no cell and no grid of its own, and it is not going to be given one,
-because the same four push regions answer for every cell on the board. So the renderer, which does
-know its cell, hands both along. When a stateless object has to act on something, pass the something
-in rather than giving the object a reference to it.
+what a click there means; it has no cell and no grid of its own, and it is not going to be given
+one, because the same four push regions answer for every cell on the board. So the renderer, which
+does know its cell, hands both along. When a stateless object has to act on something, pass the
+something in rather than giving the object a reference to it.
 
-And the method **answers** the cell it acted on, or nil. That return value is what the caller uses to
-decide whether anything needs redrawing, and it means the question "did this click do something?" is
-answered by the object that did it, not guessed at afterwards.
+And the method **answers** the cell it acted on, or nil. That return value is what the caller uses
+to decide whether anything needs redrawing, and it means the question "did this click do something?"
+is answered by the object that did it, not guessed at afterwards.
 
 ## Asking before acting
 
-The click is in two halves: *can* something be done here, and *do* it. Both live on the regions.
+We split the click in two halves: *can* something be done here, and *do* it. Both live on the
+regions.
 
 ```smalltalk
 CellClickRegion class >> canActOnCellAtPoint: aPoint cell: aCell withinGrid: aGrid
@@ -3974,7 +3983,8 @@ region in general is "no". The outside region always can, since a mirror can alw
 region does not know, so it asks the push region of the point, which asks the grid whether there is
 room.
 
-Then the doing, and each refining region passes the click on to the region the point really falls in:
+Then the doing, and each refining region passes the click on to the region the point really falls
+in:
 
 ```smalltalk
 CellClickRegion class >> mouseUpWithinCellAtPoint: aPoint cell: aCell withinGrid: aGrid
@@ -4021,12 +4031,12 @@ CellClickRegionRotateCounterClockwise class >> mouseUpForCell: aCell withinGrid:
 	^aCell
 ```
 
-Note what they send. Not `aCell rotateClockwise`, although the cell understands it — the turn goes to
-the **grid**, naming the location. The grid records every move it is asked to make, which is what the
-undo later in the book will read, and a cell turned behind the grid's back would be a move that
+Note what they send. Not `aCell rotateClockwise`, although the cell understands it — the turn goes
+to the **grid**, naming the location. The grid records every move it is asked to make, which is what
+the undo later in the book will read, and a cell turned behind the grid's back would be a move that
 nothing wrote down. When a model has an object that owns the moves, send the move there.
 
-The push regions were written the same way, and they are the reason the push already works:
+We wrote the push regions the same way, and they are the reason the push already works:
 
 ```smalltalk
 CellClickRegionPushNorth class >> canPushCell: aCell withinGrid: aGrid
@@ -4040,9 +4050,9 @@ CellClickRegionPushNorth class >> mouseUpForCell: aCell withinGrid: aGrid
 
 So the same three methods that make a click turn a mirror make a click push one, and the guard keeps
 it honest: a push into an occupied cell or off the edge of the board cannot happen, because the
-region says the action is impossible before the click is ever passed on. Later chapters still owe the
-player the arrows that show a push, the counter that counts the moves, and a bug — but the mechanism
-is here.
+region says the action is impossible before the click is ever passed on. Later chapters still owe
+the player the arrows that show a push, the counter that counts the moves, and a bug — but the
+mechanism is here.
 
 ## Drawing what changed
 
@@ -4061,13 +4071,13 @@ LaserGameCellElement >> clickAt: aPoint
 > **Note.** *Add a counter and window colours* replaces the last line: the board is told that a move
 > was made, and it decides for itself what to redraw and what to count.
 
-Three lines, and the middle one is the interesting one. `(self renderer mouseUpAt: aPoint) ifNil: [ ^
-self ]` leaves the method when nothing happened — a click in the ignore margin, a click on a blank
+Three lines, and the middle one is the interesting one. `(self renderer mouseUpAt: aPoint) ifNil: [
+^ self ]` leaves the method when nothing happened — a click in the ignore margin, a click on a blank
 cell, a push with no room. No redraw, no move counted, nothing. That is the return value of
 `mouseUpAt:` earning its keep: an early return on nil is the clearest way a method has of saying
 "nothing to do here".
 
-And when something did happen, every cell is drawn again:
+And when something did happen, we draw every cell again:
 
 ```smalltalk
 LaserGameBoardElement >> redrawCells
@@ -4079,12 +4089,12 @@ LaserGameBoardElement >> redrawCells
 ```
 
 Every cell, not the one that was clicked. This looks wasteful and it is the right choice, for a
-reason worth being explicit about: **a click changes more than the cell it landed on.** Turn a mirror
-that stands on the beam and the beam goes somewhere else entirely; push a mirror and two cells swap
-contents. Code that tries to work out exactly which cells an action affected is code that will one
-day be wrong, and being wrong looks like a cell left lit after the beam has gone.
+reason worth being explicit about: **a click changes more than the cell it landed on.** Turn a
+mirror that stands on the beam and the beam goes somewhere else entirely; push a mirror and two
+cells swap contents. Code that tries to work out exactly which cells an action affected is code that
+will one day be wrong, and being wrong looks like a cell left lit after the beam has gone.
 
-Redrawing twenty-five small elements costs nothing a player can see. Spend it, and keep the drawing
+Redrawing twenty-five small elements costs nothing a player can see. Spend it, and keep your drawing
 code free of a dependency on the rules of the game.
 
 ```st
@@ -4111,16 +4121,17 @@ LaserGameCellElement >> redraw
 > hint again from the cell that now stands here instead of keeping it; *Drawing the laser beam* adds
 > the beam to the middle of the method.
 
-Read the order: remember the hint, throw the children away, pick a renderer, draw, put the hint back.
+Read the order: remember the hint, throw the children away, pick a renderer, draw, put the hint
+back.
 
 A cell element keeps its *identity* through a redraw — it is still the element at `1@2`, the pointer
 is still inside it — but it does not keep its *renderer*, because a push means the cell standing at
 `1@2` may be a different cell of a different class. Asking `CellRenderer rendererFor:` again is how
 the drawing follows the model.
 
-The thing to watch is that `removeChildren` also destroys the arrow, and the arrow is not the model's
-business: the pointer has not moved, so the hint is still true. Hence saving it in `region` and
-putting it back. State that belongs to the pointer has to survive a redraw of state that belongs to
+What you watch is that `removeChildren` also destroys the arrow, and the arrow is not the
+model's business: the pointer has not moved, so the hint is still true. Hence we save it in `region`
+and put it back. State that belongs to the pointer has to survive a redraw of state that belongs to
 the model, and the two get tangled every time they are not separated on purpose.
 
 The renderer reads its cell from the grid every time, rather than holding one:
@@ -4141,8 +4152,8 @@ thing stored can change behind your back.
 ## Tests
 
 A click in the upper half of the outside region turns the mirror clockwise; the lower half turns it
-the other way. The mirror lands on the other diagonal either way, so the *direction* cannot be read
-from the mirror. It is read from the move the grid recorded:
+the other way. The mirror lands on the other diagonal either way, so we cannot read the *direction*
+from the mirror. We read it from the move the grid recorded:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testClickingTheUpperOutsideRegionOfAMirrorTurnsItClockwise
@@ -4184,7 +4195,7 @@ That is a trick worth keeping: when two different actions leave the object in th
 on the record of the action rather than on the state. Without `movesStack`, these two tests would be
 indistinguishable, and a bug that sent every click down the clockwise branch would pass both.
 
-Then the two cases where a click does nothing:
+Then we test the two cases where a click does nothing:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testClickingTheIgnoreRegionOfAMirrorDoesNothing
@@ -4225,11 +4236,11 @@ LaserGameCellElementTestCase >> testClickingACellThatIsNotAMirrorDoesNothing
 ```
 
 `self assert: board grid movesStack isEmpty` is the assertion that makes both of these mean
-something. "Nothing happened" is only checkable against a record of what happens, and the moves stack
-is that record. Note too that the ignore-region test still asserts the click was *delivered* — the
-board recorded the cell — so the test cannot pass because the event never arrived.
+something. "Nothing happened" is only checkable against a record of what happens, and the moves
+stack is that record. Note too that the ignore-region test still asserts the click was *delivered* —
+the board recorded the cell — so the test cannot pass because the event never arrived.
 
-One click changes more than one cell, and that gets its own test:
+One click changes more than one cell, and we give that its own test:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testTurningAMirrorOnTheBeamRedrawsTheWholeBoard
@@ -4257,10 +4268,10 @@ LaserGameCellElementTestCase >> testTurningAMirrorOnTheBeamRedrawsTheWholeBoard
 > cell* draws the beam underneath the picture of the target. Until then the disc is simply the last
 > thing the target renderer adds.
 
-This is the one test in the chapter that reads a colour on the screen. It clicks one cell and asserts
-on a different one, four columns away, which is precisely the claim `redrawCells` makes. Keep tests
-like this rare and keep them pointed at a claim; a test that checked the colour of all twenty-five
-cells would say no more and break on every cosmetic change.
+This is the one test in the chapter that reads a colour on the screen. It clicks one cell and
+asserts on a different one, four columns away, which is precisely the claim `redrawCells` makes.
+Keep tests like this rare and keep them pointed at a claim; a test that checked the colour of all
+twenty-five cells would say no more and break on every cosmetic change.
 
 And the push, which comes free:
 
@@ -4307,34 +4318,34 @@ space title: 'Click and rotate'.
 space show
 ```
 
-Click the rim of a mirror and it turns; the beam follows it and the target lights or goes dark.
-Click near the middle of a mirror and it moves, if there is room.
+Click the rim of a mirror and you turn it; the beam follows and the target lights or goes dark.
+Click near the middle of a mirror and you move it, if there is room.
 
-The game is playable. It is also visibly unfinished, and in two ways worth noticing now, because both
-of them are chapters: move the pointer off a cell quickly and the arrow is sometimes left behind;
-push a mirror and the cell it came from can keep showing something that is no longer there. The first
-is next.
+The game is playable. It is also visibly unfinished, and in two ways worth noticing now, because
+both of them are chapters: move the pointer off a cell quickly and you sometimes leave the arrow
+behind; push a mirror and the cell it came from can keep showing something that is no longer there.
+The first is next.
 
 # Clean up left-over hints
 
-Play the game for a minute and ghosts appear: arrows left standing on cells the pointer passed over
+Play the game for a minute and you get ghosts: arrows left standing on cells the pointer passed over
 and left long ago. Four of them at once, on cells nothing is hovering. The obvious suspect is the
-wrong one, twice over. The fix is to let the board own the one hint there is, and two tests keep the
-ghosts from coming back.
+wrong one, twice over. We fix it by letting the board own the one hint there is, and two tests keep
+the ghosts from coming back.
 
 This chapter is about a kind of bug that is easy to misdiagnose, because the obvious explanation is
 wrong. The arrows are drawn by code that works. They are left behind by an event that never arrived.
 
 ## The wrong suspect
 
-The natural first thought is geometry: some path the pointer can take that ends in the ignore margin,
-or on a boundary, leaving a cell with a hint and no event to clear it. Chase that and you will read
-the region methods over and over, and they are all correct.
+The natural first thought is geometry: some path the pointer can take that ends in the ignore
+margin, or on a boundary, leaving a cell with a hint and no event to clear it. Chase that and you
+will read the region methods over and over, and they are all correct.
 
 The second thought is better, and it comes from asking a different question. Not *what did the code
 do with the events it got?* but **what events did it actually get?**
 
-That question is answered by watching, not reading. Move the pointer quickly down a column of the
+We answer that question by watching, not reading. Move the pointer quickly down a column of the
 board with an inspector open on the board element, or put a `self haltOnCount: 20` in `mouseMove:`
 as *Stopping code that runs too often* describes, and count what arrives. Moving the pointer swiftly
 from the top of a column to the bottom, the game is told about the cell at `5@2` and then about the
@@ -4346,9 +4357,9 @@ There is the bug, and it is not in this program:
 > the image handles whatever it is given. Nothing promises an event for every pixel the pointer
 > crosses, so a cell can be entered and left between two samples.
 
-Every program that follows a pointer has to live with this. The lesson is general: when an event
-handler seems to run with the wrong state, find out what events it actually received before changing
-anything about what it does with them.
+Every program you write that follows a pointer has to live with this. The lesson is general: when an
+event handler seems to run with the wrong state, find out what events it actually received before
+changing anything about what it does with them.
 
 ## Why the arrow survives in the first place
 
@@ -4381,12 +4392,12 @@ constant. But look at what it rests on: a promise from the event system that a l
 delivered. Build on that promise alone and the ghost comes back the first time it is not kept — on
 a slow frame, during a window resize, on a platform that reports the pointer differently.
 
-So do not rest on it. Make the invariant true in the program itself.
+So we do not rest on it. We make the invariant true in the program itself.
 
 ## One hint, kept by the board
 
-The invariant to state is simple: **at most one cell holds a hint at a time, and it is the cell the
-board hovers.** Written that way, enforcing it needs one line, because the board already learns which
+The invariant we state is simple: **at most one cell holds a hint at a time, and it is the cell the
+board hovers.** Written that way, we enforce it in one line, because the board already learns which
 cell is hovered on every enter and on every move:
 
 ```smalltalk
@@ -4405,9 +4416,9 @@ Three lines, each doing one thing. The first returns at once when the hovered ce
 which is the common case, since a move inside a cell sends this message on every sample. The second
 takes the hint away from whatever cell was hovered before. The third records the new one.
 
-Nothing here asks which cells the pointer crossed, and that is the design decision worth taking away
-from this chapter. The skipped cells do not matter. What matters is which cell was hovered before and
-which is hovered now, and the board knows both of those without any help from the event stream.
+Nothing here asks which cells the pointer crossed, and that is the design decision you take away
+from this chapter. The skipped cells do not matter. What matters is which cell was hovered before
+and which is hovered now, and the board knows both of those without any help from the event stream.
 
 An invariant enforced at the one place the state changes cannot be broken by a missing event. An
 invariant maintained by a pair of events — one to set, one to clear — is only as reliable as the
@@ -4424,16 +4435,16 @@ LaserGameBoardElement >> unhoverCellElement: aCellElement
 ```
 
 Two guards, in two methods, against two different orderings of the same pair of events. Read them
-together: `hoverCellElement:` ignores a hover of the cell it already hovers, and `unhoverCellElement:`
-ignores an unhover from a cell it does not hover. Between them the board's idea of where the pointer
-is cannot be corrupted by the order the events arrive in.
+together: `hoverCellElement:` ignores a hover of the cell it already hovers, and
+`unhoverCellElement:` ignores an unhover from a cell it does not hover. Between them the board's
+idea of where the pointer is cannot be corrupted by the order the events arrive in.
 
 The last ghost — the pointer leaving the board entirely — needs nothing at all. Leaving the board
 means leaving a cell of it, and the cell is told.
 
 ## Tests
 
-The first test is the skipped event, written directly. Two cells each get a move, and no leave is
+Our first test is the skipped event, written directly. Two cells each get a move, and no leave is
 ever delivered to either. Without the new line in `hoverCellElement:` it fails:
 
 ```smalltalk
@@ -4458,8 +4469,8 @@ LaserGameCellElementTestCase >> testHoveringAnotherCellClearsTheHintOfTheOneLeft
 	self assert: (second children includes: second hintElement)
 ```
 
-This is a test that reproduces a *missing* event, which is a thing worth knowing how to do. It is
-done by sending only the events the bug needs — a move on one cell, then a move on another — and
+This is a test that reproduces a *missing* event, which is a thing you should know how to do. We do
+it by sending only the events the bug needs — a move on one cell, then a move on another — and
 deliberately not sending the leave that a real pointer would usually produce. `dispatchEvent:` gives
 exactly that control: the test decides what the game hears.
 
@@ -4495,14 +4506,14 @@ LaserGameHintEventTestCase >> cellElementsShowingAHint
 	^ board children select: [ :each | each hintElement notNil ]
 ```
 
-Three helper methods and a test case of its own, which is a lot of scaffolding for two tests. It buys
-one thing: these tests do not know how the enter and leave of an element are decided. They move a
-pointer and look at the board. Every other test in this section would still pass if Bloc stopped
-producing leave events; these two would not.
+Three helper methods and a test case of its own, which is a lot of scaffolding for two tests. It
+buys us one thing: these tests do not know how the enter and leave of an element are decided. They
+move a pointer and look at the board. Every other test in this section would still pass if Bloc
+stopped producing leave events; these two would not.
 
 `newTestingSpace` is a space that runs without a window, which is why these tests can run in a build
 with no screen. `aSpace settle` lays the elements out, which is what gives the cells their real
-positions — and `positionInCellAt:offset:` is needed because the simulator speaks in *space*
+positions — and we need `positionInCellAt:offset:` because the simulator speaks in *space*
 coordinates while everything else in this section speaks in the coordinates of one cell. One method
 to do that conversion, in one place, named after what it answers.
 
@@ -4525,10 +4536,10 @@ LaserGameHintEventTestCase >> testMovingQuicklyToADistantCellLeavesNoArrowBehind
 	self assert: self cellElementsShowingAHint asArray equals: { second }
 ```
 
-The last assertion is the one that catches a ghost anywhere on the board, and it is worth copying the
+The last assertion is the one that catches a ghost anywhere on the board, and you should copy the
 shape of it. The two assertions before it check the two cells the test knows about; this one checks
-that *no other cell* is showing anything. A bug of the "something left behind" kind is invisible to a
-test that only looks where it expects the state to be. Ask the whole collection.
+that *no other cell* is showing anything. A bug of the "something left behind" kind is invisible to
+a test that only looks where it expects the state to be. Ask the whole collection.
 
 ```smalltalk
 LaserGameHintEventTestCase >> testMovingOffTheBoardClearsTheArrow
@@ -4544,9 +4555,9 @@ LaserGameHintEventTestCase >> testMovingOffTheBoardClearsTheArrow
 	self assert: board hoveredCellElement isNil
 ```
 
-`board bounds inSpace bounds bottomRight + (20 @ 20)` is a point twenty pixels past the corner of the
-board — off it, with certainty, at any cell size. Write a point outside something as *its own corner
-plus a margin*, never as a number that happens to be outside today.
+`board bounds inSpace bounds bottomRight + (20 @ 20)` is a point twenty pixels past the corner of
+the board — off it, with certainty, at any cell size. Write a point outside something as *its own
+corner plus a margin*, never as a number that happens to be outside today.
 
 ## Checking it
 
@@ -4586,8 +4597,8 @@ The first question for *every* bug where the screen is wrong: is the model wrong
 of a correct model wrong? Answer that before anything else, because it halves the code you have to
 read, and it is cheap to answer.
 
-The board already has an inspector tab that draws it. Add a third tab, which lists the cells with
-their state, and the question is answered by looking:
+The board already has an inspector tab that draws it. We add a third tab, which lists the cells with
+their state, and then we answer the question by looking:
 
 ```smalltalk
 Grid >> inspectionCells: aBuilder
@@ -4623,19 +4634,19 @@ grid inspect
 The *Cells* tab says it in one row: `a TargetCell(5@1, on)`, with *yes* in the *Lit* column, while
 the *Beam* tab shows a path that no longer goes anywhere near it. So the model is wrong. The drawing
 is faithfully showing a cell that believes something untrue, and no amount of reading the renderers
-would have found that.
+would have found that for you.
 
-Notice how little work that was, and notice that it was work done *earlier*. The tab added for the
-previous bug paid for itself in this one. Diagnostic tools are worth building because they are worth
-keeping.
+Notice how little work that was, and notice that it was work done *earlier*. The tab we added for
+the previous bug paid for itself in this one. Diagnostic tools are worth building because they are
+worth keeping.
 
 One warning while reading a tab like this, and it is the commonest way to waste an afternoon: change
 **one** thing at a time. Turn a mirror *and* stop the laser, then look at the cells, and whatever is
-wrong could belong to either action. The experiment above turns a mirror and nothing else.
+wrong could belong to either action. Our experiment above turns a mirror and nothing else.
 
 ## The test that reproduces it
 
-Stop looking at the screen. There is already a test about rotation:
+Stop looking at the screen. We already have a test about rotation:
 
 ```smalltalk
 GridTestCase >> testFireLaserAfterMirrorRotation
@@ -4662,15 +4673,15 @@ GridTestCase >> testFireLaserAfterMirrorRotation
 ```
 
 and it is green. Read it carefully before trusting that: `stopLaser` comes **before** the rotation
-and `fireLaser` after it. The test turns the mirror while the beam is off. That is not what the player
-did.
+and `fireLaser` after it. The test turns the mirror while the beam is off. That is not what the
+player did.
 
 That is the most useful habit in this chapter. When a bug is on the screen and the tests are green,
 do not assume the tests are inadequate in some vague way — read the one nearest the bug, line by
 line, and name the difference between what it does and what you did. Here the difference is one
 word: *while*.
 
-So write the missing test, which turns the mirror with the beam running:
+So we write the missing test, which turns the mirror with the beam running:
 
 ```smalltalk
 GridTestCase >> testFireLaserDuringMirrorRotation
@@ -4690,23 +4701,23 @@ GridTestCase >> testFireLaserDuringMirrorRotation
 	self assert: cell isOff
 ```
 
-Red, on the last assertion. The bug is now a failing test, and the screen is not needed again.
+Red, on the last assertion. The bug is now a failing test, and we need the screen no more.
 
-Two tests, named `...AfterMirrorRotation` and `...DuringMirrorRotation`, differing in one thing: when
-the rotation happens relative to the state of the laser. That pair is worth keeping as a model. Where
-an action can be taken in two different states of the system, there are two tests, and the names say
-which state.
+Two tests, named `...AfterMirrorRotation` and `...DuringMirrorRotation`, differing in one thing:
+when the rotation happens relative to the state of the laser. That pair is worth keeping as a model.
+Where an action can be taken in two different states of the system, there are two tests, and the
+names say which state.
 
 ## Why the method that turns the mirror cannot fix it
 
 Step into `rotate` and it does exactly what it says and nothing more: the mirror goes onto the other
 diagonal. Nothing recalculates the beam.
 
-The temptation is to make it do so — have the cell ask its grid to recalculate after it turns. Resist
-it, and be clear about why: **a cell does not know its grid, and must not.** Cells get pushed from one
-location to another; a cell holding a reference to a grid would be a second copy of the fact of where
-it belongs, and the chapter on rotation has already shown what a second copy of a fact costs. A cell
-knows its own four sides and its location. That is all.
+You will be tempted to make it do so — to have the cell ask its grid to recalculate after it turns.
+Resist it, and be clear about why: **a cell does not know its grid, and must not.** Cells get pushed
+from one location to another; a cell holding a reference to a grid would be a second copy of the
+fact of where it belongs, and the chapter on rotation has already shown what a second copy of a fact
+costs. A cell knows its own four sides and its location. That is all.
 
 If the cell cannot do it and the click region has no business knowing about beams, then the
 responsibility belongs to the object that owns both the cells and the beam. That is the grid:
@@ -4745,9 +4756,9 @@ Read the order of the three middle lines, because the order is the fix:
 2. the cell turns.
 3. `activateCellsInPath` — light the cells of the new path, but only if the laser is on.
 
-Clearing has to happen first. Turn the mirror before putting the old beam out and the path is already
-the new one, so the cells of the *old* path never get cleared, and the bug is still there with the
-lines in a different order.
+Clearing has to happen first. Turn the mirror before putting the old beam out and the path is
+already the new one, so the cells of the *old* path never get cleared, and the bug is still there
+with the lines in a different order.
 
 ```smalltalk
 Grid >> clearCellsInPath
@@ -4778,9 +4789,9 @@ Grid >> stackAction: aSymbol forCell: aCell
 	self movesStack add: aSymbol->(aCell gridLocation)
 ```
 
-A symbol and a location, pushed on a stack. Nothing reads it yet. It is what the counter of moves and
-the undo are built on later, and it is written here because here is where a move is actually made —
-a record kept anywhere else would be a record that could be forgotten.
+A symbol and a location, pushed on a stack. Nothing reads it yet. It is what the counter of moves
+and the undo are built on later, and we write it here because here is where a move is actually made
+— a record kept anywhere else would be a record that could be forgotten.
 
 Both tests go green, and nothing in the click chain changes, because the click already went to the
 grid and named a location: `aGrid rotateCellClockwiseAt: aCell gridLocation`. The fix landed behind
@@ -4791,10 +4802,10 @@ an interface that was already in the right place.
 The bug was not a wrong calculation anywhere. Every method involved did what its name said. What was
 missing was the knowledge that **turning one cell invalidates a fact held by several other cells.**
 
-That is a kind of bug to expect for the rest of this book, and the question that finds it is always
-the same: *when this changes, what else was computed from it?* Here the answer is the beam, and the
-cells it lit. The fix is to put the derived state back in step at the one place the change is made,
-in an object that can see both.
+That is a kind of bug you should expect for the rest of this book, and the question that finds it is
+always the same: *when this changes, what else was computed from it?* Here the answer is the beam,
+and the cells it lit. The fix is to put the derived state back in step at the one place the change
+is made, in an object that can see both.
 
 The alternative — recomputing the beam from scratch whenever anyone asks whether a cell is lit —
 would also be correct. It is not what this program does, and the trade is worth naming: this design
@@ -4804,9 +4815,9 @@ to keep it true, and it is worth knowing which one it is.
 
 ## Tests
 
-The model is fixed and tested. What the chapter adds is a guard that the picture cannot drift from
-the model again. After a turn made by a real click, with the laser on, every cell element is asked
-whether it still shows its own cell:
+The model is fixed and tested. What we add in this chapter is a guard that the picture cannot drift
+from the model again. After a turn made by a real click, with the laser on, every cell element is
+asked whether it still shows its own cell:
 
 ```smalltalk
 LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterATurn
@@ -4841,11 +4852,11 @@ renderer of each element matches the class of the cell standing at that location
 drawn lit exactly when its cell is on. Not *the target at 5@1 is dark* — the rule, for every cell,
 whatever the board is.
 
-Write a test like this once per bug class, not once per bug. It costs a nested loop and it closes the
-whole family: any future change that leaves an element describing a cell that is no longer there
+Write a test like this once per bug class, not once per bug. It costs a nested loop and it closes
+the whole family: any future change that leaves an element describing a cell that is no longer there
 fails here.
 
-And the tab gets a test, because it is now a tool the book tells the reader to use:
+And we test the tab, because it is now a tool the book tells you to use:
 
 ```smalltalk
 GridTestCase >> testTheCellsTabListsEveryCellWithItsState
@@ -4868,8 +4879,8 @@ GridTestCase >> testTheCellsTabListsEveryCellWithItsState
 		equals: #( 'Cell' 'Lit' )
 ```
 
-One row per cell, the target among them, two columns. A tab that silently stopped listing some of the
-cells would be worse than no tab, since it would be trusted.
+One row per cell, the target among them, two columns. A tab that silently stopped listing some of
+the cells would be worse than no tab, since you would trust it.
 
 ## Checking it
 
@@ -4885,11 +4896,11 @@ space title: 'Target cell'.
 space show
 ```
 
-Turn the mirror next to the target and the target goes dark; turn it back and it lights again. Better,
-try it on the mirror at the start of the beam: every mirror along the path moves the beam, and the
-target follows every time.
+Turn the mirror next to the target and you get a dark target; turn it back and it lights again.
+Better, try it on the mirror at the start of the beam: every mirror along the path moves the beam,
+and the target follows every time.
 
-One question has been left open on purpose. Should a player be allowed to rearrange the board at all
+We have left one question open on purpose. Should a player be allowed to rearrange the board at all
 while the laser is running? The game says yes for now, and the beam simply follows. It is a rule
 about the game rather than a bug in it, and it comes back later.
 
@@ -4897,10 +4908,10 @@ Next, the other half of what a click can do: pushing a cell.
 
 # Push a cell
 
-Turning a mirror is one of the two moves of the game. This chapter writes the other one: pushing a
-mirror sideways into the empty square next to it. The rules give us the tests, the four directions
-become four objects, and the move is written down, so that a chapter near the end of the book can
-take it back.
+Turning a mirror is one of the two moves of the game. In this chapter we write the other one:
+pushing a mirror sideways into the empty square next to it. The rules give us the tests, the four
+directions become four objects, and the move is written down, so that a chapter near the end of the
+book can take it back.
 
 The rules first, in sentences, before any code:
 
@@ -4952,7 +4963,7 @@ laser starts in. The grid has a case for every rule: a blank corner at `1@1`, th
 mirror on its own in open space at `1@2`, a block of four mirrors at `2@3`, `3@3`, `2@4` and `3@4`,
 and mirrors against the edges at `4@1`, `1@5` and `4@5`.
 
-That is not an accident. The demo grid was built to be looked at, and it earns its keep as a test
+That is not an accident. We built the demo grid to be looked at, and it earns its keep as a test
 fixture because it holds every situation the rules mention. When you find yourself building a fresh
 object in ten tests, each one slightly different, stop and build one object that covers all ten.
 Every test here starts with the same line:
@@ -4965,8 +4976,8 @@ GridTestCase >> generateDemoGrid
 
 ## The tests come from the rules
 
-Rule one says only mirrors move. The blank corner at `1@1` is pushed all four ways and must still be
-a blank cell:
+Rule one says only mirrors move. We push the blank corner at `1@1` all four ways and it must still
+be a blank cell:
 
 ```smalltalk
 GridTestCase >> testPushBlankCell
@@ -4994,7 +5005,7 @@ cell lives there. A test that fetched the cell once and then kept asking *that* 
 be asking about a cell that may have moved somewhere else. Every push test follows the same pattern:
 push, then fetch, then assert.
 
-Rule two says the target never moves, and it gets the same four pushes at `5@1`:
+Rule two says the target never moves, and we give it the same four pushes at `5@1`:
 
 ```smalltalk
 GridTestCase >> testPushTargetCell
@@ -5015,7 +5026,7 @@ GridTestCase >> testPushTargetCell
 	self assert: cell class equals: TargetCell
 ```
 
-Then the mirrors, which is where the rules actually bite. There are six tests:
+Then the mirrors, which is where the rules actually bite. We write six tests:
 `testPushIsolatedMirrorCellNorthCase1` and `Case2`, `testPushIsolatedMirrorCellEastCase1` and
 `Case2`, `testPushIsolatedMirrorCellSouth` and `testPushIsolatedMirrorCellWest`. Each one pushes
 once, and then asks three things: what is at the location pushed from, what is at the location
@@ -5073,8 +5084,8 @@ and starts shoving mirrors into each other.
 
 ## One direction at a time, and then none
 
-The four methods the tests call are the obvious ones. Starting them as empty stubs is enough to make
-the tests run instead of erroring:
+The four methods the tests call are the obvious ones. We start them as empty stubs, which is enough
+to make the tests run instead of erroring:
 
 ```st
 pushCellNorthFromLocation: aPoint
@@ -5087,7 +5098,7 @@ pushCellWestFromLocation: aPoint
 ```
 > **Note.** Stubs only. They are replaced further down this chapter.
 
-Now write the north one for real, in full, with nothing shared:
+Now we write the north one for real, in full, with nothing shared:
 
 ```st
 pushCellNorthFromLocation: aPoint
@@ -5138,7 +5149,7 @@ Grid >> pushCell: aGridDirection fromLocation: aPoint
 Three things in it are worth a paragraph each.
 
 **The three refusals are written as early returns.** Each one is a rule, each one answers
-immediately, and the reader meets them in the order the rules were written down: not a mirror, no
+immediately, and you meet them in the order we wrote the rules down: not a mirror, no
 neighbour, neighbour not blank. The alternative is one nested condition three levels deep whose
 `ifTrue:` block holds the real work. Prefer the early returns. A method that deals with its
 impossible cases first and then does its job in a straight line can be read from the top, and a
@@ -5151,10 +5162,10 @@ in the grid changed. So the caller can find out whether anything happened by loo
 back, with no second question to the grid. When a method can either act or decline, have it answer
 something that tells the two apart.
 
-**The two beam lines** are the lesson of *Bug with target cell* applied to the push. The cells lit by
-the old path have to go dark before the mirror moves, and the new path has to be lit afterwards, and
-only when the laser is actually on. The order is what makes it right: clear while the old path is
-still the true one, move, then light the path that is true now.
+**The two beam lines** are the lesson of *Bug with target cell* applied to the push. The cells lit
+by the old path have to go dark before the mirror moves, and the new path has to be lit afterwards,
+and only when the laser is actually on. The order is what makes it right: clear while the old path
+is still the true one, move, then light the path that is true now.
 
 With the rules in one place, the four direction methods have nothing left to say but their
 direction:
@@ -5212,8 +5223,8 @@ Grid >> swapCell: aCell with: anotherCell
 	self at: oldLocation put: anotherCell
 ```
 
-The two locations are read into variables before either write happens, and that is not tidiness —
-the method is wrong without it. `at:put:` tells the cell where it now sits:
+We read the two locations into variables before either write happens, and that is not tidiness — the
+method is wrong without it. `at:put:` tells the cell where it now sits:
 
 ```smalltalk
 Grid >> at: aPoint put: aCell
@@ -5235,8 +5246,8 @@ location later can reach them.
 
 ## Four directions as four objects
 
-`pushCell:fromLocation:` asks its direction for a `vector`, and the direction is a class. There is one
-class per direction, each answering, on its class side, everything there is to know about one
+`pushCell:fromLocation:` asks its direction for a `vector`, and the direction is a class. We write
+one class per direction, each answering, on its class side, everything there is to know about one
 direction:
 
 ```smalltalk
@@ -5265,10 +5276,10 @@ GridDirectionWest class >> vector
 ```
 
 `0 @ -1` is up, because row 1 is the top row. Adding a vector to a location is the whole of "the
-cell one step that way", and it is why `pushCell:fromLocation:` has no conditional about direction in
-it at all.
+cell one step that way", and it is why `pushCell:fromLocation:` has no conditional about direction
+in it at all.
 
-A direction is found by its symbol:
+We find a direction by its symbol:
 
 ```smalltalk
 GridDirection class >> directionFor: aSymbol
@@ -5279,9 +5290,9 @@ GridDirection class >> directionFor: aSymbol
 ```
 
 A dictionary from `#north` to `GridDirectionNorth` would do the same job, and it would be one more
-place to edit when a direction is added. Asking the subclasses means the classes themselves are the
-table. The beam uses the same four classes to walk from cell to cell, which is where they came
-from: each direction also answers the side a beam entering that way comes *from*.
+place for you to edit when a direction is added. Asking the subclasses means the classes themselves
+are the table. The beam uses the same four classes to walk from cell to cell, which is where they
+came from: each direction also answers the side a beam entering that way comes *from*.
 
 One test covers all four:
 
@@ -5336,26 +5347,26 @@ Grid >> pushCellAction: aDirectionSymbol fromLocation: aPoint
 	^ swappedCell
 ```
 
-`stackAction:forCell:` was written in *Bug with target cell*, where a turn was recorded the same
-way. It puts the direction and the location on the grid's `movesStack`, which is what a move counter
+We wrote `stackAction:forCell:` in *Bug with target cell*, where a turn was recorded the same way.
+It puts the direction and the location on the grid's `movesStack`, which is what a move counter
 reads, and what an undo written later reads back.
 
 The interesting line is the comparison. The record has to be written only when something actually
-moved, and the method finds that out with no extra question, because of what `pushCell:fromLocation:`
-answers. On a real push, the cell that came back is the blank from the next square, whose location
-is now where the mirror used to be — a different location from the mirror's. On a refused push, the
-same mirror comes back and the comparison finds one location twice.
+moved, and the method finds that out with no extra question, because of what
+`pushCell:fromLocation:` answers. On a real push, the cell that came back is the blank from the next
+square, whose location is now where the mirror used to be — a different location from the mirror's.
+On a refused push, the same mirror comes back and the comparison finds one location twice.
 
 Record the move where the move is made. Not in the mouse handler, which would miss every push done
-from a test or a script, and not inside `pushCell:fromLocation:`, which is also used to ask whether a
-push is possible. One method, one responsibility, and the recording sits in the one place that knows
-a push was asked for *and* whether it happened.
+from a test or a script, and not inside `pushCell:fromLocation:`, which is also used to ask whether
+a push is possible. One method, one responsibility, and the recording sits in the one place that
+knows a push was asked for *and* whether it happened.
 
 ## What the class tests leave open
 
-The tests written from the rules ask which class sits at which location. That is enough to catch a
-mirror that fails to move. It is not enough for three other questions, and each gets a test of its
-own.
+The tests we wrote from the rules ask which class sits at which location. That is enough to catch a
+mirror that fails to move. It is not enough for three other questions, and we give each one a test
+of its own.
 
 The first is the edge of the board. `self at: swapLoc` answers nil when there is no such cell, and
 the `isNil` line of `pushCell:fromLocation:` is the one line the tests above never reach:
@@ -5378,7 +5389,8 @@ Go through your tests now and then asking the opposite question to the usual one
 this test cover?* but *which line of the method does no test reach?*. A nil check is a favourite
 answer, because the case that produces the nil is usually the one nobody draws a picture of.
 
-The second is the neighbour that is not blank, in both of its forms — another mirror, and the target:
+The second is the neighbour that is not blank, in both of its forms — another mirror, and the
+target:
 
 ```smalltalk
 GridTestCase >> testPushingAMirrorAgainstANonBlankNeighbourDoesNothing
@@ -5397,12 +5409,12 @@ GridTestCase >> testPushingAMirrorAgainstANonBlankNeighbourDoesNothing
 ```
 
 The target appears twice in the rules — it never moves, and nothing can be pushed into it — and
-`testPushTargetCell` only covers the first. The two assertions after the second push cover the other.
-When one object is named by two rules, check that you have a test for each of them.
+`testPushTargetCell` only covers the first. The two assertions after the second push cover the
+other. When one object is named by two rules, check that you have a test for each of them.
 
-The third is about identity rather than class. Imagine a push that built a *fresh* `MirrorCell` at the
-new location and a fresh `BlankCell` at the old one. Every test so far would pass, and the lean of the
-mirror — the only property that makes a mirror worth pushing — would quietly be lost:
+The third is about identity rather than class. Imagine a push that built a *fresh* `MirrorCell` at
+the new location and a fresh `BlankCell` at the old one. Every test so far would pass, and the lean
+of the mirror — the only property that makes a mirror worth pushing — would quietly be lost:
 
 ```smalltalk
 GridTestCase >> testAPushedMirrorIsTheSameCellInItsNewPlace
@@ -5423,13 +5435,13 @@ GridTestCase >> testAPushedMirrorIsTheSameCellInItsNewPlace
 	self deny: mirror leansLeft
 ```
 
-`identicalTo:` asks for the same object, not an equal one, and that is the right question whenever an
-operation is supposed to *move* something rather than replace it. The last two assertions are the
+`identicalTo:` asks for the same object, not an equal one, and that is the right question whenever
+an operation is supposed to *move* something rather than replace it. The last two assertions are the
 other half of the same idea: the cells moved, so both of them have to know their new place. And
 `self deny: mirror leansLeft` is the property that would have been dropped, named explicitly.
 
 A test that asserts identity is also the cheapest guard against a whole family of mistakes that
-`equals:` cannot see. Any time a method is described with a verb like move, rotate, reorder, or sort
+`equals:` cannot see. Any time you describe a method with a verb like move, rotate, reorder, or sort
 in place, ask whether the objects at the end are the objects from the beginning.
 
 And since a push is recorded, a refused push must record nothing:
@@ -5506,16 +5518,16 @@ GridTestCase >> testFireLaserAfterMirrorPush
 
 The two tests end with the same three assertions and differ only in when the laser is fired. That is
 the pattern to copy whenever an action can be taken in two different states of the system: write one
-test per state, and put the state in the name. *During* and *after* are two words doing the work of a
-paragraph of comment.
+test per state, and put the state in the name. *During* and *after* are two words doing the work of
+a paragraph of comment.
 
-Notice also what they assert: never only the flag, always the cells. `laserIsActive` would be true in
-both tests at the end and would tell you nothing about where the beam goes. The target going dark is
-the thing a player would see.
+Notice also what they assert: never only the flag, always the cells. `laserIsActive` would be true
+in both tests at the end and would tell you nothing about where the beam goes. The target going dark
+is the thing a player would see.
 
 ## Checking it
 
-The push is in the model, and nothing on the screen can reach it yet, but the model can be pushed
+The push is in the model, and nothing on the screen can reach it yet, but you can push the model
 from a playground. Open an inspector on the grid and watch its *Board* and *Beam* tabs:
 
 ```smalltalk
@@ -5526,17 +5538,18 @@ grid pushCellWestFromLocation: 4 @ 5.
 grid inspect
 ```
 
-The *Board* tab draws the board after the push, with the mirror now at `3@5`, and the *Beam* tab lists
-the new path: it leaves the starting cell, turns north at `3@5` instead of `4@5`, runs through the
-block of mirrors and walks off the left edge at `1@3`. The target is not on the list, which is the
-same fact `testFireLaserDuringMirrorPush` asserts.
+The *Board* tab draws the board after the push, with the mirror now at `3@5`, and the *Beam* tab
+lists the new path: it leaves the starting cell, turns north at `3@5` instead of `4@5`, runs through
+the block of mirrors and walks off the left edge at `1@3`. The target is not on the list, which is
+the same fact `testFireLaserDuringMirrorPush` asserts.
 
-Try a refused push in the same place — `grid pushCellEastFromLocation: 2 @ 3` — and the two tabs do
-not change at all. Then ask `grid movesStack` and it holds one entry, from the push that worked.
+Try a refused push in the same place — `grid pushCellEastFromLocation: 2 @ 3` — and you get no
+change in either tab. Then ask `grid movesStack` and it holds one entry, from the push that worked.
 
-Run `GridTestCase`. Every test in it is green, and the model now knows both moves of the game. What
-it still has no way of knowing is that a player wants one: the four arrows drawn on the board since
-*Drawing push hints on the game board* do nothing when they are clicked. That is the next chapter.
+Run `GridTestCase`. You get green on every test in it, and the model now knows both moves of the
+game. What it still has no way of knowing is that a player wants one: the four arrows drawn on the
+board since *Drawing push hints on the game board* do nothing when they are clicked. That is the
+next chapter.
 
 # Push cells with the mouse
 
@@ -5549,9 +5562,9 @@ before it acts, `canPushCell:fromLocation:`, and the swap that happens once the 
 
 So open the game, click the middle of a mirror, and watch it move.
 
-Then do the thing this chapter is actually about. A feature that has just started working is the best
-possible moment to go looking for what it broke, because you still remember what you changed. Sitting
-back is how a bug reaches the next chapter and takes an hour to find there.
+Then do the thing this chapter is actually about. A feature that has just started working is the
+best possible moment to go looking for what it broke, because you still remember what you changed.
+Sitting back is how a bug reaches the next chapter and takes an hour to find there.
 
 ## A push answers a question before it acts
 
@@ -5588,22 +5601,24 @@ Grid >> canPushCellNorthFromLocation: aPoint
 
 This is the question `CellClickRegionInside class >> canActOnCellAtPoint:cell:withinGrid:` asks, and
 it is asked in two places that both matter. A click in a push region that the rules refuse never
-reaches the grid at all, so the board is not redrawn and no move is counted. And the arrow the player
-hovers can be coloured by the answer — green for a push with room, red for one without — which is
-what a chapter in the next section does with it. A question written as its own method gets used by
-things that were not thought of when it was written. An action that silently declines does not.
+reaches the grid at all, so the board is not redrawn and no move is counted. And the arrow the
+player hovers can be coloured by the answer — green for a push with room, red for one without —
+which is what a chapter in the next section does with it. A question written as its own method gets
+used by things that were not thought of when it was written. An action that silently declines does
+not.
 
 It also has a cost, and it is visible if you read the two methods side by side: the three rules are
 written twice, once in `canPushCell:fromLocation:` and once in `pushCell:fromLocation:`. The push
-cannot simply call the question, because it needs the neighbouring cell it found, not a boolean. So a
-change to the rules has to be made in two places, and only one of them has tests that would notice.
-If you want an exercise, this is a good one: make the push ask the question first and fetch the
-neighbour afterwards, and check that `GridTestCase` still passes. The point is not that one shape is
-right. It is that you should know where your rules are written down, and how many copies there are.
+cannot simply call the question, because it needs the neighbouring cell it found, not a boolean. So
+a change to the rules has to be made in two places, and only one of them has tests that would
+notice. If you want an exercise, this is a good one: make the push ask the question first and fetch
+the neighbour afterwards, and check that `GridTestCase` still passes. The point is not that one
+shape is right. It is that you should know where your rules are written down, and how many copies
+there are.
 
 ## Three things a push does that a turn does not
 
-Pushing was wired into the same chain as turning, so it is worth asking how the two differ. Three
+We wired pushing into the same chain as turning, so it is worth asking how the two differ. Three
 ways, and each one is a chance for the screen to disagree with the model:
 
 1. the object standing at a location changes. After a turn, `3@3` holds the same mirror it held
@@ -5625,7 +5640,7 @@ CellRenderer >> cell
 ```
 
 and a click redraws the whole board rather than guessing which cells it changed. That is what
-`redrawCells` is for, and the push is the case it was written for.
+`redrawCells` is for, and the push is the case we wrote it for.
 
 The third is not handled. Finding that out is what the rest of the chapter does, in two ways which
 are the two ways to look at any bug of this kind: walk the code, or ask the objects.
@@ -5663,10 +5678,11 @@ model means the stack hands you the route for free: eleven frames, each naming a
 read from the bottom up as the story of one click. If you ever wonder how a Bloc event reaches your
 code, this is the cheapest way to find out — halt somewhere deep and read the frames above.
 
-**Click the frames and look at the receivers.** Each frame in the Pharo debugger is an object and its
-variables. Clicking `MirrorCellRenderer >> mouseUpAt:` shows which renderer it is and which location
-it holds; clicking the `Grid` frames shows `aPoint`, `swapLoc` and the two cells. A stack read this
-way answers *which* object, not only *which* method, and most of these bugs are about which object.
+**Click the frames and look at the receivers.** Each frame in the Pharo debugger is an object and
+its variables. Clicking `MirrorCellRenderer >> mouseUpAt:` shows which renderer it is and which
+location it holds; clicking the `Grid` frames shows `aPoint`, `swapLoc` and the two cells. A stack
+read this way answers *which* object, not only *which* method, and most of these bugs are about
+which object.
 
 **Then step out, not over.** The interesting part of a drawing bug is never the model method you
 halted in; it is what runs *after* the model has changed. Step out of `swapCell:with:`, out of the
@@ -5741,11 +5757,11 @@ test of a consequence needs an assertion that the cause took place.**
 ## What is left
 
 Run the package: everything is green, including the new walk over the board. So play instead, and
-watch the one thing neither the stack nor that test looked at.
+watch the one thing neither the stack nor your new test looked at.
 
 Rest the pointer in the middle of the mirror at `1@2`, where the arrow points north into the empty
-corner. Click. The mirror moves up, the board is redrawn — and the arrow is still there, drawn over a
-blank cell that cannot be pushed anywhere. Nothing is wrong in the model, nothing is wrong in the
+corner. Click. The mirror moves up, the board is redrawn — and the arrow is still there, drawn over
+a blank cell that cannot be pushed anywhere. Nothing is wrong in the model, nothing is wrong in the
 picture of the cells, and something on the screen is a lie.
 
 That is the third item of the list at the top of this chapter, and it is the next chapter.
@@ -5767,13 +5783,13 @@ board position: 20 @ 20.
 space show
 ```
 
-Mirrors move the way the arrow points, mirrors with no room do not move at all, the beam follows them
-and the target lights up and goes dark as the path reaches it or misses it. Both moves of the game
-now work with the mouse.
+You get mirrors that move the way the arrow points, mirrors with no room that do not move at all, a
+beam that follows them, and a target that lights up and goes dark as the path reaches it or misses
+it. Both moves of the game now work with the mouse.
 
 # Visual bug with push
 
-Here is the bug the last chapter ended on, in the four steps that produce it: We find where the
+Here is the bug the last chapter ended on, in the four steps that produce it. We find where the
 stale hint is kept, write the point down and read it back, and cover both halves of the rule with
 tests.
 
@@ -5789,8 +5805,8 @@ showing the player an arrow that promises a move that does not exist.
 
 ## Model or drawing?
 
-Ask the question of *Bug with target cell* first, because it is cheap and it splits the search in
-half: is the model wrong, or is the drawing wrong?
+Ask the question of *Bug with target cell* first, because it is cheap and it halves the search you
+have to do: is the model wrong, or is the drawing wrong?
 
 Push the mirror in a playground and look at the grid:
 
@@ -5803,9 +5819,9 @@ grid inspect
 
 The *Cells* tab lists `a MirrorCell(1@1 leans right, off)` and `a BlankCell(1@2, off)`. The *Board*
 tab draws the mirror in the corner. The model is right, and it is right in every detail — so this
-time the fault is entirely in the view, which is a different kind of search. There is no `Grid`
-method to read. What there is, is one object that holds state about something that changed behind its
-back.
+time the fault is entirely in the view, which is a different kind of search for you. There is no
+`Grid` method to read. What there is, is one object that holds state about something that changed
+behind its back.
 
 That is the question to carry from this chapter: **which view is holding on to something the model
 has replaced?**
@@ -5924,8 +5940,8 @@ LaserGameCellElement >> redraw
 > **Note.** *Drawing the laser beam* adds the beam to the middle of this method, and *Better cursor
 > management* the cross hair to its bookkeeping.
 
-The last line is the whole fix, and it works because `showPositionHintAt:` was written as a method
-that takes a point and answers nothing. The redraw can call it exactly as a mouse move does. When a
+The last line is the whole fix, and it works because we wrote `showPositionHintAt:` as a method that
+takes a point and answers nothing. The redraw can call it exactly as a mouse move does. When a
 method's only input is its argument, anybody can call it — including code that has no event in its
 hands.
 
@@ -5964,7 +5980,8 @@ LaserGameCellElementTestCase >> testTheArrowGoesWhenAPushEmptiesTheCellUnderTheP
 ```
 
 It is the four steps of the first paragraph, written down: a move event into the lower half of the
-mirror, an assertion that there *is* an arrow, the click, and then four assertions that there is not.
+mirror, an assertion that there *is* an arrow, the click, and then four assertions that there is
+not.
 
 Those four are worth reading one by one, because they are four different ways of asking the same
 thing and the test needs all of them:
@@ -6017,16 +6034,17 @@ second one is the one that stops the next person from fixing a different bug by 
 
 ## What this bug was really about
 
-Three chapters of this section have now ended in the same place, and it is worth saying once, plainly:
+Three chapters of this section have now ended in the same place, and it is worth saying once,
+plainly:
 
 - in *Bug with target cell*, a cell stayed lit because the beam had been computed from a mirror that
   had since turned;
 - in *Clean up left-over hints*, an arrow stayed because a leave event never arrived;
 - here, an arrow stayed because the region had been computed from a cell that had since moved.
 
-Every one of them is the same shape: **a value computed from something that changed afterwards.** The
-question that finds all three is not *where is the drawing code wrong?* but *what did I compute this
-from, and is that thing still the same?*
+Every one of them is the same shape: **a value computed from something that changed afterwards.**
+The question that finds all three is not *where is the drawing code wrong?* but *what did I compute
+this from, and is that thing still the same?*
 
 And the three answers were different, which is the honest part. The first re-computed the derived
 value at the moment of the change. The second enforced an invariant on the way in. The third stopped
@@ -6035,8 +6053,8 @@ the question to ask.
 
 ## Checking it
 
-Run the package: everything is green. Then open the board and play with it, because this one has to
-be seen:
+Run the package: everything is green. Then open the board and play with it, because you have to see
+this one:
 
 ```smalltalk
 | grid board space |
@@ -6056,9 +6074,9 @@ space show
 Hold the pointer still in the lower middle of a mirror with room above it and click: the mirror goes
 up, the beam follows, and the cell under the pointer is a plain blank cell with nothing drawn on it.
 Hold the pointer on the rim of a mirror and click: the mirror turns, and the arrow is still there,
-ready for the next click. Move one pixel and the arrow comes back where it is due.
+ready for the next click. Move one pixel and you get the arrow back where it is due.
 
-That is the section finished. The board is playable with the mouse: both moves work, the beam follows
-them, the hints appear and go when they should. What the game still has no notion of is the player —
-there is no move counter, no sense of a window around the board, and no cursor that says the board is
-something to interact with. That is the next section.
+That is the section finished. The board is playable with the mouse: both moves work, the beam
+follows them, the hints appear and go when they should. What the game still has no notion of is the
+player — there is no move counter, no sense of a window around the board, and no cursor that says
+the board is something to interact with. That is the next section.
