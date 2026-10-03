@@ -5810,9 +5810,10 @@ right: the mirror is still there, the pointer is still in the same part of it, t
 the truth. For a push it is exactly wrong, and in the most misleading way possible, because the
 method looks careful. It *is* careful — it carefully preserves the wrong thing.
 
-**An element that keeps an answer across a change of the model keeps a stale answer. An element that
-keeps the question can ask it again.** The fix is to store the point instead of the region, and that
-is one slot:
+> **An element that keeps an answer across a change of the model keeps a stale answer. An element
+> that keeps the question can ask it again.**
+
+The fix is to store the point instead of the region, and that is one slot:
 
 ```smalltalk
 BlElement << #LaserGameCellElement

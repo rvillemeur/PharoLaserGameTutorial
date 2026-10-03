@@ -3125,9 +3125,9 @@ the board still measures what it measured before the shadow existed. `measure:` 
 asked for its size without being laid out or opened: give it a measurement specification, here an
 unspecified one, and read `measuredExtent` back.
 
-> **Lesson.** When a change is meant to be invisible to everything else, assert the invisibility.
-> Half of this test is about what the shadow looks like; the other half is about what it must not
-> have touched.
+> **When a change is meant to be invisible to everything else, assert the invisibility.** Half of
+> this test is about what the shadow looks like; the other half is about what it must not have
+> touched.
 
 ## A bar across the panel
 
@@ -3228,8 +3228,8 @@ LaserGameControlPanelElement >> newButtonColumn
 One added line, and no number anywhere. The bar is above the buttons because it is in front of them
 in a column that reads downwards, and it stays above them however many rows are added later.
 
-> **Lesson.** Position a thing against the things it belongs with, not against an edge it happens to
-> be near. An offset from an edge has to be found again every time anything between them changes.
+> **Position a thing against the things it belongs with, not against an edge it happens to be
+> near.** An offset from an edge has to be found again every time anything between them changes.
 
 ### What the extra child cost
 
@@ -3368,9 +3368,9 @@ One test, in the whole suite, says how many children the column has and in what 
 test that had to change, and it is the only one. Everything else about the buttons goes through
 `resetRow`, `newGameRow` and `buttonRow`, which now answer the same rows they answered before.
 
-> **Lesson.** Let one test own the shape of a structure, and let every other test ask that structure
-> by name. Then a change to the shape breaks one test, which is a change, instead of twenty, which
-> is a day.
+> **Let one test own the shape of a structure, and let every other test ask that structure by
+> name.** Then a change to the shape breaks one test, which is a change, instead of twenty, which is
+> a day.
 
 ## A board worth playing on
 
@@ -3433,8 +3433,8 @@ through the setter. The fourth says the window took the extent that grid calls f
 not merely holding a board but is sized for it. And the fifth says the default stayed a default: a
 game given the demo grid still plays the demo grid.
 
-> **Lesson.** A test for a fallback has to check the case where the fallback must not fire. Without
-> the last assertion, a `grid` method that ignored its argument entirely would pass.
+> **A test for a fallback has to check the case where the fallback must not fire.** Without the last
+> assertion, a `grid` method that ignored its argument entirely would pass.
 
 ## Checking it
 
@@ -3500,8 +3500,8 @@ the default is the start of that axis, which is the left. So the display and the
 against the left border, and the slack is all on the right, and the slack is a different size in
 every box.
 
-> **Lesson.** Measure before you change anything. "The boxes are ragged" is a symptom; "a box takes
-> the width of its own caption" is a cause, and only the second one tells you which method to open.
+> **Measure before you change anything.** "The boxes are ragged" is a symptom; "a box takes the
+> width of its own caption" is a cause, and only the second one tells you which method to open.
 
 ## One width, stated once
 
@@ -3565,8 +3565,8 @@ LaserGameControlPanelElement >> newLaserPathCounter
 
 `newMovesCounter` and `newMirrorsCounter` are the same line with their own captions.
 
-> **Lesson.** When several objects have to agree about a number, the thing that holds them states it.
-> A rule that lives in one method cannot be half-applied.
+> **When several objects have to agree about a number, the thing that holds them states it.** A rule
+> that lives in one method cannot be half-applied.
 
 ## Centred, not left
 
@@ -3708,9 +3708,9 @@ printed above are from that run.
 What is left in the test is the part this package actually decided: both children ask for the centre,
 and the layout that will read that request is a linear one. Bloc's arithmetic is Bloc's to test.
 
-> **Lesson.** When the assertion you want costs more than it is worth, assert the decision you made
-> and say in the comment what you checked by hand. A test that states a smaller claim honestly is
-> better than one that states a big claim by cheating.
+> **When the assertion you want costs more than it is worth, assert the decision you made.** Say in
+> the comment what you checked by hand. A test that states a smaller claim honestly is better than
+> one that states a big claim by cheating.
 
 ## Checking it
 
@@ -3764,8 +3764,8 @@ pixels of nothing on the right and a word ending a hair before the edge it is pa
 is what the eye saw. And it is fragile in a way that has nothing to do with alignment: a theme whose
 button font is a little wider would paint those two labels straight over the border.
 
-> **Lesson.** A bug report describes a picture. Count the faults behind it before fixing any of them:
-> here three complaints were one fault, one non-fault, and one thing nobody had noticed.
+> **A bug report describes a picture.** Count the faults behind it before fixing any of them: here
+> three complaints were one fault, one non-fault, and one thing nobody had noticed.
 
 ## Centred, not left
 
@@ -3800,8 +3800,8 @@ LaserGameControlPanelElement >> newButton: aLabel action: aBlock
 	^ button
 ```
 
-> **Lesson.** When a setting has no effect, the question is not whether it is spelled right but who
-> was supposed to read it. In a layout, a child states a wish and its parent's layout grants it.
+> **When a setting has no effect, the question is not whether it is spelled right but who was
+> supposed to read it.** In a layout, a child states a wish and its parent's layout grants it.
 
 ## A width stated from its labels
 
@@ -3872,9 +3872,9 @@ about a millisecond and a half, and `panelWidth` — which is about to be stated
 has a dozen senders, several of them in the arithmetic that sizes a window. A number read that often
 should not build anything.
 
-> **Lesson.** A constant with a test that checks what it claims is as good as a computed value and
-> cheaper. The measurement belongs in the test, which runs when you change the code, rather than in
-> the method, which runs whenever anything asks.
+> **A constant with a test that checks what it claims is as good as a computed value and cheaper.**
+> The measurement belongs in the test, which runs when you change the code, rather than in the
+> method, which runs whenever anything asks.
 
 ## The panel follows the buttons
 
@@ -3965,8 +3965,8 @@ false can be asserted. And `description:` is what the suite prints when the asse
 is why it names the label: a failure says *Reset does not fit inside a button*, and nobody has to
 work out which pass of the loop went wrong.
 
-> **Lesson.** In a test that loops, put the loop variable in the failure description. Six assertions
-> that all read the same are six assertions you cannot tell apart from the report.
+> **In a test that loops, put the loop variable in the failure description.** Six assertions that
+> all read the same are six assertions you cannot tell apart from the report.
 
 The second says every button centres its label:
 
@@ -4013,8 +4013,8 @@ became `130`. A literal in a test is a decision to be told when something change
 telling: the test went red, the number was read, the new number was understood and written down.
 A test that had used `panelWidth` there would have stayed green and said nothing.
 
-> **Lesson.** Expressions in the code, literals in the tests. The code says how the number is
-> arrived at; the test says what the number was when somebody last looked.
+> **Expressions in the code, literals in the tests.** The code says how the number is arrived at;
+> the test says what the number was when somebody last looked.
 
 ## Checking it
 

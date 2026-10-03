@@ -517,7 +517,7 @@ That is not a detour, it is the only honest way to test this outside a window. I
 computed in a layout pass, and no layout pass happens for an element that was never drawn. A test
 that asserted `extent` would be asserting the default, and would pass whatever the code did.
 
-**Assert what the code decided, not what a later stage would have computed from it.**
+> **Assert what the code decided, not what a later stage would have computed from it.**
 
 The mark moves within one region, which is the case the arrow deliberately ignores:
 
@@ -649,7 +649,9 @@ LaserGameCellElementTestCase >> testTheArrowStaysWhenTheCellUnderThePointerStill
 
 Both of them count from `childCount`, read before any event, rather than from a literal. That habit
 is why adding a child to every hint was a two-character change in each test instead of a hunt for
-magic numbers. **Measure the baseline in the test; assert the difference.**
+magic numbers.
+
+> **Measure the baseline in the test; assert the difference.**
 
 ## Checking it
 
@@ -740,9 +742,9 @@ grows. `outsideRegionExtent` is not written at all — it is the cell less the m
 which is the sentence "the rotate region is everything but the margin" turned into code. The margin
 is the decision; the region is the consequence.
 
-**Write down the thing you decided, and derive everything that follows from it.** The question to ask
-of every constant is: if the cell doubled, would this number still be right? If yes it is a decision.
-If no it is a consequence, and it should be computed.
+> **Write down the thing you decided, and derive everything that follows from it.** The question to
+> ask of every constant is: if the cell doubled, would this number still be right? If yes it is a
+> decision. If no it is a consequence, and it should be computed.
 
 ## A size that is deliberately not proportional
 
@@ -1609,10 +1611,11 @@ LaserGameLedElementTestCase >> litSegmentsOf: aLed at: anIndex
 		  asSortedCollection asArray
 ```
 
-That helper is the chapter's main lesson about testing drawing code. The display holds colours, which
-are hard to assert about; what a reader wants to know is *which segments are lit*. One helper
+That helper is the chapter's main lesson about testing drawing code. The display holds colours,
+which are hard to assert about; what a reader wants to know is *which segments are lit*. One helper
 converts the first into the second, and every test after it reads like a sentence about segments.
-**Write the helper that turns what the code holds into what the test means.**
+
+> **Write the helper that turns what the code holds into what the test means.**
 
 `asSortedCollection asArray` is there so that a test can compare against a list written in
 alphabetical order, whatever order the segments happen to be in.
@@ -1637,7 +1640,8 @@ LaserGameLedElementTestCase >> testEachDigitLightsTheSegmentsOfItsNumber
 Three digits out of ten, picked because each one says something different: eight lights everything,
 one lights the least, and zero is the one that differs from eight by a single segment. Testing all
 ten would copy the lookup table into the test, which proves only that the table equals itself.
-**Pick the cases that would catch a wrong answer, not all the cases.**
+
+> **Pick the cases that would catch a wrong answer, not all the cases.**
 
 ```smalltalk
 LaserGameLedElementTestCase >> testANumberIsShownRightAlignedWithoutLeadingZeros
@@ -2261,8 +2265,8 @@ new board is the old board with ten more mirrors on it. The test below catches e
 counting mirrors after a new game on a board that already had ten: the answer has to be ten, not
 twenty.
 
-**When a method writes onto something without clearing it, the caller owns the clearing, and the test
-that proves it is a count.**
+> **When a method writes onto something without clearing it, the caller owns the clearing, and the
+> test that proves it is a count.**
 
 The last line is `refresh`, which rebuilds the cell elements, relabels the fire button and sets the
 counters. Nothing here has to erase anything. Each cell is an element that draws its own cell, so a
@@ -2378,7 +2382,8 @@ Read the comment on `answer:` again, because it is the design. The question does
 answer means, and it does not take itself off the game. It collects a yes or a no and passes it on.
 That is the same announcement pattern the board used for a move, and it buys the same thing: this
 element can be tested on its own, and it can be used for the next question somebody wants to ask.
-**An element that reports instead of acting can be reused; an element that acts has one caller.**
+
+> **An element that reports instead of acting can be reused; an element that acts has one caller.**
 
 ```smalltalk
 LaserGameColors class >> confirmationShadeColor
@@ -2823,7 +2828,7 @@ off-by-one between columns and rows looks the same from either side. On eight by
 non-square board is worth testing with precisely because it tells `numberOfColumns` and
 `numberOfRows` apart.
 
-**The test that finds a confusion between two numbers is the test where the two numbers differ.**
+> **The test that finds a confusion between two numbers is the test where the two numbers differ.**
 
 ## Handing the game a board
 
@@ -2980,7 +2985,8 @@ sizes are read from `constraints horizontal resizer size`, not from `extent`, be
 window asserts on zero, and the first time you see that failure it looks like the size calculation is
 broken rather than the test.
 
-**When a test reads a value a framework computes later, read the instruction instead of the result.**
+> **When a test reads a value a framework computes later, read the instruction instead of the
+> result.**
 
 New deals the grid the game already plays on, so the size survives it:
 
@@ -3100,8 +3106,10 @@ stretch it over the cell. It is a reasonable instinct and it costs more than it 
 
 Two rectangles have none of those problems. They scale because they are computed, they take a colour
 as an argument, and they are symmetric to begin with, so beams in neighbouring cells join without a
-seam. **Before you reach for a picture, ask whether the thing you are drawing is made of shapes.**
-Glows, bars, arrows and cross hairs usually are.
+seam.
+
+> **Before you reach for a picture, ask whether the thing you are drawing is made of shapes.**
+> Glows, bars, arrows and cross hairs usually are.
 
 ## The tests
 
@@ -3202,9 +3210,9 @@ LaserGameShapesTestCase >> testAVerticalBeamIsTheHorizontalOneTurned
 coordinates. So the test says *the vertical beam is the horizontal one turned*, bar by bar, in one
 sentence, instead of repeating the first test with the numbers swapped.
 
-**When one thing is defined as a transformation of another, test the transformation, not the
-result.** Had this test spelled out the vertical thicknesses, a change to the thickness fractions
-would break two tests, and the second failure would tell you nothing the first did not.
+> **When one thing is defined as a transformation of another, test the transformation, not the
+> result.** Had this test spelled out the vertical thicknesses, a change to the thickness fractions
+> would break two tests, and the second failure would tell you nothing the first did not.
 
 And the beam follows the size of the cell:
 
@@ -3422,9 +3430,10 @@ south, the other is north, and the beam runs down the cell; if neither is south,
 and east, and the beam runs across. One question distinguishes two cases because the model has already
 ruled out everything else.
 
-**Before writing a condition, work out how many cases can actually reach it.** Here it is two, so the
-condition is one question. Later, when a mirror can be lit on two sides that are *not* opposite, that
-reasoning stops holding, and the method that replaces this one asks a different question entirely.
+> **Before writing a condition, work out how many cases can actually reach it.** Here it is two, so
+> the condition is one question. Later, when a mirror can be lit on two sides that are *not*
+> opposite, that reasoning stops holding, and the method that replaces this one asks a different
+> question entirely.
 
 ## Where the cell asks for it
 
@@ -3623,8 +3632,9 @@ CellRendererTestCase >> testABlankCellDrawsNoBeamUnlessTheLaserReachesIt
 One test, three states: the laser never fired, the laser firing at a cell it does not reach, and the
 laser stopped again at a cell it did reach. The third one is the interesting one, and it is the test
 that catches the bug where lighting a cell sets a flag that stopping the laser forgets to clear.
-**When a thing can be turned on, test it off, on, and off again** — the second "off" goes through
-different code from the first.
+
+> **When a thing can be turned on, test it off, on, and off again.** The second "off" goes through
+> different code from the first.
 
 ## Checking it
 
@@ -3735,7 +3745,7 @@ subtraction from the cell rather than as `anExtent x // 2` matters when the cell
 cell of 51, `length` is 25, and a bar at 25 would leave a pixel of light showing past the middle,
 while `51 - 25` puts the bar flush with the right edge where the player can see whether it is right.
 
-**Place a thing by the edge it has to touch, not by the arithmetic that happens to land there.**
+> **Place a thing by the edge it has to touch, not by the arithmetic that happens to land there.**
 
 And the thicknesses are the same ones a whole beam uses. They are computed from the cell, not from the
 length of the bar, so half a beam meeting a whole beam in the next cell meets it without a step. That
@@ -3772,9 +3782,9 @@ method is the general one, taking a position; the old method keeps its name and 
 becomes one line that computes the position it always computed. No caller changes, nothing is renamed,
 and the centring is still written down in exactly one place.
 
-**Generalize by putting the general method underneath, not by adding a parameter to the method
-everybody calls.** A new parameter means touching every call site, and every call site then says
-something that used to be implied.
+> **Generalize by putting the general method underneath, not by adding a parameter to the method
+> everybody calls.** A new parameter means touching every call site, and every call site then says
+> something that used to be implied.
 
 ## The side the light comes from
 
@@ -4218,9 +4228,9 @@ Two chapters ago `renderBeamOn:` was an empty hook with a comment saying why it 
 real method with no overrides at all, which is a better outcome than it looks: an empty hook is a
 promise that the subclasses will disagree, and here they stopped disagreeing.
 
-**A method belongs in the superclass as soon as the subclasses agree about it.** Watch for the shape of
-that agreement while writing the subclasses. Three overrides that read differently but compute the same
-thing from the same question are one method waiting to be written.
+> **A method belongs in the superclass as soon as the subclasses agree about it.** Watch for the
+> shape of that agreement while writing the subclasses. Three overrides that read differently but
+> compute the same thing from the same question are one method waiting to be written.
 
 And the mirror needs no drawing code of its own at all. `MirrorCellRenderer >> renderContentsOn:`
 already draws the mirror line, and the order settled in the last chapter adds the beam before the
@@ -4248,10 +4258,10 @@ are placed by *the same* formula, so they share a centre and overlap in the midd
 The elbow of a turn is square, with no notch where one bar ends and the other begins, and it took no
 pixel correction to get there.
 
-**Two shapes centred by the same arithmetic meet exactly; two shapes centred by different arithmetic
-meet nearly.** When two shapes have to touch, place them with one method, or at least with one
-expression written once. And when a shape is centred in an even-sized space, decide whether it wants a
-pixel or a boundary, and let the comment say which.
+> **Two shapes centred by the same arithmetic meet exactly; two shapes centred by different
+> arithmetic meet nearly.** When two shapes have to touch, place them with one method, or at least
+> with one expression written once. And when a shape is centred in an even-sized space, decide
+> whether it wants a pixel or a boundary, and let the comment say which.
 
 ## The tests
 
@@ -4618,9 +4628,11 @@ LaserGameElement >> naturalExtent
 	^ self class extentForGrid: self grid
 ```
 
-A method whose whole body forwards to another one looks like waste, and is not. The name is the point:
-`naturalExtent` says what the number means here, while `extentForGrid:` says only how it is computed.
-**When a value starts meaning something new, give it a name before you give it a user.**
+A method whose whole body forwards to another one looks like waste, and is not. The name is the
+point: `naturalExtent` says what the number means here, while `extentForGrid:` says only how it is
+computed.
+
+> **When a value starts meaning something new, give it a name before you give it a user.**
 
 A window of another size wants a scale factor, and a window of another shape wants the tighter of the
 two directions, so that the cells stay square:
@@ -4861,11 +4873,11 @@ game movesCounter value
 That answers `0`, and it goes up as mirrors are clicked. So the counter holds the right number and the
 only thing left is the drawing.
 
-**When a screen is wrong, ask the model what it holds before you read a line of drawing code.** Half of
-all drawing bugs are model bugs, and the question costs one line. Here the answer sends us to the
-drawing, and it also tells us something about the tests: the counter tests assert on values and on
-colours of individual segments, and all of them pass. A display can be made of correct parts and still
-be unreadable, because readability is a fact about the parts *together*.
+> **When a screen is wrong, ask the model what it holds before you read a line of drawing code.**
+> Half of all drawing bugs are model bugs, and the question costs one line. Here the answer sends us
+> to the drawing, and it also tells us something about the tests: the counter tests assert on values
+> and on colours of individual segments, and all of them pass. A display can be made of correct
+> parts and still be unreadable, because readability is a fact about the parts *together*.
 
 ## A zero that reads as an eight
 
@@ -4994,9 +5006,9 @@ LaserGameLedElement >> rebuildDigits
 `allButFirst` is the whole of it: every digit except the first carries the gap on its left as a margin,
 the layout spaces nothing of its own, and `extentForDigits:` is now the width it always claimed to be.
 
-**Twice is a pattern.** The second time a framework default surprises you in the same way, stop
-treating it as a surprise and write down the rule: `cellSpacing` is for a layout whose own size follows
-its cells; a layout with a width of its own wants margins on the cells.
+> **Twice is a pattern.** The second time a framework default surprises you in the same way, stop
+> treating it as a surprise and write down the rule: `cellSpacing` is for a layout whose own size
+> follows its cells; a layout with a width of its own wants margins on the cells.
 
 ## The tests
 

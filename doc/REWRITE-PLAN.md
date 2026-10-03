@@ -251,10 +251,14 @@ should.
    the 44 of `PROJECT_MAP.md` §8 — the remainder are the four `GridDirection` subclasses and the
    seven `ReverseLaserGameAction` subclasses, each wanting a class comment, their class-side methods
    wanting a protocol, and `subclassResponsibility` stubs the book deliberately does not write.
-5. Every chapter names what it teaches, though not in one voice: the chapters written under this
-   plan use a `> **Lesson.**` block, the rewritten ones a bold sentence in the prose, and the model
-   chapters of section1 a named section heading and `> **Note.**` paragraphs. Worth harmonising one
-   day; it changes no code.
+5. Every chapter names what it teaches, and since 2026-10-03 in one voice: a blockquote whose bold
+   heading *is* the lesson, followed by the explanation. The 23 `> **Lesson.**` blocks of section1
+   and section5 lost the generic word and took the lesson as their heading; the 21 lessons that
+   sections 2, 3 and 4 wrote as a bold sentence inside a prose paragraph became blockquotes of the
+   same shape. Three devices were deliberately left alone, because they are lists and not callouts:
+   a run of bold-led paragraphs introduced by a sentence that counts them ("Three things in it are
+   worth a paragraph each"), the numbered habit summaries at the end of a chapter, and bold used
+   mid-sentence for emphasis.
 
 Phases 1 and 2 can run file by file; phase 0 must land before any block is requoted.
 
@@ -282,7 +286,9 @@ Phases 1 and 2 can run file by file; phase 0 must land before any block is requo
    `MyClass >> myMethod`, the placeholder *Conventions used in this book* uses to teach the notation.
 4. `run_tests` on `Laser-Game-Tests` is green and `run_critics` is no worse than the 44 known
    critiques of `PROJECT_MAP.md` §8.
-5. Every chapter that introduces a pattern names it.
+5. Every chapter that introduces a pattern names it, in one voice: `> **The lesson as a sentence.**`
+   followed by the explanation, in a blockquote of its own. `> **Note.**` stays what it is — an
+   aside about the code in front of the reader, not a lesson.
 
 ## 9. Consequences for other files
 

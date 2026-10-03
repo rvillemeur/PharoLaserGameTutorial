@@ -1564,7 +1564,7 @@ blank cell entered from the north sends the beam out south; the same blank cell 
 sends it out east. So a cell on its own cannot tell us where the beam goes next. A step of the beam
 is *two* facts: which cell, and which side of it the beam enters from.
 
-> **Lesson.** When two values are only meaningful together, they are an object. Carrying them as two
+> **When two values are only meaningful together, they are an object.** Carrying them as two
 > parallel collections, or as a cell plus "the side, which you have to remember from the step
 > before", is how a program ends up with a bug that no single method is responsible for.
 
@@ -1665,10 +1665,10 @@ pays off. One step past the right-hand column is simply not in the dictionary, s
 we put in `Grid >> at:` turns walking off the board into the same answer as a target: no next
 element, the path ends.
 
-> **Lesson.** Two different endings — the beam is swallowed, the beam leaves the board — both become
-> `nil` from `nextElementIn:`. One answer for "there is no next one" means the caller has one case to
-> handle instead of two. Each of the two `ifTrue: [ ^ nil ]` lines is a sentence about the game, and
-> they are worth reading as such.
+> **One `nil` for every way of ending.** Two different endings — the beam is swallowed, the beam
+> leaves the board — both become `nil` from `nextElementIn:`, so the caller has one case to handle
+> instead of two. Each of the two `ifTrue: [ ^ nil ]` lines is a sentence about the game, and they
+> are worth reading as such.
 
 ## Where the beam comes in
 
@@ -1723,8 +1723,8 @@ The loop is a `whileFalse:`, and the condition is the whole block in front of it
 answers its last expression, so `[ ... next isNil ] whileFalse: [ element := next ]` reads: do the
 work, and if there is a next element, go round again.
 
-> **Lesson.** A loop that follows a chain adds the thing it is holding, then asks for the thing after
-> it. The first item needs no special case that way, and neither does the last.
+> **A loop that follows a chain adds the thing it is holding, then asks for the thing after it.**
+> The first item needs no special case that way, and neither does the last.
 
 A fresh `OrderedCollection` on the first line means the method can be sent as often as you like and
 the path never grows stale. The path is a *result*, not a record of what has happened: nothing
@@ -1756,9 +1756,9 @@ section draws the board, and it needs the path for things other than lighting: c
 for a counter, and showing where it runs. Had `calculatePath` lit the cells on its way through,
 anything wanting to look at the path would have had to light the board as a side effect of looking.
 
-> **Lesson.** A method that calculates and a method that changes the world are two methods. The one
-> that calculates can be called from anywhere, including a test, including a playground, as often as
-> you like.
+> **A method that calculates and a method that changes the world are two methods.** The one that
+> calculates can be called from anywhere, including a test, including a playground, as often as you
+> like.
 
 ## The test grows
 
@@ -1823,9 +1823,9 @@ grid laserBeamPath collect: [ :pe | pe entrySide ]
 Read that against the locations. While the beam runs east the cells are entered from the west; while
 it runs north they are entered from the south. The inversion is doing its job.
 
-> **Lesson.** `collect:` over a collection of objects, asking each one for the single fact you care
-> about, is the cheapest debugging tool in Pharo. A list of nine points tells you more about a beam
-> than nine inspectors on nine path elements.
+> **`collect:` is the cheapest debugging tool in Pharo.** Ask a collection of objects for the single
+> fact you care about. A list of nine points tells you more about a beam than nine inspectors on
+> nine path elements.
 
 That is the model finished. It did not work the first time, though, and the mistakes were worth
 keeping: the next chapter is the four bugs that stood between this code and a green test, and how
@@ -1892,9 +1892,9 @@ through *cell two's* west side. The two cells share an edge and each has its own
 
 With the inversion in place the walk ends after nine cells on the demo board.
 
-> **Lesson.** A program that hangs still has everything you need in it. Interrupt it, read the top of
-> the stack to learn *what* it is repeating, then ask the receiver one question to learn *what over*.
-> A hang investigated this way takes two minutes; a hang investigated by re-reading the method takes
+> **A program that hangs still has everything you need in it.** Interrupt it, read the top of the
+> stack to learn *what* it is repeating, then ask the receiver one question to learn *what over*. A
+> hang investigated this way takes two minutes; a hang investigated by re-reading the method takes
 > an afternoon.
 
 There is no guard in `calculatePath` against a path that never ends, and there deliberately is not
@@ -1946,9 +1946,9 @@ fix is to send the grid's own `at:put:` instead, and the reason to care is bigge
 `at:put:` exists precisely so that nothing else has to know that cells are kept in a dictionary, and
 the first time something reached around it, it broke an invariant it did not know about.
 
-> **Lesson.** When a bug is a `nil`, the method that reads the `nil` is rarely the method at fault.
-> Find the setter and look at its senders. If there is one, your invariant has one place to live; if
-> there are nine, you have found the real problem.
+> **When a bug is a `nil`, the method that reads the `nil` is rarely the method at fault.** Find the
+> setter and look at its senders. If there is one, your invariant has one place to live; if there
+> are nine, you have found the real problem.
 
 ## A test that fails with a message about a class the game does not have
 
@@ -1989,9 +1989,9 @@ one the tests in this book use everywhere:
 compared, and the trap cannot happen. It also prints both values when it fails — *Expected 2@5 but
 was 4@5* — where `assert:` can only tell you that something was not true.
 
-> **Lesson.** An error naming a class your program does not use is almost always a precedence
-> surprise. And `assert:equals:` is worth preferring over `assert:` on both counts: it is immune to
-> this, and it says more when it fails.
+> **An error naming a class your program does not use is almost always a precedence surprise.** And
+> `assert:equals:` is worth preferring over `assert:` on both counts: it is immune to this, and it
+> says more when it fails.
 
 ## A beam that runs off the end of the board
 
@@ -2021,8 +2021,8 @@ That gap between the mistake and the symptom is worth a moment. The method that 
 around `nil` ran without error; the method that used it got the debugger. The stack in that debugger
 has both frames in it, which is why reading a stack past its top frame is a habit worth having.
 
-> **Lesson.** `nil` travels. A method that accepts a `nil` it cannot use hands the error to whoever
-> is unlucky enough to ask the next question. Check for the missing thing where it is produced, which
+> **`nil` travels.** A method that accepts a `nil` it cannot use hands the error to whoever is
+> unlucky enough to ask the next question. Check for the missing thing where it is produced, which
 > here means right after the send that can answer `nil`.
 
 ## The test that pins the path down
@@ -2061,8 +2061,8 @@ expectedActiveLocationList size` says *nine cells are lit, no more*. The loop sa
 is one of these nine*. Either one on its own is weak: the count alone would accept nine wrong cells,
 and the membership check alone would accept a beam that lit only the first.
 
-> **Lesson.** To pin down a set of results, assert the count and assert the membership. One of them
-> catches extras, the other catches wrong ones, and neither catches both.
+> **To pin down a set of results, assert the count and assert the membership.** One of them catches
+> extras, the other catches wrong ones, and neither catches both.
 
 Notice what the test does *not* do. It does not ask the path. It asks the grid which of its cells are
 lit, with `grid cells select: [ :each | each isOn ]`, which is what a player would see. A test that
@@ -2070,8 +2070,8 @@ walked `laserBeamPath` and checked the locations in it would pass against the ve
 chapter, because a looping beam does cross all nine of those cells — along with three of them several
 hundred thousand times.
 
-> **Lesson.** Assert the effect on the world, not the intermediate structure that produced it. The
-> path is how the beam is worked out; the lit cells are what the game is about.
+> **Assert the effect on the world, not the intermediate structure that produced it.** The path is
+> how the beam is worked out; the lit cells are what the game is about.
 
 ## What this chapter is really teaching
 

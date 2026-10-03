@@ -359,10 +359,10 @@ CellRendererTestCase >> testBlankCellElement
 The comment at the top of that test deserves unpacking, because it is the first Bloc trap we walk
 into, and it will catch you again later.
 
-**Setting the extent of a fresh element does not give it bounds.** `element extent: 50@50` records a
-layout constraint. The extent itself stays `0@0` until a layout pass runs, and a fresh element that
-is in no space is never laid out. So asking a new element for its extent answers zero, and a test
-that asserts on it fails with a message that tells you nothing about what is wrong.
+> **Setting the extent of a fresh element does not give it bounds.** `element extent: 50@50` records
+> a layout constraint. The extent itself stays `0@0` until a layout pass runs, and a fresh element
+> that is in no space is never laid out. So asking a new element for its extent answers zero, and a
+> test that asserts on it fails with a message that tells you nothing about what is wrong.
 
 There are three ways out, and only one of them is right here.
 
