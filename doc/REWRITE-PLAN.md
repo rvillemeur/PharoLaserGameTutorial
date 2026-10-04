@@ -234,7 +234,7 @@ should.
    greps the eight names inside fences only.
 3. Fence identity, 690 blocks over the five files: section1 60, section2 106, section3 227,
    section4 159, section5 138. Since the *Looking at objects* chapter of 2026-10-04 the gate reads
-   702, section5 150. All match the image, apart from the `MyClass >> myMethod`
+   712, section5 160. All match the image, apart from the `MyClass >> myMethod`
    placeholder, which resolves to no class on purpose. Five mismatches were found and repaired in
    section3 and one in section4:
    - four fences carried a trailing whitespace-only line that the image does not have
@@ -249,7 +249,7 @@ should.
    five per-file counts grew: 115 of them are method quotes the gate had never seen, and one of the
    115, `CellClickRegionInside class >> pushRegionForPoint:`, turned out to be the image version and
    is now gated. The other 114 are earlier versions and are tagged `st`.
-4. `Laser-Game-Tests`: 280 tests, all green, and 287 since the seven inspector-view tests of 2026-10-04. `run_critics` on `Laser-Game`: 37 critiques, down from
+4. `Laser-Game-Tests`: 280 tests, all green, and 294 since the eleven inspector-view tests of 2026-10-04. `run_critics` on `Laser-Game`: 37 critiques, down from
    the 44 of `PROJECT_MAP.md` §8 — the remainder are the four `GridDirection` subclasses and the
    seven `ReverseLaserGameAction` subclasses, each wanting a class comment, their class-side methods
    wanting a protocol, and `subclassResponsibility` stubs the book deliberately does not write.

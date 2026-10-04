@@ -3890,10 +3890,13 @@ One is to read `rotate`, `leanLeft`, `leanRight` and `exitSideFor:` and hold fou
 The other is to inspect a mirror and read the answer off a table.
 The second way is better, and it costs one method per question.
 
-There are three lessons in this chapter.
+There are four lessons in this chapter.
 A view is an ordinary method, so it is tested like one and it brings no new dependency with it.
 A view must never change the object it shows.
-And a view that asks the rules, rather than restating them, cannot drift away from them.
+A view that asks the rules, rather than restating them, cannot drift away from them.
+And a question about a whole hierarchy belongs on the class, not on one instance of it.
+
+The chapter goes model first -- a cell, a mirror, the undo stack, a step of the beam -- and then turns to the click geometry, which is the part of the game the book spends most pages arguing about.
 
 ## A picture of one cell
 
@@ -4315,9 +4318,256 @@ The test asks the table by name — `value value: 'Leaves by'` — rather than b
 The *Leaves by* row is asserted against `exitSideFor:` rather than against `#east`, because the point of the row is that it agrees with the model.
 The target cell is asserted literally, since `nowhere` is the fact we are here for.
 
+## The click geometry, painted
+
+Ten classes answer `containsPoint:`, two of them with a diagonal written as arithmetic, and between them they decide what a click on a cell does.
+*Determine push regions* spent a chapter on them and a table of sample points on proving them.
+A picture is better, and we can paint one without stating a single boundary ourselves: ask the rules about every point of a cell, and colour the point by the answer.
+
+The points come first, because the picture and the table that follows are built from the same ones:
+
+```smalltalk
+CellClickRegion class >> inspectionSampleStep
+	"Answer the distance, in cell pixels, between two points the Regions picture and the Map table
+	are built from. Two is fine enough to put every boundary of a fifty pixel cell on the screen,
+	and it leaves a picture of six hundred and twenty five squares."
+
+	^ 2
+```
+
+```smalltalk
+CellClickRegion class >> inspectionSamplePoints
+	"Answer every point of a cell the Regions picture and the Map table are built from, one per
+	inspectionSampleStep in each direction, read in the order a picture is painted."
+
+	| extent points |
+	extent := CellRenderer cellExtent.
+	points := OrderedCollection new.
+	0 to: extent y - 1 by: self inspectionSampleStep do: [ :y |
+		0 to: extent x - 1 by: self inspectionSampleStep do: [ :x |
+			points add: x @ y ] ].
+	^ points
+```
+
+Then the one question we ask of each of them:
+
+```smalltalk
+CellClickRegion class >> inspectionRegionAt: aPoint
+	"Answer the region a click at aPoint really lands in. The point is claimed by one of my three
+	subclasses and then refined, since the inside region answers one of its four push regions and
+	the outside region one of its two rotate regions."
+
+	^ (self clickRegionForPoint: aPoint) hintRegionForPoint: aPoint
+```
+
+Those two messages are the pair a mouse handler sends, in the order it sends them.
+`clickRegionForPoint:` finds the region whose rectangle claims the point, innermost first; `hintRegionForPoint:` is how the inside and the outside regions hand the point on to the subclass that really owns it.
+A view that asked only the first would paint three regions where the game sees seven.
+
+Seven regions need seven colours, and none of the game's own will do:
+
+```smalltalk
+CellClickRegion class >> inspectionColorFor: aRegionClass
+	"Answer the colour the Regions picture paints aRegionClass in. None of these is a colour of the
+	game: the picture has to tell seven regions apart, which the board itself never has to do, and
+	two regions of one colour would hide the boundary between them."
+
+	| colors |
+	colors := Dictionary new.
+	colors
+		at: CellClickRegionPushNorth put: (Color r: 0.55 g: 0.75 b: 1.0);
+		at: CellClickRegionPushEast put: (Color r: 0.55 g: 0.9 b: 0.6);
+		at: CellClickRegionPushSouth put: (Color r: 1.0 g: 0.8 b: 0.5);
+		at: CellClickRegionPushWest put: (Color r: 0.8 g: 0.65 b: 1.0);
+		at: CellClickRegionRotateClockwise put: (Color r: 1.0 g: 1.0 b: 0.6);
+		at: CellClickRegionRotateCounterClockwise put: (Color r: 1.0 g: 0.7 b: 0.75);
+		at: CellClickRegionIgnore put: (Color r: 0.85 g: 0.85 b: 0.85).
+	^ colors at: aRegionClass ifAbsent: [ Color transparent ]
+```
+
+A test holds that dictionary honest, and it is the shortest test in the chapter: seven regions, seven different colours.
+Two regions painted alike would hide the boundary between them, which is the one thing the picture exists to show.
+
+The view itself is a square for every sampled point, at six times the size so a fifty pixel cell is worth looking at:
+
+```smalltalk
+CellClickRegion class >> inspectionRegions: aBuilder
+	"Show one cell painted by region: every sampled point asked of clickRegionForPoint: and
+	coloured by the answer. This is the picture the ten containsPoint: methods and the two
+	diagonals add up to, and it is drawn by asking them rather than by restating them."
+
+	<inspectorPresentationOrder: 1 title: 'Regions'>
+	| zoom step canvas |
+	zoom := 6.
+	step := self inspectionSampleStep.
+	canvas := BlElement new
+		          extent: CellRenderer cellExtent * zoom;
+		          background: Color white;
+		          yourself.
+	self inspectionSamplePoints do: [ :point |
+			canvas addChild: (BlElement new
+					 extent: step @ step * zoom;
+					 position: point * zoom;
+					 background:
+						 (self inspectionColorFor: (self inspectionRegionAt: point));
+					 yourself) ].
+	^ aBuilder newMorph
+		  morph: canvas asPreviewMorph;
+		  yourself
+```
+
+Six hundred and twenty five elements is nothing to Bloc, and the picture is exact by construction.
+There is no polygon in this method, no triangle, no `y = x`: every square asks the rules where it belongs.
+
+> **Paint the picture by asking the rules.** A diagram drawn from a second copy of the geometry agrees with the code only until one of the two is changed.
+
+The tab is on the class, not on an instance, which is where a question about a whole hierarchy belongs.
+`Color class >> inspectionColors:` does the same in Pharo itself, so you have a precedent in the image to read.
+It needs one more method, because the hierarchy can be inspected from the middle:
+
+```smalltalk
+CellClickRegion class >> inspectionRegionsContext: aContext
+	"Show the Regions picture on the root of the hierarchy only. It is the one class that can ask
+	every region in turn, since clickRegionForPoint: tries the subclasses of whichever class is
+	asked, and a region asked for a picture of itself would paint a cell it does not own."
+
+	aContext active: self superclass = Object
+```
+
+`clickRegionForPoint:` asks `self sortedSubclasses`, so inspecting `CellClickRegionInside` would paint a cell out of its four push regions alone, with the rotate regions and the ignore margin missing.
+The condition hides the tab everywhere but the root, and it reads the hierarchy rather than naming a class.
+`inspectionMapContext:` says the same thing for the table that comes next.
+
+> **A class-side tab belongs to the class that can answer for the whole hierarchy.** Where the answer would be partial, hide the tab rather than show half of one.
+
+## The same geometry as a table
+
+A picture shows you where the boundaries are.
+It does not say which rectangle was tried first, or how much of the cell each region ends up with, and those are the two things the chapter on push regions had to argue about.
+We count the sampled points instead:
+
+```smalltalk
+CellClickRegion class >> inspectionRegionCounts
+	"Answer one association per region a click can land in, the region to the number of sampled
+	points that fall in it, in the order the rectangles are tried."
+
+	| counts |
+	counts := Dictionary new.
+	self inspectionSamplePoints do: [ :point |
+		| region |
+		region := self inspectionRegionAt: point.
+		counts at: region put: (counts at: region ifAbsent: [ 0 ]) + 1 ].
+	^ counts associations asSortedCollection: [ :a :b |
+		  a key sortIndex = b key sortIndex
+			  ifTrue: [ a key name <= b key name ]
+			  ifFalse: [ a key sortIndex < b key sortIndex ] ]
+```
+
+```smalltalk
+CellClickRegion class >> inspectionMap: aBuilder
+	"Show one row per region a click can land in: the order its rectangle is tried in, the
+	rectangle itself, how many sampled points fall in it, and whether it draws a hint. The inside
+	and the outside regions have no row, because each of them refines itself to one of its own
+	subclasses."
+
+	<inspectorPresentationOrder: 2 title: 'Map'>
+	^ aBuilder newTable
+		  items: self inspectionRegionCounts;
+		  addColumn: (SpStringTableColumn title: 'Region' evaluated: [ :each | each key name ]);
+		  addColumn: (SpStringTableColumn title: 'Tried' evaluated: [ :each |
+					   each key sortIndex printString ]);
+		  addColumn: (SpStringTableColumn title: 'Rectangle' evaluated: [ :each |
+					   each key regionRectangle printString ]);
+		  addColumn: (SpStringTableColumn title: 'Points' evaluated: [ :each |
+					   each value printString ]);
+		  addColumn: (SpStringTableColumn title: 'Hint' evaluated: [ :each |
+					   (each key hintElementOfExtent: CellRenderer cellExtent)
+						   ifNil: [ '' ]
+						   ifNotNil: [ 'arrow' ] ]);
+		  yourself
+```
+
+The counting is a method of its own because the table should be a table and nothing else, and because the test can then read the counts without a presenter.
+On a fifty pixel cell the tab reads:
+
+```text
+CellClickRegionPushEast                1  (10@10) corner: (40@40)   64  arrow
+CellClickRegionPushNorth               1  (10@10) corner: (40@40)   56  arrow
+CellClickRegionPushSouth               1  (10@10) corner: (40@40)   56  arrow
+CellClickRegionPushWest                1  (10@10) corner: (40@40)   49  arrow
+CellClickRegionRotateClockwise         2  (4@4) corner: (46@46)    111  arrow
+CellClickRegionRotateCounterClockwise  2  (4@4) corner: (46@46)    105  arrow
+CellClickRegionIgnore                  3  (0@0) corner: (50@50)    184
+```
+
+Four things in that table are worth your attention.
+
+The inside and the outside regions have no row at all, although they are the two classes whose rectangles are tried: a point they claim is always handed on to a subclass, and the table says so by leaving them out.
+The four push regions share one rectangle, the thirty by thirty square in the middle, and the two diagonals divide it between them — which is why one rectangle appears four times.
+The two rotate regions share the ring between the two rectangles, split by a horizontal line at half the height.
+And the ignore margin is the largest region of the cell at a hundred and eighty four points of six hundred and twenty five, which is the four pixel border where a click does nothing.
+
+The four push counts are not equal, and that is not a fault.
+A sampled point that lands exactly on a diagonal belongs to whichever side the strict comparison in `pointIsUnderHeadingUpLine:` gives it, and with a step of two pixels the diagonals carry sampled points.
+Fifteen of them sit on `y = x`, and they all go east.
+
+> **Count the answers, not the geometry.** A boundary rule and a picture of it can both be right while the share of the cell each region gets is a surprise.
+
+## The four directions
+
+`GridDirection` is four classes with three class-side methods each, and one of those methods is called `adjacentInversionSymbol`.
+Nothing in that name tells you what it is for.
+A four-row table tells you in a glance:
+
+```smalltalk
+GridDirection class >> inspectionDirections: aBuilder
+	"Show the four directions in compass order, each with the vector it adds to a location and the
+	side the beam enters the next cell from. The last column is what adjacentInversionSymbol
+	means, which is a name that explains nothing until the table is read."
+
+	<inspectorPresentationOrder: 1 title: 'Directions'>
+	^ aBuilder newTable
+		  items: (#( #north #east #south #west ) collect: [ :each |
+					   self directionFor: each ]);
+		  addColumn: (SpStringTableColumn title: 'Direction' evaluated: [ :each |
+					   each name ]);
+		  addColumn: (SpStringTableColumn title: 'Symbol' evaluated: [ :each |
+					   each directionSymbol asString ]);
+		  addColumn: (SpStringTableColumn title: 'Vector' evaluated: [ :each |
+					   each vector printString ]);
+		  addColumn:
+			  (SpStringTableColumn title: 'Beam enters next cell from' evaluated: [ :each |
+					   each adjacentInversionSymbol asString ]);
+		  yourself
+```
+
+The rows are fetched through `directionFor:`, the message the game uses to turn a symbol into a direction, so the table is in compass order without a list of the four classes being written anywhere in the view.
+
+```text
+GridDirectionNorth  north  (0@ -1)  south
+GridDirectionEast   east   (1@0)    west
+GridDirectionSouth  south  (0@1)    north
+GridDirectionWest   west   (-1@0)   east
+```
+
+The last column is the whole point.
+A beam leaving a cell northwards arrives at the next cell from the south, so `adjacentInversionSymbol` is the side the next cell is entered by, and `nextElementIn:` passes it to the step it builds.
+Read the *Step* tab of a path element beside this table and you are left with no mystery in the beam.
+
+The vector column settles something else quickly: north is `(0@ -1)`, because the first row of the board is at the top and `y` grows downwards.
+Every sign error in a direction is that line being misremembered.
+
+```smalltalk
+GridDirection class >> inspectionDirectionsContext: aContext
+	"Show the Directions table on the class that has the four directions under it. A direction has
+	no subclasses to list, so the tab would be empty on one of them."
+
+	aContext active: self subclasses notEmpty
+```
+
 ## Which object to inspect
 
-We now have nine tabs across four classes, and the way to see them is to inspect something.
+We now have twelve tabs across six classes, and the way to see them is to inspect something.
 A grid that has been fired and played on shows all five of its tabs:
 
 ```smalltalk
@@ -4365,13 +4615,26 @@ grid laserBeamPath last inspect
 That last one is the target cell at the end of the beam, so its *Step* tab is the `nowhere` table above.
 Inspect `grid laserBeamPath first` instead and you get the one before it.
 
+The last two tabs are on classes rather than on instances, so what you inspect is the class itself:
+
+```smalltalk
+CellClickRegion inspect
+```
+
+```smalltalk
+GridDirection inspect
+```
+
+*Regions* and *Map* on the first, *Directions* on the second.
+Inspect `CellClickRegionInside` instead and neither tab appears, which is the two context methods refusing to answer for a hierarchy from the middle of it.
+
 ## Checking it
 
-We have seven more tests than we had:
+We have eleven more tests than we had:
 
 ```text
-287 run, 287 passes, 0 skipped, 0 expected failures,
+294 run, 294 passes, 0 skipped, 0 expected failures,
 0 failures, 0 errors, 0 unexpected passes
 ```
 
-That is the game: a board of cells that knows nothing about how it is drawn, a beam that walks it, a window built out of named numbers, nine tabs that explain the lot without a method being read, and two hundred and eighty-seven tests that will say so again tomorrow.
+That is the game: a board of cells that knows nothing about how it is drawn, a beam that walks it, a window built out of named numbers, twelve tabs that explain the lot without a method being read, and two hundred and ninety-four tests that will say so again tomorrow.
