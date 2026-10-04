@@ -219,6 +219,59 @@ Grid >> inspectionCells: aBuilder [
 		  yourself
 ]
 
+{ #category : 'inspecting' }
+Grid >> inspectionMoves: aBuilder [
+	"Show my undo stack, youngest move first: what was played, where the cell it was played on
+	stands now, and the selector undo will send to take that move back. Read this tab when undo
+	does something unexpected, because the move and its reversal sit side by side here."
+
+	<inspectorPresentationOrder: 4 title: 'Moves'>
+	^ aBuilder newTable
+		  items: self movesStack reversed;
+		  addColumn: (SpStringTableColumn title: 'Move' evaluated: [ :each | each key asString ]);
+		  addColumn: (SpStringTableColumn title: 'Cell now at' evaluated: [ :each |
+					   each value printString ]);
+		  addColumn: (SpStringTableColumn title: 'Undo sends' evaluated: [ :each |
+					   (ReverseLaserGameAction reverseActionSymbolFor: each key) asString ]);
+		  yourself
+]
+
+{ #category : 'inspecting' }
+Grid >> inspectionMovesContext: aContext [
+	"Hide the Moves tab until something has been played, because an empty stack has nothing to
+	say."
+
+	aContext active: self movesStack isNotEmpty
+]
+
+{ #category : 'inspecting' }
+Grid >> inspectionPushes: aBuilder [
+	"Show one row per mirror on the board and ask the four push rules of each: a yes is a push the
+	rules allow from where that mirror stands now. The arrows the player sees are drawn from these
+	same four questions."
+
+	<inspectorPresentationOrder: 5 title: 'Pushes'>
+	| mirrors |
+	mirrors := OrderedCollection new.
+	1 to: self numberOfRows do: [ :row |
+		1 to: self numberOfColumns do: [ :column |
+			| location |
+			location := column @ row.
+			(self at: location) class = MirrorCell ifTrue: [ mirrors add: location ] ] ].
+	^ aBuilder newTable
+		  items: mirrors;
+		  addColumn: (SpStringTableColumn title: 'Mirror' evaluated: [ :each | each printString ]);
+		  addColumn: (SpStringTableColumn title: 'North' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionNorth fromLocation: each ]);
+		  addColumn: (SpStringTableColumn title: 'East' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionEast fromLocation: each ]);
+		  addColumn: (SpStringTableColumn title: 'South' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionSouth fromLocation: each ]);
+		  addColumn: (SpStringTableColumn title: 'West' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionWest fromLocation: each ]);
+		  yourself
+]
+
 { #category : 'accessing' }
 Grid >> laserBeamPath [
 	"Answer the value of laserBeamPath"
@@ -302,6 +355,16 @@ Grid >> numberOfRows: anObject [
 	"Set the value of numberOfRows"
 
 	numberOfRows := anObject
+]
+
+{ #category : 'inspecting' }
+Grid >> pushAnswerFor: aGridDirection fromLocation: aPoint [
+	"Answer 'yes' when the rules allow the mirror at aPoint to be pushed in aGridDirection, and an
+	empty string when they do not. The Pushes tab reads the rules through me."
+
+	^ (self canPushCell: aGridDirection fromLocation: aPoint)
+		  ifTrue: [ 'yes' ]
+		  ifFalse: [ '' ]
 ]
 
 { #category : 'action' }

@@ -480,6 +480,60 @@ GridTestCase >> testTheInspectorTabsOfAGridShowTheBoardAndTheBeam [
 ]
 
 { #category : 'tests' }
+GridTestCase >> testTheMovesTabListsWhatUndoWillDo [
+	"The Moves tab is the undo stack read out loud: one row per move, youngest first, with the
+	selector undo will send for it. It is the view that saves reading the seven Reverse classes
+	the grid looks up by symbol."
+
+	| grid builder table undoSends |
+	grid := self generateDemoGrid.
+	grid rotateCellClockwiseAt: 1 @ 5.
+	grid pushCellEastFromLocation: 1 @ 2.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := grid inspectionMoves: builder.
+	self assert: table items size equals: 2.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Move' 'Cell now at' 'Undo sends' ).
+	self assert: table items first key equals: #east.
+	self assert: table items last key equals: #clockwise.
+	undoSends := table columns third.
+	self
+		assert: (undoSends evaluation value: table items last)
+		equals: 'rotateCellCounterClockwiseAt:'
+]
+
+{ #category : 'tests' }
+GridTestCase >> testThePushesTabSaysWhichPushesTheRulesAllow [
+	"The Pushes tab asks the four push rules of every mirror on the board and answers in one
+	table. A mirror with no yes is a mirror the player cannot move, which is what the arrows on
+	the board are drawn from."
+
+	| grid builder table north east |
+	grid := self generateDemoGrid.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := grid inspectionPushes: builder.
+	self assert: table items size equals: grid numberOfMirrors.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Mirror' 'North' 'East' 'South' 'West' ).
+	self assert: (table items includes: 1 @ 2).
+	self deny: (table items includes: 5 @ 1).
+	north := table columns second.
+	east := table columns third.
+	self
+		assert: (north evaluation value: 1 @ 2)
+		equals: ((grid canPushCellNorthFromLocation: 1 @ 2)
+				 ifTrue: [ 'yes' ]
+				 ifFalse: [ '' ]).
+	self assert: (east evaluation value: 1 @ 2) equals: 'yes'
+]
+
+{ #category : 'tests' }
 GridTestCase >> testToggleLaser [
 
 	| grid cell |

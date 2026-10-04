@@ -64,6 +64,35 @@ LaserPathElement >> entrySide: anObject [
 	entrySide := anObject
 ]
 
+{ #category : 'inspecting' }
+LaserPathElement >> inspectionStep: aBuilder [
+	"Answer the questions nextElementIn: asks about me: the side the beam leaves my cell by, the
+	location it lands on, and whether it stops here. 'nowhere' means my cell swallows the light,
+	which is the first of the two ways a beam path ends."
+
+	<inspectorPresentationOrder: 1 title: 'Step'>
+	| exitSide facts |
+	exitSide := self cell exitSideFor: self entrySide.
+	facts := OrderedCollection new.
+	facts add: 'Cell' -> self cell printString.
+	facts add: 'Enters from' -> self entrySide asString.
+	facts add: 'Leaves by' -> (exitSide
+			 ifNil: [ 'nowhere' ]
+			 ifNotNil: [ :side | side asString ]).
+	facts add: 'Next location' -> (exitSide
+			 ifNil: [ 'nowhere' ]
+			 ifNotNil: [ :side |
+				 (self cell gridLocation + (GridDirection directionFor: side) vector) printString ]).
+	facts add: 'Stops here' -> (exitSide
+			 ifNil: [ 'yes' ]
+			 ifNotNil: [ 'no' ]).
+	^ aBuilder newTable
+		  items: facts;
+		  addColumn: (SpStringTableColumn title: 'Fact' evaluated: [ :each | each key ]);
+		  addColumn: (SpStringTableColumn title: 'Value' evaluated: [ :each | each value ]);
+		  yourself
+]
+
 { #category : 'accessing' }
 LaserPathElement >> nextElementIn: aGrid [
 	| loc dirSym direction vector newLoc nextCell |

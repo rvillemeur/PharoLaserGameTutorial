@@ -94,3 +94,22 @@ BlankCellTestCase >> testRotatingACellThatIsNotAMirrorDoesNothing [
 	self assert: cell isOn.
 	self assert: (cell exitSideFor: #north) equals: #south
 ]
+
+{ #category : 'tests' }
+BlankCellTestCase >> testThePictureTabShowsMeAsTheBoardDrawsMe [
+	"The Picture tab draws me with the renderer the game uses, so what the inspector shows and
+	what the player sees cannot disagree. Showing me must not change me, which the location
+	asserted afterwards is here to hold."
+
+	| cell builder |
+	cell := BlankCell new.
+	cell gridLocation: 2 @ 3.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	self
+		assert: (cell inspectionPicture: builder) class
+		equals: SpMorphPresenter.
+	self assert: cell gridLocation equals: 2 @ 3.
+	self assert: cell isOff
+]

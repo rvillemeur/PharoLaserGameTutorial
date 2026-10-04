@@ -99,6 +99,24 @@ Cell >> initializeExitSides [
 ]
 
 { #category : 'inspecting' }
+Cell >> inspectionPicture: aBuilder [
+	"Show me as the board draws me, through the renderer the game itself uses, so that a model
+	fault and a drawing fault can be told apart without opening the game. The renderer reads a
+	copy of me standing in a grid of its own, because a view must not change what it shows."
+
+	<inspectorPresentationOrder: 2 title: 'Picture'>
+	| location grid renderer |
+	location := self gridLocation ifNil: [ 1 @ 1 ].
+	grid := Grid newOfSize: location.
+	grid at: location put: self copy.
+	grid laserIsActive: true.
+	renderer := CellRenderer rendererFor: (grid at: location) grid: grid.
+	^ aBuilder newMorph
+		  morph: renderer newElement asPreviewMorph;
+		  yourself
+]
+
+{ #category : 'inspecting' }
 Cell >> inspectionSides: aBuilder [
 	"Show one row per side of me: where a beam entering there leaves, and whether that side is lit.
 	This is the table to read when a beam leaves a cell by the wrong side, because the usual cause

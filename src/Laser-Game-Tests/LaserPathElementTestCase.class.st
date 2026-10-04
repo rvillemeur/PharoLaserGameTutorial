@@ -45,3 +45,35 @@ LaserPathElementTestCase >> testTheNextElementFollowsTheMirrorAfterItIsRotated [
 		assert: (element nextElementIn: grid) cell
 		equals: (grid at: 3 @ 1)
 ]
+
+{ #category : 'tests' }
+LaserPathElementTestCase >> testTheStepTabSaysWhereTheBeamGoesNext [
+	"The Step tab answers, for one step of the beam, the three questions nextElementIn: asks: the
+	side the beam leaves by, the location it lands on, and whether it stops here. A target cell
+	stops it, which is the row that explains the first of the two nil guards."
+
+	| grid step builder table value target |
+	grid := GridFactory demoGrid.
+	step := LaserPathElement cell: grid startingCell entrySide: #south.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := step inspectionStep: builder.
+	self
+		assert: (table items collect: [ :each | each key ]) asArray
+		equals: #( 'Cell' 'Enters from' 'Leaves by' 'Next location' 'Stops here' ).
+	value := [ :fact |
+	          (table items detect: [ :each | each key = fact ]) value ].
+	self assert: (value value: 'Enters from') equals: 'south'.
+	self
+		assert: (value value: 'Leaves by')
+		equals: (step cell exitSideFor: #south) asString.
+	self assert: (value value: 'Stops here') equals: 'no'.
+	target := LaserPathElement cell: (grid at: 5 @ 1) entrySide: #west.
+	table := target inspectionStep: builder.
+	value := [ :fact |
+	          (table items detect: [ :each | each key = fact ]) value ].
+	self assert: (value value: 'Leaves by') equals: 'nowhere'.
+	self assert: (value value: 'Next location') equals: 'nowhere'.
+	self assert: (value value: 'Stops here') equals: 'yes'
+]

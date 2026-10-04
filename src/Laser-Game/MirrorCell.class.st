@@ -43,6 +43,30 @@ MirrorCell >> initializeExitSides [
 	
 ]
 
+{ #category : 'inspecting' }
+MirrorCell >> inspectionLean: aBuilder [
+	"Show my four sides against the way I lean: where a beam entering each side leaves me, and
+	whether that is the side a fresh mirror leaning my way would send it out by. A mirror whose
+	lean was changed without its exit sides reads 'no' on every row, which is the fault rotate
+	exists to prevent."
+
+	<inspectorPresentationOrder: 3 title: 'Lean'>
+	^ aBuilder newTable
+		  items: #( #north #east #south #west );
+		  addColumn: (SpStringTableColumn title: 'Enters from' evaluated: [ :each | each asString ]);
+		  addColumn: (SpStringTableColumn title: 'Leaves by' evaluated: [ :each |
+					   (self exitSideFor: each) asString ]);
+		  addColumn: (SpStringTableColumn title: 'Matches lean' evaluated: [ :each |
+					   | reference |
+					   reference := self isLeft
+						                ifTrue: [ self class leanLeft ]
+						                ifFalse: [ self class leanRight ].
+					   (self exitSideFor: each) = (reference exitSideFor: each)
+						   ifTrue: [ 'yes' ]
+						   ifFalse: [ 'no' ] ]);
+		  yourself
+]
+
 { #category : 'testing' }
 MirrorCell >> isLeft [
 	^self leansLeft

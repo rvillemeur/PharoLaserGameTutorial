@@ -58,3 +58,22 @@ TargetCellTestCase >> testCellSegmentsState [
 	self shouldnt: [cell isSegmentOnFor: #south].
 	self shouldnt: [cell isSegmentOnFor: #west].
 ]
+
+{ #category : 'tests' }
+TargetCellTestCase >> testThePictureTabShowsMeAsTheBoardDrawsMe [
+	"The Picture tab draws me with my own renderer, ring and all. A target lit by the beam is
+	drawn lit, since the picture is made from my own state."
+
+	| cell builder |
+	cell := TargetCell new.
+	cell gridLocation: 5 @ 1.
+	cell laserEntersFrom: #west.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	self
+		assert: (cell inspectionPicture: builder) class
+		equals: SpMorphPresenter.
+	self assert: cell gridLocation equals: 5 @ 1.
+	self assert: cell isOn
+]

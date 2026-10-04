@@ -134,6 +134,51 @@ MirrorCellTestCase >> testPrintStringSaysWhereTheCellIsHowItLeansAndWhetherItIsO
 ]
 
 { #category : 'tests' }
+MirrorCellTestCase >> testTheLeanTabComparesMyExitSidesWithTheWayILean [
+	"The Lean tab reads my four exit sides against the lean they belong to, so a mirror whose lean
+	was changed without its exit sides reads 'no' on every row. That is the bug rotate exists to
+	prevent, and this is the view that names it."
+
+	| cell builder table matches |
+	cell := MirrorCell leanLeft.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := cell inspectionLean: builder.
+	self assert: table items asArray equals: #( #north #east #south #west ).
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Enters from' 'Leaves by' 'Matches lean' ).
+	matches := table columns third.
+	self
+		assert: (table items collect: [ :each | matches evaluation value: each ]) asArray
+		equals: #( 'yes' 'yes' 'yes' 'yes' ).
+	cell leansLeft: false.
+	self
+		assert: (table items collect: [ :each | matches evaluation value: each ]) asArray
+		equals: #( 'no' 'no' 'no' 'no' )
+]
+
+{ #category : 'tests' }
+MirrorCellTestCase >> testThePictureTabShowsMeAsTheBoardDrawsMe [
+	"The Picture tab draws me with my own renderer, mirror and all, and leaves my lean and my
+	exit sides as they were."
+
+	| cell builder |
+	cell := MirrorCell leanRight.
+	cell gridLocation: 4 @ 1.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	self
+		assert: (cell inspectionPicture: builder) class
+		equals: SpMorphPresenter.
+	self assert: cell gridLocation equals: 4 @ 1.
+	self assert: cell isRight.
+	self assert: (cell exitSideFor: #north) equals: #west
+]
+
+{ #category : 'tests' }
 MirrorCellTestCase >> testTheSidesTabListsTheFourSidesOfTheCell [
 	"The Sides tab has one row per side of the cell. It is the table to read when a beam leaves a
 	cell by the wrong side, since it shows the exit sides against the lean."
