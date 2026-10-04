@@ -171,8 +171,8 @@ two subsections in one commit.
 ### Book files — Markdown under `doc/`
 
 The book text is Markdown, one file per tutorial section: `doc/section1/section1.md` …
-`doc/section6/section6.md`, with images in the sibling `figures/` directory. `doc/` is untracked so
-far.
+`doc/section5/section5.md`, with images in the sibling `figures/` directory. There is no sixth file:
+section 6 is cancelled and its directory was deleted on 2026-10-04.
 
 Text may be written as soon as the code it describes exists, and it is written by adapting the Pillar
 chapters: same explanations, Markdown syntax instead of Pillar markup (`!`/`!!` become `#`/`##`,
@@ -195,7 +195,6 @@ State of the port:
 | `doc/section3/section3.md` | interaction | **rewritten.** Sixteen chapters, 6034 lines. 219 method blocks, all identical to the image |
 | `doc/section4/section4.md` | feedback and the laser beam | **rewritten.** Twelve chapters, 5116 lines, the last two being *A window the player can resize* and *Counters the player can read*. 160 method blocks, all identical to the image |
 | `doc/section5/section5.md` | polish, and the bugs polish finds | **rewritten.** Twelve chapters, 4377 lines, the last being *Looking at objects*. 150 method blocks, all identical to the image |
-| `doc/section6/section6.md` | packaging and deployment | **cancelled**, empty and staying empty. Packaging and deployment are a moving target in Pharo and not worth the effort for this tutorial (user's decision, 2026-09-29) |
 
 The Pillar book (`SectionOne/*.pier`, `SectionTwo/*.pier`, `pillar.conf`, the LaTeX and HTML
 templates, `compile.sh`) is the 2015 form of the same text. It is **frozen**: do not add chapters to
@@ -279,8 +278,8 @@ it, do not edit its files, do not touch `pillar.conf`. It is a source to adapt f
 
 Pages 205–220 are **not ported**, by the user's decision of 2026-09-29. Packaging and deployment are
 a moving target even inside the Pharo ecosystem, so a chapter written today would be wrong before the
-reader got to it, and the effort is better spent elsewhere. `doc/section6/section6.md` stays empty and
-no 6.x commit will be made. The one durable piece of that section, a baseline that loads the game into
+reader got to it, and the effort is better spent elsewhere. There is no `doc/section6/` directory --
+it was empty and was deleted on 2026-10-04, at the user's request -- and no 6.x commit will be made. The one durable piece of that section, a baseline that loads the game into
 a clean image, already exists as `BaselineOfLaserGame` and was done at 5.4.
 
 `notes.html` and `notes01`–`notes04` (the author's notes and the longest-path puzzle) are an optional

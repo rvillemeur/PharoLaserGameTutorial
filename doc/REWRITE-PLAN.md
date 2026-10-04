@@ -31,7 +31,8 @@ them:
 - Monticello, SmalltalkHub, `ConfigurationOf`, Versionner — gone from the ecosystem, not replaced
   in this book by an equivalent chapter;
 - Metacello baselines as a subject — one short chapter states the game's baseline and moves on;
-- packaging and deployment — Section 6 stays cancelled and `doc/section6/section6.md` stays empty.
+- packaging and deployment — Section 6 stays cancelled; the empty `doc/section6/` was deleted on
+  2026-10-04.
 
 ## 3. The two mentions of history
 
