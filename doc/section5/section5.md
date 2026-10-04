@@ -3890,13 +3890,15 @@ One is to read `rotate`, `leanLeft`, `leanRight` and `exitSideFor:` and hold fou
 The other is to inspect a mirror and read the answer off a table.
 The second way is better, and it costs one method per question.
 
-There are four lessons in this chapter.
-A view is an ordinary method, so it is tested like one and it brings no new dependency with it.
+There are five lessons in this chapter.
+A view is an ordinary method, so we test it like one and it brings no new dependency with it.
 A view must never change the object it shows.
 A view that asks the rules, rather than restating them, cannot drift away from them.
-And a question about a whole hierarchy belongs on the class, not on one instance of it.
+A question about a whole hierarchy belongs on the class, not on one instance of it.
+And a list a view needs is better read off the object than written into the view.
 
 The chapter goes model first -- a cell, a mirror, the undo stack, a step of the beam -- and then turns to the click geometry, which is the part of the game the book spends most pages arguing about.
+After that we go round the drawing side: the shapes, the palette, the seven segments of a digit, the numbers the control panel is laid out from, and the boards the factory deals.
 
 ## A picture of one cell
 
@@ -4565,9 +4567,568 @@ GridDirection class >> inspectionDirectionsContext: aContext
 	aContext active: self subclasses notEmpty
 ```
 
+## Every shape at three sizes
+
+`LaserGameShapes` holds nine vertex arrays and a scaling step.
+The arrays were drawn at around 260 pixels, and every caller asks for the size it needs: a 12 pixel hint on a cell, a 50 pixel arrow, a 200 pixel drawing.
+`pointsOf:scaledToExtent:` is the method that makes one array serve all of them, and reading it tells you only that it divides.
+Seeing the same arrow at three sizes tells you that it divides correctly.
+
+The tab we write draws a gallery: one row per size, one shape per column.
+Both lists are methods, so the gallery is nothing but a loop over them.
+
+```smalltalk
+LaserGameShapes class >> inspectionShapeExtents
+	"Answer the sizes the Shapes tab draws every shape at. Three sizes are enough to show that a
+	vertex array holds its proportions: the size of a hint, the size of a cell, and larger."
+
+	^ #( 30 50 80 )
+```
+
+```smalltalk
+LaserGameShapes class >> inspectionShapeSelectors
+	"Answer the selectors the Shapes tab asks for one shape each, in the order it draws them: the
+	four arrows a hint shows, the two rotate arrows, and the cross hair."
+
+	^ #( #northArrowElementOfExtent: #eastArrowElementOfExtent:
+	     #southArrowElementOfExtent: #westArrowElementOfExtent:
+	     #clockwiseArrowElementOfExtent: #counterClockwiseArrowElementOfExtent:
+	     #crossHairElementOfExtent: )
+```
+
+We list selectors rather than shapes, and that is what keeps the gallery honest.
+The tab asks the class for its shapes the way a cell asks for them, through the same seven selectors, so a shape that is wrong in the game is wrong in the tab as well.
+
+```smalltalk
+LaserGameShapes class >> inspectionGalleryElement
+	"Answer one element holding every shape I can make, drawn once at each of
+	#inspectionShapeExtents: one row per size, the shapes of #inspectionShapeSelectors left to
+	right. Each shape is asked for the square it is given, so a row that holds its proportions is
+	the proof that one vertex array serves every size."
+
+	| gap canvas top width |
+	gap := 10.
+	canvas := BlElement new
+		          background: Color white;
+		          yourself.
+	top := gap.
+	width := gap.
+	self inspectionShapeExtents do: [ :size |
+			| left |
+			left := gap.
+			self inspectionShapeSelectors do: [ :selector |
+					canvas addChild: ((self perform: selector with: size @ size)
+							 position: left @ top;
+							 yourself).
+					left := left + size + gap ].
+			width := width max: left.
+			top := top + size + gap ].
+	canvas extent: width @ top.
+	^ canvas
+```
+
+```smalltalk
+LaserGameShapes class >> inspectionShapes: aBuilder
+	"Show every shape I can make, each one drawn at three sizes. I hold vertex arrays written at
+	around 260 pixels and a scaling step, and nothing says whether that step is right until the
+	same arrow is seen small and large side by side."
+
+	<inspectorPresentationOrder: 1 title: 'Shapes'>
+	^ aBuilder newMorph
+		  morph: self inspectionGalleryElement asPreviewMorph;
+		  yourself
+```
+
+We get twenty-one elements on a canvas 640 by 200: three sizes by seven shapes.
+The test counts them and checks each one got the square it asked for:
+
+```smalltalk
+LaserGameShapesTestCase >> testTheShapesTabDrawsEveryShapeAtEverySize
+	"The Shapes tab is the claim of pointsOf:scaledToExtent: put on screen: one row per size, one
+	shape per column, and every shape fills the square it was asked for. A vertex array written at
+	260 pixels has to serve a 12 pixel hint and a 200 pixel drawing, and this is where a reader
+	sees that it does."
+
+	| gallery builder presenter |
+	gallery := LaserGameShapes inspectionGalleryElement.
+	self
+		assert: gallery children size
+		equals:
+			LaserGameShapes inspectionShapeExtents size
+			* LaserGameShapes inspectionShapeSelectors size.
+	LaserGameShapes inspectionShapeExtents do: [ :size |
+			self
+				assert: (gallery children select: [ :each |
+						 (self requestedExtentOf: each) = (size @ size) ]) size
+				equals: LaserGameShapes inspectionShapeSelectors size ].
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	presenter := LaserGameShapes inspectionShapes: builder.
+	self assert: presenter class equals: SpMorphPresenter
+```
+
+`requestedExtentOf:` was already in this test class, from the chapters that measured arrows.
+An element has no extent until a layout pass has run, so what a headless test can read is the size the element was asked for, which is held in its resizers.
+
+> **A test of a picture tests what the picture was asked for.** Pixels need a window; sizes and children do not.
+
+## The palette, as colours
+
+`LaserGameColors` is twenty-four methods that each answer a colour and nothing else.
+Reading them tells you `mirrorColor` is `Color blue` and `counterDigitOffColor` is whatever `counterBodyColor` answers, which is not the same as seeing the two of them side by side.
+The tab paints a swatch of every colour with its name beside it.
+
+We read the list of colours off the class rather than writing it into the view:
+
+```smalltalk
+LaserGameColors class >> inspectionColorSelectors
+	"Answer the name of every colour I hold, sorted: each of my selectors that takes no argument
+	and answers a Color. The list is read from me rather than written out, so a colour added
+	tomorrow shows up in the Palette tab on its own."
+
+	^ (self class selectors select: [ :each |
+		   each numArgs = 0 and: [
+			   (each beginsWith: 'inspection') not and: [
+				   (self perform: each) isKindOf: Color ] ] ]) asSortedCollection asArray
+```
+
+Three conditions, and each one earns its place.
+`numArgs = 0` leaves out nothing here but would leave out a colour method that took an argument.
+The `inspection` test keeps the view's own methods out of the list, and it also stops the recursion that asking myself for every answer would otherwise start.
+And `isKindOf: Color` is what rejects `windowColorRamp`, which answers a ramp, and `windowColorRampDirection`, which answers a symbol.
+Twenty-four of the twenty-six methods are colours.
+
+> **Read the list off the object rather than into the view.** A list written into a view is a second place to remember, and the day it is forgotten the tab quietly stops showing the whole truth.
+
+```smalltalk
+LaserGameColors class >> inspectionPaletteElement
+	"Answer one element holding my whole palette: a swatch of each colour of
+	#inspectionColorSelectors, its name beside it, one to a line. The swatches are added first and
+	the names after them, so a reader of the tab reads a colour and its name together."
+
+	| gap height canvas top |
+	gap := 4.
+	height := 16.
+	canvas := BlElement new
+		          background: Color white;
+		          yourself.
+	top := gap.
+	self inspectionColorSelectors do: [ :selector |
+			canvas addChild: (BlElement new
+					 extent: 48 @ height;
+					 background: (self perform: selector);
+					 position: gap @ top;
+					 yourself).
+			top := top + height + gap ].
+	top := gap.
+	self inspectionColorSelectors do: [ :selector |
+			canvas addChild: (BlTextElement new
+					 text: (selector asString asRopedText
+							  fontSize: 11;
+							  foreground: Color black;
+							  yourself);
+					 position: 48 + (2 * gap) @ top;
+					 yourself).
+			top := top + height + gap ].
+	canvas extent: 260 @ top.
+	^ canvas
+```
+
+We write two loops, not one, and the order matters to the test rather than to the eye.
+The swatches are added first, so the first twenty-four children of the canvas are the colours in the order the names sort, and a test can walk them against the selectors.
+The names are added after, in the same order and at the same heights.
+
+```smalltalk
+LaserGameColors class >> inspectionPalette: aBuilder
+	"Show my whole palette, a swatch beside each name. I am a list of colour names, and the only
+	honest way to read a list of colour names is to look at the colours."
+
+	<inspectorPresentationOrder: 1 title: 'Palette'>
+	^ aBuilder newMorph
+		  morph: self inspectionPaletteElement asPreviewMorph;
+		  yourself
+```
+
+`Color class >> inspectionColors:` does the same for the colours Pharo registers, but it draws its swatches with a Morph and `asFormOfSize:`.
+We cannot copy that: this port names neither class, and a swatch is a rectangle with a background, which Bloc does without help.
+
+The test is the one that tells you a colour was added:
+
+```smalltalk
+LaserGameColorsTestCase >> testThePaletteTabShowsASwatchOfEveryColourIName
+	"The Palette tab is the whole class on one page: a swatch beside its name, in the order the
+	names sort. Every colour I answer has to appear, so a colour added tomorrow appears without
+	anyone touching the tab."
+
+	| selectors palette swatches builder presenter |
+	selectors := LaserGameColors inspectionColorSelectors.
+	self assert: (selectors includes: #mirrorColor).
+	self deny: (selectors includes: #windowColorRampDirection).
+	palette := LaserGameColors inspectionPaletteElement.
+	swatches := palette children select: [ :each |
+		            each background paint isNotNil ].
+	self assert: swatches size equals: selectors size.
+	selectors doWithIndex: [ :selector :index |
+			self
+				assert: (swatches at: index) background paint color
+				equals: (LaserGameColors perform: selector) ].
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	presenter := LaserGameColors inspectionPalette: builder.
+	self assert: presenter class equals: SpMorphPresenter
+```
+
+This is the first test class the chapter adds, `LaserGameColorsTestCase`, because `LaserGameColors` had nothing to test before.
+A class that answers constants is tested by its callers; a class that answers constants and shows them has a view to get right.
+
+## The seven segments
+
+`LaserGameLedElement class >> segmentsForDigit:` is ten arrays of symbols.
+It is the shape of every digit a counter can show, written as a literal, and you will never read it comfortably.
+
+```smalltalk
+LaserGameLedElement class >> segmentsForDigit: anInteger
+	"Answer the names of the segments the digit anInteger lights."
+
+	^ #( #( #a #b #c #d #e #f ) #( #b #c ) #( #a #b #g #e #d )
+	     #( #a #b #g #c #d ) #( #f #g #b #c ) #( #a #f #g #c #d )
+	     #( #a #f #g #e #c #d ) #( #a #b #c ) #( #a #b #c #d #e #f #g )
+	     #( #a #b #c #d #f #g ) ) at: anInteger + 1
+```
+
+A seven segment digit is a table in the first place.
+Read it as one and it reads itself:
+
+```text
+Digit | a  | b  | c  | d  | e  | f  | g  | Shown now
+0     | on | on | on | on | on | on |    | yes
+1     |    | on | on |    |    |    |    | yes
+2     | on | on |    | on | on |    | on |
+3     | on | on | on | on |    |    | on |
+4     |    | on | on |    |    | on | on |
+5     | on |    | on | on |    | on | on |
+6     | on |    | on | on | on | on | on |
+7     | on | on | on |    |    |    |    |
+8     | on | on | on | on | on | on | on | yes
+9     | on | on | on | on |    | on | on |
+```
+
+Eight lights all seven, one lights two, and the segment `g` is the bar that tells a 0 from an 8.
+The last column is the display's own, not the class's: it marks the digits this display is showing at the moment.
+
+```smalltalk
+LaserGameLedElement >> inspectionShowsDigit: anInteger
+	"Answer whether anInteger is one of the digits I am showing. My value is read as it is
+	printed, since that is what the digits hold."
+
+	^ (self value ifNil: [ 0 ]) printString includes:
+		  (Character digitValue: anInteger)
+```
+
+```smalltalk
+LaserGameLedElement >> inspectionSegments: aBuilder
+	"Show which of the seven segments each of the ten digits lights, and which digits I am
+	showing now. A seven segment digit is a table in the first place; segmentsForDigit: is that
+	table written as a literal array, and this tab is the same table read the way it was meant to
+	be read."
+
+	<inspectorPresentationOrder: 2 title: 'Segments'>
+	| table |
+	table := aBuilder newTable
+		         items: (0 to: 9);
+		         addColumn:
+			         (SpStringTableColumn title: 'Digit' evaluated: [ :each |
+					          each printString ]);
+		         yourself.
+	self class segmentNames do: [ :name |
+			table addColumn:
+				(SpStringTableColumn title: name asString evaluated: [ :each |
+						 ((self class segmentsForDigit: each) includes: name)
+							 ifTrue: [ 'on' ]
+							 ifFalse: [ '' ] ]) ].
+	table addColumn:
+		(SpStringTableColumn title: 'Shown now' evaluated: [ :each |
+				 (self inspectionShowsDigit: each)
+					 ifTrue: [ 'yes' ]
+					 ifFalse: [ '' ] ]).
+	^ table
+```
+
+We add the seven middle columns in a loop over `segmentNames`, which is the same list a digit element holds its children in.
+An eighth segment would appear in the table without the view being touched, for the same reason a new colour appears in the palette.
+
+This is the only tab of the chapter that is on an instance but reads mostly class-side facts, and the last column is why it belongs there.
+A table of ten digits is a fact about the class; *which* of the ten you are looking at is a fact about this display.
+
+> **A view on the instance has to say something about this instance.** Otherwise it is a class-side view in the wrong place, and it will be read by a reader who wanted to know what this object is doing.
+
+## The numbers the panel is laid out from
+
+Two chapters of this section were bugs in the control panel: four counters of four widths, and labels running off the right edge of their buttons.
+Both were fixed by stating a number once and laying everything out from it.
+We are left with eleven numbers spread over eleven methods, and no page that shows them together.
+
+```smalltalk
+LaserGameControlPanelElement class >> inspectionMeasureFacts
+	"Answer every number I am laid out from, each one named, in the order the panel is built:
+	the panel and its counters first, then the buttons, then the height the two of them come to."
+
+	^ OrderedCollection new
+		  add: 'Panel width' -> LaserGameElement panelWidth;
+		  add: 'Counters' -> self counterCount;
+		  add: 'Counter width' -> self counterWidth;
+		  add: 'Counter gap' -> self counterGap;
+		  add: 'Rows of buttons' -> self buttonRowCount;
+		  add: 'Button width' -> self buttonWidth;
+		  add: 'Button height' -> self buttonHeight;
+		  add: 'Button gap' -> self buttonGap;
+		  add: 'Button label margin' -> self buttonLabelMargin;
+		  add: 'Divider height' -> self dividerHeight;
+		  add: 'Content height' -> self contentHeight;
+		  yourself
+```
+
+```smalltalk
+LaserGameControlPanelElement class >> inspectionMeasures: aBuilder
+	"Show every width, height and gap I lay myself out from. Two of these numbers were bugs the
+	player reported -- four counters of four widths, and labels running off their buttons -- and
+	both were found by writing the numbers down beside each other."
+
+	<inspectorPresentationOrder: 1 title: 'Measures'>
+	^ aBuilder newTable
+		  items: self inspectionMeasureFacts;
+		  addColumn: (SpStringTableColumn title: 'Measure' evaluated: [ :each |
+					   each key ]);
+		  addColumn: (SpStringTableColumn title: 'Pixels' evaluated: [ :each |
+					   each value printString ]);
+		  yourself
+```
+
+```text
+Measure             | Pixels
+Panel width         | 130
+Counters            | 4
+Counter width       | 122
+Counter gap         | 4
+Rows of buttons     | 3
+Button width        | 50
+Button height       | 20
+Button gap          | 10
+Button label margin | 6
+Divider height      | 5
+Content height      | 335
+```
+
+Read down that column and the panel is there: 130 wide, four counters each 122 wide with 4 to spare on each side, three rows of buttons 50 by 20 with 10 between them, a 5 pixel divider, and 335 of content in all.
+`Content height` is the only measured number in the list -- it builds a counter and asks Toplo how tall it came out -- and that is exactly why it is worth showing beside the ten stated ones.
+
+We give the labels a table of their own, because a label is the one thing on this panel whose width nobody chose:
+
+```smalltalk
+LaserGameControlPanelElement class >> inspectionLabelFacts
+	"Answer each label a button of mine can show, with the width that label needs: the width Toplo
+	measures for the text, with my label margin on each side of it. The width is rounded up,
+	since a button takes whole pixels."
+
+	^ self buttonLabels collect: [ :each |
+		  each
+		  -> ((self widthOfButtonLabel: each) ceiling + (2 * self buttonLabelMargin)) ]
+```
+
+```smalltalk
+LaserGameControlPanelElement class >> inspectionLabels: aBuilder
+	"Show what each of my labels needs, what a button holds, and the room left over. My button
+	width is a number chosen to hold the longest label, so this tab is where a reader finds out
+	which label chose it and how little room is left."
+
+	<inspectorPresentationOrder: 2 title: 'Labels'>
+	^ aBuilder newTable
+		  items: self inspectionLabelFacts;
+		  addColumn: (SpStringTableColumn title: 'Label' evaluated: [ :each |
+					   each key ]);
+		  addColumn: (SpStringTableColumn title: 'Needs' evaluated: [ :each |
+					   each value printString ]);
+		  addColumn:
+			  (SpStringTableColumn title: 'Button holds' evaluated: [ :each |
+					   self buttonWidth printString ]);
+		  addColumn: (SpStringTableColumn title: 'Spare' evaluated: [ :each |
+					   (self buttonWidth - each value) printString ]);
+		  addColumn: (SpStringTableColumn title: 'Fits' evaluated: [ :each |
+					   each value <= self buttonWidth
+						   ifTrue: [ 'yes' ]
+						   ifFalse: [ 'no' ] ]);
+		  yourself
+```
+
+```text
+Label | Needs | Button holds | Spare | Fits
+Quit  | 37    | 50           | 13    | yes
+Fire  | 34    | 50           | 16    | yes
+Stop  | 40    | 50           | 10    | yes
+New   | 38    | 50           | 12    | yes
+Undo  | 45    | 50           | 5     | yes
+Reset | 45    | 50           | 5     | yes
+```
+
+*Undo* and *Reset* need 45 of the 50, and they are the two labels that chose the width.
+*Fire* needs 34, and *Stop*, the label the fire button takes while the laser is firing, needs 40 -- which is the pair the chapter *Buttons of one width* was really about, because a button sized for one of them is too small for the other.
+Five pixels of spare is not much, and that is a fact worth seeing rather than deducing.
+
+> **A number that was once a bug is worth a standing view.** The table that would have found it in a minute costs one method, and it goes on finding it.
+
+## The boards the factory deals
+
+`GridFactory` answers boards.
+We have three to answer: the fixed five by five the tests and the examples play on, an empty board of the standard size, and the eight by ten a new game is dealt.
+A class whose whole job is to answer boards should show you the boards.
+
+```smalltalk
+GridFactory class >> inspectionBoardFacts
+	"Answer each board I can deal, named by the selector that deals it: the fixed board the tests
+	and examples play on, an empty board of the standard size, and the board a new game is dealt.
+	The last one is dealt afresh every time this is asked, since that is what a new game gets."
+
+	^ OrderedCollection new
+		  add: 'demoGrid' -> self demoGrid;
+		  add: 'emptyStandardGrid' -> self emptyStandardGrid;
+		  add: 'defaultGrid' -> self defaultGrid;
+		  yourself
+```
+
+```smalltalk
+GridFactory class >> inspectionBoardsElement
+	"Answer one element holding each board of #inspectionBoardFacts, drawn by the element the
+	game draws with and laid out left to right. The boards are different sizes, so each one is
+	placed at the width the board before it took."
+
+	| gap canvas left height |
+	gap := 10.
+	canvas := BlElement new
+		          background: Color white;
+		          yourself.
+	left := gap.
+	height := 0.
+	self inspectionBoardFacts do: [ :each |
+			| extent |
+			extent := LaserGameBoardElement extentForGrid: each value.
+			canvas addChild: ((LaserGameBoardElement on: each value)
+					 extent: extent;
+					 position: left @ gap;
+					 yourself).
+			left := left + extent x + gap.
+			height := height max: extent y ].
+	canvas extent: left @ (height + (2 * gap)).
+	^ canvas
+```
+
+```smalltalk
+GridFactory class >> inspectionBoards: aBuilder
+	"Show every board I deal, drawn side by side by the board element of the game. I answer boards
+	and nothing else, so a picture of the boards is a picture of me."
+
+	<inspectorPresentationOrder: 1 title: 'Boards'>
+	^ aBuilder newMorph
+		  morph: self inspectionBoardsElement asPreviewMorph;
+		  yourself
+```
+
+The boards are drawn by `LaserGameBoardElement`, the element the game itself puts on screen, and each one is placed at the width the board before it took.
+A board element sizes itself in a layout pass, and there is no layout pass here, so the extents come from `extentForGrid:` -- the same method the window uses to decide how big to open.
+
+A dealt board is random, so a picture of it is a different picture every time the tab is opened.
+What we can state about a random board is its counts:
+
+```smalltalk
+GridFactory class >> inspectionNumberOf: aCellClass in: aGrid
+	"Answer how many cells of aGrid are instances of aCellClass. The class is compared exactly,
+	so a subclass of a cell is not counted as its superclass."
+
+	| count |
+	count := 0.
+	1 to: aGrid numberOfColumns do: [ :x |
+		1 to: aGrid numberOfRows do: [ :y |
+			(aGrid at: x @ y) class = aCellClass ifTrue: [ count := count + 1 ] ] ].
+	^ count
+```
+
+```smalltalk
+GridFactory class >> inspectionCounts: aBuilder
+	"Show each board I deal counted: its size, and how its cells are shared out between mirrors,
+	the target and blanks. A dealt board is random, so the only thing worth stating about it is
+	the counts, and the counts have to add up to the cells."
+
+	<inspectorPresentationOrder: 2 title: 'Counts'>
+	^ aBuilder newTable
+		  items: self inspectionBoardFacts;
+		  addColumn: (SpStringTableColumn title: 'Board' evaluated: [ :each |
+					   each key ]);
+		  addColumn: (SpStringTableColumn title: 'Columns' evaluated: [ :each |
+					   each value numberOfColumns printString ]);
+		  addColumn: (SpStringTableColumn title: 'Rows' evaluated: [ :each |
+					   each value numberOfRows printString ]);
+		  addColumn: (SpStringTableColumn title: 'Cells' evaluated: [ :each |
+					   (each value numberOfColumns * each value numberOfRows)
+						   printString ]);
+		  addColumn: (SpStringTableColumn title: 'Mirrors' evaluated: [ :each |
+					   each value numberOfMirrors printString ]);
+		  addColumn: (SpStringTableColumn title: 'Targets' evaluated: [ :each |
+					   (self inspectionNumberOf: TargetCell in: each value)
+						   printString ]);
+		  addColumn: (SpStringTableColumn title: 'Blanks' evaluated: [ :each |
+					   (self inspectionNumberOf: BlankCell in: each value)
+						   printString ]);
+		  yourself
+```
+
+```text
+Board             | Columns | Rows | Cells | Mirrors | Targets | Blanks
+demoGrid          | 5       | 5    | 25    | 10      | 1       | 14
+emptyStandardGrid | 8       | 10   | 80    | 0       | 0       | 80
+defaultGrid       | 8       | 10   | 80    | 32      | 1       | 47
+```
+
+Three counts and they add up to the cells, on every row.
+That is the claim the test makes of all three boards, and it is the one claim a dealt board can be held to: if only 79 of the 80 cells are accounted for, you have a hole in the board.
+
+```smalltalk
+GridFactoryTestCase >> testTheCountsTabSaysWhatIsOnEveryBoardIDeal
+	"The Counts tab is the same boards counted: how many cells each one holds and how they are
+	shared out between mirrors, the target and blanks. The three counts have to add up to the
+	cells, which is what says a board was dealt and not half dealt."
+
+	| builder table demo cells mirrors targets blanks |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := GridFactory inspectionCounts: builder.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals:
+			#( 'Board' 'Columns' 'Rows' 'Cells' 'Mirrors' 'Targets' 'Blanks' ).
+	demo := table items detect: [ :each | each key = 'demoGrid' ].
+	self assert: (table columns second evaluation value: demo) equals: '5'.
+	self assert: (table columns fifth evaluation value: demo) equals: '10'.
+	self assert: (table columns sixth evaluation value: demo) equals: '1'.
+	cells := table columns fourth.
+	mirrors := table columns fifth.
+	targets := table columns sixth.
+	blanks := table columns last.
+	table items do: [ :each |
+			self
+				assert: (cells evaluation value: each) asNumber
+				equals:
+					(mirrors evaluation value: each) asNumber
+					+ (targets evaluation value: each) asNumber
+					+ (blanks evaluation value: each) asNumber ]
+```
+
+> **A random answer still has something exact to say about itself.** Count what has to balance, and the test holds even when the picture never repeats.
+
 ## Which object to inspect
 
-We now have twelve tabs across six classes, and the way to see them is to inspect something.
+We now have nineteen tabs across eleven classes, and the way to see them is to inspect something.
 A grid that has been fired and played on shows all five of its tabs:
 
 ```smalltalk
@@ -4628,13 +5189,45 @@ GridDirection inspect
 *Regions* and *Map* on the first, *Directions* on the second.
 Inspect `CellClickRegionInside` instead and neither tab appears, which is the two context methods refusing to answer for a hierarchy from the middle of it.
 
+Four more classes answer for themselves, and we inspect each of them the same way:
+
+```smalltalk
+LaserGameShapes inspect
+```
+
+```smalltalk
+LaserGameColors inspect
+```
+
+```smalltalk
+LaserGameControlPanelElement inspect
+```
+
+```smalltalk
+GridFactory inspect
+```
+
+*Shapes* on the first, *Palette* on the second, *Measures* and *Labels* on the third, *Boards* and *Counts* on the last.
+The *Boards* tab deals a fresh random board each time you open it, so close the inspector and open it again and the third board has changed.
+
+The one display tab is on an instance, and a display needs a value before it has anything to say:
+
+```smalltalk
+| led |
+led := LaserGameLedElement digits: 3.
+led value: 108.
+led inspect
+```
+
+*Segments* is the ten digits against the seven segments, and the last column of it marks the three digits of 108.
+
 ## Checking it
 
-We have eleven more tests than we had:
+We have eighteen more tests than we had, and one more test class:
 
 ```text
-294 run, 294 passes, 0 skipped, 0 expected failures,
+301 run, 301 passes, 0 skipped, 0 expected failures,
 0 failures, 0 errors, 0 unexpected passes
 ```
 
-That is the game: a board of cells that knows nothing about how it is drawn, a beam that walks it, a window built out of named numbers, twelve tabs that explain the lot without a method being read, and two hundred and ninety-four tests that will say so again tomorrow.
+That is the game: a board of cells that knows nothing about how it is drawn, a beam that walks it, a window built out of named numbers, nineteen tabs that explain the lot without a method being read, and three hundred and one tests that will say so again tomorrow.
