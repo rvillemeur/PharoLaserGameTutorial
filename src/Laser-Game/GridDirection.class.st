@@ -18,3 +18,33 @@ GridDirection class >> directionFor: aSymbol [
 
 	^self subclasses detect: [:cls | cls directionSymbol = aSymbol]
 ]
+
+{ #category : 'inspecting' }
+GridDirection class >> inspectionDirections: aBuilder [
+	"Show the four directions in compass order, each with the vector it adds to a location and the
+	side the beam enters the next cell from. The last column is what adjacentInversionSymbol
+	means, which is a name that explains nothing until the table is read."
+
+	<inspectorPresentationOrder: 1 title: 'Directions'>
+	^ aBuilder newTable
+		  items: (#( #north #east #south #west ) collect: [ :each |
+					   self directionFor: each ]);
+		  addColumn: (SpStringTableColumn title: 'Direction' evaluated: [ :each |
+					   each name ]);
+		  addColumn: (SpStringTableColumn title: 'Symbol' evaluated: [ :each |
+					   each directionSymbol asString ]);
+		  addColumn: (SpStringTableColumn title: 'Vector' evaluated: [ :each |
+					   each vector printString ]);
+		  addColumn:
+			  (SpStringTableColumn title: 'Beam enters next cell from' evaluated: [ :each |
+					   each adjacentInversionSymbol asString ]);
+		  yourself
+]
+
+{ #category : 'inspecting' }
+GridDirection class >> inspectionDirectionsContext: aContext [
+	"Show the Directions table on the class that has the four directions under it. A direction has
+	no subclasses to list, so the tab would be empty on one of them."
+
+	aContext active: self subclasses notEmpty
+]

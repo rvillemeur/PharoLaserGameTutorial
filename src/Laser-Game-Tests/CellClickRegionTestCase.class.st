@@ -153,6 +153,21 @@ CellClickRegionTestCase >> testEachRegionWithAPictureAnswersTheArrowOfItsDirecti
 			equals: (LaserGameShapes pointsOf: each value scaledToExtent: extent) ]
 ]
 
+{ #category : 'tests - inspecting' }
+CellClickRegionTestCase >> testEveryRegionAClickCanLandInHasAColourOfItsOwnInThePicture [
+	"Two regions painted the same colour would make the picture lie about where the boundary
+	between them runs, so each of the seven regions a click can land in answers a colour no other
+	one answers."
+
+	| regions colours |
+	regions := CellClickRegion withAllSubclasses select: [ :each |
+		           each subclasses isEmpty ].
+	colours := regions collect: [ :each |
+		           CellClickRegion inspectionColorFor: each ].
+	self assert: regions size equals: 7.
+	self assert: colours asSet size equals: regions size
+]
+
 { #category : 'tests' }
 CellClickRegionTestCase >> testTheInsideAndOutsideRegionsRefineTheHintTheyAnswer [
 	"Every region is asked for its hint. The inside region answers the push region of the point,
@@ -173,6 +188,31 @@ CellClickRegionTestCase >> testTheInsideAndOutsideRegionsRefineTheHintTheyAnswer
 		equals: CellClickRegionPushEast
 ]
 
+{ #category : 'tests - inspecting' }
+CellClickRegionTestCase >> testTheMapTabListsEveryRegionAClickCanLandIn [
+	"The Map tab counts the sampled points of each region a click can land in. The inside and the
+	outside regions never appear, since each of them refines itself to a push or a rotate region,
+	and that is the fact the table is there to show."
+
+	| builder table regions |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := CellClickRegion inspectionMap: builder.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Region' 'Tried' 'Rectangle' 'Points' 'Hint' ).
+	regions := table items collect: [ :each | each key ].
+	self assert: (regions includes: CellClickRegionPushNorth).
+	self assert: (regions includes: CellClickRegionRotateClockwise).
+	self assert: (regions includes: CellClickRegionIgnore).
+	self deny: (regions includes: CellClickRegionInside).
+	self deny: (regions includes: CellClickRegionOutside).
+	self
+		assert: (table items inject: 0 into: [ :sum :each | sum + each value ])
+		equals: CellClickRegion inspectionSamplePoints size
+]
+
 { #category : 'tests' }
 CellClickRegionTestCase >> testTheRegionBoundariesHoldAtEveryCellSize [
 	"Run the three boundary tables at three cell sizes. The three regions are concentric squares
@@ -185,4 +225,19 @@ CellClickRegionTestCase >> testTheRegionBoundariesHoldAtEveryCellSize [
 			self assertIgnoreRegionBoundaries.
 			self assertInsideRegionBoundaries.
 			self assertOutsideRegionBoundaries ] ]
+]
+
+{ #category : 'tests - inspecting' }
+CellClickRegionTestCase >> testTheRegionsTabDrawsThePictureFromTheRulesThemselves [
+	"The Regions tab paints a cell by asking clickRegionForPoint: for every sampled point, so the
+	picture cannot disagree with the rules it is drawn from. All a test can say about a picture is
+	that it was built."
+
+	| builder |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	self
+		assert: (CellClickRegion inspectionRegions: builder) class
+		equals: SpMorphPresenter
 ]
