@@ -3871,11 +3871,507 @@ You get `{130.
 400@355.
 550@520}`.
 
-And then the whole suite, which is where we end the book:
+And then the whole suite:
 
 ```text
 280 run, 280 passes, 0 skipped, 0 expected failures,
 0 failures, 0 errors, 0 unexpected passes
 ```
 
-That is the game: a board of cells that knows nothing about how it is drawn, a beam that walks it, a window built out of named numbers, and two hundred and eighty tests that will say so again tomorrow.
+# Looking at objects
+
+The inspector has carried a tab of ours since Section 3.
+*Sides* on a cell, and *Board*, *Beam* and *Cells* on a grid, were each written on the day a bug made us want them.
+In this chapter we write the rest of them on purpose.
+
+The question behind it is explainability.
+A reader who wants to know how a mirror decides where a beam leaves has two ways in.
+One is to read `rotate`, `leanLeft`, `leanRight` and `exitSideFor:` and hold four mappings in their head.
+The other is to inspect a mirror and read the answer off a table.
+The second way is better, and it costs one method per question.
+
+There are three lessons in this chapter.
+A view is an ordinary method, so it is tested like one and it brings no new dependency with it.
+A view must never change the object it shows.
+And a view that asks the rules, rather than restating them, cannot drift away from them.
+
+## A picture of one cell
+
+The grid has a *Board* tab because the game has an element that draws a whole board.
+One cell is drawn by a renderer, and `CellRenderer rendererFor: aCell grid: aGrid` already picks the right one of the three.
+But a renderer wants two things we have to supply: a location, because it asks the cell where it stands, and a grid, because it asks whether the laser is on.
+So we give the cell a board of its own, one cell wide and one cell tall if it has no location yet:
+
+```smalltalk
+Cell >> inspectionPicture: aBuilder
+	"Show me as the board draws me, through the renderer the game itself uses, so that a model
+	fault and a drawing fault can be told apart without opening the game. The renderer reads a
+	copy of me standing in a grid of its own, because a view must not change what it shows."
+
+	<inspectorPresentationOrder: 2 title: 'Picture'>
+	| location grid renderer |
+	location := self gridLocation ifNil: [ 1 @ 1 ].
+	grid := Grid newOfSize: location.
+	grid at: location put: self copy.
+	grid laserIsActive: true.
+	renderer := CellRenderer rendererFor: (grid at: location) grid: grid.
+	^ aBuilder newMorph
+		  morph: renderer newElement asPreviewMorph;
+		  yourself
+```
+
+`Grid newOfSize: aPoint` builds a board of that many columns and rows, so a cell standing at `4@1` gets a board four wide and one tall, and the cell goes in at the corner it already believes it occupies.
+
+The copy is the whole of the care in this method.
+`Grid >> at:put:` tells the cell where it now stands, so handing it `self` would move the inspected cell onto the scratch board and leave it there.
+A view that does that is worse than no view, because the object you looked at is no longer the object you had.
+
+> **A view must not change what it shows.** Inspecting an object is a question, and a question that alters the answer is not one.
+
+`laserIsActive: true` is there so a lit cell is drawn lit; a cell that is off draws itself off whatever the grid says.
+The method is on `Cell`, so all three subclasses inherit it, and each one is drawn by its own renderer without another line from us.
+
+```smalltalk
+MirrorCellTestCase >> testThePictureTabShowsMeAsTheBoardDrawsMe
+	"The Picture tab draws me with my own renderer, mirror and all, and leaves my lean and my
+	exit sides as they were."
+
+	| cell builder |
+	cell := MirrorCell leanRight.
+	cell gridLocation: 4 @ 1.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	self
+		assert: (cell inspectionPicture: builder) class
+		equals: SpMorphPresenter.
+	self assert: cell gridLocation equals: 4 @ 1.
+	self assert: cell isRight.
+	self assert: (cell exitSideFor: #north) equals: #west
+```
+
+The first assertion is the one you would expect, and the last three are the ones that matter.
+They say the cell came out of the view exactly as it went in.
+`BlankCellTestCase` and `TargetCellTestCase` carry the same test, because the three subclasses reach three different renderers and an inherited method is only as good as the subclass it lands in.
+
+## The lean and the four sides, side by side
+
+*Sides* tells you where a beam leaves a mirror.
+It does not tell you whether that is the side a mirror leaning this way *should* send it out by, and that difference is the bug of Section 3.
+We answer it with a second tab, which builds a fresh mirror of the same lean and asks it the same four questions:
+
+```smalltalk
+MirrorCell >> inspectionLean: aBuilder
+	"Show my four sides against the way I lean: where a beam entering each side leaves me, and
+	whether that is the side a fresh mirror leaning my way would send it out by. A mirror whose
+	lean was changed without its exit sides reads 'no' on every row, which is the fault rotate
+	exists to prevent."
+
+	<inspectorPresentationOrder: 3 title: 'Lean'>
+	^ aBuilder newTable
+		  items: #( #north #east #south #west );
+		  addColumn: (SpStringTableColumn title: 'Enters from' evaluated: [ :each | each asString ]);
+		  addColumn: (SpStringTableColumn title: 'Leaves by' evaluated: [ :each |
+					   (self exitSideFor: each) asString ]);
+		  addColumn: (SpStringTableColumn title: 'Matches lean' evaluated: [ :each |
+					   | reference |
+					   reference := self isLeft
+						                ifTrue: [ self class leanLeft ]
+						                ifFalse: [ self class leanRight ].
+					   (self exitSideFor: each) = (reference exitSideFor: each)
+						   ifTrue: [ 'yes' ]
+						   ifFalse: [ 'no' ] ]);
+		  yourself
+```
+
+The reference mirror is built inside the column's block, not once when the table is made, so the column answers for the mirror as it is now and not as it was when you opened the inspector.
+
+Nowhere in this method are the four mappings written down a second time.
+`self class leanLeft` is the constructor the game itself uses, so the comparison is against the rule rather than against a copy of the rule.
+Had we typed the mapping into the view, a change to `leanLeft` would have left the view agreeing with its own stale table and calling the model wrong.
+
+> **Compare against the rule, not against a copy of it.** A second statement of the same mapping is a second thing to keep right.
+
+Inspect `MirrorCell leanLeft` and the tab reads:
+
+```text
+north  east   yes
+east   north  yes
+south  west   yes
+west   south  yes
+```
+
+Then send it `leansLeft: false` from the code pane, which changes the lean and leaves the exit sides alone, and look again:
+
+```text
+north  east   no
+east   north  no
+south  west   no
+west   south  no
+```
+
+Four `no` in a column is the bug, named, in the tool.
+That is what `rotate` goes through `leanLeft` and `leanRight` for.
+
+```smalltalk
+MirrorCellTestCase >> testTheLeanTabComparesMyExitSidesWithTheWayILean
+	"The Lean tab reads my four exit sides against the lean they belong to, so a mirror whose lean
+	was changed without its exit sides reads 'no' on every row. That is the bug rotate exists to
+	prevent, and this is the view that names it."
+
+	| cell builder table matches |
+	cell := MirrorCell leanLeft.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := cell inspectionLean: builder.
+	self assert: table items asArray equals: #( #north #east #south #west ).
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Enters from' 'Leaves by' 'Matches lean' ).
+	matches := table columns third.
+	self
+		assert: (table items collect: [ :each | matches evaluation value: each ]) asArray
+		equals: #( 'yes' 'yes' 'yes' 'yes' ).
+	cell leansLeft: false.
+	self
+		assert: (table items collect: [ :each | matches evaluation value: each ]) asArray
+		equals: #( 'no' 'no' 'no' 'no' )
+```
+
+`aColumn evaluation` answers the block the column was built with, so a test can read a cell of the table without a window anywhere.
+The test then breaks the mirror and asserts the view says so, which is the only honest way to test a view whose whole purpose is to report a fault.
+
+## The undo stack, read out loud
+
+Undo is seven classes looked up by symbol, and *A class for every move that can be taken back* spent a chapter on them.
+A reader who wants to know what the next undo will do should not have to find all seven:
+
+```smalltalk
+Grid >> inspectionMoves: aBuilder
+	"Show my undo stack, youngest move first: what was played, where the cell it was played on
+	stands now, and the selector undo will send to take that move back. Read this tab when undo
+	does something unexpected, because the move and its reversal sit side by side here."
+
+	<inspectorPresentationOrder: 4 title: 'Moves'>
+	^ aBuilder newTable
+		  items: self movesStack reversed;
+		  addColumn: (SpStringTableColumn title: 'Move' evaluated: [ :each | each key asString ]);
+		  addColumn: (SpStringTableColumn title: 'Cell now at' evaluated: [ :each |
+					   each value printString ]);
+		  addColumn: (SpStringTableColumn title: 'Undo sends' evaluated: [ :each |
+					   (ReverseLaserGameAction reverseActionSymbolFor: each key) asString ]);
+		  yourself
+```
+
+`reversed` puts the youngest move first, because the youngest move is the one undo will take back.
+The third column asks `ReverseLaserGameAction` the same question `undo` asks it, so the table cannot promise one thing and the button do another.
+
+Rotate the mirror at `1@5` clockwise, push the one at `1@2` east, and the tab reads:
+
+```text
+east       (2@2)  pushCellWestFromLocation:
+clockwise  (2@3)  rotateCellCounterClockwiseAt:
+```
+
+The middle column is worth a second look.
+A push stores the location of the cell it moved, and that cell has since moved, so the location in the stack is where the cell is *now* — which is exactly what the reverse push needs.
+Reading that off a table is a good deal quicker than working it out in your head.
+
+A grid that has not been played has an empty stack, and a tab with nothing in it is noise, so we hide it until there is something to read:
+
+```smalltalk
+Grid >> inspectionMovesContext: aContext
+	"Hide the Moves tab until something has been played, because an empty stack has nothing to
+	say."
+
+	aContext active: self movesStack isNotEmpty
+```
+
+A method named `inspectionXxxContext:` is asked about the tab `inspectionXxx:` would build, and `active:` decides whether the tab appears at all.
+It needs no pragma of its own; the name is the wiring.
+
+> **A tab with nothing to say should not be on the screen.** Tabs are a reader's first list of questions, and an empty one wastes a glance.
+
+```smalltalk
+GridTestCase >> testTheMovesTabListsWhatUndoWillDo
+	"The Moves tab is the undo stack read out loud: one row per move, youngest first, with the
+	selector undo will send for it. It is the view that saves reading the seven Reverse classes
+	the grid looks up by symbol."
+
+	| grid builder table undoSends |
+	grid := self generateDemoGrid.
+	grid rotateCellClockwiseAt: 1 @ 5.
+	grid pushCellEastFromLocation: 1 @ 2.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := grid inspectionMoves: builder.
+	self assert: table items size equals: 2.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Move' 'Cell now at' 'Undo sends' ).
+	self assert: table items first key equals: #east.
+	self assert: table items last key equals: #clockwise.
+	undoSends := table columns third.
+	self
+		assert: (undoSends evaluation value: table items last)
+		equals: 'rotateCellCounterClockwiseAt:'
+```
+
+The push in that test is east from `1@2`, and not any push we fancied, because `2@2` is the one blank cell next to it.
+A push the rules refuse records nothing, and a test built on one would have asserted against an empty stack.
+
+## Four push rules, asked of every mirror
+
+`canPushCell:fromLocation:` is three questions in a row, and the arrows on the board are drawn from it.
+The player sees the answers one mirror at a time.
+We ask it of every mirror at once, four directions each, in one table.
+
+First we add a small method to turn a rule's answer into something a column can print:
+
+```smalltalk
+Grid >> pushAnswerFor: aGridDirection fromLocation: aPoint
+	"Answer 'yes' when the rules allow the mirror at aPoint to be pushed in aGridDirection, and an
+	empty string when they do not. The Pushes tab reads the rules through me."
+
+	^ (self canPushCell: aGridDirection fromLocation: aPoint)
+		  ifTrue: [ 'yes' ]
+		  ifFalse: [ '' ]
+```
+
+And then the tab:
+
+```smalltalk
+Grid >> inspectionPushes: aBuilder
+	"Show one row per mirror on the board and ask the four push rules of each: a yes is a push the
+	rules allow from where that mirror stands now. The arrows the player sees are drawn from these
+	same four questions."
+
+	<inspectorPresentationOrder: 5 title: 'Pushes'>
+	| mirrors |
+	mirrors := OrderedCollection new.
+	1 to: self numberOfRows do: [ :row |
+		1 to: self numberOfColumns do: [ :column |
+			| location |
+			location := column @ row.
+			(self at: location) class = MirrorCell ifTrue: [ mirrors add: location ] ] ].
+	^ aBuilder newTable
+		  items: mirrors;
+		  addColumn: (SpStringTableColumn title: 'Mirror' evaluated: [ :each | each printString ]);
+		  addColumn: (SpStringTableColumn title: 'North' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionNorth fromLocation: each ]);
+		  addColumn: (SpStringTableColumn title: 'East' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionEast fromLocation: each ]);
+		  addColumn: (SpStringTableColumn title: 'South' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionSouth fromLocation: each ]);
+		  addColumn: (SpStringTableColumn title: 'West' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionWest fromLocation: each ]);
+		  yourself
+```
+
+The two loops walk the board row by row, so the rows of the table come out in the order the board reads, and only mirrors get a row.
+On the demo board the tab reads:
+
+```text
+(4@1)         south  west
+(1@2)  north  east   south
+(5@2)                       west
+(2@3)  north                west
+(3@3)  north  east
+(5@3)         south  west
+(2@4)         south  west
+(3@4)  east   south
+(1@5)  north  east
+(4@5)  north  east          west
+```
+
+Every blank in that table is a push the player will click for and not get, and now you can see why before they do.
+The arrows drawn on the board and the yeses in this table come from the same method, so one of them cannot be right while the other is wrong.
+
+```smalltalk
+GridTestCase >> testThePushesTabSaysWhichPushesTheRulesAllow
+	"The Pushes tab asks the four push rules of every mirror on the board and answers in one
+	table. A mirror with no yes is a mirror the player cannot move, which is what the arrows on
+	the board are drawn from."
+
+	| grid builder table north east |
+	grid := self generateDemoGrid.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := grid inspectionPushes: builder.
+	self assert: table items size equals: grid numberOfMirrors.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Mirror' 'North' 'East' 'South' 'West' ).
+	self assert: (table items includes: 1 @ 2).
+	self deny: (table items includes: 5 @ 1).
+	north := table columns second.
+	east := table columns third.
+	self
+		assert: (north evaluation value: 1 @ 2)
+		equals: ((grid canPushCellNorthFromLocation: 1 @ 2)
+				 ifTrue: [ 'yes' ]
+				 ifFalse: [ '' ]).
+	self assert: (east evaluation value: 1 @ 2) equals: 'yes'
+```
+
+`grid numberOfMirrors` on the left of an assertion, rather than `10`, because the two count the same thing by different routes and a disagreement between them is worth being told about.
+The target cell at `5@1` is denied a row, since nothing but a mirror can be pushed.
+
+## One step of the beam
+
+`LaserPathElement >> nextElementIn:` is eight lines and two `nil` guards, and a reader who wants to know why a beam stopped has to run all eight in their head.
+We ask the same questions in a tab and lay the answers out as facts:
+
+```smalltalk
+LaserPathElement >> inspectionStep: aBuilder
+	"Answer the questions nextElementIn: asks about me: the side the beam leaves my cell by, the
+	location it lands on, and whether it stops here. 'nowhere' means my cell swallows the light,
+	which is the first of the two ways a beam path ends."
+
+	<inspectorPresentationOrder: 1 title: 'Step'>
+	| exitSide facts |
+	exitSide := self cell exitSideFor: self entrySide.
+	facts := OrderedCollection new.
+	facts add: 'Cell' -> self cell printString.
+	facts add: 'Enters from' -> self entrySide asString.
+	facts add: 'Leaves by' -> (exitSide
+			 ifNil: [ 'nowhere' ]
+			 ifNotNil: [ :side | side asString ]).
+	facts add: 'Next location' -> (exitSide
+			 ifNil: [ 'nowhere' ]
+			 ifNotNil: [ :side |
+				 (self cell gridLocation + (GridDirection directionFor: side) vector) printString ]).
+	facts add: 'Stops here' -> (exitSide
+			 ifNil: [ 'yes' ]
+			 ifNotNil: [ 'no' ]).
+	^ aBuilder newTable
+		  items: facts;
+		  addColumn: (SpStringTableColumn title: 'Fact' evaluated: [ :each | each key ]);
+		  addColumn: (SpStringTableColumn title: 'Value' evaluated: [ :each | each value ]);
+		  yourself
+```
+
+We use a table of two columns over a collection of associations, which is the plainest way to show a handful of facts about one object, and it reads top to bottom like a sentence.
+
+The first step of the beam on the demo board reads:
+
+```text
+Cell           a MirrorCell(1@5 leans right, on)
+Enters from    south
+Leaves by      east
+Next location  (2@5)
+Stops here     no
+```
+
+The last step reads:
+
+```text
+Cell           a TargetCell(5@1, on)
+Enters from    west
+Leaves by      nowhere
+Next location  nowhere
+Stops here     yes
+```
+
+`nowhere` twice over is the first of the two guards in `nextElementIn:`: a cell with no exit side for the side the beam came in by swallows the light.
+The other guard is a location off the board, and the *Next location* row tells you when you are about to meet it.
+
+```smalltalk
+LaserPathElementTestCase >> testTheStepTabSaysWhereTheBeamGoesNext
+	"The Step tab answers, for one step of the beam, the three questions nextElementIn: asks: the
+	side the beam leaves by, the location it lands on, and whether it stops here. A target cell
+	stops it, which is the row that explains the first of the two nil guards."
+
+	| grid step builder table value target |
+	grid := GridFactory demoGrid.
+	step := LaserPathElement cell: grid startingCell entrySide: #south.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := step inspectionStep: builder.
+	self
+		assert: (table items collect: [ :each | each key ]) asArray
+		equals: #( 'Cell' 'Enters from' 'Leaves by' 'Next location' 'Stops here' ).
+	value := [ :fact |
+	          (table items detect: [ :each | each key = fact ]) value ].
+	self assert: (value value: 'Enters from') equals: 'south'.
+	self
+		assert: (value value: 'Leaves by')
+		equals: (step cell exitSideFor: #south) asString.
+	self assert: (value value: 'Stops here') equals: 'no'.
+	target := LaserPathElement cell: (grid at: 5 @ 1) entrySide: #west.
+	table := target inspectionStep: builder.
+	value := [ :fact |
+	          (table items detect: [ :each | each key = fact ]) value ].
+	self assert: (value value: 'Leaves by') equals: 'nowhere'.
+	self assert: (value value: 'Next location') equals: 'nowhere'.
+	self assert: (value value: 'Stops here') equals: 'yes'
+```
+
+The test asks the table by name — `value value: 'Leaves by'` — rather than by row number, so adding a fact in the middle later will not make it fail for the wrong reason.
+The *Leaves by* row is asserted against `exitSideFor:` rather than against `#east`, because the point of the row is that it agrees with the model.
+The target cell is asserted literally, since `nowhere` is the fact we are here for.
+
+## Which object to inspect
+
+We now have nine tabs across four classes, and the way to see them is to inspect something.
+A grid that has been fired and played on shows all five of its tabs:
+
+```smalltalk
+| grid |
+grid := GridFactory demoGrid.
+grid fireLaser.
+grid rotateCellClockwiseAt: 1 @ 5.
+grid pushCellEastFromLocation: 1 @ 2.
+grid inspect
+```
+
+*Board* is the picture, *Beam* the path, *Cells* every cell and its state, *Moves* the undo stack and *Pushes* the four rules per mirror.
+Drop the two moves and *Moves* is gone from your inspector, which is `inspectionMovesContext:` doing its work.
+
+One cell shows *Sides* and *Picture*, and a mirror shows *Lean* as well:
+
+```smalltalk
+(GridFactory demoGrid at: 2 @ 3) inspect
+```
+
+```smalltalk
+(GridFactory demoGrid at: 5 @ 1) inspect
+```
+
+```smalltalk
+(GridFactory demoGrid at: 2 @ 2) inspect
+```
+
+Those three are the mirror, the target and a blank cell, and the *Picture* tab draws each of them through its own renderer.
+A mirror built by hand needs no board at all:
+
+```smalltalk
+MirrorCell leanLeft inspect
+```
+
+And one step of the beam shows *Step*:
+
+```smalltalk
+| grid |
+grid := GridFactory demoGrid.
+grid fireLaser.
+grid laserBeamPath last inspect
+```
+
+That last one is the target cell at the end of the beam, so its *Step* tab is the `nowhere` table above.
+Inspect `grid laserBeamPath first` instead and you get the one before it.
+
+## Checking it
+
+We have seven more tests than we had:
+
+```text
+287 run, 287 passes, 0 skipped, 0 expected failures,
+0 failures, 0 errors, 0 unexpected passes
+```
+
+That is the game: a board of cells that knows nothing about how it is drawn, a beam that walks it, a window built out of named numbers, nine tabs that explain the lot without a method being read, and two hundred and eighty-seven tests that will say so again tomorrow.
