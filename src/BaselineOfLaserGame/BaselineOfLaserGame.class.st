@@ -5,9 +5,8 @@ Class {
 	#package : 'BaselineOfLaserGame'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'baselines' }
 BaselineOfLaserGame >> baseline: spec [
-
 	<baseline>
 	spec for: #common do: [
 		spec
@@ -18,9 +17,13 @@ BaselineOfLaserGame >> baseline: spec [
 			with: [ spec repository: 'github://pharo-graphics/Toplo:dev/src' ].
 		spec package: 'Laser-Game' with: [ spec requires: #( 'Bloc' 'Toplo' ) ].
 		spec
-			package: 'Laser-Game-Tests'
+			package: 'Laser-Game-Examples'
 			with: [ spec requires: #( 'Laser-Game' ) ].
+		spec
+			package: 'Laser-Game-Tests'
+			with: [ spec requires: #( 'Laser-Game' 'Laser-Game-Examples' ) ].
 		spec group: 'core' with: #( 'Laser-Game' ).
+		spec group: 'examples' with: #( 'Laser-Game-Examples' ).
 		spec group: 'tests' with: #( 'Laser-Game-Tests' ).
-		spec group: 'default' with: #( 'core' 'tests' ) ]
+		spec group: 'default' with: #( 'core' 'examples' 'tests' ) ]
 ]

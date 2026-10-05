@@ -83,16 +83,6 @@ LaserGameElement class >> onRandomOfExtent: aPoint [
 	^ self on: (GridFactory randomizedGridOfExtent: aPoint)
 ]
 
-{ #category : 'examples' }
-LaserGameElement class >> openExample [
-	"Open the demo grid of the tests: the five by five board with ten mirrors and one target.
-
-	LaserGameElement openExample"
-
-	<sampleInstance>
-	^ self openOn: GridFactory demoGrid
-]
-
 { #category : 'instance creation' }
 LaserGameElement class >> openOn: aGrid [
 	"Open a space showing a game on aGrid and answer it. The space starts at the size the game is
@@ -122,17 +112,6 @@ LaserGameElement class >> openRandomOfExtent: aPoint [
 	LaserGameElement openRandomOfExtent: 8@10"
 
 	^ self openOn: (GridFactory randomizedGridOfExtent: aPoint)
-]
-
-{ #category : 'examples' }
-LaserGameElement class >> openStandardExample [
-	"Open the standard board: eight columns by ten rows, dealt. The demo board of #openExample is
-	the five by five one the earlier chapters play on.
-
-	LaserGameElement openStandardExample"
-
-	<sampleInstance>
-	^ self openOn: GridFactory defaultGrid
 ]
 
 { #category : 'constants' }

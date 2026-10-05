@@ -51,30 +51,6 @@ LaserGameBoardElement class >> on: aGrid [
 ]
 
 { #category : 'examples' }
-LaserGameBoardElement class >> openExample [
-<sampleInstance>
-	"Open the demo grid of the tests, which holds mirrors and a target.
-
-	LaserGameBoardElement openExample"
-
-	^ self openOn: GridFactory demoGrid
-]
-
-{ #category : 'examples' }
-LaserGameBoardElement class >> openExampleWithLaserFired [
-	"Open the demo grid with the laser already fired, which lights the target and draws the beam
-	over the blank cells it crosses.
-
-	LaserGameBoardElement openExampleWithLaserFired"
-
-	<sampleInstance>
-	| grid |
-	grid := GridFactory demoGrid.
-	grid fireLaser.
-	^ self openOn: grid
-]
-
-{ #category : 'examples' }
 LaserGameBoardElement class >> openOn: aGrid [
 	"Open a space showing aGrid and answer it. The space is sized from the grid.
 
