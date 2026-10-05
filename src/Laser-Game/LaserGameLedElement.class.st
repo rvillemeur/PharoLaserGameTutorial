@@ -169,6 +169,44 @@ LaserGameLedElement >> initialize [
 	self layout: BlLinearLayout horizontal
 ]
 
+{ #category : 'inspecting' }
+LaserGameLedElement >> inspectionSegments: aBuilder [
+	"Show which of the seven segments each of the ten digits lights, and which digits I am
+	showing now. A seven segment digit is a table in the first place; segmentsForDigit: is that
+	table written as a literal array, and this tab is the same table read the way it was meant to
+	be read."
+
+	<inspectorPresentationOrder: 2 title: 'Segments'>
+	| table |
+	table := aBuilder newTable
+		         items: (0 to: 9);
+		         addColumn:
+			         (SpStringTableColumn title: 'Digit' evaluated: [ :each |
+					          each printString ]);
+		         yourself.
+	self class segmentNames do: [ :name |
+			table addColumn:
+				(SpStringTableColumn title: name asString evaluated: [ :each |
+						 ((self class segmentsForDigit: each) includes: name)
+							 ifTrue: [ 'on' ]
+							 ifFalse: [ '' ] ]) ].
+	table addColumn:
+		(SpStringTableColumn title: 'Shown now' evaluated: [ :each |
+				 (self inspectionShowsDigit: each)
+					 ifTrue: [ 'yes' ]
+					 ifFalse: [ '' ] ]).
+	^ table
+]
+
+{ #category : 'inspecting' }
+LaserGameLedElement >> inspectionShowsDigit: anInteger [
+	"Answer whether anInteger is one of the digits I am showing. My value is read as it is
+	printed, since that is what the digits hold."
+
+	^ (self value ifNil: [ 0 ]) printString includes:
+		  (Character digitValue: anInteger)
+]
+
 { #category : 'private' }
 LaserGameLedElement >> newDigitElement [
 	"Answer one digit: an element of the digit size holding one rectangle per segment, in the

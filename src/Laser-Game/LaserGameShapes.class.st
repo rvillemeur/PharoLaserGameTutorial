@@ -170,6 +170,65 @@ LaserGameShapes class >> horizontalLaserBeamBarOfExtent: anExtent sides: aCollec
 		  color: aColor
 ]
 
+{ #category : 'inspecting' }
+LaserGameShapes class >> inspectionGalleryElement [
+	"Answer one element holding every shape I can make, drawn once at each of
+	#inspectionShapeExtents: one row per size, the shapes of #inspectionShapeSelectors left to
+	right. Each shape is asked for the square it is given, so a row that holds its proportions is
+	the proof that one vertex array serves every size."
+
+	| gap canvas top width |
+	gap := 10.
+	canvas := BlElement new
+		          background: Color white;
+		          yourself.
+	top := gap.
+	width := gap.
+	self inspectionShapeExtents do: [ :size |
+			| left |
+			left := gap.
+			self inspectionShapeSelectors do: [ :selector |
+					canvas addChild: ((self perform: selector with: size @ size)
+							 position: left @ top;
+							 yourself).
+					left := left + size + gap ].
+			width := width max: left.
+			top := top + size + gap ].
+	canvas extent: width @ top.
+	^ canvas
+]
+
+{ #category : 'inspecting' }
+LaserGameShapes class >> inspectionShapeExtents [
+	"Answer the sizes the Shapes tab draws every shape at. Three sizes are enough to show that a
+	vertex array holds its proportions: the size of a hint, the size of a cell, and larger."
+
+	^ #( 30 50 80 )
+]
+
+{ #category : 'inspecting' }
+LaserGameShapes class >> inspectionShapeSelectors [
+	"Answer the selectors the Shapes tab asks for one shape each, in the order it draws them: the
+	four arrows a hint shows, the two rotate arrows, and the cross hair."
+
+	^ #( #northArrowElementOfExtent: #eastArrowElementOfExtent:
+	     #southArrowElementOfExtent: #westArrowElementOfExtent:
+	     #clockwiseArrowElementOfExtent: #counterClockwiseArrowElementOfExtent:
+	     #crossHairElementOfExtent: )
+]
+
+{ #category : 'inspecting' }
+LaserGameShapes class >> inspectionShapes: aBuilder [
+	"Show every shape I can make, each one drawn at three sizes. I hold vertex arrays written at
+	around 260 pixels and a scaling step, and nothing says whether that step is right until the
+	same arrow is seen small and large side by side."
+
+	<inspectorPresentationOrder: 1 title: 'Shapes'>
+	^ aBuilder newMorph
+		  morph: self inspectionGalleryElement asPreviewMorph;
+		  yourself
+]
+
 { #category : 'building' }
 LaserGameShapes class >> laserBeamBarOfExtent: aBarExtent at: aPoint color: aColor [
 	"Answer one bar of a beam, of aBarExtent and painted in aColor, at aPoint of the cell."

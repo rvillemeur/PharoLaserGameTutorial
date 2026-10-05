@@ -70,6 +70,98 @@ GridFactory class >> emptyStandardGrid [
 	^Grid newOfSize: 8@10
 ]
 
+{ #category : 'inspecting' }
+GridFactory class >> inspectionBoardFacts [
+	"Answer each board I can deal, named by the selector that deals it: the fixed board the tests
+	and examples play on, an empty board of the standard size, and the board a new game is dealt.
+	The last one is dealt afresh every time this is asked, since that is what a new game gets."
+
+	^ OrderedCollection new
+		  add: 'demoGrid' -> self demoGrid;
+		  add: 'emptyStandardGrid' -> self emptyStandardGrid;
+		  add: 'defaultGrid' -> self defaultGrid;
+		  yourself
+]
+
+{ #category : 'inspecting' }
+GridFactory class >> inspectionBoards: aBuilder [
+	"Show every board I deal, drawn side by side by the board element of the game. I answer boards
+	and nothing else, so a picture of the boards is a picture of me."
+
+	<inspectorPresentationOrder: 1 title: 'Boards'>
+	^ aBuilder newMorph
+		  morph: self inspectionBoardsElement asPreviewMorph;
+		  yourself
+]
+
+{ #category : 'inspecting' }
+GridFactory class >> inspectionBoardsElement [
+	"Answer one element holding each board of #inspectionBoardFacts, drawn by the element the
+	game draws with and laid out left to right. The boards are different sizes, so each one is
+	placed at the width the board before it took."
+
+	| gap canvas left height |
+	gap := 10.
+	canvas := BlElement new
+		          background: Color white;
+		          yourself.
+	left := gap.
+	height := 0.
+	self inspectionBoardFacts do: [ :each |
+			| extent |
+			extent := LaserGameBoardElement extentForGrid: each value.
+			canvas addChild: ((LaserGameBoardElement on: each value)
+					 extent: extent;
+					 position: left @ gap;
+					 yourself).
+			left := left + extent x + gap.
+			height := height max: extent y ].
+	canvas extent: left @ (height + (2 * gap)).
+	^ canvas
+]
+
+{ #category : 'inspecting' }
+GridFactory class >> inspectionCounts: aBuilder [
+	"Show each board I deal counted: its size, and how its cells are shared out between mirrors,
+	the target and blanks. A dealt board is random, so the only thing worth stating about it is
+	the counts, and the counts have to add up to the cells."
+
+	<inspectorPresentationOrder: 2 title: 'Counts'>
+	^ aBuilder newTable
+		  items: self inspectionBoardFacts;
+		  addColumn: (SpStringTableColumn title: 'Board' evaluated: [ :each |
+					   each key ]);
+		  addColumn: (SpStringTableColumn title: 'Columns' evaluated: [ :each |
+					   each value numberOfColumns printString ]);
+		  addColumn: (SpStringTableColumn title: 'Rows' evaluated: [ :each |
+					   each value numberOfRows printString ]);
+		  addColumn: (SpStringTableColumn title: 'Cells' evaluated: [ :each |
+					   (each value numberOfColumns * each value numberOfRows)
+						   printString ]);
+		  addColumn: (SpStringTableColumn title: 'Mirrors' evaluated: [ :each |
+					   each value numberOfMirrors printString ]);
+		  addColumn: (SpStringTableColumn title: 'Targets' evaluated: [ :each |
+					   (self inspectionNumberOf: TargetCell in: each value)
+						   printString ]);
+		  addColumn: (SpStringTableColumn title: 'Blanks' evaluated: [ :each |
+					   (self inspectionNumberOf: BlankCell in: each value)
+						   printString ]);
+		  yourself
+]
+
+{ #category : 'inspecting' }
+GridFactory class >> inspectionNumberOf: aCellClass in: aGrid [
+	"Answer how many cells of aGrid are instances of aCellClass. The class is compared exactly,
+	so a subclass of a cell is not counted as its superclass."
+
+	| count |
+	count := 0.
+	1 to: aGrid numberOfColumns do: [ :x |
+		1 to: aGrid numberOfRows do: [ :y |
+			(aGrid at: x @ y) class = aCellClass ifTrue: [ count := count + 1 ] ] ].
+	^ count
+]
+
 { #category : 'randomizing' }
 GridFactory class >> randomBoolean [
 	"Answer true or false, each as likely as the other."

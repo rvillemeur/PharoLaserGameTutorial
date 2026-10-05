@@ -411,6 +411,71 @@ LaserGameControlPanelElementTestCase >> testResetButtonHasTheTopRowToItself [
 	self assert: panel resetButton labelText asString equals: 'Reset'
 ]
 
+{ #category : 'tests - inspecting' }
+LaserGameControlPanelElementTestCase >> testTheLabelsTabSaysWhetherEveryLabelFitsInsideItsButton [
+	"The Labels tab is testEveryButtonLabelFitsInsideTheButton with the numbers shown: what each
+	label needs, what a button holds, and the room left over. This is the tab to read before
+	changing a label or a button width, because it says which label is the one that decides the
+	width."
+
+	| builder table rows needs spare |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := LaserGameControlPanelElement inspectionLabels: builder.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Label' 'Needs' 'Button holds' 'Spare' 'Fits' ).
+	rows := table items.
+	self
+		assert: (rows collect: [ :each | each key ]) asArray
+		equals: LaserGameControlPanelElement buttonLabels.
+	needs := table columns second.
+	spare := table columns fourth.
+	rows do: [ :each |
+			self
+				assert: (needs evaluation value: each)
+				equals: each value printString.
+			self
+				assert: (spare evaluation value: each)
+				equals:
+					(LaserGameControlPanelElement buttonWidth - each value)
+						printString.
+			self assert: (table columns last evaluation value: each) equals: 'yes' ]
+]
+
+{ #category : 'tests - inspecting' }
+LaserGameControlPanelElementTestCase >> testTheMeasuresTabStatesEveryWidthAndHeightIKeep [
+	"The Measures tab is every number the panel is laid out from, on one page. The panel is a
+	column of fixed widths and gaps, and a reader who wants to know why a button is fifty wide
+	should not have to open eleven methods to find out."
+
+	| builder table facts |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := LaserGameControlPanelElement inspectionMeasures: builder.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Measure' 'Pixels' ).
+	facts := table items.
+	self
+		assert: (facts collect: [ :each | each key ]) asArray
+		equals: (LaserGameControlPanelElement inspectionMeasureFacts collect: [
+				 :each | each key ]) asArray.
+	self
+		assert:
+			(facts detect: [ :each | each key = 'Button width' ]) value
+		equals: LaserGameControlPanelElement buttonWidth.
+	self
+		assert:
+			(facts detect: [ :each | each key = 'Counter width' ]) value
+		equals: LaserGameControlPanelElement counterWidth.
+	self
+		assert: (table columns last evaluation value: facts first)
+		equals: facts first value printString
+]
+
 { #category : 'tests' }
 LaserGameControlPanelElementTestCase >> testThePanelShowsADividerAboveItsButtons [
 	"A bar runs across the panel above the buttons, a gap in from each edge and five pixels tall.

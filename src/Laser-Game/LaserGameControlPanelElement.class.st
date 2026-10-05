@@ -140,6 +140,78 @@ LaserGameControlPanelElement class >> heightForGrid: aGrid [
 	^ (LaserGameBoardElement extentForGrid: aGrid) y max: self contentHeight
 ]
 
+{ #category : 'inspecting' }
+LaserGameControlPanelElement class >> inspectionLabelFacts [
+	"Answer each label a button of mine can show, with the width that label needs: the width Toplo
+	measures for the text, with my label margin on each side of it. The width is rounded up,
+	since a button takes whole pixels."
+
+	^ self buttonLabels collect: [ :each |
+		  each
+		  -> ((self widthOfButtonLabel: each) ceiling + (2 * self buttonLabelMargin)) ]
+]
+
+{ #category : 'inspecting' }
+LaserGameControlPanelElement class >> inspectionLabels: aBuilder [
+	"Show what each of my labels needs, what a button holds, and the room left over. My button
+	width is a number chosen to hold the longest label, so this tab is where a reader finds out
+	which label chose it and how little room is left."
+
+	<inspectorPresentationOrder: 2 title: 'Labels'>
+	^ aBuilder newTable
+		  items: self inspectionLabelFacts;
+		  addColumn: (SpStringTableColumn title: 'Label' evaluated: [ :each |
+					   each key ]);
+		  addColumn: (SpStringTableColumn title: 'Needs' evaluated: [ :each |
+					   each value printString ]);
+		  addColumn:
+			  (SpStringTableColumn title: 'Button holds' evaluated: [ :each |
+					   self buttonWidth printString ]);
+		  addColumn: (SpStringTableColumn title: 'Spare' evaluated: [ :each |
+					   (self buttonWidth - each value) printString ]);
+		  addColumn: (SpStringTableColumn title: 'Fits' evaluated: [ :each |
+					   each value <= self buttonWidth
+						   ifTrue: [ 'yes' ]
+						   ifFalse: [ 'no' ] ]);
+		  yourself
+]
+
+{ #category : 'inspecting' }
+LaserGameControlPanelElement class >> inspectionMeasureFacts [
+	"Answer every number I am laid out from, each one named, in the order the panel is built:
+	the panel and its counters first, then the buttons, then the height the two of them come to."
+
+	^ OrderedCollection new
+		  add: 'Panel width' -> LaserGameElement panelWidth;
+		  add: 'Counters' -> self counterCount;
+		  add: 'Counter width' -> self counterWidth;
+		  add: 'Counter gap' -> self counterGap;
+		  add: 'Rows of buttons' -> self buttonRowCount;
+		  add: 'Button width' -> self buttonWidth;
+		  add: 'Button height' -> self buttonHeight;
+		  add: 'Button gap' -> self buttonGap;
+		  add: 'Button label margin' -> self buttonLabelMargin;
+		  add: 'Divider height' -> self dividerHeight;
+		  add: 'Content height' -> self contentHeight;
+		  yourself
+]
+
+{ #category : 'inspecting' }
+LaserGameControlPanelElement class >> inspectionMeasures: aBuilder [
+	"Show every width, height and gap I lay myself out from. Two of these numbers were bugs the
+	player reported -- four counters of four widths, and labels running off their buttons -- and
+	both were found by writing the numbers down beside each other."
+
+	<inspectorPresentationOrder: 1 title: 'Measures'>
+	^ aBuilder newTable
+		  items: self inspectionMeasureFacts;
+		  addColumn: (SpStringTableColumn title: 'Measure' evaluated: [ :each |
+					   each key ]);
+		  addColumn: (SpStringTableColumn title: 'Pixels' evaluated: [ :each |
+					   each value printString ]);
+		  yourself
+]
+
 { #category : 'instance creation' }
 LaserGameControlPanelElement class >> on: aGame [
 	"Answer a control panel for aGame."

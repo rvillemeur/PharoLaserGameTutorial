@@ -90,6 +90,57 @@ GridFactoryTestCase >> testBothMirrorsAreDealt [
 	self assert: (leans includes: false)
 ]
 
+{ #category : 'tests - inspecting' }
+GridFactoryTestCase >> testTheBoardsTabDrawsEveryBoardIDeal [
+	"The Boards tab draws each board I can deal, side by side, with the element the game itself
+	uses. I am the class that answers boards, so the readable view of me is the boards."
+
+	| boards builder presenter |
+	boards := GridFactory inspectionBoardsElement.
+	self
+		assert: boards children size
+		equals: GridFactory inspectionBoardFacts size.
+	boards children do: [ :each |
+			self assert: each class equals: LaserGameBoardElement ].
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	presenter := GridFactory inspectionBoards: builder.
+	self assert: presenter class equals: SpMorphPresenter
+]
+
+{ #category : 'tests - inspecting' }
+GridFactoryTestCase >> testTheCountsTabSaysWhatIsOnEveryBoardIDeal [
+	"The Counts tab is the same boards counted: how many cells each one holds and how they are
+	shared out between mirrors, the target and blanks. The three counts have to add up to the
+	cells, which is what says a board was dealt and not half dealt."
+
+	| builder table demo cells mirrors targets blanks |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := GridFactory inspectionCounts: builder.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals:
+			#( 'Board' 'Columns' 'Rows' 'Cells' 'Mirrors' 'Targets' 'Blanks' ).
+	demo := table items detect: [ :each | each key = 'demoGrid' ].
+	self assert: (table columns second evaluation value: demo) equals: '5'.
+	self assert: (table columns fifth evaluation value: demo) equals: '10'.
+	self assert: (table columns sixth evaluation value: demo) equals: '1'.
+	cells := table columns fourth.
+	mirrors := table columns fifth.
+	targets := table columns sixth.
+	blanks := table columns last.
+	table items do: [ :each |
+			self
+				assert: (cells evaluation value: each) asNumber
+				equals:
+					(mirrors evaluation value: each) asNumber
+					+ (targets evaluation value: each) asNumber
+					+ (blanks evaluation value: each) asNumber ]
+]
+
 { #category : 'tests' }
 GridFactoryTestCase >> testTheDefaultGridIsTheStandardBoard [
 	"The standard board is eight columns by ten rows, dealt. It is the board the game opens on."

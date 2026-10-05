@@ -136,6 +136,63 @@ LaserGameColors class >> gameWindowColor [
 	^ Color r: 0.369 g: 0.369 b: 0.505
 ]
 
+{ #category : 'inspecting' }
+LaserGameColors class >> inspectionColorSelectors [
+	"Answer the name of every colour I hold, sorted: each of my selectors that takes no argument
+	and answers a Color. The list is read from me rather than written out, so a colour added
+	tomorrow shows up in the Palette tab on its own."
+
+	^ (self class selectors select: [ :each |
+		   each numArgs = 0 and: [
+			   (each beginsWith: 'inspection') not and: [
+				   (self perform: each) isKindOf: Color ] ] ]) asSortedCollection asArray
+]
+
+{ #category : 'inspecting' }
+LaserGameColors class >> inspectionPalette: aBuilder [
+	"Show my whole palette, a swatch beside each name. I am a list of colour names, and the only
+	honest way to read a list of colour names is to look at the colours."
+
+	<inspectorPresentationOrder: 1 title: 'Palette'>
+	^ aBuilder newMorph
+		  morph: self inspectionPaletteElement asPreviewMorph;
+		  yourself
+]
+
+{ #category : 'inspecting' }
+LaserGameColors class >> inspectionPaletteElement [
+	"Answer one element holding my whole palette: a swatch of each colour of
+	#inspectionColorSelectors, its name beside it, one to a line. The swatches are added first and
+	the names after them, so a reader of the tab reads a colour and its name together."
+
+	| gap height canvas top |
+	gap := 4.
+	height := 16.
+	canvas := BlElement new
+		          background: Color white;
+		          yourself.
+	top := gap.
+	self inspectionColorSelectors do: [ :selector |
+			canvas addChild: (BlElement new
+					 extent: 48 @ height;
+					 background: (self perform: selector);
+					 position: gap @ top;
+					 yourself).
+			top := top + height + gap ].
+	top := gap.
+	self inspectionColorSelectors do: [ :selector |
+			canvas addChild: (BlTextElement new
+					 text: (selector asString asRopedText
+							  fontSize: 11;
+							  foreground: Color black;
+							  yourself);
+					 position: 48 + (2 * gap) @ top;
+					 yourself).
+			top := top + height + gap ].
+	canvas extent: 260 @ top.
+	^ canvas
+]
+
 { #category : 'colors' }
 LaserGameColors class >> laserBeamCenterColor [
 	"Answer the color of the bright core that runs along the middle of the laser beam."

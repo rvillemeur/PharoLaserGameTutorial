@@ -145,6 +145,38 @@ LaserGameLedElementTestCase >> testTheDigitsFitInsideTheDisplay [
 		equals: LaserGameLedElement digitGap
 ]
 
+{ #category : 'tests - inspecting' }
+LaserGameLedElementTestCase >> testTheSegmentsTabShowsWhichSegmentsEachDigitLights [
+	"The Segments tab is segmentsForDigit: read as a table: the ten digits down the side, the
+	seven segments across the top, and a mark where a digit lights a segment. The last column
+	says which of the ten I am showing at the moment, so the table belongs to this display and
+	not only to the class."
+
+	| led builder table titles shown |
+	led := LaserGameLedElement digits: 3.
+	led value: 108.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := led inspectionSegments: builder.
+	self assert: table items asArray equals: (0 to: 9) asArray.
+	titles := (table columns collect: [ :each | each title ]) asArray.
+	self
+		assert: titles
+		equals: #( 'Digit' 'a' 'b' 'c' 'd' 'e' 'f' 'g' 'Shown now' ).
+	self
+		assert:
+			((table columns allButFirst allButLast collect: [ :each |
+				  each evaluation value: 8 ]) reject: [ :each | each isEmpty ]) size
+		equals: 7.
+	self assert: (table columns second evaluation value: 1) equals: ''.
+	shown := table columns last.
+	self assert: (shown evaluation value: 1) equals: 'yes'.
+	self assert: (shown evaluation value: 0) equals: 'yes'.
+	self assert: (shown evaluation value: 8) equals: 'yes'.
+	self assert: (shown evaluation value: 2) equals: ''
+]
+
 { #category : 'tests' }
 LaserGameLedElementTestCase >> testUnlitSegmentsVanishIntoTheBody [
 	"A display is a dark slab, and a segment that is not lit is the colour of that slab, so only

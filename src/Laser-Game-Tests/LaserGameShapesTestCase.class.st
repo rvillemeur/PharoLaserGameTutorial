@@ -414,3 +414,29 @@ LaserGameShapesTestCase >> testTheRotateArrowIsARingBetweenTwoCirclesWithAHeadOn
 				 (radius closeTo: LaserGameShapes rotateArrowInnerRadius) or: [
 					 radius closeTo: LaserGameShapes rotateArrowOuterRadius ] ]) ]
 ]
+
+{ #category : 'tests - inspecting' }
+LaserGameShapesTestCase >> testTheShapesTabDrawsEveryShapeAtEverySize [
+	"The Shapes tab is the claim of pointsOf:scaledToExtent: put on screen: one row per size, one
+	shape per column, and every shape fills the square it was asked for. A vertex array written at
+	260 pixels has to serve a 12 pixel hint and a 200 pixel drawing, and this is where a reader
+	sees that it does."
+
+	| gallery builder presenter |
+	gallery := LaserGameShapes inspectionGalleryElement.
+	self
+		assert: gallery children size
+		equals:
+			LaserGameShapes inspectionShapeExtents size
+			* LaserGameShapes inspectionShapeSelectors size.
+	LaserGameShapes inspectionShapeExtents do: [ :size |
+			self
+				assert: (gallery children select: [ :each |
+						 (self requestedExtentOf: each) = (size @ size) ]) size
+				equals: LaserGameShapes inspectionShapeSelectors size ].
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	presenter := LaserGameShapes inspectionShapes: builder.
+	self assert: presenter class equals: SpMorphPresenter
+]
