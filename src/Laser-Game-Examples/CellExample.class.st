@@ -1,7 +1,8 @@
 "
 I offer single cells to look at.
 
-Each of my examples answers one cell of a board, so the inspector opens on the Sides tab, which says where light entering each side leaves, and on the Picture tab, which draws the cell the way the board draws it.
+Most of my examples answer one cell read off a board, so the inspector opens on the Sides tab, which says where light entering each side leaves, and on the Picture tab, which draws the cell the way the board draws it. `mirrorOnNoBoard` stands on no board at all, because it is the only cell you can build before a grid deals one.
+
 A mirror adds the Lean tab, which turns it and shows what every turn does.
 "
 Class {
