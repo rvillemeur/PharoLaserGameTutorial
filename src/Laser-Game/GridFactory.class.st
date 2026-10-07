@@ -1,7 +1,7 @@
 "
 I build the grids the game is played on.
 
-`demoGrid` is the hand-made board the tests and the examples use. `defaultGrid` is the board the game opens on: eight columns by ten rows, dealt. `randomizedGridOfExtent:` deals a board of any size.
+`defaultGrid` is the board the game opens on: eight columns by ten rows, dealt. `emptyStandardGrid` is a board of that size with nothing on it. `randomizedGridOfExtent:` deals a board of any size. The fixed board of the book is not mine: it is `GridExample class >> demoGrid`, since a board the tests and the examples share is a fixture, not a board I deal.
 
 `randomizeGrid:` deals a board with its target in the top right corner, and `randomizeGrid:targetAt:` puts the target in the corner it is given. Either way it deals mirrors onto locations it has not used yet, one for every two and a half cells of the board. It writes onto the grid it is given and clears nothing, which is why `LaserGameElement >> newGame` empties the grid first.
 
@@ -10,6 +10,7 @@ GridFactory randomizedGridOfExtent: 8@10
 ```
 
 `randomNumberGenerator` holds one seeded `Random` for the whole class, seeded from the clock the first time it is asked for, and `reSeed` puts it back on the clock. A test that wants the same board twice seeds it itself.
+
 "
 Class {
 	#name : 'GridFactory',
@@ -27,27 +28,6 @@ GridFactory class >> defaultGrid [
 	"Answer the board a new game is dealt on: eight columns by ten rows, randomized."
 
 	^self randomizedGridOfExtent: 8@10
-]
-
-{ #category : 'instance creation' }
-GridFactory class >> demoGrid [
-	"Answer a five by five grid holding ten mirrors and one target, always the same ones. The
-	tests use it whenever a board with something on it is needed, and so do the examples."
-
-	| grid |
-	grid := Grid newOfSize: 5@5.
-	grid at: 4@1 put: MirrorCell leanRight.
-	grid at: 5@1 put: TargetCell new.
-	grid at: 1@2 put: MirrorCell leanRight.
-	grid at: 5@2 put: MirrorCell leanLeft.
-	grid at: 2@3 put: MirrorCell leanLeft.
-	grid at: 3@3 put: MirrorCell leanRight.
-	grid at: 5@3 put: MirrorCell leanLeft.
-	grid at: 2@4 put: MirrorCell leanLeft.
-	grid at: 3@4 put: MirrorCell leanLeft.
-	grid at: 1@5 put: MirrorCell leanRight.
-	grid at: 4@5 put: MirrorCell leanRight.
-	^grid
 ]
 
 { #category : 'randomizing' }
@@ -72,12 +52,12 @@ GridFactory class >> emptyStandardGrid [
 
 { #category : 'inspecting' }
 GridFactory class >> inspectionBoardFacts [
-	"Answer each board I can deal, named by the selector that deals it: the fixed board the tests
-	and examples play on, an empty board of the standard size, and the board a new game is dealt.
-	The last one is dealt afresh every time this is asked, since that is what a new game gets."
+	"Answer each board I can deal, named by the selector that deals it: an empty board of the
+	standard size, and the board a new game is dealt. The second is dealt afresh every time this
+	is asked, since that is what a new game gets. The fixed board of the book is not here: it is
+	an example, not a board I deal."
 
 	^ OrderedCollection new
-		  add: 'demoGrid' -> self demoGrid;
 		  add: 'emptyStandardGrid' -> self emptyStandardGrid;
 		  add: 'defaultGrid' -> self defaultGrid;
 		  yourself

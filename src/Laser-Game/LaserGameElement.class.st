@@ -4,8 +4,7 @@ I am the whole game on the screen: a control panel on the left, a board on the r
 I hold a `LaserGameBoardElement` and a `LaserGameControlPanelElement`, and I take my size from them, the panel width and the margin. The colour behind them all is the ramp of `LaserGameColors windowColorRamp`.
 
 ```
-LaserGameElement openExample
-LaserGameElement openStandardExample
+LaserGameElement openOn: GridFactory defaultGrid
 LaserGameElement openRandomOfExtent: 12@12
 ```
 
@@ -89,7 +88,7 @@ LaserGameElement class >> openOn: aGrid [
 	drawn at, and the game follows it from there: a window the player resizes scales the game to
 	match.
 
-	LaserGameElement openOn: GridFactory demoGrid"
+	LaserGameElement openOn: GridFactory defaultGrid"
 
 	| space element |
 	space := BlSpace new.

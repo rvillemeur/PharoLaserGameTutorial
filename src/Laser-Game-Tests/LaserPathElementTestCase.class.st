@@ -33,7 +33,7 @@ LaserPathElementTestCase >> testTheNextElementFollowsTheMirrorAfterItIsRotated [
 	method where that shows."
 
 	| grid mirror element |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	mirror := grid at: 4 @ 1.
 	element := LaserPathElement cell: mirror entrySide: #south.
 	self assert: mirror isRight.
@@ -53,7 +53,7 @@ LaserPathElementTestCase >> testTheStepTabSaysWhereTheBeamGoesNext [
 	stops it, which is the row that explains the first of the two nil guards."
 
 	| grid step builder table value target |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	step := LaserPathElement cell: grid startingCell entrySide: #south.
 	builder := SpPresenterBuilder new
 		           application: SpApplication new;

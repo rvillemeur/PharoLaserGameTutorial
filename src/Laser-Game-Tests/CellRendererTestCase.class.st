@@ -1,6 +1,9 @@
 Class {
 	#name : 'CellRendererTestCase',
 	#superclass : 'LaserGameTestCase',
+	#instVars : [
+		'grid'
+	],
 	#category : 'Laser-Game-Tests',
 	#package : 'Laser-Game-Tests'
 }
@@ -14,12 +17,20 @@ CellRendererTestCase >> requestedExtentOf: anElement [
 	  @ anElement constraints vertical resizer size
 ]
 
+{ #category : 'running' }
+CellRendererTestCase >> setUp [
+	"Most of my tests render a cell of the board of the book, so I make it once here."
+
+	super setUp.
+	grid := GridExample demoGrid
+]
+
 { #category : 'tests' }
 CellRendererTestCase >> testABlankCellCrossedTwiceShowsBothBeams [
 	"A blank cell can be crossed twice as well, which lights all four of its sides. Nothing extra
 	is asked for: both bands are drawn the whole way across and both cores go over them."
 
-	| grid cell element beam extent |
+	| cell element beam extent |
 	grid := Grid new.
 	cell := BlankCell new.
 	grid at: 1 @ 1 put: cell.
@@ -44,8 +55,6 @@ CellRendererTestCase >> testABlankCellDrawsNoBeamUnlessTheLaserReachesIt [
 	"A cell draws a beam only while the laser is firing and only where the beam runs. Both
 	questions are asked in #renderLaserOn:, before anything is drawn."
 
-	| grid |
-	grid := GridFactory demoGrid.
 	self
 		assertEmpty:
 			(CellRenderer rendererFor: (grid at: 2 @ 5) grid: grid) newElement
@@ -68,7 +77,7 @@ CellRendererTestCase >> testBlankCellElement [
 	The element is checked before any layout pass, so the size is read from the layout
 	constraints rather than from the extent, which stays zero until the element is laid out."
 
-	| grid element |
+	| element |
 	grid := Grid new.
 	element := (CellRenderer rendererFor: (grid at: 1 @ 1) grid: grid)
 		           newElement.
@@ -111,8 +120,6 @@ CellRendererTestCase >> testEverySizeInACellFollowsTheCellSize [
 	overlapping, the ring of a target still fits in the cell, and a board is still the grid
 	times the cell."
 
-	| grid |
-	grid := GridFactory demoGrid.
 	#( 30 40 80 ) do: [ :side |
 		self withCellExtent: side @ side do: [
 			| cell inside outside middle renderer |
@@ -156,8 +163,7 @@ CellRendererTestCase >> testOnlyAMirrorAnswersAHintRegion [
 	whole of the design, and it lives in the hierarchy rather than in a conditional. The mirror
 	answers the push region of the point, since the middle of a cell is where a push is asked for."
 
-	| grid point |
-	grid := GridFactory demoGrid.
+	| point |
 	point := CellClickRegionInside regionRectangle center.
 	self
 		assert: ((CellRenderer rendererFor: (grid at: 1 @ 1) grid: grid)
@@ -201,8 +207,7 @@ CellRendererTestCase >> testTheBeamCrossesABlankCellFromSideToSide [
 	along the bottom row from west to east, and the blank cell at 2@5 is one the beam crosses that
 	way."
 
-	| grid element beam |
-	grid := GridFactory demoGrid.
+	| element beam |
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 2 @ 5) grid: grid)
 		           newElement.
@@ -225,8 +230,7 @@ CellRendererTestCase >> testTheBeamCrossesABlankCellFromTopToBottom [
 	"One question chooses between the two drawings: is the south segment lit. The demo grid turns
 	the beam north at 4@5, so the blank cell at 4@4 is crossed from top to bottom."
 
-	| grid element beam |
-	grid := GridFactory demoGrid.
+	| element beam |
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 4 @ 4) grid: grid)
 		           newElement.

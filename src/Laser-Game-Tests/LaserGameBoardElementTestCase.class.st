@@ -1,16 +1,27 @@
 Class {
 	#name : 'LaserGameBoardElementTestCase',
 	#superclass : 'TestCase',
+	#instVars : [
+		'grid'
+	],
 	#category : 'Laser-Game-Tests',
 	#package : 'Laser-Game-Tests'
 }
+
+{ #category : 'running' }
+LaserGameBoardElementTestCase >> setUp [
+	"Every test of mine builds on the board of the book, so I make it once here."
+
+	super setUp.
+	grid := GridExample demoGrid
+]
 
 { #category : 'tests' }
 LaserGameBoardElementTestCase >> testANewBoardHoversNothingAndHasNoClick [
 	"A board that no pointer has visited yet hovers no cell and holds no click."
 
 	| board |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	self assert: board hoveredCellElement isNil.
 	self assert: board hoveredCell isNil.
 	self assert: board clickedCell isNil
@@ -20,8 +31,7 @@ LaserGameBoardElementTestCase >> testANewBoardHoversNothingAndHasNoClick [
 LaserGameBoardElementTestCase >> testBoardHasOneElementPerCell [
 	"Every cell of the grid gets exactly one element, and no element is left over."
 
-	| grid board |
-	grid := GridFactory demoGrid.
+	| board |
 	board := LaserGameBoardElement on: grid.
 	self
 		assert: board children size
@@ -34,8 +44,7 @@ LaserGameBoardElementTestCase >> testBoardLaysCellsOutInAGridAndFitsThem [
 	read without a layout pass. BlGridLayout keeps its column count privately, so the number of
 	columns is not asserted here; the placement it produces is checked by opening the example."
 
-	| grid board |
-	grid := GridFactory demoGrid.
+	| board |
 	board := LaserGameBoardElement on: grid.
 	self assert: board layout class equals: BlGridLayout.
 	self
@@ -51,8 +60,7 @@ LaserGameBoardElementTestCase >> testCellElementsAreInRowMajorOrder [
 	"Cells are added row by row, so the element of a location is found by arithmetic and
 	every location answers a different element."
 
-	| grid board elements |
-	grid := GridFactory demoGrid.
+	| board elements |
 	board := LaserGameBoardElement on: grid.
 	self
 		assert: (board cellElementAt: 1 @ 1)
@@ -74,8 +82,6 @@ LaserGameBoardElementTestCase >> testExtentForGridComesFromTheCellSize [
 	"The board extent is the cell extent times the grid dimensions. Borders are painted inside
 	the cells, so they add nothing, and the number is never written down as a literal."
 
-	| grid |
-	grid := GridFactory demoGrid.
 	self
 		assert: (LaserGameBoardElement extentForGrid: grid)
 		equals:
@@ -89,8 +95,7 @@ LaserGameBoardElementTestCase >> testFiringTheLaserLightsTheTargetOfANewBoard [
 	after the shot shows the lit target. The disc is the last child of the target, since a lit
 	target draws the beam under its picture."
 
-	| grid board center |
-	grid := GridFactory demoGrid.
+	| board center |
 	grid fireLaser.
 	board := LaserGameBoardElement on: grid.
 	center := (board cellElementAt: 5 @ 1) children last.
@@ -105,7 +110,7 @@ LaserGameBoardElementTestCase >> testSettingAnotherGridRebuildsTheCells [
 	"The same board can show another game. Nothing of the previous grid is left behind."
 
 	| board first second |
-	first := GridFactory demoGrid.
+	first := GridExample demoGrid.
 	second := Grid new.
 	board := LaserGameBoardElement on: first.
 	board grid: second.
@@ -125,7 +130,7 @@ LaserGameBoardElementTestCase >> testTheBoardCastsADropShadow [
 	board keeps the size its cells give it, which is what the game's arithmetic counts on."
 
 	| board |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	self assert: board effect class equals: BlSimpleShadowEffect.
 	self
 		assert: board effect color
@@ -136,5 +141,5 @@ LaserGameBoardElementTestCase >> testTheBoardCastsADropShadow [
 	board measure: BlExtentMeasurementSpec unspecified.
 	self
 		assert: board measuredExtent
-		equals: (LaserGameBoardElement extentForGrid: GridFactory demoGrid)
+		equals: (LaserGameBoardElement extentForGrid: GridExample demoGrid)
 ]

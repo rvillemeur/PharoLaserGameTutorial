@@ -17,7 +17,7 @@ LaserGameBoardExample class >> openExample [
 	LaserGameBoardExample openExample"
 
 	<sampleInstance>
-	^ LaserGameBoardElement openOn: GridFactory demoGrid
+	^ LaserGameBoardElement openOn: GridExample demoGrid
 ]
 
 { #category : 'examples' }
@@ -28,7 +28,7 @@ LaserGameBoardExample class >> openExampleWithLaserFired [
 
 	<sampleInstance>
 	| grid |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	grid fireLaser.
 	^ LaserGameBoardElement openOn: grid
 ]

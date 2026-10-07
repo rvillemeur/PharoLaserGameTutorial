@@ -1,14 +1,19 @@
 Class {
 	#name : 'GridTestCase',
 	#superclass : 'TestCase',
+	#instVars : [
+		'grid'
+	],
 	#category : 'Laser-Game-Tests',
 	#package : 'Laser-Game-Tests'
 }
 
-{ #category : 'tests' }
-GridTestCase >> generateDemoGrid [
+{ #category : 'running' }
+GridTestCase >> setUp [
+	"Most of my tests need a board with something on it, which is the board of the book."
 
-	^ GridFactory demoGrid
+	super setUp.
+	grid := GridExample demoGrid
 ]
 
 { #category : 'tests' }
@@ -16,8 +21,6 @@ GridTestCase >> testAPushThatMovesNothingRecordsNoMove [
 	"A push that the rules refuse is not a move, so nothing goes on the moves stack. This is what
 	pushCellAction:fromLocation: asks when it compares the two locations."
 
-	| grid |
-	grid := self generateDemoGrid.
 	grid pushCellNorthFromLocation: 1 @ 1.
 	grid pushCellWestFromLocation: 1 @ 2.
 	grid pushCellEastFromLocation: 2 @ 3.
@@ -34,8 +37,7 @@ GridTestCase >> testAPushedMirrorIsTheSameCellInItsNewPlace [
 	cell carries, would be lost. Both cells are the ones that were there before, and both know
 	their new location."
 
-	| grid mirror blank |
-	grid := self generateDemoGrid.
+	| mirror blank |
 	mirror := grid at: 3 @ 3.
 	blank := grid at: 3 @ 2.
 	grid pushCellNorthFromLocation: 3 @ 3.
@@ -49,8 +51,7 @@ GridTestCase >> testAPushedMirrorIsTheSameCellInItsNewPlace [
 { #category : 'tests' }
 GridTestCase >> testCellInteractions [
 
-	| grid cell expectedActiveLocationList foundOn |
-	grid := self generateDemoGrid.
+	| cell expectedActiveLocationList foundOn |
 	cell := grid at: 5 @ 1.
 	self assert: cell isOff.
 	grid activateCellsInPath.
@@ -75,8 +76,7 @@ GridTestCase >> testCellInteractions [
 { #category : 'tests' }
 GridTestCase >> testFireLaser [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	self assert: grid laserIsActive.
 	cell := grid startingCell.
@@ -90,8 +90,7 @@ GridTestCase >> testFireLaserAfterMirrorPush [
 	"The same push with the laser off moves the mirror and lights nothing. Firing afterwards
 	follows the new path, which no longer reaches the target."
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	cell := grid startingCell.
 	self assert: cell isOff.
 	cell := grid at: 5 @ 1.
@@ -109,8 +108,7 @@ GridTestCase >> testFireLaserAfterMirrorPush [
 { #category : 'tests' }
 GridTestCase >> testFireLaserAfterMirrorRotation [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	self assert: grid laserIsActive.
 	cell := grid startingCell.
@@ -136,8 +134,7 @@ GridTestCase >> testFireLaserDuringMirrorPush [
 	the new path. The beam crosses the mirror at 4@5, so pushing that mirror west sends the beam
 	a different way and the target goes dark."
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	cell := grid startingCell.
 	self assert: cell isOn.
@@ -155,8 +152,7 @@ GridTestCase >> testFireLaserDuringMirrorPush [
 { #category : 'tests' }
 GridTestCase >> testFireLaserDuringMirrorRotation [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	self assert: grid laserIsActive.
 	cell := grid startingCell.
@@ -173,7 +169,7 @@ GridTestCase >> testFireLaserDuringMirrorRotation [
 { #category : 'tests' }
 GridTestCase >> testInitialConditions [
 
-	| grid cell |
+	| cell |
 	grid := Grid new.
 	self shouldnt: [ grid laserIsActive ].
 	cell := grid at: 1 @ 1.
@@ -183,7 +179,6 @@ GridTestCase >> testInitialConditions [
 { #category : 'tests' }
 GridTestCase >> testInitialEmptyGrid [
 
-	| grid |
 	grid := GridFactory emptyStandardGrid.
 	self assert: grid numberOfColumns equals: 8.
 	self assert: grid numberOfRows equals: 10.
@@ -197,7 +192,7 @@ GridTestCase >> testInitialEmptyGrid [
 { #category : 'tests' }
 GridTestCase >> testNonDefaultGridSizeInitialConditions [
 
-	| grid cell |
+	| cell |
 	grid := Grid newOfSize: 4 @ 4.
 	self shouldnt: [ grid laserIsActive ].
 	cell := grid at: 1 @ 1.
@@ -211,8 +206,7 @@ GridTestCase >> testNonDefaultGridSizeInitialConditions [
 GridTestCase >> testNumberOfActiveMirrorsCounter [
 	"No mirror is lit before the laser fires. The demo beam crosses three of the ten."
 
-	| grid count |
-	grid := self generateDemoGrid.
+	| count |
 	count := grid numberOfActiveMirrors.
 	self assert: count equals: 0.
 	grid fireLaser.
@@ -224,8 +218,7 @@ GridTestCase >> testNumberOfActiveMirrorsCounter [
 GridTestCase >> testNumberOfMirrorsCounter [
 	"The demo grid holds ten mirrors. They are counted over the whole board, lit or not."
 
-	| grid count |
-	grid := self generateDemoGrid.
+	| count |
 	count := grid numberOfMirrors.
 	self assert: count equals: 10
 ]
@@ -233,8 +226,7 @@ GridTestCase >> testNumberOfMirrorsCounter [
 { #category : 'tests' }
 GridTestCase >> testPushBlankCell [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	cell := grid at: 1 @ 1.
 	grid pushCellSouthFromLocation: 1 @ 1.
 	cell := grid at: 1 @ 1.
@@ -253,8 +245,7 @@ GridTestCase >> testPushBlankCell [
 { #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellEastCase1 [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid pushCellEastFromLocation: 1 @ 2.
 	cell := grid at: 1 @ 1.
 	self assert: cell class equals: BlankCell.
@@ -269,8 +260,7 @@ GridTestCase >> testPushIsolatedMirrorCellEastCase1 [
 { #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellEastCase2 [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid pushCellEastFromLocation: 3 @ 3.
 	cell := grid at: 3 @ 2.
 	self assert: cell class equals: BlankCell.
@@ -287,8 +277,7 @@ GridTestCase >> testPushIsolatedMirrorCellEastCase2 [
 { #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellNorthCase1 [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid pushCellNorthFromLocation: 1 @ 2.
 	cell := grid at: 1 @ 1.
 	self assert: cell class equals: MirrorCell.
@@ -303,8 +292,7 @@ GridTestCase >> testPushIsolatedMirrorCellNorthCase1 [
 { #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellNorthCase2 [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid pushCellNorthFromLocation: 3 @ 3.
 	cell := grid at: 3 @ 2.
 	self assert: cell class equals: MirrorCell.
@@ -321,8 +309,7 @@ GridTestCase >> testPushIsolatedMirrorCellNorthCase2 [
 { #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellSouth [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid pushCellSouthFromLocation: 3 @ 3.
 	cell := grid at: 3 @ 2.
 	self assert: cell class equals: BlankCell.
@@ -339,8 +326,7 @@ GridTestCase >> testPushIsolatedMirrorCellSouth [
 { #category : 'tests' }
 GridTestCase >> testPushIsolatedMirrorCellWest [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid pushCellWestFromLocation: 3 @ 3.
 	cell := grid at: 3 @ 2.
 	self assert: cell class equals: BlankCell.
@@ -357,8 +343,7 @@ GridTestCase >> testPushIsolatedMirrorCellWest [
 { #category : 'tests' }
 GridTestCase >> testPushTargetCell [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid pushCellSouthFromLocation: 5 @ 1.
 	cell := grid at: 5 @ 1.
 	self assert: cell class equals: TargetCell.
@@ -379,8 +364,6 @@ GridTestCase >> testPushingAMirrorAgainstANonBlankNeighbourDoesNothing [
 	together. The target is no different from a mirror here — it is simply not blank, so a
 	mirror cannot be pushed into it either."
 
-	| grid |
-	grid := self generateDemoGrid.
 	grid pushCellEastFromLocation: 2 @ 3.
 	self assert: (grid at: 2 @ 3) class equals: MirrorCell.
 	self assert: (grid at: 3 @ 3) class equals: MirrorCell.
@@ -395,8 +378,6 @@ GridTestCase >> testPushingAMirrorOffTheEdgeOfTheGridDoesNothing [
 	is a rule about the adjacent cell; the demo grid has a mirror on the left edge at 1@2 and one
 	on the bottom edge at 1@5."
 
-	| grid |
-	grid := self generateDemoGrid.
 	grid pushCellWestFromLocation: 1 @ 2.
 	self assert: (grid at: 1 @ 2) class equals: MirrorCell.
 	grid pushCellSouthFromLocation: 1 @ 5.
@@ -409,8 +390,7 @@ GridTestCase >> testResetGrid [
 	stack behind them. Reset is the undo stack unwound to the end, so this is the same rule
 	#testUndoingEveryMoveGivesTheGridBackAsItWas states one move at a time."
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	cell := grid at: 4 @ 4.
 	self assert: cell class equals: BlankCell.
 	grid pushCellEastFromLocation: 3 @ 3.
@@ -431,8 +411,7 @@ GridTestCase >> testResetGrid [
 { #category : 'tests' }
 GridTestCase >> testStopLaser [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid stopLaser.
 	self shouldnt: [ grid laserIsActive ].
 	cell := grid startingCell.
@@ -446,8 +425,7 @@ GridTestCase >> testTheCellsTabListsEveryCellWithItsState [
 	"The Cells tab answers in one view whether any cell disagrees with the beam: one row per cell,
 	with what the cell is and whether it is lit."
 
-	| grid builder table |
-	grid := self generateDemoGrid.
+	| builder table |
 	grid fireLaser.
 	builder := SpPresenterBuilder new
 		           application: SpApplication new;
@@ -467,8 +445,7 @@ GridTestCase >> testTheInspectorTabsOfAGridShowTheBoardAndTheBeam [
 	"A grid can show the board itself, since it has an element that draws it, as well as the path
 	the laser takes. One row per step of the beam, and the board as a picture."
 
-	| grid builder |
-	grid := self generateDemoGrid.
+	| builder |
 	grid fireLaser.
 	builder := SpPresenterBuilder new
 		           application: SpApplication new;
@@ -485,8 +462,7 @@ GridTestCase >> testTheMovesTabListsWhatUndoWillDo [
 	selector undo will send for it. It is the view that saves reading the seven Reverse classes
 	the grid looks up by symbol."
 
-	| grid builder table undoSends |
-	grid := self generateDemoGrid.
+	| builder table undoSends |
 	grid rotateCellClockwiseAt: 1 @ 5.
 	grid pushCellEastFromLocation: 1 @ 2.
 	builder := SpPresenterBuilder new
@@ -511,8 +487,7 @@ GridTestCase >> testThePushesTabSaysWhichPushesTheRulesAllow [
 	table. A mirror with no yes is a mirror the player cannot move, which is what the arrows on
 	the board are drawn from."
 
-	| grid builder table north east |
-	grid := self generateDemoGrid.
+	| builder table north east |
 	builder := SpPresenterBuilder new
 		           application: SpApplication new;
 		           yourself.
@@ -536,8 +511,7 @@ GridTestCase >> testThePushesTabSaysWhichPushesTheRulesAllow [
 { #category : 'tests' }
 GridTestCase >> testToggleLaser [
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	grid stopLaser.
 	self shouldnt: [ grid laserIsActive ].
@@ -575,8 +549,6 @@ GridTestCase >> testUndoStackAfterPush [
 	"A push puts one entry on the stack, the undo takes it off and answers true, and a
 	second undo finds the stack empty and answers false."
 
-	| grid |
-	grid := self generateDemoGrid.
 	self assert: grid movesStack isEmpty.
 	grid pushCellEastFromLocation: 1 @ 2.
 	self assert: grid movesStack size equals: 1.
@@ -591,7 +563,7 @@ GridTestCase >> testUndoingEveryMoveGivesTheGridBackAsItWas [
 	the way it did, and leave the stack empty. Only a move that changed something is stacked, so
 	each move is checked to have been recorded before the run is undone."
 
-	| grid before after reading |
+	| before after reading |
 	reading := [ :aGrid |
 	            aGrid cells collect: [ :each |
 		            | lean |
@@ -600,7 +572,6 @@ GridTestCase >> testUndoingEveryMoveGivesTheGridBackAsItWas [
 			                    ifFalse: [ '' ].
 		            each class name , ' ' , each gridLocation printString , ' '
 		            , lean ] ].
-	grid := self generateDemoGrid.
 	before := reading value: grid.
 	{
 		(#pushCellEastFromLocation: -> (1 @ 2)).

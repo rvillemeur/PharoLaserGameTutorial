@@ -18,7 +18,7 @@ LaserGameElementExample class >> openExample [
 	LaserGameElementExample openExample"
 
 	<sampleInstance>
-	^ LaserGameElement openOn: GridFactory demoGrid
+	^ LaserGameElement openOn: GridExample demoGrid
 ]
 
 { #category : 'examples' }

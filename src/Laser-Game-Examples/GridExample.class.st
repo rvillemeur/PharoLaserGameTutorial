@@ -13,11 +13,26 @@ Class {
 
 { #category : 'examples' }
 GridExample class >> demoGrid [
-	"The five by five board of the earlier chapters: ten mirrors and one target.
+	"Answer a five by five grid holding ten mirrors and one target, always the same ones. This is
+	the board of the book: the tests use it whenever a board with something on it is needed, and
+	the other examples build on it.
 	GridExample demoGrid"
 
 	<sampleInstance>
-	^ GridFactory demoGrid
+	| grid |
+	grid := Grid newOfSize: 5@5.
+	grid at: 4@1 put: MirrorCell leanRight.
+	grid at: 5@1 put: TargetCell new.
+	grid at: 1@2 put: MirrorCell leanRight.
+	grid at: 5@2 put: MirrorCell leanLeft.
+	grid at: 2@3 put: MirrorCell leanLeft.
+	grid at: 3@3 put: MirrorCell leanRight.
+	grid at: 5@3 put: MirrorCell leanLeft.
+	grid at: 2@4 put: MirrorCell leanLeft.
+	grid at: 3@4 put: MirrorCell leanLeft.
+	grid at: 1@5 put: MirrorCell leanRight.
+	grid at: 4@5 put: MirrorCell leanRight.
+	^grid
 ]
 
 { #category : 'examples' }
@@ -38,7 +53,7 @@ GridExample class >> gridAfterAMoveAndARotation [
 
 	<sampleInstance>
 	| grid |
-	grid := GridFactory demoGrid.
+	grid := self demoGrid.
 	grid rotateCellClockwiseAt: 1 @ 2.
 	grid pushCellEastFromLocation: 3 @ 3.
 	^ grid
@@ -51,7 +66,7 @@ GridExample class >> gridWithTheLaserFiring [
 
 	<sampleInstance>
 	| grid |
-	grid := GridFactory demoGrid.
+	grid := self demoGrid.
 	grid fireLaser.
 	^ grid
 ]

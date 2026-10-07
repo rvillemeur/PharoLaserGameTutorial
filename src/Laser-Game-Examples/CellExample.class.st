@@ -18,7 +18,7 @@ CellExample class >> blankCell [
 	CellExample blankCell"
 
 	<sampleInstance>
-	^ GridFactory demoGrid at: 1 @ 1
+	^ GridExample demoGrid at: 1 @ 1
 ]
 
 { #category : 'examples' }
@@ -28,7 +28,7 @@ CellExample class >> litMirrorCell [
 
 	<sampleInstance>
 	| grid |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	grid fireLaser.
 	^ (grid laserBeamPath detect: [ :each | each cell class = MirrorCell ]) cell
 ]
@@ -40,7 +40,7 @@ CellExample class >> litTargetCell [
 
 	<sampleInstance>
 	| grid |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	grid fireLaser.
 	^ grid at: 5 @ 1
 ]
@@ -51,7 +51,7 @@ CellExample class >> mirrorCell [
 	CellExample mirrorCell"
 
 	<sampleInstance>
-	^ GridFactory demoGrid at: 1 @ 2
+	^ GridExample demoGrid at: 1 @ 2
 ]
 
 { #category : 'examples' }
@@ -60,5 +60,5 @@ CellExample class >> targetCell [
 	CellExample targetCell"
 
 	<sampleInstance>
-	^ GridFactory demoGrid at: 5 @ 1
+	^ GridExample demoGrid at: 5 @ 1
 ]

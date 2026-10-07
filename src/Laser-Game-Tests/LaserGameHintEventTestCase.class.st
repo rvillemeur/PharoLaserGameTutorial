@@ -38,7 +38,7 @@ LaserGameHintEventTestCase >> setUp [
 
 	| aSpace |
 	super setUp.
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	aSpace := self newTestingSpace.
 	aSpace root addChild: board.
 	aSpace settle

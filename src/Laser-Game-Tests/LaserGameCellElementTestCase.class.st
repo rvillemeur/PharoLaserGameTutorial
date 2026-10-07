@@ -5,9 +5,22 @@ I test LaserGameCellElement: that a cell element knows the cell it shows and the
 Class {
 	#name : 'LaserGameCellElementTestCase',
 	#superclass : 'TestCase',
+	#instVars : [
+		'board',
+		'grid'
+	],
 	#category : 'Laser-Game-Tests',
 	#package : 'Laser-Game-Tests'
 }
+
+{ #category : 'running' }
+LaserGameCellElementTestCase >> setUp [
+	"Every test of mine works on the board of the book, so I build it and its element once here."
+
+	super setUp.
+	grid := GridExample demoGrid.
+	board := LaserGameBoardElement on: grid
+]
 
 { #category : 'tests' }
 LaserGameCellElementTestCase >> testACellElementClassifiesAPointOfItsOwn [
@@ -16,7 +29,7 @@ LaserGameCellElementTestCase >> testACellElementClassifiesAPointOfItsOwn [
 	centre is in the inside region."
 
 	| element |
-	element := (LaserGameBoardElement on: GridFactory demoGrid) cellElementAt: 1 @ 1.
+	element := (LaserGameBoardElement on: GridExample demoGrid) cellElementAt: 1 @ 1.
 	self
 		assert: (element clickRegionAt: 0 @ 0)
 		equals: CellClickRegionIgnore.
@@ -33,8 +46,7 @@ LaserGameCellElementTestCase >> testACellElementKnowsTheCellItShows [
 	"A cell element carries its own cell, so nothing has to work back from a position on the
 	board to a grid location."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 2 @ 3.
 	self assert: element cell identicalTo: (board grid at: 2 @ 3).
 	self assert: element gridLocation equals: 2 @ 3
@@ -46,8 +58,7 @@ LaserGameCellElementTestCase >> testACrossHairMarksThePointWhereAHintIsShown [
 	cell, centred on the point a click would use. An element is measured in a layout pass, so
 	what it was asked for is read from its constraints."
 
-	| board element point extent |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element point extent |
 	element := board cellElementAt: 4 @ 1.
 	point := CellClickRegionInside regionRectangle center.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -71,8 +82,7 @@ LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime [
 	push region replaces it. A hint brings two children: the arrow and the cross hair under
 	the pointer."
 
-	| board element rect childCount |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element rect childCount |
 	element := board cellElementAt: 4 @ 1.
 	childCount := element children size.
 	rect := CellClickRegionInside regionRectangle.
@@ -96,8 +106,7 @@ LaserGameCellElementTestCase >> testAPushArrowIsColouredByWhetherThePushIsAllowe
 	mirror at 4@1 can be pushed south, where 4@2 is blank, and cannot be pushed east, where the
 	target stands. Same cell, same pointer, two colours."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 4 @ 1.
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: CellClickRegionInside regionRectangle topCenter + (0 @ 1);
@@ -121,8 +130,7 @@ LaserGameCellElementTestCase >> testARotateArrowIsAlwaysColouredAsAllowed [
 	region answers true in one line. So both rotate arrows are drawn in the colour of a move
 	that is allowed, even on a mirror that is boxed in."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 3 @ 3.
 	{ (CellClickRegionOutside regionRectangle topLeft
 	  -> CellClickRegionRotateClockwise).
@@ -142,8 +150,7 @@ LaserGameCellElementTestCase >> testClickingACellElementRecordsItsCell [
 	"A click reaches the cell element under the pointer, and the board records the cell that was
 	clicked. BlClickEvent is what checks that the press and the release fell in the same cell."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 3 @ 5.
 	element dispatchEvent: (BlClickEvent new
 			 position: 25 @ 25;
@@ -156,8 +163,6 @@ LaserGameCellElementTestCase >> testClickingACellThatIsNotAMirrorDoesNothing [
 	"Only a mirror acts on a click. A blank cell and the target answer nothing wherever they are
 	clicked, which is the renderer superclass doing nothing."
 
-	| board |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
 	#( 1 5 ) do: [ :column |
 		| element |
 		element := board cellElementAt: column @ 1.
@@ -177,8 +182,7 @@ LaserGameCellElementTestCase >> testClickingTheIgnoreRegionOfAMirrorDoesNothing 
 	The superclass of the regions answers that no action is possible, which is where the ignore
 	region gets its answer from."
 
-	| board element mirror |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element mirror |
 	element := board cellElementAt: 4 @ 1.
 	mirror := element cell.
 	element dispatchEvent: (BlClickEvent new
@@ -195,8 +199,7 @@ LaserGameCellElementTestCase >> testClickingTheInsideRegionOfAMirrorPushesIt [
 	the lower triangle pushes north; the mirror at 1@2 has a blank cell above it, and after the
 	click each of the two cell elements draws what now stands in it."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 1 @ 2.
 	self assert: element cell class equals: MirrorCell.
 	element dispatchEvent: (BlClickEvent new
@@ -219,8 +222,7 @@ LaserGameCellElementTestCase >> testClickingTheLowerOutsideRegionOfAMirrorTurnsI
 	last row of the outside rectangle belongs to the ignore margin, as `Rectangle >>
 	containsPoint:` leaves its bottom edge out, so the point is taken one pixel above it."
 
-	| board element mirror |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element mirror |
 	element := board cellElementAt: 4 @ 1.
 	mirror := element cell.
 	element dispatchEvent: (BlClickEvent new
@@ -236,8 +238,7 @@ LaserGameCellElementTestCase >> testClickingTheUpperOutsideRegionOfAMirrorTurnsI
 	click carries a point in the coordinates of the cell, which is the whole of what the region
 	needs."
 
-	| board element mirror |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element mirror |
 	element := board cellElementAt: 4 @ 1.
 	mirror := element cell.
 	self assert: mirror isRight.
@@ -252,8 +253,6 @@ LaserGameCellElementTestCase >> testClickingTheUpperOutsideRegionOfAMirrorTurnsI
 LaserGameCellElementTestCase >> testEachCellElementCarriesTheRendererOfItsCell [
 	"The element is built by a renderer, and it keeps it: that is what redraws the cell later."
 
-	| board |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
 	board children do: [ :each |
 		self assert: each renderer class modelClass equals: each cell class ]
 ]
@@ -262,8 +261,7 @@ LaserGameCellElementTestCase >> testEachCellElementCarriesTheRendererOfItsCell [
 LaserGameCellElementTestCase >> testEnteringACellElementMakesItTheHoveredCell [
 	"The pointer entering a cell element is enough for the board to know which cell it is over."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 2 @ 3.
 	element dispatchEvent: BlMouseEnterEvent new.
 	self assert: board hoveredCellElement identicalTo: element.
@@ -277,8 +275,6 @@ LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterAPush 
 	real click on a push arrow: the beam is off the board and back on it before anything is
 	drawn, and every cell element shows the cell that stands in it."
 
-	| grid board |
-	grid := GridFactory demoGrid.
 	grid fireLaser.
 	board := LaserGameBoardElement on: grid.
 	self assert: (grid at: 5 @ 1) isOn.
@@ -308,8 +304,6 @@ LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterATurn 
 	holds? Every cell is asked: the renderer is the one of the cell standing there, and the
 	target is drawn lit exactly when its cell is on."
 
-	| grid board |
-	grid := GridFactory demoGrid.
 	grid fireLaser.
 	board := LaserGameBoardElement on: grid.
 	(board cellElementAt: 4 @ 1) dispatchEvent: (BlClickEvent new
@@ -334,8 +328,6 @@ LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterATurn 
 LaserGameCellElementTestCase >> testEveryChildOfTheBoardIsACellElement [
 	"The board holds one cell element per cell of its grid."
 
-	| board grid |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
 	grid := board grid.
 	self
 		assert: board children size
@@ -350,8 +342,7 @@ LaserGameCellElementTestCase >> testHoveringAnotherCellClearsTheHintOfTheOneLeft
 	left without ever being told. The board hovers one cell at a time, so the cell it hovered
 	before loses its hint when another one takes its place, whatever events were missed."
 
-	| board first second |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| first second |
 	first := board cellElementAt: 4 @ 1.
 	second := board cellElementAt: 1 @ 2.
 	first dispatchEvent: (BlMouseMoveEvent new
@@ -371,8 +362,7 @@ LaserGameCellElementTestCase >> testLeavingACellClearsItsHintRegion [
 	"The pointer leaving a cell takes its hint with it, so no cell keeps a hint the pointer is
 	no longer in."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 4 @ 1.
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: CellClickRegionInside regionRectangle center;
@@ -386,8 +376,7 @@ LaserGameCellElementTestCase >> testLeavingACellElementThatIsNotHoveredKeepsTheH
 	"Moving from one cell to the next can deliver the enter of the new cell before the leave of
 	the old one, so a leave only clears the hover when it comes from the cell that holds it."
 
-	| board left entered |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| left entered |
 	left := board cellElementAt: 1 @ 1.
 	entered := board cellElementAt: 2 @ 1.
 	left dispatchEvent: BlMouseEnterEvent new.
@@ -400,8 +389,7 @@ LaserGameCellElementTestCase >> testLeavingACellElementThatIsNotHoveredKeepsTheH
 LaserGameCellElementTestCase >> testLeavingTheHoveredCellElementClearsTheHover [
 	"The pointer leaving the cell it hovers leaves the board hovering nothing."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 2 @ 3.
 	element dispatchEvent: BlMouseEnterEvent new.
 	element dispatchEvent: BlMouseLeaveEvent new.
@@ -416,8 +404,7 @@ LaserGameCellElementTestCase >> testMovingInTheOutsideRegionOfAMirrorCellShowsAR
 	of the region belongs to the ignore margin, as `Rectangle >> containsPoint:` leaves its
 	bottom edge out, so the lower point is taken one pixel above it."
 
-	| board element rect |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element rect |
 	element := board cellElementAt: 4 @ 1.
 	rect := CellClickRegionOutside regionRectangle.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -445,8 +432,7 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion 
 	middle of the cell that is a push region, since the push regions divide the inside region
 	between them."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 4 @ 1.
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: CellClickRegionInside regionRectangle center;
@@ -463,8 +449,7 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellShowsTheArrowOfItsPus
 	"The cell adds the arrow of the hint as a child, a few pixels smaller than the cell and
 	centred in it, and its vertices are the ones of the direction the pointer asks for."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 4 @ 1.
 	self assert: element hintElement isNil.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -486,8 +471,7 @@ LaserGameCellElementTestCase >> testMovingOverACellElementMakesItTheHoveredCell 
 	"A mouse move over a cell answers which cell the pointer is over. Bloc sends it to the cell
 	itself, so the board learns it from the cell."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 4 @ 2.
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: 10 @ 10;
@@ -500,8 +484,6 @@ LaserGameCellElementTestCase >> testMovingOverACellThatIsNotAMirrorRecordsNoHint
 	"Blank and target cells answer no hint region, so moving over them records nothing and draws
 	nothing."
 
-	| board |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
 	#( 1 5 ) do: [ :column |
 		| element childCount |
 		element := board cellElementAt: column @ 1.
@@ -521,8 +503,7 @@ LaserGameCellElementTestCase >> testTheArrowGoesWhenAPushEmptiesTheCellUnderTheP
 	be the one of the cell that moved away. The pointer has not moved, and a blank cell offers no
 	push, so the arrow goes and the emptied cell looks like any other blank cell."
 
-	| board element blank |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element blank |
 	element := board cellElementAt: 1 @ 2.
 	blank := board cellElementAt: 2 @ 2.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -544,8 +525,7 @@ LaserGameCellElementTestCase >> testTheArrowGoesWhenThePointerLeavesOrReachesARe
 	"A hint lasts as long as the pointer is in a region that has one. Leaving the cell takes the
 	arrow with it, and so does moving out to the margin, where the ignore region has no picture."
 
-	| board element childCount |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element childCount |
 	element := board cellElementAt: 4 @ 1.
 	childCount := element children size.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -571,8 +551,7 @@ LaserGameCellElementTestCase >> testTheArrowStaysWhenTheCellUnderThePointerStill
 	cell that stands there after the action, not kept and not dropped. The cross hair comes back
 	with the arrow, which is the second of the two children counted here."
 
-	| board element childCount |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element childCount |
 	element := board cellElementAt: 4 @ 1.
 	childCount := element children size.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -596,8 +575,7 @@ LaserGameCellElementTestCase >> testTheCrossHairFollowsThePointerWithinOneRegion
 	inside region rather than four pixels, so the second point is in the same push region as the
 	first at any cell size."
 
-	| board element first second extent step |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element first second extent step |
 	element := board cellElementAt: 4 @ 1.
 	extent := CellRenderer crossHairExtent.
 	step := CellClickRegionInside regionRectangle height // 4 max: 1.
@@ -622,8 +600,7 @@ LaserGameCellElementTestCase >> testTheCrossHairIsShownExactlyWhenAHintIs [
 	offers no action, and the pointer leaving. A cell that offers nothing, like the blank one at
 	2@2, never shows either."
 
-	| board mirror blank |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| mirror blank |
 	mirror := board cellElementAt: 4 @ 1.
 	blank := board cellElementAt: 2 @ 2.
 	mirror dispatchEvent: (BlMouseMoveEvent new
@@ -658,7 +635,7 @@ LaserGameCellElementTestCase >> testTheHintArrowSitsCentredInTheCellAtEveryCellS
 	#( 30 40 80 ) do: [ :size |
 		LaserGameTestCase withCellExtent: size @ size do: [
 			| element arrow position margin |
-			element := (LaserGameBoardElement on: GridFactory demoGrid)
+			element := (LaserGameBoardElement on: GridExample demoGrid)
 				           cellElementAt: 4 @ 1.
 			element dispatchEvent: (BlMouseMoveEvent new
 					 position: CellClickRegionInside regionRectangle center;
@@ -677,8 +654,7 @@ LaserGameCellElementTestCase >> testTheSameLocalPointMeansTheSameRegionInEveryCe
 	"Every cell classifies points in its own coordinates, so the cell in the far corner answers
 	exactly what the cell at the origin answers."
 
-	| board first last |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| first last |
 	first := board cellElementAt: 1 @ 1.
 	last := board
 		        cellElementAt: board grid numberOfColumns @ board grid numberOfRows.
@@ -697,8 +673,7 @@ LaserGameCellElementTestCase >> testTurningAMirrorOnTheBeamRedrawsTheWholeBoard 
 	so the target goes dark without anything working out which cells the beam left. The disc is the
 	last child of the target, since a lit target draws the beam under its picture."
 
-	| grid board target |
-	grid := GridFactory demoGrid.
+	| target |
 	grid fireLaser.
 	board := LaserGameBoardElement on: grid.
 	target := board cellElementAt: 5 @ 1.

@@ -9,7 +9,7 @@ I also hold what the mouse is doing to my cells. Each cell element handles its o
 
 `moveMade` draws my cells again and then evaluates `moveAction`, which is how the game hears that its counters are out of date. Nothing is registered there when I am opened on my own.
 
-`LaserGameBoardElement openExample` opens the demo grid in a space.
+`LaserGameBoardElement openOn:` opens a board on any grid in a space of its own. The one-click openers of the fixed board live in the examples package.
 
 Instance variables:
 	grid	<Grid>	the model I show; setting it rebuilds my children
@@ -50,11 +50,11 @@ LaserGameBoardElement class >> on: aGrid [
 	^ element
 ]
 
-{ #category : 'examples' }
+{ #category : 'instance creation' }
 LaserGameBoardElement class >> openOn: aGrid [
 	"Open a space showing aGrid and answer it. The space is sized from the grid.
 
-	LaserGameBoardElement openOn: GridFactory demoGrid"
+	LaserGameBoardElement openOn: GridFactory defaultGrid"
 
 	| space |
 	space := BlSpace new.

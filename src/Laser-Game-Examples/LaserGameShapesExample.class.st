@@ -19,3 +19,12 @@ LaserGameShapesExample class >> shapes [
 	<sampleInstance>
 	^ LaserGameShapes
 ]
+
+{ #category : 'accessing' }
+LaserGameShapesExample >> shapes [
+	"Every shape the game draws, at 30, 50 and 80 pixels, on the Shapes tab.
+	LaserGameShapesExample shapes"
+
+	<sampleInstance>
+	^ LaserGameShapes
+]

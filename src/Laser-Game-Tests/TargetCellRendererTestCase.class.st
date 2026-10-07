@@ -1,6 +1,9 @@
 Class {
 	#name : 'TargetCellRendererTestCase',
 	#superclass : 'TestCase',
+	#instVars : [
+		'grid'
+	],
 	#category : 'Laser-Game-Tests',
 	#package : 'Laser-Game-Tests'
 }
@@ -9,7 +12,6 @@ Class {
 TargetCellRendererTestCase >> rendererForTarget: aTargetCell [
 	"Answer a renderer for aTargetCell, sitting at 1@1 of a fresh grid."
 
-	| grid |
 	grid := Grid new.
 	grid at: 1 @ 1 put: aTargetCell.
 	^ CellRenderer rendererFor: aTargetCell grid: grid
@@ -22,6 +24,14 @@ TargetCellRendererTestCase >> requestedExtentOf: anElement [
 
 	^ anElement constraints horizontal resizer size
 	  @ anElement constraints vertical resizer size
+]
+
+{ #category : 'running' }
+TargetCellRendererTestCase >> setUp [
+	"Every test of mine renders a target of the board of the book, so I make it once here."
+
+	super setUp.
+	grid := GridExample demoGrid
 ]
 
 { #category : 'tests' }
@@ -163,8 +173,7 @@ TargetCellRendererTestCase >> testTheBeamReachesTheTargetFromTheSideItTravelsBy 
 	"The beam can reach the target from any side, so the grid is asked to hold a target where the
 	beam runs upwards, and the beam covers the south half of the cell it now ends in."
 
-	| grid element beam half |
-	grid := GridFactory demoGrid.
+	| element beam half |
 	grid at: 4 @ 3 put: TargetCell new.
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 4 @ 3) grid: grid)
@@ -184,8 +193,7 @@ TargetCellRendererTestCase >> testTheBeamStopsInTheMiddleOfTheTargetItReaches [
 	sends the beam into the target at 5@1 from the west, so the beam covers the west half of the
 	cell."
 
-	| grid element beam half |
-	grid := GridFactory demoGrid.
+	| element beam half |
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 5 @ 1) grid: grid)
 		           newElement.
@@ -203,8 +211,7 @@ TargetCellRendererTestCase >> testTheTargetIsDrawnOverTheBeam [
 	"The beam is drawn first and the target over it, so that the light does not hide what it hits:
 	the beam is the first child, and the four pieces of the target come after it."
 
-	| grid element children |
-	grid := GridFactory demoGrid.
+	| element children |
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 5 @ 1) grid: grid)
 		           newElement.

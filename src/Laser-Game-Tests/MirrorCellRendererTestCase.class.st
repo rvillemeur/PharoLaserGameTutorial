@@ -170,7 +170,7 @@ MirrorCellRendererTestCase >> testTheBeamTurnsAtAMirror [
 	nothing at all in the two quadrants the light never reaches."
 
 	| grid element beam half extent |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 4 @ 5) grid: grid)
 		           newElement.
@@ -190,7 +190,7 @@ MirrorCellRendererTestCase >> testTheMirrorIsDrawnOverTheBeam [
 	beam is the first child and the mirror is the last."
 
 	| grid element |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 4 @ 5) grid: grid)
 		           newElement.

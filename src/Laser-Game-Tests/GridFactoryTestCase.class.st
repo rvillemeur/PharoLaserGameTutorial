@@ -115,7 +115,7 @@ GridFactoryTestCase >> testTheCountsTabSaysWhatIsOnEveryBoardIDeal [
 	shared out between mirrors, the target and blanks. The three counts have to add up to the
 	cells, which is what says a board was dealt and not half dealt."
 
-	| builder table demo cells mirrors targets blanks |
+	| builder table empty cells mirrors targets blanks |
 	builder := SpPresenterBuilder new
 		           application: SpApplication new;
 		           yourself.
@@ -124,10 +124,10 @@ GridFactoryTestCase >> testTheCountsTabSaysWhatIsOnEveryBoardIDeal [
 		assert: (table columns collect: [ :each | each title ]) asArray
 		equals:
 			#( 'Board' 'Columns' 'Rows' 'Cells' 'Mirrors' 'Targets' 'Blanks' ).
-	demo := table items detect: [ :each | each key = 'demoGrid' ].
-	self assert: (table columns second evaluation value: demo) equals: '5'.
-	self assert: (table columns fifth evaluation value: demo) equals: '10'.
-	self assert: (table columns sixth evaluation value: demo) equals: '1'.
+	empty := table items detect: [ :each | each key = 'emptyStandardGrid' ].
+	self assert: (table columns second evaluation value: empty) equals: '8'.
+	self assert: (table columns fifth evaluation value: empty) equals: '0'.
+	self assert: (table columns sixth evaluation value: empty) equals: '0'.
 	cells := table columns fourth.
 	mirrors := table columns fifth.
 	targets := table columns sixth.

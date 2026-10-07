@@ -9,7 +9,7 @@ Class {
 LaserGameControlPanelElementTestCase >> newPanel [
 	"Answer the control panel of a game playing on the demo grid, with the laser not firing."
 
-	^ (LaserGameElement on: GridFactory demoGrid) controlPanel
+	^ (LaserGameElement on: GridExample demoGrid) controlPanel
 ]
 
 { #category : 'tests' }

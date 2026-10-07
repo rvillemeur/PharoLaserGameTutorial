@@ -19,7 +19,7 @@ LaserPathExample class >> firstStepOfTheBeam [
 
 	<sampleInstance>
 	| grid |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	grid fireLaser.
 	^ grid laserBeamPath first
 ]
@@ -31,7 +31,7 @@ LaserPathExample class >> lastStepOfTheBeam [
 
 	<sampleInstance>
 	| grid |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	grid fireLaser.
 	^ grid laserBeamPath last
 ]

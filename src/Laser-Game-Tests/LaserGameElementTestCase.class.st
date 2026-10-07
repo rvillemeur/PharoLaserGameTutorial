@@ -1,17 +1,26 @@
 Class {
 	#name : 'LaserGameElementTestCase',
 	#superclass : 'TestCase',
+	#instVars : [
+		'game'
+	],
 	#category : 'Laser-Game-Tests',
 	#package : 'Laser-Game-Tests'
 }
+
+{ #category : 'running' }
+LaserGameElementTestCase >> setUp [
+	"Every test of mine plays the board of the book, so I build the game on it once here."
+
+	super setUp.
+	game := LaserGameElement on: GridExample demoGrid
+]
 
 { #category : 'tests' }
 LaserGameElementTestCase >> testAClickThatChangesNothingIsNoMove [
 	"A click on a blank cell does nothing, so the board is never told and nothing is counted. The
 	count is what the player is asked to keep down, so only a move that happened counts."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self assert: (game grid at: 2 @ 2) class equals: BlankCell.
 	(game board cellElementAt: 2 @ 2) clickAt:
 		CellClickRegionRotateClockwise regionRectangle center.
@@ -23,8 +32,7 @@ LaserGameElementTestCase >> testAGameIgnoresAWindowOfNoSize [
 	"A space announces its extent while it is being opened, and that extent can be nothing at all.
 	Scaling by zero would take the game off the screen, so a window of no size is left alone."
 
-	| game natural |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| natural |
 	natural := game naturalExtent.
 	game fitIn: natural * 2.
 	game fitIn: 0 @ 0.
@@ -39,8 +47,7 @@ LaserGameElementTestCase >> testAGameKeepsItsShapeInAWindowOfAnotherShape [
 	game is never stretched. The window is twice the natural extent in one direction only, so the
 	scale is one and the leftover is half the other direction, at any cell size."
 
-	| game natural |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| natural |
 	natural := game naturalExtent.
 	game fitIn: natural x * 2 @ natural y.
 	self assert: (game scaleToFitIn: natural x * 2 @ natural y) equals: 1.0.
@@ -58,7 +65,6 @@ LaserGameElementTestCase >> testAGameMadeWithNoGridPlaysTheStandardBoard [
 	asked for rather than in #initialize, so a game that is given a grid deals no board it would
 	throw away."
 
-	| game |
 	game := LaserGameElement new.
 	self assert: game grid numberOfColumns equals: 8.
 	self assert: game grid numberOfRows equals: 10.
@@ -68,7 +74,7 @@ LaserGameElementTestCase >> testAGameMadeWithNoGridPlaysTheStandardBoard [
 			@ game constraints vertical resizer size
 		equals: (LaserGameElement extentForGrid: game grid).
 	self
-		assert: (LaserGameElement on: GridFactory demoGrid) grid numberOfColumns
+		assert: (LaserGameElement on: GridExample demoGrid) grid numberOfColumns
 		equals: 5
 ]
 
@@ -78,8 +84,7 @@ LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven [
 	window of twice that extent shows the same game twice as big, filling it. The extent is read
 	from the game and not written down, because the cell size decides it."
 
-	| game natural |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| natural |
 	natural := game naturalExtent.
 	game fitIn: natural * 2.
 	self assert: (game scaleToFitIn: natural * 2) equals: 2.0.
@@ -95,8 +100,6 @@ LaserGameElementTestCase >> testAGameShowsItsCountsBeforeAnythingHappens [
 	a counter shows a number nothing has written yet. This test says so, here and after a new
 	board is dealt."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self
 		assert: game controlPanel mirrorsCounter value
 		equals: game grid numberOfMirrors.
@@ -115,8 +118,7 @@ LaserGameElementTestCase >> testAGameShrinksWithASmallerWindow [
 	"A window smaller than the board scales the game down rather than cutting it off, so the whole
 	board is always in view. Half the natural extent is half the game, whatever a cell measures."
 
-	| game natural |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| natural |
 	natural := game naturalExtent.
 	game fitIn: natural / 2.
 	self assert: game transformation matrix sx equals: 0.5.
@@ -131,7 +133,7 @@ LaserGameElementTestCase >> testAGameTakesTheSizeOfWhateverBoardItIsGiven [
 	two of them and the margins. The sizes are read from the layout constraints, since nothing is
 	laid out until a space shows it."
 
-	| game wanted panelHeight |
+	| wanted panelHeight |
 	game := LaserGameElement onRandomOfExtent: 8 @ 10.
 	wanted := LaserGameElement extentForGrid: game grid.
 	panelHeight := 10 * CellRenderer cellExtent y
@@ -159,8 +161,7 @@ LaserGameElementTestCase >> testAMoveOnTheBoardSetsTheCounter [
 	nobody. Turning the mirror at the foot of the first column sends the beam somewhere else, and
 	the path gets shorter."
 
-	| game cellElement before |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| cellElement before |
 	game toggleLaser.
 	before := game controlPanel laserPathCounter value.
 	self assert: before equals: game grid laserBeamPath size.
@@ -179,8 +180,6 @@ LaserGameElementTestCase >> testANewGameDealsAFreshBoardAndForgetsTheMoves [
 	the old cells went first is the count: the randomizer writes onto the board it is given and
 	clears nothing, and ten mirrors is what it deals."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	game grid fireLaser.
 	game incrementMoves.
 	game newGame.
@@ -198,8 +197,6 @@ LaserGameElementTestCase >> testANewGameIsShownOnTheBoard [
 	that was a mirror and is now blank draws itself blank. Nothing has to be erased: a cell
 	element draws only its own cell."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	game newGame.
 	1 to: game grid numberOfRows do: [ :row |
 		1 to: game grid numberOfColumns do: [ :column |
@@ -213,7 +210,6 @@ LaserGameElementTestCase >> testANewGameKeepsTheSizeOfTheBoard [
 	"New deals the grid the game already plays on, so a bigger board stays bigger: the cells are
 	emptied and dealt again, one target in the corner and the mirrors of that size."
 
-	| game |
 	game := LaserGameElement onRandomOfExtent: 8 @ 10.
 	game newGame.
 	self assert: game grid numberOfColumns equals: 8.
@@ -227,8 +223,6 @@ LaserGameElementTestCase >> testANewGameKeepsTheSizeOfTheBoard [
 LaserGameElementTestCase >> testANewGameStartsWithNoMoves [
 	"The move count is zero when the game is built."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self assert: game moves equals: 0.
 	self assert: game controlPanel movesCounter value equals: 0
 ]
@@ -237,8 +231,6 @@ LaserGameElementTestCase >> testANewGameStartsWithNoMoves [
 LaserGameElementTestCase >> testAnsweringNoLeavesTheGameAsItWas [
 	"No takes the question away and does nothing else."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	game quit.
 	game confirmation answer: false.
 	self assert: game confirmation isNil.
@@ -252,8 +244,6 @@ LaserGameElementTestCase >> testAnsweringYesToAGameThatIsNotOpenIsHarmless [
 	"Yes takes the question away and closes the game. A game that was never opened has no space,
 	and closing it is harmless."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self assert: game space isNil.
 	game quit.
 	game confirmation answer: true.
@@ -265,8 +255,8 @@ LaserGameElementTestCase >> testAnsweringYesToAGameThatIsNotOpenIsHarmless [
 LaserGameElementTestCase >> testBoardShowsTheGridOfTheGame [
 	"The board the game holds renders the game's own grid, one element per cell."
 
-	| grid game |
-	grid := GridFactory demoGrid.
+	| grid |
+	grid := GridExample demoGrid.
 	game := LaserGameElement on: grid.
 	self assert: game grid equals: grid.
 	self assert: game board grid equals: grid.
@@ -280,8 +270,8 @@ LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoardOrItsC
 	the panel holds four counters. Sizes are read from the layout constraints, since nothing is
 	laid out yet."
 
-	| grid game |
-	grid := GridFactory demoGrid.
+	| grid |
+	grid := GridExample demoGrid.
 	game := LaserGameElement on: grid.
 	self
 		assert: game controlPanel constraints horizontal resizer size
@@ -299,8 +289,6 @@ LaserGameElementTestCase >> testEveryMoveOnTheBoardCountsOne [
 	"The board announces the move and the game counts it, so the count is shown without anything
 	searching for the display."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	(game board cellElementAt: 1 @ 5) clickAt:
 		CellClickRegionRotateClockwise regionRectangle center.
 	self assert: game moves equals: 1.
@@ -315,7 +303,7 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins [
 	fifty pixel buttons and the three gaps a row of two stands in."
 
 	| grid expected |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	expected := (LaserGameBoardElement extentForGrid: grid) x
 	            + LaserGameElement panelWidth
 	            @ (LaserGameControlPanelElement heightForGrid: grid)
@@ -333,8 +321,6 @@ LaserGameElementTestCase >> testFiringTheLaserSetsTheCounter [
 	"The fire button reaches the counter: toggling the laser sets the counters as well as the
 	board."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self assert: game controlPanel laserPathCounter value equals: 0.
 	game toggleLaser.
 	self
@@ -352,8 +338,6 @@ LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel [
 	wrapped in a column, which holds the mark of the laser's home under it, and the board itself
 	is reached through its own accessor."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self assert: game children size equals: 2.
 	self assert: game children first equals: game controlPanel.
 	self assert: game children second equals: game board parent.
@@ -369,8 +353,7 @@ LaserGameElementTestCase >> testGameShowsWhereTheLaserComesFrom [
 	it from the south. It is a plain element with a background, standing under the board in a
 	column of its own."
 
-	| game column |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| column |
 	column := game board parent.
 	self assert: column children asArray equals: {
 			game board.
@@ -393,8 +376,8 @@ LaserGameElementTestCase >> testGameTakesTheExtentItCalculates [
 	exception, kept free for the mark of the laser's home and asserted by
 	#testTheLaserHomeSitsInTheMarginAndCostsNoSize."
 
-	| grid game |
-	grid := GridFactory demoGrid.
+	| grid |
+	grid := GridExample demoGrid.
 	game := LaserGameElement on: grid.
 	self
 		assert: game constraints horizontal resizer size
@@ -413,8 +396,6 @@ LaserGameElementTestCase >> testQuittingAsksBeforeItCloses [
 	question covers the game and is not one of the two children the game lays out in a row. A
 	second click on Quit while the question stands asks nothing more."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	game quit.
 	self assert: game confirmation class equals: LaserGameConfirmElement.
 	self assert: game children size equals: 3.
@@ -428,8 +409,6 @@ LaserGameElementTestCase >> testResetPutsEveryCellBackAndZeroesTheMoves [
 	"Reset unwinds the whole undo stack, stops the laser and sets the move count back to zero, so
 	the player can start the same board again."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	game grid fireLaser.
 	game grid pushCellEastFromLocation: 1 @ 2.
 	game incrementMoves.
@@ -450,8 +429,7 @@ LaserGameElementTestCase >> testSettingAnotherGridRebuildsTheGame [
 	"Handing the game another grid throws away the board and the panel it held and builds them
 	again for the new grid, so its size follows."
 
-	| game oldBoard smallGrid |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| oldBoard smallGrid |
 	oldBoard := game board.
 	smallGrid := Grid new.
 	game grid: smallGrid.
@@ -470,7 +448,6 @@ LaserGameElementTestCase >> testTheCountersStillHoldWhatABiggerBoardProduces [
 	a path of a thousand, so the beam counter still shows the whole number the grid answers,
 	whatever board the game was dealt."
 
-	| game |
 	game := LaserGameElement onRandomOfExtent: 8 @ 10.
 	game toggleLaser.
 	self assert: game grid laserBeamPath size < 1000.
@@ -489,7 +466,7 @@ LaserGameElementTestCase >> testTheLaserHomeSitsInTheMarginAndCostsNoSize [
 	panel instead: the column under the board then ends where the game ends, and the bar fills the
 	band between the last row of cells and the bottom edge."
 
-	| game column |
+	| column |
 	game := LaserGameElement onRandomOfExtent: 8 @ 10.
 	column := game board parent.
 	column measure: BlExtentMeasurementSpec unspecified.
@@ -521,8 +498,7 @@ LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain [
 	stops it and puts the target out. The board and the button label both follow. The disc is the
 	last child of the target, since a lit target draws the beam under its picture."
 
-	| game target |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| target |
 	target := game grid at: 5 @ 1.
 	game toggleLaser.
 	self assert: game laserIsActive.
@@ -545,8 +521,6 @@ LaserGameElementTestCase >> testUndoOnABoardNobodyHasTouchedDoesNothing [
 	"An empty undo stack answers false, and the game does nothing with it: no move is counted and
 	the board is left as it stands."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self deny: game grid undo.
 	game undo.
 	self assert: game moves equals: 0.
@@ -559,8 +533,6 @@ LaserGameElementTestCase >> testUndoTakesTheLastMoveBackAndCountsAsAMove [
 	and draws itself again. The count is not taken back, since an undo must not remove any count
 	from the total of the player, so a move and its undo are two moves."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	game grid pushCellEastFromLocation: 1 @ 2.
 	game incrementMoves.
 	self assert: (game grid at: 2 @ 2) class equals: MirrorCell.
@@ -578,8 +550,7 @@ LaserGameElementTestCase >> testWindowIsFilledWithTheColorRamp [
 	"The window is filled with a ramp of two colours rather than one flat colour, running the
 	fraction of the way across and down that the ramp direction states."
 
-	| game paint |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| paint |
 	paint := game background paint.
 	self assert: paint class equals: BlLinearGradientPaint.
 	self assert: paint stops equals: LaserGameColors windowColorRamp.
