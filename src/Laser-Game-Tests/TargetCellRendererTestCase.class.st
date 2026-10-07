@@ -10,11 +10,12 @@ Class {
 
 { #category : 'running' }
 TargetCellRendererTestCase >> rendererForTarget: aTargetCell [
-	"Answer a renderer for aTargetCell, sitting at 1@1 of a fresh grid."
+	"Answer a renderer for aTargetCell, sitting at 1@1 of a grid of its own."
 
-	grid := Grid new.
-	grid at: 1 @ 1 put: aTargetCell.
-	^ CellRenderer rendererFor: aTargetCell grid: grid
+	| oneCellGrid |
+	oneCellGrid := Grid new.
+	oneCellGrid at: 1 @ 1 put: aTargetCell.
+	^ CellRenderer rendererFor: aTargetCell grid: oneCellGrid
 ]
 
 { #category : 'support' }

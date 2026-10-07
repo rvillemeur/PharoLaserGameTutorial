@@ -77,9 +77,9 @@ CellRendererTestCase >> testBlankCellElement [
 	The element is checked before any layout pass, so the size is read from the layout
 	constraints rather than from the extent, which stays zero until the element is laid out."
 
-	| element |
-	grid := Grid new.
-	element := (CellRenderer rendererFor: (grid at: 1 @ 1) grid: grid)
+	| oneCellGrid element |
+	oneCellGrid := Grid new.
+	element := (CellRenderer rendererFor: (oneCellGrid at: 1 @ 1) grid: oneCellGrid)
 		           newElement.
 	self
 		assert: element constraints horizontal resizer size

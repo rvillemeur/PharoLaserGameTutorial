@@ -47,6 +47,10 @@ GridFactory class >> emptyRandomLocationsFor: aGrid [
 
 { #category : 'instance creation' }
 GridFactory class >> emptyStandardGrid [
+	"Answer an empty board of the size the game is dealt on: eight columns by ten rows, with no
+	mirror and no target on it. The randomizer fills a board of this shape, and a test that wants a
+	full sized board with nothing on it starts here."
+
 	^Grid newOfSize: 8@10
 ]
 
