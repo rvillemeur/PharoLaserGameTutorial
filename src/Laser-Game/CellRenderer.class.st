@@ -85,23 +85,6 @@ CellRenderer class >> modelClass [
 	^ self subclassResponsibility
 ]
 
-{ #category : 'examples' }
-CellRenderer class >> openExample [
-	"Open one blank cell in a space of its own, to look at it and change it.
-
-	CellRenderer openExample"
-
-	| grid renderer space |
-	grid := Grid new.
-	renderer := self rendererFor: (grid at: 1 @ 1) grid: grid.
-	space := BlSpace new.
-	space extent: self cellExtent * 3.
-	space title: 'Laser Game cell'.
-	space root addChild: renderer newElement.
-	space show.
-	^ space
-]
-
 { #category : 'constants' }
 CellRenderer class >> outsideRegionExtent [
 	"Answer the size of the square where a click asks for a rotation: the cell less the ignore

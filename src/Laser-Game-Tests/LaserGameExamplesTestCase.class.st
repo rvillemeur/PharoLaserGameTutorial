@@ -2,9 +2,10 @@
 I check the examples of the package Laser-Game-Examples.
 
 Every example is a class-side method marked `<sampleInstance>`, which the browser offers as one click: it answers an object and opens an inspector on it.
-I hold that promise to three rules.
+I hold that promise to four rules.
 Every method of the package is such an example.
-Every example that answers an object answers one the inspector has a tab of our own for, and between them the examples reach every tab the game defines.
+Every example that answers an object answers one the inspector has a tab of our own for, and between them the examples reach every tab the game defines on the instance side of a class.
+A tab on the class side is not asked for: inspecting the class shows it, and demanding an example for it only breeds methods whose whole body answers a class. I check instead that the inspector really shows each one there.
 Only an example whose selector begins with `open` opens a window, so running the others costs nothing.
 "
 Class {
@@ -15,14 +16,14 @@ Class {
 }
 
 { #category : 'support' }
-LaserGameExamplesTestCase >> allTabNames [
-	"Answer the name of every inspector tab the game defines, on either side of every class."
+LaserGameExamplesTestCase >> classSideTabMethods [
+	"Answer every inspector tab the game defines on the class side of a class, the tabs you see by inspecting the class."
 
 	| package |
 	package := (self class environment at: #PackageOrganizer) default
 		           packageNamed: 'Laser-Game'.
-	^ ((self tabMethodsDefinedBy: package) collect: [ :each |
-		   each methodClass name , ' >> ' , each selector ]) asSet
+	^ (self tabMethodsDefinedBy: package) select: [ :each |
+		  each methodClass isMeta ]
 ]
 
 { #category : 'support' }
@@ -41,6 +42,27 @@ LaserGameExamplesTestCase >> examplePackage [
 	"Answer the package the examples live in."
 
 	^ (self class environment at: #PackageOrganizer) default packageNamed: 'Laser-Game-Examples'
+]
+
+{ #category : 'support' }
+LaserGameExamplesTestCase >> instanceSideTabNames [
+	"Answer the name of every inspector tab the game defines on the instance side of a class.
+	The class-side tabs are not here: inspecting the class itself shows them, which needs no example."
+
+	| package |
+	package := (self class environment at: #PackageOrganizer) default
+		           packageNamed: 'Laser-Game'.
+	^ (((self tabMethodsDefinedBy: package) reject: [ :each |
+		    each methodClass isMeta ]) collect: [ :each |
+		   each methodClass name , ' >> ' , each selector ]) asSet
+]
+
+{ #category : 'support' }
+LaserGameExamplesTestCase >> opensAWindow: aCompiledMethod [
+	"Answer whether aCompiledMethod puts a window on screen. It does if it sends openOn:, which opens a space on an element, or show, which opens a space it built itself. Read off the sends, so that asking puts up no window."
+
+	^ aCompiledMethod messages anySatisfy: [ :each |
+		  #( openOn: show ) includes: each ]
 ]
 
 { #category : 'support' }
@@ -79,6 +101,21 @@ LaserGameExamplesTestCase >> tabsShownFor: anObject [
 ]
 
 { #category : 'tests' }
+LaserGameExamplesTestCase >> testEveryClassSideTabIsShownByInspectingItsClass [
+	"A tab defined on the class side is reached by inspecting the class itself, so it needs no example of its own. I check that the inspector really shows it there."
+
+	| tabs |
+	tabs := self classSideTabMethods.
+	self denyEmpty: tabs.
+	tabs do: [ :each |
+		| name |
+		name := each methodClass name , ' >> ' , each selector.
+		self
+			assert: ((self tabsShownFor: each methodClass instanceSide) includes: name)
+			description: name , ' is not shown by inspecting its class' ]
+]
+
+{ #category : 'tests' }
 LaserGameExamplesTestCase >> testEveryMethodOfThePackageIsAnExample [
 	"The package holds examples and nothing else, so everything in it is one click the browser offers."
 
@@ -109,27 +146,28 @@ LaserGameExamplesTestCase >> testEveryQuietExampleAnswersAnObjectWithATabOfOurOw
 
 { #category : 'tests' }
 LaserGameExamplesTestCase >> testOnlyAnExampleNamedOpenOpensAWindow [
-	"Reading the selector tells you what the click costs: an opener puts a window on screen, anything else only answers an object.
-	Read off the source, so that running me puts up no window."
+	"Reading the selector tells you what the click costs: an opener puts a window on screen, anything else only answers an object."
 
 	self quietExampleMethods do: [ :each |
 		self
-			deny: (each sourceCode includesSubstring: 'openOn:')
+			deny: (self opensAWindow: each)
 			description: each selector , ' opens a window but is not named open...' ].
 	(self exampleMethods select: [ :each | each selector beginsWith: 'open' ])
 		do: [ :each |
 			self
-				assert: (each sourceCode includesSubstring: 'openOn:')
+				assert: (self opensAWindow: each)
 				description: each selector , ' is named open... but opens no window' ]
 ]
 
 { #category : 'tests' }
-LaserGameExamplesTestCase >> testTheExamplesReachEveryTabTheGameDefines [
-	"Whatever tab the game grows, one click of the examples opens an inspector that shows it."
+LaserGameExamplesTestCase >> testTheExamplesReachEveryInstanceSideTabTheGameDefines [
+	"Whatever tab the game grows on the instance side, one click of the examples opens an inspector that shows it.
+	A tab on the class side is not asked for here: inspecting the class shows it, and demanding an example for it only breeds methods whose whole body answers a class."
 
 	| reached |
 	reached := Set new.
 	self quietExampleMethods do: [ :each |
 		reached addAll: (self tabsShownFor: (self runExample: each)) ].
-	self assertEmpty: (self allTabNames difference: reached) asSortedCollection asArray
+	self assertEmpty:
+		(self instanceSideTabNames difference: reached) asSortedCollection asArray
 ]
