@@ -220,19 +220,24 @@ Bloc draws into a `BlSpace`: a window with a root element you can add children t
 A space of our own, holding one cell, is enough to look at.
 
 Put the experiment in a method rather than in a Playground.
-A method stays with the code, it can be run again a month later, and if a change breaks it you find out:
+A method stays with the code, it can be run again a month later, and if a change breaks it you find out.
+
+This is the fourth promotion trigger of the cycle: a thing you would screenshot.
+Nothing visual survives in a Playground, because looking at it is the whole point and you will want to look again tomorrow.
+So the experiment goes into `Laser-Game-Examples`, the package *Enhancing MirrorCell* opened in the previous section, in a class of its own named after the renderer it builds for.
+Its name begins with `open`, because the method puts a window on the screen, and the gate of that package runs every example except the openers for exactly that reason:
 
 ```smalltalk
-CellRenderer class >> openExample
+CellRendererExample class >> openExample
 	"Open one blank cell in a space of its own, to look at it and change it.
+	CellRendererExample openExample"
 
-	CellRenderer openExample"
-
+	<sampleInstance>
 	| grid renderer space |
 	grid := Grid new.
-	renderer := self rendererFor: (grid at: 1 @ 1) grid: grid.
+	renderer := CellRenderer rendererFor: (grid at: 1 @ 1) grid: grid.
 	space := BlSpace new.
-	space extent: self cellExtent * 3.
+	space extent: CellRenderer cellExtent * 3.
 	space title: 'Laser Game cell'.
 	space root addChild: renderer newElement.
 	space show.
@@ -244,8 +249,10 @@ The space is three cells wide and three cells tall, so the one cell we draw has 
 
 The comment holds the expression that runs the method.
 That is a Pharo habit worth picking up: a comment you can select and evaluate is a comment that does not go stale.
+The `<sampleInstance>` pragma does the same job for the mouse: the class browser puts a small button beside the method, and a click on it runs the method and opens an inspector on what it answers.
+An example in the example package, announcing itself with that pragma, is one the browser offers you; a snippet in a Playground is one you have to remember.
 
-Evaluate `CellRenderer openExample`.
+Evaluate `CellRendererExample openExample`.
 It fails, because `newElement` does not exist yet, so we write it.
 
 ## One element per cell
@@ -307,7 +314,7 @@ An empty method with a comment is a statement, not an oversight: it says *a blan
 And do not give `BlankCellRenderer` an empty override of its own.
 A method identical to the one it inherits says nothing, and the code critic reports it, rightly.
 
-Evaluate `CellRenderer openExample` again.
+Evaluate `CellRendererExample openExample` again.
 You get a grey square with a thin border in a small window.
 That is the first cell of the game.
 
@@ -352,9 +359,9 @@ CellRendererTestCase >> testBlankCellElement
 	The element is checked before any layout pass, so the size is read from the layout
 	constraints rather than from the extent, which stays zero until the element is laid out."
 
-	| grid element |
-	grid := Grid new.
-	element := (CellRenderer rendererFor: (grid at: 1 @ 1) grid: grid)
+	| oneCellGrid element |
+	oneCellGrid := Grid new.
+	element := (CellRenderer rendererFor: (oneCellGrid at: 1 @ 1) grid: oneCellGrid)
 		           newElement.
 	self
 		assert: element constraints horizontal resizer size
@@ -531,7 +538,7 @@ Keeping it that way is why we can test the whole model without a screen.
 LaserGameBoardElement class >> openOn: aGrid
 	"Open a space showing aGrid and answer it. The space is sized from the grid.
 
-	LaserGameBoardElement openOn: GridFactory demoGrid"
+	LaserGameBoardElement openOn: GridFactory defaultGrid"
 
 	| space |
 	space := BlSpace new.
@@ -542,34 +549,84 @@ LaserGameBoardElement class >> openOn: aGrid
 	^ space
 ```
 
+`openOn:` takes a grid, so it is production API and it stays in the core: the window the game opens is opened by that method.
+What goes in the example package is the click, the one that needs no argument:
+
 ```smalltalk
-LaserGameBoardElement class >> openExample
-<sampleInstance>
+LaserGameBoardExample class >> openExample
 	"Open the demo grid of the tests, which holds mirrors and a target.
+	LaserGameBoardExample openExample"
 
-	LaserGameBoardElement openExample"
-
-	^ self openOn: GridFactory demoGrid
+	<sampleInstance>
+	^ LaserGameBoardElement openOn: GridExample demoGrid
 ```
 
-The `<sampleInstance>` line is a *pragma*: a mark on the method that tools look for.
-It tells Pharo that this method opens an example, so the browser offers to run it for you.
+That is the line between the two packages, and it is worth saying once in full.
+`openOn:` is how the game opens a board, so it belongs with the game.
+`openExample` is how *you* open a board while you work: it answers the board of the book without being asked which board, so it belongs with the examples.
+An example takes no arguments, because an example is a click.
 
-Evaluate `LaserGameBoardElement openExample` and you get a board of twenty-five bordered squares.
+Evaluate `LaserGameBoardExample openExample` and you get a board of twenty-five bordered squares.
 The demo grid holds a mirror and a target, and the model knows it, but they are still drawn as blank cells: only the abstract renderer implements `renderContentsOn:` so far.
 Their contents come next.
+
+## A tab that is a picture of the board
+
+A grid can do better than describe itself, because now there is an element that draws it.
+That is a view trigger arriving the moment it can be answered: three chapters from here we start asking, over and over, *is the model wrong or is the drawing wrong*, and the fastest way to ask is to look at the board.
+
+```smalltalk
+Grid >> inspectionBoard: aBuilder
+	"Show me as the board the player sees, drawn by the same element the game uses. A picture of
+	the board is the quickest way to tell a model fault from a drawing fault."
+
+	<inspectorPresentationOrder: 1 title: 'Board'>
+	^ aBuilder newMorph
+		  morph: (LaserGameBoardElement on: self) asPreviewMorph;
+		  yourself
+```
+
+`asPreviewMorph` is what lets a Bloc element be shown inside an inspector, which is a Spec tool, and `newMorph` is the Spec presenter that holds it.
+
+Note which way the dependency runs.
+`Grid` is the model, and the model knows nothing about pixels — that was the rule of the last chapter, and the *Board* tab does not break it, because a tab is not the model.
+A view is not part of what an object is; it is part of how you look at it.
+
+> **The lesson as a sentence.** A view is allowed to know things the object it shows is not.
+
+The tab needs an instance to open on, and there is one: `GridExample demoGrid`, promoted in *Grid*.
+Inspect it, and the first tab is now the board.
+That is the pairing question of the checkpoint answered, and it is worth answering in that order, because a view laid out without a real object in front of it is a view designed blind.
 
 ## Tests
 
 We test the board without opening a window.
-Every assertion is about structure, and none of it needs a layout pass:
+Every assertion is about structure, and none of it needs a layout pass.
+
+Every test here wants a board with something on it, which is the board of the book.
+One or two uses stay inline; at three the board moves into `setUp` and the tests read it from an instance variable:
+
+```smalltalk
+TestCase << #LaserGameBoardElementTestCase
+	slots: { #grid };
+	package: 'Laser-Game-Tests'
+```
+
+```smalltalk
+LaserGameBoardElementTestCase >> setUp
+	"Every test of mine builds on the board of the book, so I make it once here."
+
+	super setUp.
+	grid := GridExample demoGrid
+```
+
+> **Note.** A fixture in `setUp` is built again before every test, because SUnit makes a new instance of the test class for each one. That is what makes it safe for a test to push the board around: the next test gets a fresh one. It is also why an example must build a new object on every call and never answer a cached one.
 
 ```smalltalk
 LaserGameBoardElementTestCase >> testBoardHasOneElementPerCell
 	"Every cell of the grid gets exactly one element, and no element is left over."
 
-	| grid board |
-	grid := GridFactory demoGrid.
+	| board |
 	board := LaserGameBoardElement on: grid.
 	self
 		assert: board children size
@@ -581,8 +638,7 @@ LaserGameBoardElementTestCase >> testCellElementsAreInRowMajorOrder
 	"Cells are added row by row, so the element of a location is found by arithmetic and
 	every location answers a different element."
 
-	| grid board elements |
-	grid := GridFactory demoGrid.
+	| board elements |
 	board := LaserGameBoardElement on: grid.
 	self
 		assert: (board cellElementAt: 1 @ 1)
@@ -607,8 +663,6 @@ LaserGameBoardElementTestCase >> testExtentForGridComesFromTheCellSize
 	"The board extent is the cell extent times the grid dimensions. Borders are painted inside
 	the cells, so they add nothing, and the number is never written down as a literal."
 
-	| grid |
-	grid := GridFactory demoGrid.
 	self
 		assert: (LaserGameBoardElement extentForGrid: grid)
 		equals:
@@ -621,7 +675,7 @@ LaserGameBoardElementTestCase >> testSettingAnotherGridRebuildsTheCells
 	"The same board can show another game. Nothing of the previous grid is left behind."
 
 	| board first second |
-	first := GridFactory demoGrid.
+	first := GridExample demoGrid.
 	second := Grid new.
 	board := LaserGameBoardElement on: first.
 	board grid: second.
@@ -646,8 +700,7 @@ LaserGameBoardElementTestCase >> testBoardLaysCellsOutInAGridAndFitsThem
 	read without a layout pass. BlGridLayout keeps its column count privately, so the number of
 	columns is not asserted here; the placement it produces is checked by opening the example."
 
-	| grid board |
-	grid := GridFactory demoGrid.
+	| board |
 	board := LaserGameBoardElement on: grid.
 	self assert: board layout class equals: BlGridLayout.
 	self
@@ -667,32 +720,25 @@ Twenty-five bordered squares are a board, but they are not a game.
 The mirrors have to be visible.
 A mirror is a diagonal line across its cell, and in this chapter we draw it.
 
-We name the two numbers the drawing needs, draw the diagonal for each of the two leans, and pick up `GridFactory` on the way, so that every example and every test from here on deals the same board.
+We name the two numbers the drawing needs, draw the diagonal for each of the two leans, pick up on the way the class that deals the boards the game is played on, and end with a tab that draws one cell on its own.
 
-## A board to look at
+## The board we already have, and the board the game deals
 
-Before drawing anything, we need a board worth drawing.
-Building one by hand in every test and every example would be tiresome, so the grids the game and the tests work with come from one place, `GridFactory`:
+Before drawing anything, we need a board worth drawing, and we have one.
+`GridExample demoGrid` was promoted two chapters into the last section, the first time a second test class wanted the same ten mirrors and the same target, and it is the board the rest of this book draws.
+It holds the same cells every time, so a test that asserts something about it keeps asserting the same thing next year, and a drawing that looks wrong looks wrong in the same place twice.
+
+What we do not have is the board the *game* is played on.
+A game is not played on a five by five demonstration: it is dealt eight columns by ten rows, and that shape is worth naming once rather than typing into every chapter that needs it.
+That is a question about the game and not about a test, so the answer goes in the core, in a class whose whole job is dealing boards:
 
 ```smalltalk
-GridFactory class >> demoGrid
-	"Answer a five by five grid holding ten mirrors and one target, always the same ones. The
-	tests use it whenever a board with something on it is needed, and so do the examples."
+GridFactory class >> emptyStandardGrid
+	"Answer an empty board of the size the game is dealt on: eight columns by ten rows, with no
+	mirror and no target on it. The randomizer fills a board of this shape, and a test that wants a
+	full sized board with nothing on it starts here."
 
-	| grid |
-	grid := Grid newOfSize: 5@5.
-	grid at: 4@1 put: MirrorCell leanRight.
-	grid at: 5@1 put: TargetCell new.
-	grid at: 1@2 put: MirrorCell leanRight.
-	grid at: 5@2 put: MirrorCell leanLeft.
-	grid at: 2@3 put: MirrorCell leanLeft.
-	grid at: 3@3 put: MirrorCell leanRight.
-	grid at: 5@3 put: MirrorCell leanLeft.
-	grid at: 2@4 put: MirrorCell leanLeft.
-	grid at: 3@4 put: MirrorCell leanLeft.
-	grid at: 1@5 put: MirrorCell leanRight.
-	grid at: 4@5 put: MirrorCell leanRight.
-	^grid
+	^Grid newOfSize: 8@10
 ```
 
 ```smalltalk
@@ -702,9 +748,17 @@ GridFactory class >> defaultGrid
 	^self randomizedGridOfExtent: 8@10
 ```
 
-`demoGrid` is worth the few lines it costs.
-It always holds the same ten mirrors and the same target, so a test that asserts something about it keeps asserting the same thing next year, and a drawing that looks wrong looks wrong in the same place twice.
-A randomized grid cannot do either, which is why `defaultGrid` is for playing and `demoGrid` is for working.
+`randomizedGridOfExtent:` is the subject of *Add move counter and randomizer*, in the fourth section, so `defaultGrid` does not run yet.
+It is written here because this is where the factory earns its name: `emptyStandardGrid` says what shape a real board is, and `defaultGrid` says what is on one.
+
+Now notice what does **not** go in this class, however well it would fit.
+
+`demoGrid` is a fixture.
+It exists so that tests and examples have something to work with, and the game never deals it.
+Putting it on `GridFactory` would be the easiest mistake in the book to make, and the hardest to see afterwards: `GridFactory` is where boards come from, a fixture dropped among them looks entirely at home, and from that moment the core of the game depends on the needs of its tests.
+Then a core inspector tab lists the demo board beside the real ones, and the dependency is load-bearing.
+
+> **The lesson as a sentence.** A fixture never lives in the core; it lives in the example package, which is why that package was opened as early as it was.
 
 ## How thick, and how far in
 
@@ -941,12 +995,57 @@ A renderer that had cached the cell, or cached its element, would fail this test
 Open the example:
 
 ```smalltalk
-LaserGameBoardElement openExample
+LaserGameBoardExample openExample
 ```
 
 You get twenty-five cells, ten of them with a diagonal across them: the ten mirrors of `demoGrid`.
 The target at 5@1 is still an empty bordered square.
 It is the next chapter.
+
+## A tab that draws one cell
+
+Opening the board asks *did the mirrors come out right* about twenty-five cells at once.
+It is the wrong tool for the question you will ask far more often, which is about one cell: this mirror, the one in my hand in the debugger, did it draw what I meant?
+
+Answering that by hand takes four lines — build a grid, put the cell in it, ask `CellRenderer` for the renderer, ask the renderer for an element — and you will type them twice in an afternoon.
+Typing them twice is the trigger.
+A tab writes them once, for every cell there will ever be:
+
+```st
+Cell >> inspectionPicture: aBuilder
+	"Show me as the board draws me, through the renderer the game itself uses, so that a model
+	fault and a drawing fault can be told apart without opening the game. The renderer reads a
+	copy of me standing in a grid of its own, because a view must not change what it shows."
+
+	<inspectorPresentationOrder: 2 title: 'Picture'>
+	| location grid renderer |
+	location := self gridLocation ifNil: [ 1 @ 1 ].
+	grid := Grid newOfSize: location.
+	grid at: location put: self copy.
+	renderer := CellRenderer rendererFor: (grid at: location) grid: grid.
+	^ aBuilder newMorph
+		  morph: renderer newElement asPreviewMorph;
+		  yourself
+```
+
+That is the version this chapter can write; one line joins it in *Laser on blank cell*, the chapter that draws the beam over the cells the light crosses, because the renderer asks the grid whether the laser is on and the grid this tab builds has it off.
+
+Three things in it are worth reading twice.
+
+**It draws through the real renderer.**
+A tab that drew its own diagonal would agree with the board until the day the drawing changed, and then it would quietly disagree — which is worse than no tab, because you would believe it.
+A view asks the rules; it does not restate them.
+
+**It renders a `copy` of the cell, in a grid of its own.**
+A cell on the board belongs to the board, and asking it to pose for a picture must not move it or relight it.
+Inspecting an object is an observation, and a view that changes what it shows is a bug with a tab in front of it.
+
+**It stands the copy at the cell's own location.**
+A cell that knows where it lives is drawn as the board draws it; `mirrorOnNoBoard`, the cell from the previous section that stands on no board at all, has no location and is drawn at 1@1 instead.
+That is why the example exists: a view wants the awkward case on hand while it is being written, not after.
+
+`Cell` now has two tabs, *Sides* and *Picture*, and that is the cap while a feature is in flight.
+A third would be work for the next checkpoint, not for this one.
 
 # Management of colours
 
@@ -1003,12 +1102,131 @@ Note what the class does *not* know.
 It answers plain `Color` instances, and Bloc wraps them itself: `BlBorder paint:width:` makes a paint from one, and `BlElement >> background:` makes a background from one.
 So the colour class has no Bloc in it at all, which is why we can read it, change it and test it without a window.
 
+## A tab that shows the colours
+
+A class of colour names is the one class a browser is no help with.
+`gameBoardBackgroundColor` is a method whose whole content is a colour, and reading `Color r: 0.860 g: 0.860 b: 0.860` tells you it is a grey and nothing else.
+The only honest way to read a list of colours is to look at the colours, and you will click into this class to do it more than once.
+
+That is the trigger, and the tab comes in three methods rather than one.
+The first answers the data:
+
+```smalltalk
+LaserGameColors class >> inspectionColorSelectors
+	"Answer the name of every colour I hold, sorted: each of my selectors that takes no argument
+	and answers a Color. The list is read from me rather than written out, so a colour added
+	tomorrow shows up in the Palette tab on its own."
+
+	^ (self class selectors select: [ :each |
+		   each numArgs = 0 and: [
+			   (each beginsWith: 'inspection') not and: [
+				   (self perform: each) isKindOf: Color ] ] ]) asSortedCollection asArray
+```
+
+The second draws it, a swatch and a name to a line:
+
+```smalltalk
+LaserGameColors class >> inspectionPaletteElement
+	"Answer one element holding my whole palette: a swatch of each colour of
+	#inspectionColorSelectors, its name beside it, one to a line. The swatches are added first and
+	the names after them, so a reader of the tab reads a colour and its name together."
+
+	| gap height canvas top |
+	gap := 4.
+	height := 16.
+	canvas := BlElement new
+		          background: Color white;
+		          yourself.
+	top := gap.
+	self inspectionColorSelectors do: [ :selector |
+			canvas addChild: (BlElement new
+					 extent: 48 @ height;
+					 background: (self perform: selector);
+					 position: gap @ top;
+					 yourself).
+			top := top + height + gap ].
+	top := gap.
+	self inspectionColorSelectors do: [ :selector |
+			canvas addChild: (BlTextElement new
+					 text: (selector asString asRopedText
+							  fontSize: 11;
+							  foreground: Color black;
+							  yourself);
+					 position: 48 + (2 * gap) @ top;
+					 yourself).
+			top := top + height + gap ].
+	canvas extent: 260 @ top.
+	^ canvas
+```
+
+And the third is the tab itself:
+
+```smalltalk
+LaserGameColors class >> inspectionPalette: aBuilder
+	"Show my whole palette, a swatch beside each name. I am a list of colour names, and the only
+	honest way to read a list of colour names is to look at the colours."
+
+	<inspectorPresentationOrder: 1 title: 'Palette'>
+	^ aBuilder newMorph
+		  morph: self inspectionPaletteElement asPreviewMorph;
+		  yourself
+```
+
+Splitting a tab into data and presentation like that is the most useful habit in this whole chapter, because the data half can be asserted on.
+A picture cannot be tested without a pair of eyes; a sorted array of selectors can:
+
+```smalltalk
+LaserGameColorsTestCase >> testThePaletteTabShowsASwatchOfEveryColourIName
+	"The Palette tab is the whole class on one page: a swatch beside its name, in the order the
+	names sort. Every colour I answer has to appear, so a colour added tomorrow appears without
+	anyone touching the tab."
+
+	| selectors palette swatches builder presenter |
+	selectors := LaserGameColors inspectionColorSelectors.
+	self assert: (selectors includes: #mirrorColor).
+	self deny: (selectors includes: #windowColorRampDirection).
+	palette := LaserGameColors inspectionPaletteElement.
+	swatches := palette children select: [ :each |
+		            each background paint isNotNil ].
+	self assert: swatches size equals: selectors size.
+	selectors doWithIndex: [ :selector :index |
+			self
+				assert: (swatches at: index) background paint color
+				equals: (LaserGameColors perform: selector) ].
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	presenter := LaserGameColors inspectionPalette: builder.
+	self assert: presenter class equals: SpMorphPresenter
+```
+
+The last two lines are all the testing a drawing gets: hand the tab a builder and check that it answers a presenter rather than raising an error.
+Everything else in the test is about the list, and the list is where the mistakes are.
+
+`windowColorRampDirection` arrives in the fourth section, and it is why the filter asks whether a method answers a `Color` instead of merely counting its arguments: that method takes no argument either, but it answers a symbol, and a symbol has no swatch.
+A tab that showed it would raise an error in front of you the first time you opened it.
+
+Two more things about this tab are the point of it.
+
+**The list is read off the class, never written into the view.**
+Add a colour tomorrow and it appears in the tab, in its place in the sort, with nobody editing the tab.
+A view that held its own list of the colours would be a second copy of the class, and a second copy is a thing that goes out of date.
+
+**This tab needs no example, because it is on the class side.**
+A class is always reachable: you inspect `LaserGameColors` itself, which is one click in any browser.
+The pairing rule of the checkpoint — every view has an example that opens on it — applies to instance-side views, and the gate we wrote in the last section exempts the class side for exactly this reason.
+Demanding an example here would produce a method whose whole body is `^ LaserGameColors`, written only so that something points at the tab.
+That is a bookmark, not an example, and the cycle has a rule against it.
+
+> **The lesson as a sentence.** A question about a whole class is asked of the class, and a class-side tab needs no example to reach it.
+
 # Drawing the target
 
 The target has more in it than the mirror: two crossing lines, a ring around the middle of the cell, and the inside of the ring filled with one of two colours, depending on whether the laser reaches the cell.
 Four children of the cell element, all of them placed in cell coordinates.
 
 We name the five numbers the drawing needs first, then build the cross hairs, the ring and the centre, and wire the colour of the centre to whether the laser is reaching the cell.
+The grid then gains the switch that makes that true — `fireLaser` and `stopLaser` — which is what the examples Section 1 had to defer were waiting for, and the path they light gets a tab of its own.
 
 ## Numbers with names
 
@@ -1187,38 +1405,231 @@ There is no *draw the lit target* method and no *draw the unlit target* method.
 The drawing is the same either way; one paint differs, so one method answers that paint and the drawing is written once.
 When you catch yourself writing two methods that differ in a single expression, look for the expression that could be answered instead.
 
-## Firing the laser
+## A switch for the beam
 
-The demo grid is built so that the mirrors lead the beam to the target, so firing the laser should light it, even though no beam is drawn yet.
-That is worth an example of its own:
+The colour of the centre asks the cell whether the laser reaches it, and nothing in the game can yet make that true on demand.
+Section 1 lit a board with `activateCellsInPath`, which walks the path and lights every cell the light crosses, and nothing ever put those cells out again.
+A target with two states needs both halves: a message that fires the laser and a message that stops it.
+
+Tests first, and this pair of them asks only the flag:
+
+```st
+GridTestCase >> testFireLaser
+
+	grid fireLaser.
+	self assert: grid laserIsActive
+```
+
+```st
+GridTestCase >> testStopLaser
+
+	grid stopLaser.
+	self shouldnt: [ grid laserIsActive ]
+```
+
+Both are strengthened in *A unit test to demonstrate a bug*, which is the chapter that discovers the flag to be the least interesting thing in the grid.
 
 ```smalltalk
-LaserGameBoardElement class >> openExampleWithLaserFired
+Grid >> fireLaser
+	self laserIsActive: true.
+	self activateCellsInPath.
+```
+
+```smalltalk
+Grid >> stopLaser
+	self laserIsActive: false.
+	self clearCellsInPath.
+```
+
+Each of them sets the flag and then does the work on the cells, and that work is a pair of methods which have to be mirror images of each other.
+`activateCellsInPath` is the method of *Lighting what the beam crosses*; its opposite is new, and it is one selector different:
+
+```smalltalk
+Grid >> clearCellsInPath
+	self calculatePath.
+	self laserBeamPath do: [:pe |
+		pe clearCell]
+```
+
+Walk the path and light each element, or walk the same path and put each one out.
+`clearCell` runs down the same chain `activateCell` does, from the path element to the cell it holds:
+
+```smalltalk
+LaserPathElement >> clearCell
+	self cell clearCell
+```
+
+```smalltalk
+Cell >> clearCell
+	self initializeActiveSegments
+```
+
+And for the last of those we write no new code at all.
+Putting every side of a cell out is exactly what a fresh cell already does, so clearing reuses `initializeActiveSegments`, the method a cell is initialised with in *Enhancing MirrorCell*.
+
+That is worth noticing.
+"Reset it to how it started" and "initialise it" are the same operation, and whenever the second one is already a method of its own, the first one is a single send.
+
+It is also why `clearCell` is right for a cell the beam crossed twice: it does not subtract a side, it puts all four out.
+
+## The board with its laser lit
+
+The demo board is built so that its mirrors lead the beam to the target, so firing the laser on it lights that target, even though no beam is drawn over the cells the light crosses on the way.
+That is a board you would want to look at, which is the fourth promotion trigger, so the board example gains a second opener:
+
+```smalltalk
+LaserGameBoardExample class >> openExampleWithLaserFired
 	"Open the demo grid with the laser already fired, which lights the target and draws the beam
 	over the blank cells it crosses.
-
-	LaserGameBoardElement openExampleWithLaserFired"
+	LaserGameBoardExample openExampleWithLaserFired"
 
 	<sampleInstance>
 	| grid |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	grid fireLaser.
-	^ self openOn: grid
+	^ LaserGameBoardElement openOn: grid
 ```
 
 The comment mentions the beam, which this chapter does not draw.
 *Laser on blank cell*, much later, does, and the same example shows it then.
 
+Section 1 closed with signals it could not collect, every one of them waiting for `fireLaser`, and this is the chapter that collects them.
+The first is the board itself:
+
+```smalltalk
+GridExample class >> gridWithTheLaserFiring
+	"The demo board with the laser lit, which is the one board whose Beam tab has anything in it.
+	GridExample gridWithTheLaserFiring"
+
+	<sampleInstance>
+	| grid |
+	grid := self demoGrid.
+	grid fireLaser.
+	^ grid
+```
+
+The board of the book plus the one message that lights it, which is all a derived example should ever be.
+
+Two lit cells join the three dark ones promoted in *Grid*:
+
+```smalltalk
+CellExample class >> litMirrorCell
+	"The first mirror the beam crosses on the demo board, so the Picture tab draws it the bright way.
+	CellExample litMirrorCell"
+
+	<sampleInstance>
+	| grid |
+	grid := GridExample demoGrid.
+	grid fireLaser.
+	^ (grid laserBeamPath detect: [ :each | each cell class = MirrorCell ]) cell
+```
+
+```smalltalk
+CellExample class >> litTargetCell
+	"The target of the demo board with the beam in it: the board as it looks when the game is won.
+	CellExample litTargetCell"
+
+	<sampleInstance>
+	| grid |
+	grid := GridExample demoGrid.
+	grid fireLaser.
+	^ grid at: 5 @ 1
+```
+
+`litTargetCell` reads a location, because the target of the demo board is at `5@1` and stays there.
+`litMirrorCell` reads its cell off the path instead, because what makes that mirror interesting is that the beam crosses it, and *the first mirror the light reaches* is a fact of the board rather than a coordinate to be remembered.
+
+Open `litTargetCell` and its *Picture* tab is a target with a bright centre, which is this chapter's work seen one cell at a time.
+Open `litMirrorCell` and the mirror is drawn, but the light crossing it is not, because a lit cell does not draw the beam until *Laser on blank cell* teaches it how.
+
+And the steps of the path get a class of their own in the example package, `LaserPathExample`, beside the others:
+
+```smalltalk
+LaserPathExample class >> firstStepOfTheBeam
+	"Where the light starts on the demo board: the mirror in front of the laser, entered from the side the laser shines on.
+	LaserPathExample firstStepOfTheBeam"
+
+	<sampleInstance>
+	| grid |
+	grid := GridExample demoGrid.
+	grid fireLaser.
+	^ grid laserBeamPath first
+```
+
+```smalltalk
+LaserPathExample class >> lastStepOfTheBeam
+	"Where the light stops on the demo board, which is the target: the step whose Step tab has no next one.
+	LaserPathExample lastStepOfTheBeam"
+
+	<sampleInstance>
+	| grid |
+	grid := GridExample demoGrid.
+	grid fireLaser.
+	^ grid laserBeamPath last
+```
+
+Five examples, one `fireLaser` apiece, and each of them named after the state of the board it answers rather than after the test or the tab that wanted it.
+
+## A tab for the beam
+
+The path is a collection of `LaserPathElement`s, and each element holds two facts that mean something together: the cell the light is in, and the side it entered by.
+The inspector shows such a collection as a column of print strings, which is one line of text per step and nothing lined up with anything.
+The second time you expand that collection to read the entry sides down the page, the tab has earned itself:
+
+```smalltalk
+Grid >> inspectionBeam: aBuilder
+	"Show the path the laser takes, one row per step, which is the collection to read when the beam
+	goes somewhere unexpected."
+
+	<inspectorPresentationOrder: 2 title: 'Beam'>
+	^ aBuilder newTable
+		  items: (self laserBeamPath ifNil: [ #(  ) ]);
+		  addColumn: (SpStringTableColumn title: 'Cell' evaluated: [ :each |
+					   each cell printString ]);
+		  addColumn:
+			  (SpStringTableColumn title: 'Enters from' evaluated: [ :each |
+					   each entrySide asString ]);
+		  yourself
+```
+
+`laserBeamPath` is `nil` until something calculates it, so the view answers an empty table rather than an error for a grid nobody has fired.
+That is the whole of the defensive code a tab needs: you open a tab on whatever object is in front of you, including the dull ones.
+
+The instance it was laid out against is `gridWithTheLaserFiring`, which is the one board whose path has anything in it, and that is the pairing question of the checkpoint answered for this view.
+
+One test covers both tabs a grid now has:
+
+```smalltalk
+GridTestCase >> testTheInspectorTabsOfAGridShowTheBoardAndTheBeam
+	"A grid can show the board itself, since it has an element that draws it, as well as the path
+	the laser takes. One row per step of the beam, and the board as a picture."
+
+	| builder |
+	grid fireLaser.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	self
+		assert: (grid inspectionBeam: builder) items size
+		equals: grid laserBeamPath size.
+	self assert: (grid inspectionBoard: builder) class equals: SpMorphPresenter
+```
+
+It asserts what each tab is built from and nothing about how either one looks: one row per step of the beam, and a morph presenter for the board.
+That a table holds the right number of rows is a real assertion; that a rendered board has the right pixels in it is not a test, it is a screenshot.
+
+A presenter needs an application to be built against, which is what `SpPresenterBuilder new application: SpApplication new` is for, and it is the one piece of Spec a test of a view has to know.
+
 ## Tests
 
 ```smalltalk
 TargetCellRendererTestCase >> rendererForTarget: aTargetCell
-	"Answer a renderer for aTargetCell, sitting at 1@1 of a fresh grid."
+	"Answer a renderer for aTargetCell, sitting at 1@1 of a grid of its own."
 
-	| grid |
-	grid := Grid new.
-	grid at: 1 @ 1 put: aTargetCell.
-	^ CellRenderer rendererFor: aTargetCell grid: grid
+	| oneCellGrid |
+	oneCellGrid := Grid new.
+	oneCellGrid at: 1 @ 1 put: aTargetCell.
+	^ CellRenderer rendererFor: aTargetCell grid: oneCellGrid
 ```
 
 ```smalltalk
@@ -1365,8 +1776,7 @@ LaserGameBoardElementTestCase >> testFiringTheLaserLightsTheTargetOfANewBoard
 	after the shot shows the lit target. The disc is the last child of the target, since a lit
 	target draws the beam under its picture."
 
-	| grid board center |
-	grid := GridFactory demoGrid.
+	| board center |
 	grid fireLaser.
 	board := LaserGameBoardElement on: grid.
 	center := (board cellElementAt: 5 @ 1) children last.
@@ -1385,11 +1795,11 @@ Making a board notice is the job of the next chapter.
 Open both examples and compare them:
 
 ```smalltalk
-LaserGameBoardElement openExample
+LaserGameBoardExample openExample
 ```
 
 ```smalltalk
-LaserGameBoardElement openExampleWithLaserFired
+LaserGameBoardExample openExampleWithLaserFired
 ```
 
 You get twenty-five cells, ten with a mirror, and one with a crosshair, a ring and a disc that is pale blue in the first window and pale yellow in the second.
@@ -1560,7 +1970,7 @@ Turning the game around later means swapping two `addChild:` sends, and that is 
 
 ## Opening it
 
-We give the game the same two class methods the board element has, one to build and one to open, plus an example:
+We give the game the same two class methods the board element has, one to build and one to open, and the click that opens the demo board goes in the example package, exactly as the board element's did:
 
 ```smalltalk
 LaserGameElement class >> on: aGrid
@@ -1576,7 +1986,7 @@ LaserGameElement class >> on: aGrid
 LaserGameElement class >> openOn: aGrid
 	"Open a space showing a game on aGrid and answer it.
 
-	LaserGameElement openOn: GridFactory demoGrid"
+	LaserGameElement openOn: GridExample demoGrid"
 
 	| space |
 	space := BlSpace new.
@@ -1588,14 +1998,15 @@ LaserGameElement class >> openOn: aGrid
 ```
 
 ```smalltalk
-LaserGameElement class >> openExample
+LaserGameElementExample class >> openExample
 	"Open the demo grid of the tests: the five by five board with ten mirrors and one target.
-
-	LaserGameElement openExample"
+	LaserGameElementExample openExample"
 
 	<sampleInstance>
-	^ self openOn: GridFactory demoGrid
+	^ LaserGameElement openOn: GridExample demoGrid
 ```
+
+Two openers now live in `Laser-Game-Examples`, one for the board on its own and one for the whole game, and the generic gate of *Enhancing MirrorCell* runs neither of them: an example whose name begins with `open` is excluded by the prefix, because a test suite must not put windows on the screen.
 
 The space is given the size the game asks for, so the window fits the game exactly and there is no second margin around it.
 *A window the player can resize* rewrites `openOn:` so that the game follows the window when the player drags its corner; the version above is the one this chapter leaves in the image.
@@ -1603,6 +2014,25 @@ The space is given the size the game asks for, so the window fits the game exact
 ## Checking it
 
 Six tests, and not one of them opens a window.
+
+Every one of them wants a game playing on the board of the book, so the fixture goes in `setUp` from the start, exactly as the board element's tests did:
+
+```smalltalk
+TestCase << #LaserGameElementTestCase
+	slots: { #game };
+	package: 'Laser-Game-Tests'
+```
+
+```smalltalk
+LaserGameElementTestCase >> setUp
+	"Every test of mine plays the board of the book, so I build the game on it once here."
+
+	super setUp.
+	game := LaserGameElement on: GridExample demoGrid
+```
+
+A test that wants a different board still builds its own and assigns `game` itself, and two of the six do.
+
 We check the arithmetic first, both as the sum of its parts and as the plain number it comes to for the demo grid:
 
 ```st
@@ -1611,7 +2041,7 @@ LaserGameElementTestCase >> testExtentIsTheBoardPlusThePanelPlusTheMargins
 	tall as the board with a margin above and below."
 
 	| grid expected |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	expected := (LaserGameBoardElement extentForGrid: grid)
 	            + (LaserGameElement panelWidth @ 0)
 	            + (2 * LaserGameElement gameMargin).
@@ -1633,8 +2063,6 @@ Then we check the two panes, in order:
 LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
 	"A game is a row of two children: the board first, the control panel beside it."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self assert: game children size equals: 2.
 	self assert: game children first equals: game board.
 	self assert: game children second equals: game controlPanel.
@@ -1649,8 +2077,8 @@ LaserGameElementTestCase >> testControlPanelIsAFixedColumnAsTallAsTheBoard
 	"The panel keeps its width whatever the grid is, and it is as tall as the board beside it.
 	Sizes are read from the layout constraints, since nothing is laid out yet."
 
-	| grid game |
-	grid := GridFactory demoGrid.
+	| grid |
+	grid := GridExample demoGrid.
 	game := LaserGameElement on: grid.
 	self
 		assert: game controlPanel constraints horizontal resizer size
@@ -1670,8 +2098,7 @@ LaserGameElementTestCase >> testSettingAnotherGridRebuildsTheGame
 	"Handing the game another grid throws away the board and the panel it held and builds them
 	again for the new grid, so its size follows."
 
-	| game oldBoard smallGrid |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| oldBoard smallGrid |
 	oldBoard := game board.
 	smallGrid := Grid new.
 	game grid: smallGrid.
@@ -1691,8 +2118,8 @@ A board that had merely been emptied and refilled would pass an equality check; 
 LaserGameElementTestCase >> testBoardShowsTheGridOfTheGame
 	"The board the game holds renders the game's own grid, one element per cell."
 
-	| grid game |
-	grid := GridFactory demoGrid.
+	| grid |
+	grid := GridExample demoGrid.
 	game := LaserGameElement on: grid.
 	self assert: game grid equals: grid.
 	self assert: game board grid equals: grid.
@@ -1706,8 +2133,8 @@ LaserGameElementTestCase >> testGameTakesTheExtentItCalculates
 	"The game asks for exactly the size its own arithmetic gives, and the margin around its two
 	children is padding, so the color behind them shows through it."
 
-	| grid game |
-	grid := GridFactory demoGrid.
+	| grid |
+	grid := GridExample demoGrid.
 	game := LaserGameElement on: grid.
 	self
 		assert: game constraints horizontal resizer size
@@ -1725,7 +2152,7 @@ We read sizes from the layout constraints throughout, never from `extent`, for t
 ## What it looks like
 
 ```smalltalk
-LaserGameElement openExample
+LaserGameElementExample openExample
 ```
 
 You get a window 380 by 270.
@@ -2055,7 +2482,7 @@ We build the panel's tests on one helper, so that no test has to assemble a game
 LaserGameControlPanelElementTestCase >> newPanel
 	"Answer the control panel of a game playing on the demo grid, with the laser not firing."
 
-	^ (LaserGameElement on: GridFactory demoGrid) controlPanel
+	^ (LaserGameElement on: GridExample demoGrid) controlPanel
 ```
 
 The first test we write is the shape of the panel: what it holds, in what order, and what the buttons say.
@@ -2158,8 +2585,7 @@ LaserGameElementTestCase >> testTogglingTheLaserFiresItAndStopsItAgain
 	stops it and puts the target out. The board and the button label both follow. The disc is the
 	last child of the target, since a lit target draws the beam under its picture."
 
-	| game target |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| target |
 	target := game grid at: 5 @ 1.
 	game toggleLaser.
 	self assert: game laserIsActive.
@@ -2192,8 +2618,6 @@ LaserGameElementTestCase >> testQuittingAGameThatIsNotOpenDoesNothing
 	"Quit closes the space the game is in. A game that was never opened has no space, and asking
 	it to quit is harmless."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self assert: game space isNil.
 	game quit.
 	self assert: game children size equals: 2
@@ -2206,7 +2630,7 @@ That last assertion is the test's real point: after quitting a game that is not 
 ## What it looks like
 
 ```smalltalk
-LaserGameElement openExample
+LaserGameElementExample openExample
 ```
 
 You get the same window as the last chapter, with two buttons in the bottom left of the white column: *Quit* and *Fire*.
@@ -2224,7 +2648,8 @@ The board is drawn, the buttons are there, *Fire* lights the target and *Stop* p
 
 That is a good moment to look for the bug, because a game that looks right is exactly where a bug of this shape hides: the kind where the flag says one thing and the cells say another.
 
-We write the test that names the bug, and then follow the chain the fix runs down: `Grid >> stopLaser`, `clearCellsInPath`, `LaserPathElement >> clearCell` and `Cell >> clearCell`.
+We write the test that names the bug, and then follow the chain it runs down: `Grid >> stopLaser`, `clearCellsInPath`, `LaserPathElement >> clearCell` and `Cell >> clearCell`.
+All four were written in *Drawing the target*, when the target first needed lighting and putting out again, and not one line of them is changed by this chapter.
 The test stays in the suite afterwards, as the record of a bug that once looked like nothing.
 
 This chapter is about the method for finding it.
@@ -2235,7 +2660,7 @@ So the shape of the work is always the same: make the symptom into an assertion,
 
 ## Assert the cells, not only the flag
 
-The two tests we wrote for the laser so far check the flag, and the flag is the least interesting thing in the grid.
+The two tests we wrote for the laser in *Drawing the target* check the flag, and the flag is the least interesting thing in the grid.
 `laserIsActive` is one boolean that `fireLaser` sets by hand; it would still be right if the beam never touched a single cell.
 
 What a player sees is the cells.
@@ -2244,8 +2669,7 @@ So we strengthen both tests to check two of them: the cell the beam starts from,
 ```smalltalk
 GridTestCase >> testFireLaser
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	self assert: grid laserIsActive.
 	cell := grid startingCell.
@@ -2257,8 +2681,7 @@ GridTestCase >> testFireLaser
 ```smalltalk
 GridTestCase >> testStopLaser
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid stopLaser.
 	self shouldnt: [ grid laserIsActive ].
 	cell := grid startingCell.
@@ -2294,8 +2717,7 @@ One test, three lines longer than nothing, and it is the whole of the bug hunt:
 ```smalltalk
 GridTestCase >> testToggleLaser
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	grid stopLaser.
 	self shouldnt: [ grid laserIsActive ].
@@ -2312,22 +2734,8 @@ Fire then stop, push then pop, open then close, add then remove — the test tha
 
 ## The mistake this test catches
 
-Here are the two methods it runs through:
-
-```smalltalk
-Grid >> fireLaser
-	self laserIsActive: true.
-	self activateCellsInPath.
-```
-
-```smalltalk
-Grid >> stopLaser
-	self laserIsActive: false.
-	self clearCellsInPath.
-```
-
-Each lowers or raises the flag and then does the work on the cells.
-And the work is a pair of methods that have to be mirror images of each other:
+`fireLaser` and `stopLaser` each set the flag and then hand the work on the cells to one of a pair of methods that have to be mirror images of each other.
+Here is that pair again, because the whole of this chapter sits in the difference between them:
 
 ```smalltalk
 Grid >> activateCellsInPath
@@ -2344,7 +2752,6 @@ Grid >> clearCellsInPath
 ```
 
 One selector apart: `activateCell` against `clearCell`.
-Walk the path, light each element, or walk the same path and put each one out.
 
 Now the mistake.
 It is the easiest one in this whole game to make, because the first line of `clearCellsInPath` is the line that *looks* like the method:
@@ -2371,7 +2778,7 @@ We can make the grid misbehave from a playground instead, because `stopLaser` is
 
 ```smalltalk
 | grid |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 "The broken version of stopLaser: lower the flag, calculate the path, clear nothing."
 grid laserIsActive: false.
@@ -2389,7 +2796,7 @@ The same snippet with the real `stopLaser` in the middle answers `0`:
 
 ```smalltalk
 | grid |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 grid stopLaser.
 grid calculatePath.
@@ -2401,40 +2808,14 @@ It gives you the symptom, and the count, and the answer to *how many* and *which
 
 ## The chain the fix runs down
 
-`clearCell` is sent to a path element, which hands it to its cell, which resets its segments.
-Three one-line methods, and each of them mirrors one on the lighting side:
+Below `clearCellsInPath` the chain is three one-line methods, written in *Drawing the target* and unchanged here: `clearCell` goes to a path element, which hands it to its cell, which resets its segments by sending `initializeActiveSegments`.
+Each of the three mirrors one on the lighting side, and every one of them is correct.
 
-```smalltalk
-LaserPathElement >> activateCell
-	self cell laserEntersFrom: self entrySide
-```
+That is the useful thing about a chain of one-liners.
+There is no room in any of them for a missing line, so a bug of this shape can only be in the one method that has more than one statement — which is where we found it.
 
-```smalltalk
-LaserPathElement >> clearCell
-	self cell clearCell
-```
-
-```smalltalk
-Cell >> clearCell
-	self initializeActiveSegments
-```
-
-And for the last one we write no new code at all.
-Putting every side of a cell out is exactly what a fresh cell already does, so clearing reuses the method the cell is initialized with:
-
-```smalltalk
-Cell >> initializeActiveSegments
-	self activeSegments: Dictionary new.
-	self activeSegments at: #north put: false.
-	self activeSegments at: #east put: false.
-	self activeSegments at: #south put: false.
-	self activeSegments at: #west put: false.
-```
-
-That is worth noticing.
-"Reset it to how it started" and "initialize it" are the same operation, and whenever the second one is already written as a method of its own, the first one is a single send.
-
-It is also why `clearCell` is correct for a cell the beam crossed twice: it does not subtract a side, it puts all four out.
+Walking the chain with the debugger is still how you learn that.
+Reading the four methods in the browser tells you what they do; stepping through them on a red test tells you which of them was asked to do nothing.
 
 ## What this chapter is really teaching
 

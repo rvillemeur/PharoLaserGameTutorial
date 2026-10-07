@@ -71,6 +71,41 @@ Prefer it everywhere you can.
 
 > **Assert the value, not a true-or-false.** A failure message that carries both numbers is worth more than a shorter line of code.
 
+`numberOfMirrors` also settles a debt from *Push cells with the mouse*.
+The *Pushes* tab was written there and left untested, because the one assertion worth making about it is the number of rows, and the only honest right-hand side for that is a count the grid makes by its own route:
+
+```smalltalk
+GridTestCase >> testThePushesTabSaysWhichPushesTheRulesAllow
+	"The Pushes tab asks the four push rules of every mirror on the board and answers in one
+	table. A mirror with no yes is a mirror the player cannot move, which is what the arrows on
+	the board are drawn from."
+
+	| builder table north east |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := grid inspectionPushes: builder.
+	self assert: table items size equals: grid numberOfMirrors.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Mirror' 'North' 'East' 'South' 'West' ).
+	self assert: (table items includes: 1 @ 2).
+	self deny: (table items includes: 5 @ 1).
+	north := table columns second.
+	east := table columns third.
+	self
+		assert: (north evaluation value: 1 @ 2)
+		equals: ((grid canPushCellNorthFromLocation: 1 @ 2)
+				 ifTrue: [ 'yes' ]
+				 ifFalse: [ '' ]).
+	self assert: (east evaluation value: 1 @ 2) equals: 'yes'
+```
+
+`grid numberOfMirrors` on the left of an assertion, rather than `10`, because the two count the same thing by different routes and a disagreement between them is worth being told about.
+The target cell at `5@1` is denied a row, since nothing but a mirror can be pushed.
+
+And the last two assertions check a column rather than the table: `north evaluation value: 1 @ 2` is what that column would print for that mirror, asked against the rule it prints, and then once against a literal because `1@2` really can be pushed east.
+
 ## Two more counters in the panel
 
 The panel already shows the beam length and the move count, so the new ones are the same thing again.

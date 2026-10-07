@@ -167,8 +167,7 @@ LaserGameCellElementTestCase >> testAPushArrowIsColouredByWhetherThePushIsAllowe
 	mirror at 4@1 can be pushed south, where 4@2 is blank, and cannot be pushed east, where the
 	target stands. Same cell, same pointer, two colours."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 4 @ 1.
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: CellClickRegionInside regionRectangle topCenter + (0 @ 1);
@@ -213,8 +212,7 @@ LaserGameCellElementTestCase >> testARotateArrowIsAlwaysColouredAsAllowed
 	region answers true in one line. So both rotate arrows are drawn in the colour of a move
 	that is allowed, even on a mirror that is boxed in."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 3 @ 3.
 	{ (CellClickRegionOutside regionRectangle topLeft
 	  -> CellClickRegionRotateClockwise).
@@ -241,7 +239,7 @@ Then open a board on the demo grid and move the pointer slowly around the mirror
 
 ```smalltalk
 | grid board space |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 board := LaserGameBoardElement on: grid.
 space := BlSpace new.
@@ -484,8 +482,7 @@ LaserGameCellElementTestCase >> testACrossHairMarksThePointWhereAHintIsShown
 	cell, centred on the point a click would use. An element is measured in a layout pass, so
 	what it was asked for is read from its constraints."
 
-	| board element point extent |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element point extent |
 	element := board cellElementAt: 4 @ 1.
 	point := CellClickRegionInside regionRectangle center.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -519,7 +516,7 @@ LaserGameCellElementTestCase >> testTheCrossHairFollowsThePointerWithinOneRegion
 	but the cross hair marks a point and moves with every event."
 
 	| board element first second extent |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	element := board cellElementAt: 4 @ 1.
 	extent := CellRenderer crossHairExtent.
 	first := CellClickRegionInside regionRectangle center.
@@ -549,8 +546,7 @@ LaserGameCellElementTestCase >> testTheCrossHairIsShownExactlyWhenAHintIs
 	offers no action, and the pointer leaving. A cell that offers nothing, like the blank one at
 	2@2, never shows either."
 
-	| board mirror blank |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| mirror blank |
 	mirror := board cellElementAt: 4 @ 1.
 	blank := board cellElementAt: 2 @ 2.
 	mirror dispatchEvent: (BlMouseMoveEvent new
@@ -591,8 +587,7 @@ LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime
 	push region replaces it. A hint brings two children: the arrow and the cross hair under
 	the pointer."
 
-	| board element rect childCount |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element rect childCount |
 	element := board cellElementAt: 4 @ 1.
 	childCount := element children size.
 	rect := CellClickRegionInside regionRectangle.
@@ -617,8 +612,7 @@ LaserGameCellElementTestCase >> testTheArrowStaysWhenTheCellUnderThePointerStill
 	cell that stands there after the action, not kept and not dropped. The cross hair comes back
 	with the arrow, which is the second of the two children counted here."
 
-	| board element childCount |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element childCount |
 	element := board cellElementAt: 4 @ 1.
 	childCount := element children size.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -647,7 +641,7 @@ Then open a board and move the pointer slowly across a mirror:
 
 ```smalltalk
 | grid board space |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 board := LaserGameBoardElement on: grid.
 space := BlSpace new.
@@ -809,8 +803,6 @@ CellRendererTestCase >> testEverySizeInACellFollowsTheCellSize
 	overlapping, the ring of a target still fits in the cell, and a board is still the grid
 	times the cell."
 
-	| grid |
-	grid := GridFactory demoGrid.
 	#( 30 40 80 ) do: [ :side |
 		self withCellExtent: side @ side do: [
 			| cell inside outside middle renderer |
@@ -959,7 +951,7 @@ Raise the size, look, and lower it again:
 
 ```smalltalk
 CellRenderer class compile: 'cellExtent' , String cr , String tab , '^ 80@80' classified: 'constants'.
-LaserGameElement openExample
+LaserGameElementExample openExample
 ```
 
 ```smalltalk
@@ -1201,6 +1193,35 @@ LaserGameLedElement >> newDigitElement
 We add the children in the order of `segmentNames`, and that order is the whole of the bookkeeping: the third child of a digit is segment `c`, now and for ever.
 Nothing holds a dictionary of name to element, and nothing searches for a segment by name.
 
+How many digits a display has is a question it answers, and setting it is what builds them:
+
+```smalltalk
+LaserGameLedElement class >> digits: anInteger
+	"Answer a display of anInteger digits, showing zero."
+
+	| led |
+	led := self new.
+	led digitCount: anInteger.
+	^ led
+```
+
+```smalltalk
+LaserGameLedElement >> digitCount
+	"Answer how many digits I show."
+
+	^ digitCount
+```
+
+```smalltalk
+LaserGameLedElement >> digitCount: anInteger
+	"Show anInteger digits. Setting the count builds the digits."
+
+	digitCount := anInteger.
+	self rebuildDigits
+```
+
+`digits:` is the only way a display is made, so there is no display with no digits to go wrong later.
+
 ```st
 LaserGameLedElement >> rebuildDigits
 	"Replace my digits with digitCount fresh ones and take the size they need."
@@ -1213,6 +1234,25 @@ LaserGameLedElement >> rebuildDigits
 ```
 > **Note.** *Counters the player can read*, the last chapter of this section, rewrites this method: the gap between the digits becomes a margin on each digit but the first.
 > The block above is the method as this chapter leaves it.
+
+A display is asked for by the number of digits it shows, and the number it shows is set afterwards:
+
+```smalltalk
+LaserGameLedElement >> value
+	"Answer the number I show."
+
+	^ value
+```
+
+```smalltalk
+LaserGameLedElement >> value: anInteger
+	"Show anInteger."
+
+	value := anInteger.
+	self updateDigits
+```
+
+Setting the value recolours the digits, and nothing else in the display has to be told.
 
 ```smalltalk
 LaserGameLedElement >> updateDigits
@@ -1247,6 +1287,122 @@ That is a choice, and the two alternatives are worse: going blank hides a number
 And we set every segment of every digit on every update, including the ones that do not change.
 Seven rectangles times three digits is twenty one assignments of a colour, which is nothing.
 The version that only touched what changed would need to know what was there before.
+
+## A tab that shows which segments each digit lights
+
+`segmentsForDigit:` is a table of ten rows and seven columns written as a literal array, and a literal array is the one shape a table cannot be read in.
+Reading it is exactly what an inspector tab is for.
+
+```smalltalk
+LaserGameLedElement >> inspectionSegments: aBuilder
+	"Show which of the seven segments each of the ten digits lights, and which digits I am
+	showing now. A seven segment digit is a table in the first place; segmentsForDigit: is that
+	table written as a literal array, and this tab is the same table read the way it was meant to
+	be read."
+
+	<inspectorPresentationOrder: 2 title: 'Segments'>
+	| table |
+	table := aBuilder newTable
+		         items: (0 to: 9);
+		         addColumn:
+			         (SpStringTableColumn title: 'Digit' evaluated: [ :each |
+					          each printString ]);
+		         yourself.
+	self class segmentNames do: [ :name |
+			table addColumn:
+				(SpStringTableColumn title: name asString evaluated: [ :each |
+						 ((self class segmentsForDigit: each) includes: name)
+							 ifTrue: [ 'on' ]
+							 ifFalse: [ '' ] ]) ].
+	table addColumn:
+		(SpStringTableColumn title: 'Shown now' evaluated: [ :each |
+				 (self inspectionShowsDigit: each)
+					 ifTrue: [ 'yes' ]
+					 ifFalse: [ '' ] ]).
+	^ table
+```
+
+The tab asks the class for the table rather than restating it, so the two can never disagree: change a digit in `segmentsForDigit:` and the tab says so on the next click.
+The last column is the one thing the class cannot answer, because it is about this display and not about the digits in general.
+
+```smalltalk
+LaserGameLedElement >> inspectionShowsDigit: anInteger
+	"Answer whether anInteger is one of the digits I am showing. My value is read as it is
+	printed, since that is what the digits hold."
+
+	^ (self value ifNil: [ 0 ]) printString includes:
+		  (Character digitValue: anInteger)
+```
+
+The value is read as it is printed, which is how the digits read it too.
+A display that has never been given a number shows zero, and `ifNil: [ 0 ]` says so once rather than leaving the tab to fail on a display nobody has set yet.
+
+The test asserts the shape of the table and the two things the table claims:
+
+```smalltalk
+LaserGameLedElementTestCase >> testTheSegmentsTabShowsWhichSegmentsEachDigitLights
+	"The Segments tab is segmentsForDigit: read as a table: the ten digits down the side, the
+	seven segments across the top, and a mark where a digit lights a segment. The last column
+	says which of the ten I am showing at the moment, so the table belongs to this display and
+	not only to the class."
+
+	| led builder table titles shown |
+	led := LaserGameLedElement digits: 3.
+	led value: 108.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := led inspectionSegments: builder.
+	self assert: table items asArray equals: (0 to: 9) asArray.
+	titles := (table columns collect: [ :each | each title ]) asArray.
+	self
+		assert: titles
+		equals: #( 'Digit' 'a' 'b' 'c' 'd' 'e' 'f' 'g' 'Shown now' ).
+	self
+		assert:
+			((table columns allButFirst allButLast collect: [ :each |
+				  each evaluation value: 8 ]) reject: [ :each | each isEmpty ]) size
+		equals: 7.
+	self assert: (table columns second evaluation value: 1) equals: ''.
+	shown := table columns last.
+	self assert: (shown evaluation value: 1) equals: 'yes'.
+	self assert: (shown evaluation value: 0) equals: 'yes'.
+	self assert: (shown evaluation value: 8) equals: 'yes'.
+	self assert: (shown evaluation value: 2) equals: ''
+```
+
+Eight lights all seven segments, and one lights two, so a table that has lost a column or transposed its axes cannot pass both assertions.
+`108` is the number to test the last column with, because it names three digits of three different kinds and leaves seven of the ten unshown.
+
+Two displays are worth keeping to click on:
+
+```smalltalk
+LaserGameLedExample class >> ledShowingOneHundredAndEight
+	"A three digit display showing 108, which lights one digit of each kind: a lean one, a round one and the full eight.
+	LaserGameLedExample ledShowingOneHundredAndEight"
+
+	<sampleInstance>
+	| led |
+	led := LaserGameLedElement digits: 3.
+	led value: 108.
+	^ led
+```
+
+```smalltalk
+LaserGameLedExample class >> ledShowingEverySegmentLit
+	"A three digit display showing 888, where every segment of every digit is on.
+	The last column of the Segments tab then says yes to all seven.
+	LaserGameLedExample ledShowingEverySegmentLit"
+
+	<sampleInstance>
+	| led |
+	led := LaserGameLedElement digits: 3.
+	led value: 888.
+	^ led
+```
+
+The first is the one the test uses, and the second is the degenerate end of the same table: every digit showing, every segment on, the last column saying yes to all seven.
+A display showing `888` is also the one to look at when a segment is drawn in the wrong place, since nothing is hidden behind an unlit rectangle.
 
 The one thing an LED does that a printed number cannot is glow:
 
@@ -1497,7 +1653,7 @@ A click on a mirror is the interesting one, and it is the one design decision of
 
 The click arrives at a cell element.
 The cell element tells its board.
-The board knows nothing about the panel, or about the game — which is exactly why you can open a board on its own with `LaserGameBoardElement openExample`.
+The board knows nothing about the panel, or about the game — which is exactly why you can open a board on its own with `LaserGameBoardExample openExample`.
 
 Giving the board a reference to the game, so that it could reach the panel, so that it could update a counter, would end that.
 
@@ -1694,8 +1850,7 @@ LaserGameElementTestCase >> testWindowIsFilledWithTheColorRamp
 	"The window is filled with a ramp of two colours rather than one flat colour, running the
 	fraction of the way across and down that the ramp direction states."
 
-	| game paint |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| paint |
 	paint := game background paint.
 	self assert: paint class equals: BlLinearGradientPaint.
 	self assert: paint stops equals: LaserGameColors windowColorRamp.
@@ -1708,7 +1863,7 @@ LaserGameElementTestCase >> testGameHoldsABoardAndAControlPanel
 	"A game is a row of two children: the control panel first, the board beside it."
 
 	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
+	game := LaserGameElement on: GridExample demoGrid.
 	self assert: game children size equals: 2.
 	self assert: game children first equals: game controlPanel.
 	self assert: game children second equals: game board.
@@ -1722,8 +1877,6 @@ LaserGameElementTestCase >> testFiringTheLaserSetsTheCounter
 	"The fire button reaches the counter: toggling the laser sets the counters as well as the
 	board."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self assert: game controlPanel laserPathCounter value equals: 0.
 	game toggleLaser.
 	self
@@ -1742,8 +1895,7 @@ LaserGameElementTestCase >> testAMoveOnTheBoardSetsTheCounter
 	nobody. Turning the mirror at the foot of the first column sends the beam somewhere else, and
 	the path gets shorter."
 
-	| game cellElement before |
-	game := LaserGameElement on: GridFactory demoGrid.
+	| cellElement before |
 	game toggleLaser.
 	before := game controlPanel laserPathCounter value.
 	self assert: before equals: game grid laserBeamPath size.
@@ -1766,7 +1918,7 @@ Asserting that the number *changed* is what proves something told the panel.
 Open the game:
 
 ```smalltalk
-LaserGameElement openExample
+LaserGameElementExample openExample
 ```
 
 You get the panel on the left, the ramp running from a pale blue at the top left corner to a dark violet below and to the right, and the counter at the top of the panel with `Laser Path` under it, reading zero.
@@ -2487,8 +2639,6 @@ LaserGameElementTestCase >> testEveryMoveOnTheBoardCountsOne
 	"The board announces the move and the game counts it, so the count is shown without anything
 	searching for the display."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	(game board cellElementAt: 1 @ 5) clickAt:
 		CellClickRegionRotateClockwise regionRectangle center.
 	self assert: game moves equals: 1.
@@ -2500,8 +2650,6 @@ LaserGameElementTestCase >> testAClickThatChangesNothingIsNoMove
 	"A click on a blank cell does nothing, so the board is never told and nothing is counted. The
 	count is what the player is asked to keep down, so only a move that happened counts."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	self assert: (game grid at: 2 @ 2) class equals: BlankCell.
 	(game board cellElementAt: 2 @ 2) clickAt:
 		CellClickRegionRotateClockwise regionRectangle center.
@@ -2522,8 +2670,6 @@ LaserGameElementTestCase >> testANewGameDealsAFreshBoardAndForgetsTheMoves
 	the old cells went first is the count: the randomizer writes onto the board it is given and
 	clears nothing, and ten mirrors is what it deals."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	game grid fireLaser.
 	game incrementMoves.
 	game newGame.
@@ -2541,8 +2687,6 @@ LaserGameElementTestCase >> testANewGameIsShownOnTheBoard
 	that was a mirror and is now blank draws itself blank. Nothing has to be erased: a cell
 	element draws only its own cell."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	game newGame.
 	1 to: game grid numberOfRows do: [ :row |
 		1 to: game grid numberOfColumns do: [ :column |
@@ -2577,8 +2721,6 @@ LaserGameElementTestCase >> testQuittingAsksBeforeItCloses
 	question covers the game and is not one of the two children the game lays out in a row. A
 	second click on Quit while the question stands asks nothing more."
 
-	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
 	game quit.
 	self assert: game confirmation class equals: LaserGameConfirmElement.
 	self assert: game children size equals: 3.
@@ -2592,7 +2734,7 @@ LaserGameElementTestCase >> testAnsweringNoLeavesTheGameAsItWas
 	"No takes the question away and does nothing else."
 
 	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
+	game := LaserGameElement on: GridExample demoGrid.
 	game quit.
 	game confirmation answer: false.
 	self assert: game confirmation isNil.
@@ -2658,7 +2800,7 @@ Asserting only the first would pass on a game where nothing is ever bright.
 Open the game:
 
 ```smalltalk
-LaserGameElement openExample
+LaserGameElementExample openExample
 ```
 
 You get two counters at the top of the panel, `Laser Path` over `Moves`, both reading zero, and three buttons at the bottom: New on its own row above Quit and Fire.
@@ -2774,7 +2916,7 @@ LaserGameElement class >> on: aGrid
 	^ element
 ```
 
-Which means the new work in this chapter is one line, three times over:
+Which means the new work in this chapter is one line, twice over:
 
 ```smalltalk
 LaserGameElement class >> onRandomOfExtent: aPoint
@@ -2794,17 +2936,6 @@ LaserGameElement class >> openRandomOfExtent: aPoint
 ```
 
 ```smalltalk
-LaserGameElement class >> openStandardExample
-	"Open the standard board: eight columns by ten rows, dealt. The demo board of #openExample is
-	the five by five one the earlier chapters play on.
-
-	LaserGameElement openStandardExample"
-
-	<sampleInstance>
-	^ self openOn: GridFactory defaultGrid
-```
-
-```smalltalk
 GridFactory class >> defaultGrid
 	"Answer the board a new game is dealt on: eight columns by ten rows, randomized."
 
@@ -2813,23 +2944,150 @@ GridFactory class >> defaultGrid
 
 Each of those is a name over an expression, and that is the right amount of code for them.
 
-None of them decides anything: `onRandomOfExtent:` deals and hands over, `openRandomOfExtent:` deals and opens, `openStandardExample` names one particular size.
+None of them decides anything: `onRandomOfExtent:` deals and hands over, `openRandomOfExtent:` deals and opens, `defaultGrid` names one particular size.
 If any of them had grown a second line of real work, we would have had to ask which existing method should have had it.
 
-The old opener keeps the small board:
+The opener for the dealt board belongs with the examples, not with the game: it names a board and puts a window on the screen, which is what the examples package is for.
 
 ```smalltalk
-LaserGameElement class >> openExample
-	"Open the demo grid of the tests: the five by five board with ten mirrors and one target.
-
-	LaserGameElement openExample"
+LaserGameElementExample class >> openStandardExample
+	"Open the standard board: eight columns by ten rows, dealt. The demo board of #openExample is
+	the five by five one the earlier chapters play on.
+	LaserGameElementExample openStandardExample"
 
 	<sampleInstance>
-	^ self openOn: GridFactory demoGrid
+	^ LaserGameElement openOn: GridFactory defaultGrid
 ```
 
 Two openers, on purpose.
+`openExample`, promoted back in *Assembling the game window*, still opens the five by five demo board.
 A hand-made board you can check by eye is worth keeping next to one that is different every time: when something looks wrong on a dealt board, the first question is always whether it also looks wrong on the board you know.
+
+## Three boards worth keeping
+
+There are now three boards anybody reading this code might want in front of them, and only one of them has a name.
+`GridExample demoGrid` is the five by five board of the earlier chapters, and the other two arrive with this one.
+
+```smalltalk
+GridExample class >> standardGrid
+	"The board a new game is dealt on: eight columns by ten rows, thirty-two mirrors, the target in the corner.
+	GridExample standardGrid"
+
+	<sampleInstance>
+	^ GridFactory defaultGrid
+```
+
+```smalltalk
+GridExample class >> randomGrid
+	"A board dealt afresh, so no two clicks show the same one.
+	GridExample randomGrid"
+
+	<sampleInstance>
+	^ GridFactory randomizedGridOfExtent: 8 @ 10
+```
+
+Two examples over the same size of board, and they are not the same example.
+`standardGrid` is the board a new game is dealt, and it comes through `defaultGrid` so that changing what a new game plays on changes the example too.
+`randomGrid` says the size out loud, and its point is that it is different every time: click it twice and compare the two Cells tabs.
+
+The third is the one the factory starts from:
+
+```smalltalk
+GridExample class >> emptyStandardGrid
+	"The same eight by ten board before anything is dealt on it: eighty blank cells.
+	Compare its Cells tab with the one of #standardGrid.
+	GridExample emptyStandardGrid"
+
+	<sampleInstance>
+	^ GridFactory emptyStandardGrid
+```
+
+An eighty cell board with nothing on it looks like a mistake until you have the dealt board beside it, and then it is the before picture of the only method in this chapter that puts anything anywhere.
+
+## A tab that draws the boards the factory deals
+
+`GridFactory` has no instances worth inspecting and no state at all: everything it knows, it answers.
+That is the case for a class-side tab, because the question "what does this factory deal?" is a question about the class.
+
+```smalltalk
+GridFactory class >> inspectionBoards: aBuilder
+	"Show every board I deal, drawn side by side by the board element of the game. I answer boards
+	and nothing else, so a picture of the boards is a picture of me."
+
+	<inspectorPresentationOrder: 1 title: 'Boards'>
+	^ aBuilder newMorph
+		  morph: self inspectionBoardsElement asPreviewMorph;
+		  yourself
+```
+
+```smalltalk
+GridFactory class >> inspectionBoardsElement
+	"Answer one element holding each board of #inspectionBoardFacts, drawn by the element the
+	game draws with and laid out left to right. The boards are different sizes, so each one is
+	placed at the width the board before it took."
+
+	| gap canvas left height |
+	gap := 10.
+	canvas := BlElement new
+		          background: Color white;
+		          yourself.
+	left := gap.
+	height := 0.
+	self inspectionBoardFacts do: [ :each |
+			| extent |
+			extent := LaserGameBoardElement extentForGrid: each value.
+			canvas addChild: ((LaserGameBoardElement on: each value)
+					 extent: extent;
+					 position: left @ gap;
+					 yourself).
+			left := left + extent x + gap.
+			height := height max: extent y ].
+	canvas extent: left @ (height + (2 * gap)).
+	^ canvas
+```
+
+The tab draws the boards with `LaserGameBoardElement`, which is the element the game draws with.
+A tab that drew its own little squares would be a second drawing of the board, and a second drawing can be right while the game is wrong.
+
+```smalltalk
+GridFactory class >> inspectionBoardFacts
+	"Answer each board I can deal, named by the selector that deals it: an empty board of the
+	standard size, and the board a new game is dealt. The second is dealt afresh every time this
+	is asked, since that is what a new game gets. The fixed board of the book is not here: it is
+	an example, not a board I deal."
+
+	^ OrderedCollection new
+		  add: 'emptyStandardGrid' -> self emptyStandardGrid;
+		  add: 'defaultGrid' -> self defaultGrid;
+		  yourself
+```
+
+The facts are a list of selector to board, and the tab reads nothing else, so adding a board the factory deals is one line here rather than a new column in a layout.
+The dealt board is dealt afresh on every click, because that is what a new game gets, and a tab that cached it would be showing one deal for ever.
+The demo board is deliberately absent: it is a fixture the book and the tests play on, not a board the factory deals.
+
+The test asserts that every board the facts name is drawn, and drawn with the right element:
+
+```smalltalk
+GridFactoryTestCase >> testTheBoardsTabDrawsEveryBoardIDeal
+	"The Boards tab draws each board I can deal, side by side, with the element the game itself
+	uses. I am the class that answers boards, so the readable view of me is the boards."
+
+	| boards builder presenter |
+	boards := GridFactory inspectionBoardsElement.
+	self
+		assert: boards children size
+		equals: GridFactory inspectionBoardFacts size.
+	boards children do: [ :each |
+			self assert: each class equals: LaserGameBoardElement ].
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	presenter := GridFactory inspectionBoards: builder.
+	self assert: presenter class equals: SpMorphPresenter
+```
+
+`children size equals: inspectionBoardFacts size` is the assertion that matters, since it is the one that fails when a board is added to the facts and the layout quietly drops it.
 
 ## Does anything still think the board is five by five?
 
@@ -2909,7 +3167,6 @@ LaserGameElementTestCase >> testANewGameKeepsTheSizeOfTheBoard
 	"New deals the grid the game already plays on, so a bigger board stays bigger: the cells are
 	emptied and dealt again, one target in the corner and the mirrors of that size."
 
-	| game |
 	game := LaserGameElement onRandomOfExtent: 8 @ 10.
 	game newGame.
 	self assert: game grid numberOfColumns equals: 8.
@@ -2928,7 +3185,6 @@ LaserGameElementTestCase >> testTheCountersStillHoldWhatABiggerBoardProduces
 	a path of a thousand, so the beam counter still shows the whole number the grid answers,
 	whatever board the game was dealt."
 
-	| game |
 	game := LaserGameElement onRandomOfExtent: 8 @ 10.
 	game toggleLaser.
 	self assert: game grid laserBeamPath size < 1000.
@@ -2952,7 +3208,7 @@ That is the shape you want to leave a limit in: a parameter with one caller, rat
 ## Checking it
 
 ```smalltalk
-LaserGameElement openStandardExample
+LaserGameElementExample openStandardExample
 ```
 
 You get a window of 530 by 520, a board of eight columns by ten rows with thirty-two mirrors, the target in the top right corner, counters at the top of the panel, and three buttons at the bottom of it.
@@ -3434,8 +3690,7 @@ CellRendererTestCase >> testTheBeamCrossesABlankCellFromSideToSide
 	along the bottom row from west to east, and the blank cell at 2@5 is one the beam crosses that
 	way."
 
-	| grid element beam |
-	grid := GridFactory demoGrid.
+	| element beam |
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 2 @ 5) grid: grid)
 		           newElement.
@@ -3460,8 +3715,7 @@ CellRendererTestCase >> testTheBeamCrossesABlankCellFromTopToBottom
 	"One question chooses between the two drawings: is the south segment lit. The demo grid turns
 	the beam north at 4@5, so the blank cell at 4@4 is crossed from top to bottom."
 
-	| grid element beam |
-	grid := GridFactory demoGrid.
+	| element beam |
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 4 @ 4) grid: grid)
 		           newElement.
@@ -3494,8 +3748,6 @@ CellRendererTestCase >> testABlankCellDrawsNoBeamUnlessTheLaserReachesIt
 	"A cell draws a beam only while the laser is firing and only where the beam runs. Both
 	questions are asked in #renderLaserOn:, before anything is drawn."
 
-	| grid |
-	grid := GridFactory demoGrid.
 	self
 		assertEmpty:
 			(CellRenderer rendererFor: (grid at: 2 @ 5) grid: grid) newElement
@@ -3517,26 +3769,65 @@ The third one is the interesting one, and it is the test that catches the bug yo
 
 > **When a thing can be turned on, test it off, on, and off again.** The second "off" goes through different code from the first.
 
-## Checking it
+## One line in the Picture tab
 
-The board example fires the laser, and now shows it:
+The *Picture* tab of `Cell`, written back in *A tab that draws one cell*, draws a cell through the renderer the game draws with.
+The renderer now asks the grid whether the laser is on, and the grid that tab builds has it off, so the tab draws every cell dark.
+The line it was promised is one line:
 
 ```smalltalk
-LaserGameBoardElement class >> openExampleWithLaserFired
-	"Open the demo grid with the laser already fired, which lights the target and draws the beam
-	over the blank cells it crosses.
+Cell >> inspectionPicture: aBuilder
+	"Show me as the board draws me, through the renderer the game itself uses, so that a model
+	fault and a drawing fault can be told apart without opening the game. The renderer reads a
+	copy of me standing in a grid of its own, because a view must not change what it shows."
 
-	LaserGameBoardElement openExampleWithLaserFired"
-
-	<sampleInstance>
-	| grid |
-	grid := GridFactory demoGrid.
-	grid fireLaser.
-	^ self openOn: grid
+	<inspectorPresentationOrder: 2 title: 'Picture'>
+	| location grid renderer |
+	location := self gridLocation ifNil: [ 1 @ 1 ].
+	grid := Grid newOfSize: location.
+	grid at: location put: self copy.
+	grid laserIsActive: true.
+	renderer := CellRenderer rendererFor: (grid at: location) grid: grid.
+	^ aBuilder newMorph
+		  morph: renderer newElement asPreviewMorph;
+		  yourself
 ```
 
+`grid laserIsActive: true` is the whole change, and it is the right change rather than a convenience.
+A tab that showed the unlit cell would be showing a state the player never sees: the laser is on for as long as the game is being played.
+The cell it draws is still a `copy` standing in a grid of its own, so lighting that grid lights nothing that belongs to the board.
+
+That last sentence is the one worth a test, because it is the sentence a future change can break without the picture looking any different:
+
 ```smalltalk
-LaserGameBoardElement openExampleWithLaserFired
+MirrorCellTestCase >> testThePictureTabShowsMeAsTheBoardDrawsMe
+	"The Picture tab draws me with my own renderer, mirror and all, and leaves my lean and my
+	exit sides as they were."
+
+	| cell builder |
+	cell := MirrorCell leanRight.
+	cell gridLocation: 4 @ 1.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	self
+		assert: (cell inspectionPicture: builder) class
+		equals: SpMorphPresenter.
+	self assert: cell gridLocation equals: 4 @ 1.
+	self assert: cell isRight.
+	self assert: (cell exitSideFor: #north) equals: #west
+```
+
+The test asserts the tab answers a presenter, and then asserts the cell is exactly as it was: same location, same lean, same exit side.
+A view that reads its subject has to be asked whether it also wrote to it, and the only way to ask is to look at the subject afterwards.
+
+## Checking it
+
+The board example already fires the laser: `LaserGameBoardExample openExampleWithLaserFired`, promoted in *Drawing the target*, opens the demo board with the beam drawn.
+It shows the lit target now without a line of it being changed.
+
+```smalltalk
+LaserGameBoardExample openExampleWithLaserFired
 ```
 
 The beam comes in at the bottom left corner, runs east across two blank cells, and goes up the fourth column through three more.
@@ -3803,8 +4094,7 @@ TargetCellRendererTestCase >> testTheBeamStopsInTheMiddleOfTheTargetItReaches
 	sends the beam into the target at 5@1 from the west, so the beam covers the west half of the
 	cell."
 
-	| grid element beam half |
-	grid := GridFactory demoGrid.
+	| element beam half |
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 5 @ 1) grid: grid)
 		           newElement.
@@ -3825,8 +4115,7 @@ TargetCellRendererTestCase >> testTheBeamReachesTheTargetFromTheSideItTravelsBy
 	"The beam can reach the target from any side, so the grid is asked to hold a target where the
 	beam runs upwards, and the beam covers the south half of the cell it now ends in."
 
-	| grid element beam half |
-	grid := GridFactory demoGrid.
+	| element beam half |
 	grid at: 4 @ 3 put: TargetCell new.
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 4 @ 3) grid: grid)
@@ -3858,8 +4147,7 @@ TargetCellRendererTestCase >> testTheTargetIsDrawnOverTheBeam
 	"The beam is drawn first and the target over it, so that the light does not hide what it hits:
 	the beam is the first child, and the four pieces of the target come after it."
 
-	| grid element children |
-	grid := GridFactory demoGrid.
+	| element children |
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 5 @ 1) grid: grid)
 		           newElement.
@@ -3883,7 +4171,7 @@ When the shape of a drawing changes, the tests that index into it are the ones t
 ## Checking it
 
 ```smalltalk
-LaserGameBoardElement openExampleWithLaserFired
+LaserGameBoardExample openExampleWithLaserFired
 ```
 
 The beam now ends where the light does: it comes in at the west edge of the target and stops under the ring, with the ring and its cross hairs plainly on top of it.
@@ -4347,7 +4635,7 @@ MirrorCellRendererTestCase >> testTheBeamTurnsAtAMirror
 	nothing at all in the two quadrants the light never reaches."
 
 	| grid element beam half extent |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 4 @ 5) grid: grid)
 		           newElement.
@@ -4371,7 +4659,7 @@ MirrorCellRendererTestCase >> testTheMirrorIsDrawnOverTheBeam
 	beam is the first child and the mirror is the last."
 
 	| grid element |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	grid fireLaser.
 	element := (CellRenderer rendererFor: (grid at: 4 @ 5) grid: grid)
 		           newElement.
@@ -4413,7 +4701,7 @@ CellRendererTestCase >> testABlankCellCrossedTwiceShowsBothBeams
 	"A blank cell can be crossed twice as well, which lights all four of its sides. Nothing extra
 	is asked for: both bands are drawn the whole way across and both cores go over them."
 
-	| grid cell element beam extent |
+	| cell element beam extent |
 	grid := Grid new.
 	cell := BlankCell new.
 	grid at: 1 @ 1 put: cell.
@@ -4440,7 +4728,7 @@ Those last two tests cost four lines each to set up and they cover the case a pl
 ## Checking it
 
 ```smalltalk
-LaserGameBoardElement openExampleWithLaserFired
+LaserGameBoardExample openExampleWithLaserFired
 ```
 
 The beam leaves the laser, turns at the mirror of 4@5, turns again at 4@1 and stops in the middle of the target.
@@ -4555,7 +4843,7 @@ LaserGameElement class >> openOn: aGrid
 	drawn at, and the game follows it from there: a window the player resizes scales the game to
 	match.
 
-	LaserGameElement openOn: GridFactory demoGrid"
+	LaserGameElement openOn: GridFactory defaultGrid"
 
 	| space element |
 	space := BlSpace new.
@@ -4599,7 +4887,7 @@ LaserGameElementTestCase >> testAGameScalesToFillTheWindowItIsGiven
 	window of twice the extent shows the same game twice as big, filling it."
 
 	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
+	game := LaserGameElement on: GridExample demoGrid.
 	self assert: game naturalExtent equals: 380 @ 270.
 	game fitIn: 760 @ 540.
 	self assert: (game scaleToFitIn: 760 @ 540) equals: 2.0.
@@ -4620,7 +4908,7 @@ LaserGameElementTestCase >> testAGameKeepsItsShapeInAWindowOfAnotherShape
 	game is never stretched."
 
 	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
+	game := LaserGameElement on: GridExample demoGrid.
 	game fitIn: 760 @ 270.
 	self assert: (game scaleToFitIn: 760 @ 270) equals: 1.0.
 	self assert: game transformation matrix sx equals: 1.0.
@@ -4639,7 +4927,7 @@ LaserGameElementTestCase >> testAGameShrinksWithASmallerWindow
 	board is always in view."
 
 	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
+	game := LaserGameElement on: GridExample demoGrid.
 	game fitIn: 190 @ 135.
 	self assert: game transformation matrix sx equals: 0.5.
 	self assert: game constraints position equals: 0 @ 0
@@ -4654,7 +4942,7 @@ LaserGameElementTestCase >> testAGameIgnoresAWindowOfNoSize
 	Scaling by zero would take the game off the screen, so a window of no size is left alone."
 
 	| game |
-	game := LaserGameElement on: GridFactory demoGrid.
+	game := LaserGameElement on: GridExample demoGrid.
 	game fitIn: 760 @ 540.
 	game fitIn: 0 @ 0.
 	self assert: game transformation matrix sx equals: 2.0.
@@ -4674,7 +4962,7 @@ A test that checks one of them and not the other leaves half the method uncovere
 ## Checking it
 
 ```smalltalk
-LaserGameElement openStandardExample
+LaserGameElementExample openStandardExample
 ```
 
 Drag the corner of the window.
@@ -4700,7 +4988,7 @@ Start by ruling things out, cheaply, in a playground:
 
 ```smalltalk
 | game |
-game := LaserGameElement openExample.
+game := LaserGameElementExample openExample.
 game movesCounter value
 ```
 
@@ -4938,7 +5226,7 @@ Three assertions for a method of three lines, and the third is the one that keep
 ## Checking it
 
 ```smalltalk
-LaserGameElement openExample
+LaserGameElementExample openExample
 ```
 
 You get both counters reading `0` on a dark slab, with two blank digits in front of it.

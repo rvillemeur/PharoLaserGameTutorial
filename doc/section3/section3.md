@@ -321,8 +321,7 @@ LaserGameCellElementTestCase >> testACellElementKnowsTheCellItShows
 	"A cell element carries its own cell, so nothing has to work back from a position on the
 	board to a grid location."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 2 @ 3.
 	self assert: element cell identicalTo: (board grid at: 2 @ 3).
 	self assert: element gridLocation equals: 2 @ 3
@@ -332,8 +331,6 @@ LaserGameCellElementTestCase >> testACellElementKnowsTheCellItShows
 LaserGameCellElementTestCase >> testEveryChildOfTheBoardIsACellElement
 	"The board holds one cell element per cell of its grid."
 
-	| board grid |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
 	grid := board grid.
 	self
 		assert: board children size
@@ -346,8 +343,6 @@ LaserGameCellElementTestCase >> testEveryChildOfTheBoardIsACellElement
 LaserGameCellElementTestCase >> testEachCellElementCarriesTheRendererOfItsCell
 	"The element is built by a renderer, and it keeps it: that is what redraws the cell later."
 
-	| board |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
 	board children do: [ :each |
 		self assert: each renderer class modelClass equals: each cell class ]
 ```
@@ -359,7 +354,7 @@ LaserGameCellElementTestCase >> testACellElementClassifiesAPointOfItsOwn
 	centre is in the inside region."
 
 	| element |
-	element := (LaserGameBoardElement on: GridFactory demoGrid) cellElementAt: 1 @ 1.
+	element := (LaserGameBoardElement on: GridExample demoGrid) cellElementAt: 1 @ 1.
 	self
 		assert: (element clickRegionAt: 0 @ 0)
 		equals: CellClickRegionIgnore.
@@ -378,8 +373,7 @@ LaserGameCellElementTestCase >> testTheSameLocalPointMeansTheSameRegionInEveryCe
 	"Every cell classifies points in its own coordinates, so the cell in the far corner answers
 	exactly what the cell at the origin answers."
 
-	| board first last |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| first last |
 	first := board cellElementAt: 1 @ 1.
 	last := board
 		        cellElementAt: board grid numberOfColumns @ board grid numberOfRows.
@@ -398,7 +392,7 @@ Tests that pin down what the design makes impossible are worth writing, because 
 
 ```smalltalk
 | board element |
-board := LaserGameBoardElement on: GridFactory demoGrid.
+board := LaserGameBoardElement on: GridExample demoGrid.
 element := board cellElementAt: 5 @ 5.
 element clickRegionAt: CellClickRegionInside regionRectangle center
 ```
@@ -595,8 +589,7 @@ We send the events instead:
 LaserGameCellElementTestCase >> testEnteringACellElementMakesItTheHoveredCell
 	"The pointer entering a cell element is enough for the board to know which cell it is over."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 2 @ 3.
 	element dispatchEvent: BlMouseEnterEvent new.
 	self assert: board hoveredCellElement identicalTo: element.
@@ -612,8 +605,7 @@ Prefer it over calling the handler method yourself — a handler installed on th
 LaserGameCellElementTestCase >> testLeavingTheHoveredCellElementClearsTheHover
 	"The pointer leaving the cell it hovers leaves the board hovering nothing."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 2 @ 3.
 	element dispatchEvent: BlMouseEnterEvent new.
 	element dispatchEvent: BlMouseLeaveEvent new.
@@ -628,8 +620,7 @@ LaserGameCellElementTestCase >> testLeavingACellElementThatIsNotHoveredKeepsTheH
 	"Moving from one cell to the next can deliver the enter of the new cell before the leave of
 	the old one, so a leave only clears the hover when it comes from the cell that holds it."
 
-	| board left entered |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| left entered |
 	left := board cellElementAt: 1 @ 1.
 	entered := board cellElementAt: 2 @ 1.
 	left dispatchEvent: BlMouseEnterEvent new.
@@ -649,8 +640,7 @@ LaserGameCellElementTestCase >> testMovingOverACellElementMakesItTheHoveredCell
 	"A mouse move over a cell answers which cell the pointer is over. Bloc sends it to the cell
 	itself, so the board learns it from the cell."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 4 @ 2.
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: 10 @ 10;
@@ -663,8 +653,7 @@ LaserGameCellElementTestCase >> testClickingACellElementRecordsItsCell
 	"A click reaches the cell element under the pointer, and the board records the cell that was
 	clicked. BlClickEvent is what checks that the press and the release fell in the same cell."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 3 @ 5.
 	element dispatchEvent: (BlClickEvent new
 			 position: 25 @ 25;
@@ -680,7 +669,7 @@ LaserGameBoardElementTestCase >> testANewBoardHoversNothingAndHasNoClick
 	"A board that no pointer has visited yet hovers no cell and holds no click."
 
 	| board |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	self assert: board hoveredCellElement isNil.
 	self assert: board hoveredCell isNil.
 	self assert: board clickedCell isNil
@@ -845,7 +834,7 @@ CellRendererTestCase >> testOnlyAMirrorAnswersAHintRegion
 	whole of the design, and it lives in the hierarchy rather than in a conditional."
 
 	| grid point |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	point := CellClickRegionInside regionRectangle center.
 	self
 		assert: ((CellRenderer rendererFor: (grid at: 1 @ 1) grid: grid)
@@ -871,7 +860,7 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion
 	"A mouse move carries a point, and the cell keeps the region that point falls in."
 
 	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	element := board cellElementAt: 4 @ 1.
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: CellClickRegionInside regionRectangle center;
@@ -893,7 +882,7 @@ LaserGameCellElementTestCase >> testMovingOverACellThatIsNotAMirrorRecordsNoHint
 	"Blank and target cells answer no hint region, so moving over them records nothing."
 
 	| board |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	#( 1 5 ) do: [ :column |
 		| element |
 		element := board cellElementAt: column @ 1.
@@ -909,8 +898,7 @@ LaserGameCellElementTestCase >> testLeavingACellClearsItsHintRegion
 	"The pointer leaving a cell takes its hint with it, so no cell keeps a hint the pointer is
 	no longer in."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 4 @ 1.
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: CellClickRegionInside regionRectangle center;
@@ -1079,7 +1067,22 @@ LaserGameShapes class >> eastArrowElementOfExtent: anExtent
 	^ self arrowElementFromPoints: self eastArrowPoints ofExtent: anExtent
 ```
 
-`southArrowElementOfExtent:` and `westArrowElementOfExtent:` are the same line with their own arrays.
+```smalltalk
+LaserGameShapes class >> southArrowElementOfExtent: anExtent
+	"Answer an arrow of anExtent that points south."
+
+	^ self arrowElementFromPoints: self southArrowPoints ofExtent: anExtent
+```
+
+```smalltalk
+LaserGameShapes class >> westArrowElementOfExtent: anExtent
+	"Answer an arrow of anExtent that points west."
+
+	^ self arrowElementFromPoints: self westArrowPoints ofExtent: anExtent
+```
+
+Two more of the same line, each naming its own array.
+Four methods that differ by one word read worse than a loop over a dictionary, and they are far easier to live with: the browser finds `southArrowElementOfExtent:` by name, and a dictionary key is findable by nothing.
 
 We make the colour a default, not a decision:
 
@@ -1915,8 +1918,7 @@ CellRendererTestCase >> testOnlyAMirrorAnswersAHintRegion
 	whole of the design, and it lives in the hierarchy rather than in a conditional. The mirror
 	answers the push region of the point, since the middle of a cell is where a push is asked for."
 
-	| grid point |
-	grid := GridFactory demoGrid.
+	| point |
 	point := CellClickRegionInside regionRectangle center.
 	self
 		assert: ((CellRenderer rendererFor: (grid at: 1 @ 1) grid: grid)
@@ -1936,8 +1938,7 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellRecordsItsHintRegion
 	middle of the cell that is a push region, since the push regions divide the inside region
 	between them."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 4 @ 1.
 	element dispatchEvent: (BlMouseMoveEvent new
 			 position: CellClickRegionInside regionRectangle center;
@@ -1960,7 +1961,7 @@ We need no window to watch a hint follow the pointer, because the renderer answe
 
 ```smalltalk
 | grid renderer rect |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 renderer := CellRenderer rendererFor: (grid at: 4 @ 1) grid: grid.
 rect := CellClickRegionInside regionRectangle.
 { rect leftCenter + (1 @ 0). rect topCenter + (0 @ 1). rect rightCenter - (1 @ 0).
@@ -2201,8 +2202,7 @@ LaserGameCellElementTestCase >> testMovingInsideAMirrorCellShowsTheArrowOfItsPus
 	"The cell adds the arrow of the hint as a child, a few pixels smaller than the cell and
 	centred in it, and its vertices are the ones of the direction the pointer asks for."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 4 @ 1.
 	self assert: element hintElement isNil.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -2231,7 +2231,7 @@ LaserGameCellElementTestCase >> testAMirrorCellShowsOneArrowAtATime
 	push region replaces it."
 
 	| board element rect childCount |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	element := board cellElementAt: 4 @ 1.
 	childCount := element children size.
 	rect := CellClickRegionInside regionRectangle.
@@ -2264,8 +2264,7 @@ LaserGameCellElementTestCase >> testTheArrowGoesWhenThePointerLeavesOrReachesARe
 	"A hint lasts as long as the pointer is in a region that has one. Leaving the cell takes the
 	arrow with it, and so does moving out to the margin, where the ignore region has no picture."
 
-	| board element childCount |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element childCount |
 	element := board cellElementAt: 4 @ 1.
 	childCount := element children size.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -2294,8 +2293,6 @@ LaserGameCellElementTestCase >> testMovingOverACellThatIsNotAMirrorRecordsNoHint
 	"Blank and target cells answer no hint region, so moving over them records nothing and draws
 	nothing."
 
-	| board |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
 	#( 1 5 ) do: [ :column |
 		| element childCount |
 		element := board cellElementAt: column @ 1.
@@ -2404,7 +2401,7 @@ Not one of them needed a debugger, because you can send a method that answers a 
 
 ```smalltalk
 | grid renderer |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 renderer := CellRenderer rendererFor: (grid at: 4 @ 1) grid: grid.
 renderer hintRegionAt: CellClickRegionInside regionRectangle center
 ```
@@ -2736,6 +2733,128 @@ space show
 
 You get six curved arrows, three turning each way, every one clean at its own size.
 Raise `rotateArrowArcSteps` to `48` and run it again, then drop it to `6`, and you can see what the number buys — which is the only way to choose it, and exactly why it is a method.
+
+## The gallery wants to be a method
+
+Read the snippet above beside the one at the end of *Creating custom shapes*.
+They are the same loop twice: a row element, a list of selectors, a list of sizes, and `perform:with:`.
+
+That is the second typing, and the second typing of a snippet is the moment to make it a method.
+A playground script nobody can find again is worth less than a tab on the class that holds the shapes, and it costs one method either way.
+
+Both lists become methods first, so that the gallery is nothing but a loop over them:
+
+```smalltalk
+LaserGameShapes class >> inspectionShapeExtents
+	"Answer the sizes the Shapes tab draws every shape at. Three sizes are enough to show that a
+	vertex array holds its proportions: the size of a hint, the size of a cell, and larger."
+
+	^ #( 30 50 80 )
+```
+
+```smalltalk
+LaserGameShapes class >> inspectionShapeSelectors
+	"Answer the selectors the Shapes tab asks for one shape each, in the order it draws them: the
+	four arrows a hint shows, the two rotate arrows, and the cross hair."
+
+	^ #( #northArrowElementOfExtent: #eastArrowElementOfExtent:
+	     #southArrowElementOfExtent: #westArrowElementOfExtent:
+	     #clockwiseArrowElementOfExtent: #counterClockwiseArrowElementOfExtent:
+	     #crossHairElementOfExtent: )
+```
+
+We list selectors rather than shapes, and that is what keeps the gallery honest.
+The tab asks the class for its shapes the way a cell asks for them, through the same seven selectors, so a shape that is wrong in the game is wrong in the tab as well.
+
+Both rotate arrows are on that list, which is why the gallery belongs to this chapter rather than to *Creating custom shapes*: the two shapes that most need looking at did not exist yet.
+
+The gallery itself is one loop inside another, laying out a row per size:
+
+```smalltalk
+LaserGameShapes class >> inspectionGalleryElement
+	"Answer one element holding every shape I can make, drawn once at each of
+	#inspectionShapeExtents: one row per size, the shapes of #inspectionShapeSelectors left to
+	right. Each shape is asked for the square it is given, so a row that holds its proportions is
+	the proof that one vertex array serves every size."
+
+	| gap canvas top width |
+	gap := 10.
+	canvas := BlElement new
+		          background: Color white;
+		          yourself.
+	top := gap.
+	width := gap.
+	self inspectionShapeExtents do: [ :size |
+			| left |
+			left := gap.
+			self inspectionShapeSelectors do: [ :selector |
+					canvas addChild: ((self perform: selector with: size @ size)
+							 position: left @ top;
+							 yourself).
+					left := left + size + gap ].
+			width := width max: left.
+			top := top + size + gap ].
+	canvas extent: width @ top.
+	^ canvas
+```
+
+`width max: left` is there because the rows are not the same length in pixels, and the canvas has to be as wide as the widest of them.
+An element given no extent is not given a size by its children either, so a canvas that lays its children out by position has to state its own extent at the end.
+
+The view is then two lines, because every decision was taken in the three methods above it:
+
+```smalltalk
+LaserGameShapes class >> inspectionShapes: aBuilder
+	"Show every shape I can make, each one drawn at three sizes. I hold vertex arrays written at
+	around 260 pixels and a scaling step, and nothing says whether that step is right until the
+	same arrow is seen small and large side by side."
+
+	<inspectorPresentationOrder: 1 title: 'Shapes'>
+	^ aBuilder newMorph
+		  morph: self inspectionGalleryElement asPreviewMorph;
+		  yourself
+```
+
+`asPreviewMorph` wraps a Bloc element so that a Spec presenter can show it, and `aBuilder newMorph` is the presenter that takes it.
+Those two sends are the whole of the glue between the two toolkits, and they are the reason the gallery is a separate method: everything above the glue can be tested without it.
+
+Inspect `LaserGameShapes` — the class, not an instance, since the shapes are all class-side — and the *Shapes* tab holds twenty-one elements on a canvas 640 by 200: three sizes by seven shapes.
+
+A view is a method, so it gets a test:
+
+```smalltalk
+LaserGameShapesTestCase >> testTheShapesTabDrawsEveryShapeAtEverySize
+	"The Shapes tab is the claim of pointsOf:scaledToExtent: put on screen: one row per size, one
+	shape per column, and every shape fills the square it was asked for. A vertex array written at
+	260 pixels has to serve a 12 pixel hint and a 200 pixel drawing, and this is where a reader
+	sees that it does."
+
+	| gallery builder presenter |
+	gallery := LaserGameShapes inspectionGalleryElement.
+	self
+		assert: gallery children size
+		equals:
+			LaserGameShapes inspectionShapeExtents size
+			* LaserGameShapes inspectionShapeSelectors size.
+	LaserGameShapes inspectionShapeExtents do: [ :size |
+			self
+				assert: (gallery children select: [ :each |
+						 (self requestedExtentOf: each) = (size @ size) ]) size
+				equals: LaserGameShapes inspectionShapeSelectors size ].
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	presenter := LaserGameShapes inspectionShapes: builder.
+	self assert: presenter class equals: SpMorphPresenter
+```
+
+`requestedExtentOf:` is the helper of *The Bloc trap*, reading the size an element was asked for rather than the extent it has not been given yet.
+The test counts the children, checks that each row got the square it asked for, and then says the one thing a headless test can say about a picture: that it was built.
+
+> **A test of a picture tests what the picture was asked for.** Pixels need a window; sizes and children do not.
+
+You still have to look at the tab to know the arrows are round.
+What the test buys is that a shape dropped from the list, or a size that stopped being honoured, fails before you look.
 
 Our shapes are finished.
 The next chapter divides the rim of a cell between them.
@@ -3072,8 +3191,7 @@ LaserGameCellElementTestCase >> testMovingInTheOutsideRegionOfAMirrorCellShowsAR
 	of the region belongs to the ignore margin, as `Rectangle >> containsPoint:` leaves its
 	bottom edge out, so the lower point is taken one pixel above it."
 
-	| board element rect |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element rect |
 	element := board cellElementAt: 4 @ 1.
 	rect := CellClickRegionOutside regionRectangle.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -3099,6 +3217,285 @@ The comment earns its length.
 `rect bottomLeft` is *not* in the rectangle, because `Rectangle >> containsPoint:` includes the top and left edges and excludes the bottom and right ones.
 
 Written without the `- (0 @ 1)` the test would ask about a point in the ignore margin, get no arrow, and fail for a reason that has nothing to do with rotation.
+## The click geometry, painted
+
+Seven regions now exist, and nobody has ever seen them together.
+Ten classes answer `containsPoint:`, two of them with a diagonal written as arithmetic, and between them they decide what a click on a cell does.
+*Determine push regions* spent a chapter on them and a table of named points on proving them; this chapter added two more and a horizontal line.
+
+A picture would settle all of it at once, and we can paint one without stating a single boundary ourselves.
+Ask the rules about every point of a cell, and colour the point by the answer.
+
+The points come first, because the picture and the table after it are built from the same ones:
+
+```smalltalk
+CellClickRegion class >> inspectionSampleStep
+	"Answer the distance, in cell pixels, between two points the Regions picture and the Map table
+	are built from. Two is fine enough to put every boundary of a fifty pixel cell on the screen,
+	and it leaves a picture of six hundred and twenty five squares."
+
+	^ 2
+```
+
+```smalltalk
+CellClickRegion class >> inspectionSamplePoints
+	"Answer every point of a cell the Regions picture and the Map table are built from, one per
+	inspectionSampleStep in each direction, read in the order a picture is painted."
+
+	| extent points |
+	extent := CellRenderer cellExtent.
+	points := OrderedCollection new.
+	0 to: extent y - 1 by: self inspectionSampleStep do: [ :y |
+		0 to: extent x - 1 by: self inspectionSampleStep do: [ :x |
+			points add: x @ y ] ].
+	^ points
+```
+
+Then the one question we ask of each of them:
+
+```smalltalk
+CellClickRegion class >> inspectionRegionAt: aPoint
+	"Answer the region a click at aPoint really lands in. The point is claimed by one of my three
+	subclasses and then refined, since the inside region answers one of its four push regions and
+	the outside region one of its two rotate regions."
+
+	^ (self clickRegionForPoint: aPoint) hintRegionForPoint: aPoint
+```
+
+Those two messages are the pair a mouse handler sends, in the order it sends them.
+`clickRegionForPoint:` finds the region whose rectangle claims the point, innermost first.
+`hintRegionForPoint:` is how the inside and the outside regions hand the point on to the subclass that really owns it.
+
+A view that asked only the first would paint three regions where the game sees seven, and would be wrong in exactly the way the chapter is about.
+
+Seven regions need seven colours, and none of the game's own will do:
+
+```smalltalk
+CellClickRegion class >> inspectionColorFor: aRegionClass
+	"Answer the colour the Regions picture paints aRegionClass in. None of these is a colour of the
+	game: the picture has to tell seven regions apart, which the board itself never has to do, and
+	two regions of one colour would hide the boundary between them."
+
+	| colors |
+	colors := Dictionary new.
+	colors
+		at: CellClickRegionPushNorth put: (Color r: 0.55 g: 0.75 b: 1.0);
+		at: CellClickRegionPushEast put: (Color r: 0.55 g: 0.9 b: 0.6);
+		at: CellClickRegionPushSouth put: (Color r: 1.0 g: 0.8 b: 0.5);
+		at: CellClickRegionPushWest put: (Color r: 0.8 g: 0.65 b: 1.0);
+		at: CellClickRegionRotateClockwise put: (Color r: 1.0 g: 1.0 b: 0.6);
+		at: CellClickRegionRotateCounterClockwise put: (Color r: 1.0 g: 0.7 b: 0.75);
+		at: CellClickRegionIgnore put: (Color r: 0.85 g: 0.85 b: 0.85).
+	^ colors at: aRegionClass ifAbsent: [ Color transparent ]
+```
+
+Two regions painted alike would hide the boundary between them, which is the one thing the picture exists to show.
+So the dictionary gets a test of its own, and it is the shortest test in the chapter:
+
+```smalltalk
+CellClickRegionTestCase >> testEveryRegionAClickCanLandInHasAColourOfItsOwnInThePicture
+	"Two regions painted the same colour would make the picture lie about where the boundary
+	between them runs, so each of the seven regions a click can land in answers a colour no other
+	one answers."
+
+	| regions colours |
+	regions := CellClickRegion withAllSubclasses select: [ :each |
+		           each subclasses isEmpty ].
+	colours := regions collect: [ :each |
+		           CellClickRegion inspectionColorFor: each ].
+	self assert: regions size equals: 7.
+	self assert: colours asSet size equals: regions size
+```
+
+`withAllSubclasses select: [ :each | each subclasses isEmpty ]` is "every region a click can land in": the leaves of the hierarchy, which are the only classes `inspectionRegionAt:` ever answers.
+Written that way the test does not list the seven, so a region added later is counted without the test being touched — and if its colour is a copy of another, the set of colours comes out one short.
+
+The view itself is a square for every sampled point, at six times the size so a fifty pixel cell is worth looking at:
+
+```smalltalk
+CellClickRegion class >> inspectionRegions: aBuilder
+	"Show one cell painted by region: every sampled point asked of clickRegionForPoint: and
+	coloured by the answer. This is the picture the ten containsPoint: methods and the two
+	diagonals add up to, and it is drawn by asking them rather than by restating them."
+
+	<inspectorPresentationOrder: 1 title: 'Regions'>
+	| zoom step canvas |
+	zoom := 6.
+	step := self inspectionSampleStep.
+	canvas := BlElement new
+		          extent: CellRenderer cellExtent * zoom;
+		          background: Color white;
+		          yourself.
+	self inspectionSamplePoints do: [ :point |
+			canvas addChild: (BlElement new
+					 extent: step @ step * zoom;
+					 position: point * zoom;
+					 background:
+						 (self inspectionColorFor: (self inspectionRegionAt: point));
+					 yourself) ].
+	^ aBuilder newMorph
+		  morph: canvas asPreviewMorph;
+		  yourself
+```
+
+Six hundred and twenty five elements is nothing to Bloc, and the picture is exact by construction.
+There is no polygon in this method, no triangle, no `y = x`: every square asks the rules where it belongs.
+
+> **Paint the picture by asking the rules.** A diagram drawn from a second copy of the geometry agrees with the code only until one of the two is changed.
+
+The tab is on the class, not on an instance, which is where a question about a whole hierarchy belongs.
+`Color class >> inspectionColors:` does the same in Pharo itself, so there is a precedent in the image to read.
+
+It needs one more method, because a hierarchy can be inspected from the middle:
+
+```smalltalk
+CellClickRegion class >> inspectionRegionsContext: aContext
+	"Show the Regions picture on the root of the hierarchy only. It is the one class that can ask
+	every region in turn, since clickRegionForPoint: tries the subclasses of whichever class is
+	asked, and a region asked for a picture of itself would paint a cell it does not own."
+
+	aContext active: self superclass = Object
+```
+
+`clickRegionForPoint:` asks `self sortedSubclasses`, so inspecting `CellClickRegionInside` would paint a cell out of its four push regions alone, with the rotate regions and the ignore margin missing.
+The condition hides the tab everywhere but the root, and it reads the hierarchy rather than naming a class.
+
+> **A class-side tab belongs to the class that can answer for the whole hierarchy.** Where the answer would be partial, hide the tab rather than show half of one.
+
+All a test can say about a picture is that it was built, and that is still worth one method:
+
+```smalltalk
+CellClickRegionTestCase >> testTheRegionsTabDrawsThePictureFromTheRulesThemselves
+	"The Regions tab paints a cell by asking clickRegionForPoint: for every sampled point, so the
+	picture cannot disagree with the rules it is drawn from. All a test can say about a picture is
+	that it was built."
+
+	| builder |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	self
+		assert: (CellClickRegion inspectionRegions: builder) class
+		equals: SpMorphPresenter
+```
+
+## The same geometry as a table
+
+A picture shows you where the boundaries are.
+It does not say which rectangle was tried first, or how much of the cell each region ends up with, and those are the two things *Determine push regions* had to argue about on paper.
+
+We count the sampled points instead:
+
+```smalltalk
+CellClickRegion class >> inspectionRegionCounts
+	"Answer one association per region a click can land in, the region to the number of sampled
+	points that fall in it, in the order the rectangles are tried."
+
+	| counts |
+	counts := Dictionary new.
+	self inspectionSamplePoints do: [ :point |
+		| region |
+		region := self inspectionRegionAt: point.
+		counts at: region put: (counts at: region ifAbsent: [ 0 ]) + 1 ].
+	^ counts associations asSortedCollection: [ :a :b |
+		  a key sortIndex = b key sortIndex
+			  ifTrue: [ a key name <= b key name ]
+			  ifFalse: [ a key sortIndex < b key sortIndex ] ]
+```
+
+```smalltalk
+CellClickRegion class >> inspectionMap: aBuilder
+	"Show one row per region a click can land in: the order its rectangle is tried in, the
+	rectangle itself, how many sampled points fall in it, and whether it draws a hint. The inside
+	and the outside regions have no row, because each of them refines itself to one of its own
+	subclasses."
+
+	<inspectorPresentationOrder: 2 title: 'Map'>
+	^ aBuilder newTable
+		  items: self inspectionRegionCounts;
+		  addColumn: (SpStringTableColumn title: 'Region' evaluated: [ :each | each key name ]);
+		  addColumn: (SpStringTableColumn title: 'Tried' evaluated: [ :each |
+					   each key sortIndex printString ]);
+		  addColumn: (SpStringTableColumn title: 'Rectangle' evaluated: [ :each |
+					   each key regionRectangle printString ]);
+		  addColumn: (SpStringTableColumn title: 'Points' evaluated: [ :each |
+					   each value printString ]);
+		  addColumn: (SpStringTableColumn title: 'Hint' evaluated: [ :each |
+					   (each key hintElementOfExtent: CellRenderer cellExtent)
+						   ifNil: [ '' ]
+						   ifNotNil: [ 'arrow' ] ]);
+		  yourself
+```
+
+The counting is a method of its own because the table should be a table and nothing else, and because the test can then read the counts without a presenter.
+
+On a fifty pixel cell the tab reads:
+
+```text
+CellClickRegionPushEast                1  (10@10) corner: (40@40)   64  arrow
+CellClickRegionPushNorth               1  (10@10) corner: (40@40)   56  arrow
+CellClickRegionPushSouth               1  (10@10) corner: (40@40)   56  arrow
+CellClickRegionPushWest                1  (10@10) corner: (40@40)   49  arrow
+CellClickRegionRotateClockwise         2  (4@4) corner: (46@46)    111  arrow
+CellClickRegionRotateCounterClockwise  2  (4@4) corner: (46@46)    105  arrow
+CellClickRegionIgnore                  3  (0@0) corner: (50@50)    184
+```
+
+Four things in that table are worth your attention.
+
+The inside and the outside regions have no row at all, although they are the two classes whose rectangles are tried: a point they claim is always handed on to a subclass, and the table says so by leaving them out.
+The four push regions share one rectangle, the thirty by thirty square in the middle, and the two diagonals divide it between them — which is why one rectangle appears four times.
+The two rotate regions share the ring between the two rectangles, split by the horizontal line this chapter drew.
+And the ignore margin is the largest region of the cell at a hundred and eighty four points of six hundred and twenty five, which is the four pixel border where a click does nothing.
+
+The four push counts are not equal, and that is not a fault.
+A sampled point that lands exactly on a diagonal belongs to whichever side the strict comparison in `pointIsUnderHeadingUpLine:` gives it, and with a step of two pixels the diagonals carry sampled points.
+Fifteen of them sit on `y = x`, and they all go east.
+
+> **Count the answers, not the geometry.** A boundary rule and a picture of it can both be right while the share of the cell each region gets is a surprise.
+
+The table hides from the middle of the hierarchy for the same reason the picture does:
+
+```smalltalk
+CellClickRegion class >> inspectionMapContext: aContext
+	"Show the Map table on the root of the hierarchy only, for the reason the picture is shown
+	there only: a region can answer for its own points, not for every region's."
+
+	aContext active: self superclass = Object
+```
+
+```smalltalk
+CellClickRegionTestCase >> testTheMapTabListsEveryRegionAClickCanLandIn
+	"The Map tab counts the sampled points of each region a click can land in. The inside and the
+	outside regions never appear, since each of them refines itself to a push or a rotate region,
+	and that is the fact the table is there to show."
+
+	| builder table regions |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := CellClickRegion inspectionMap: builder.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Region' 'Tried' 'Rectangle' 'Points' 'Hint' ).
+	regions := table items collect: [ :each | each key ].
+	self assert: (regions includes: CellClickRegionPushNorth).
+	self assert: (regions includes: CellClickRegionRotateClockwise).
+	self assert: (regions includes: CellClickRegionIgnore).
+	self deny: (regions includes: CellClickRegionInside).
+	self deny: (regions includes: CellClickRegionOutside).
+	self
+		assert: (table items inject: 0 into: [ :sum :each | sum + each value ])
+		equals: CellClickRegion inspectionSamplePoints size
+```
+
+Three claims, and the middle one is the interesting one.
+The two `deny:` lines assert an absence: the inside and the outside regions are the classes whose rectangles are tried, and neither of them ever appears as an answer.
+The last assertion is a total — every sampled point is counted exactly once — which is the walk over every point of *Tests that hold at any cell size*, asked of the table rather than of the classes.
+
+The two tabs cost eight methods between them, and between them they replace three chapters of argument with a picture and a count.
+Keep them: *Click and rotate a cell* is where a click first means something, and the first question anyone asks of a click that did the wrong thing is which region it landed in.
+
 Half-open rectangles catch everybody once; when a boundary point surprises you, print `rect` and ask it `containsPoint:` directly before changing any production code.
 
 ## Checking it
@@ -3114,7 +3511,7 @@ row := BlElement new
 	       yourself.
 { rect topLeft. rect bottomLeft - (0 @ 1). CellClickRegionInside regionRectangle center } do: [ :point |
 	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	element := board cellElementAt: 4 @ 1.
 	element showPositionHintAt: point.
 	row addChild: board ].
@@ -3141,7 +3538,7 @@ The next thing is a mirror that turns — and in this chapter we never touch an 
 We work on the model first and the interface after.
 A mirror that turns correctly is something you can test in three lines; a mirror that turns when clicked is something you have to test with a mouse.
 
-On the way the cells learn to print themselves properly and the grid gains an inspector tab, because the quickest way through a bug like this one is to make the objects say more.
+On the way the cells learn to print themselves properly, because the quickest way through a bug like this one is to make the objects say more, and the tabs that say the rest of it were written in Section 1 and Section 2 and are waiting for us.
 
 It is also the chapter where we introduce a bug on purpose, because the bug is a good one: a mirror that turns its picture and forgets to turn its behaviour.
 Finding it is most of the work here, and the method for finding it is the part worth keeping.
@@ -3279,8 +3676,7 @@ Our two tests say so, and both of them read the cells rather than the mirror:
 ```smalltalk
 GridTestCase >> testFireLaserAfterMirrorRotation
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	self assert: grid laserIsActive.
 	cell := grid startingCell.
@@ -3303,8 +3699,7 @@ GridTestCase >> testFireLaserAfterMirrorRotation
 ```smalltalk
 GridTestCase >> testFireLaserDuringMirrorRotation
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	self assert: grid laserIsActive.
 	cell := grid startingCell.
@@ -3458,120 +3853,29 @@ LaserPathElementTestCase >> testPrintStringNamesTheCellAndTheSideTheBeamEntersFr
 `print:` is `printOn:` applied to another object, so one print method composes with the next.
 The result — `a LaserPathElement(a MirrorCell(4@1 leans right, off) from south)` — is a whole step of the beam in one line, and a list of them gives you a readable trace of the beam.
 
-## What will not fit on one line goes in an inspector tab
+## The tabs we already have
 
-One line is not much.
-The state of all four sides of a cell will not fit, and that is the table we need for this bug.
-In Pharo that belongs in an inspector tab, which costs us one method and a pragma:
+One line is not much, and the rest of what we want to know was given a tab chapters ago.
 
-```smalltalk
-Cell >> inspectionSides: aBuilder
-	"Show one row per side of me: where a beam entering there leaves, and whether that side is lit.
-	This is the table to read when a beam leaves a cell by the wrong side, because the usual cause
-	is an exit side that was left unchanged."
+A cell carries two, written in *Enhancing MirrorCell* when the four sides were being asked one at a time.
+*Sides* lists the four sides of a cell against where a beam entering each one leaves and whether that side is lit; *Lean* puts the same four sides against the way the mirror leans, and says row by row whether the two agree.
+Read that second sentence again with this chapter's bug in mind.
+A mirror whose lean was changed without its exit sides reads *no* on every row of the *Lean* tab, which is the fault we are hunting, named by a tab written before the fault existed.
 
-	<inspectorPresentationOrder: 1 title: 'Sides'>
-	^ aBuilder newTable
-		  items: #( #north #east #south #west );
-		  addColumn: (SpStringTableColumn title: 'Enters from' evaluated: [ :each |
-					   each asString ]);
-		  addColumn: (SpStringTableColumn title: 'Leaves by' evaluated: [ :each |
-					   (self exitSideFor: each)
-						   ifNil: [ 'nowhere' ]
-						   ifNotNil: [ :side | side asString ] ]);
-		  addColumn: (SpStringTableColumn title: 'Lit' evaluated: [ :each |
-					   (self isSegmentOnFor: each)
-						   ifTrue: [ 'yes' ]
-						   ifFalse: [ '' ] ]);
-		  yourself
-```
+A grid carries two more.
+*Board*, written in *The game board*, draws the grid with the same element the window uses; *Beam*, written in *Drawing the target*, lists the path the laser takes, one row per step, each row printing its cell with the print method we have just given it.
 
-The `<inspectorPresentationOrder: 1 title: 'Sides'>` pragma is the whole of the wiring.
-Any method carrying it becomes a tab on the inspector of that object, named by the title and placed by the number, and it works on every subclass because it is inherited.
+So the diagnosis costs nothing but four clicks.
+Inspect the grid: the *Board* tab draws the beam going the wrong way, so the fault is in the model and not in the drawing.
+Inspect the mirror at `4@1`: the header says it leans left, and the *Sides* tab says a beam entering from the south still leaves to the east, which is where a mirror leaning *right* sends it.
+The *Lean* tab says *no* on all four rows.
+The bug is on the screen, in two tables, before we have stepped through anything.
 
-`aBuilder newTable` builds the table; each `addColumn:` takes a title and a block that is evaluated per row.
-
-Inspect a mirror now and the *Sides* tab says, in four rows, exactly what the bug is about.
-Turn the mirror from the code pane, look again, and the lean in the header has changed while the *Leaves by* column has not.
-The bug is on the screen, in a table, before you step through anything.
-
-```smalltalk
-MirrorCellTestCase >> testTheSidesTabListsTheFourSidesOfTheCell
-	"The Sides tab has one row per side of the cell. It is the table to read when a beam leaves a
-	cell by the wrong side, since it shows the exit sides against the lean."
-
-	| cell table |
-	cell := MirrorCell leanRight.
-	cell gridLocation: 4 @ 1.
-	table := cell inspectionSides:
-		         (SpPresenterBuilder new
-			          application: SpApplication new;
-			          yourself).
-	self assert: table items asArray equals: #( #north #east #south #west ).
-	self assert: table columns size equals: 3
-```
-
-An inspector tab is a method, so we test it like one: hand it a builder, and check the table it answers.
-
-Not the pixels — the rows and the number of columns.
-That is enough to catch the tab throwing an error, which is the only way a tab really breaks, and you will not have to rewrite it when a column title changes.
-
-A grid can do better than describe itself, because it already has an element that draws it.
-We make one tab the board as a picture, and the other the beam, one row per step:
-
-```smalltalk
-Grid >> inspectionBoard: aBuilder
-	"Show me as the board the player sees, drawn by the same element the game uses. A picture of
-	the board is the quickest way to tell a model fault from a drawing fault."
-
-	<inspectorPresentationOrder: 1 title: 'Board'>
-	^ aBuilder newMorph
-		  morph: (LaserGameBoardElement on: self) asPreviewMorph;
-		  yourself
-```
-
-```smalltalk
-Grid >> inspectionBeam: aBuilder
-	"Show the path the laser takes, one row per step, which is the collection to read when the beam
-	goes somewhere unexpected."
-
-	<inspectorPresentationOrder: 2 title: 'Beam'>
-	^ aBuilder newTable
-		  items: (self laserBeamPath ifNil: [ #(  ) ]);
-		  addColumn: (SpStringTableColumn title: 'Cell' evaluated: [ :each |
-					   each cell printString ]);
-		  addColumn:
-			  (SpStringTableColumn title: 'Enters from' evaluated: [ :each |
-					   each entrySide asString ]);
-		  yourself
-```
-
-```smalltalk
-GridTestCase >> testTheInspectorTabsOfAGridShowTheBoardAndTheBeam
-	"A grid can show the board itself, since it has an element that draws it, as well as the path
-	the laser takes. One row per step of the beam, and the board as a picture."
-
-	| grid builder |
-	grid := self generateDemoGrid.
-	grid fireLaser.
-	builder := SpPresenterBuilder new
-		           application: SpApplication new;
-		           yourself.
-	self
-		assert: (grid inspectionBeam: builder) items size
-		equals: grid laserBeamPath size.
-	self assert: (grid inspectionBoard: builder) class equals: SpMorphPresenter
-```
-
-`asPreviewMorph` is what lets a Bloc element be shown inside an inspector, which is a Spec tool.
-
-The *Board* tab is the single most useful debugging tool in this whole game: a picture of the model, drawn by the same element the window uses, available on any grid anywhere — in a test, in a playground, in a debugger halfway through a method.
-
+That question — model or drawing? — is the one the *Board* tab exists to answer, and we ask it over and over in the rest of this section.
 When the board in the tab is wrong, the fault is in the model; when the tab is right and the window is wrong, the fault is in the drawing.
-We ask that question over and over in the next two sections, and this tab answers it in a glance.
+Half the search, for one glance.
 
-`ifNil: [ #() ]` in the beam tab is there because a grid that has not fired has no path, and an inspector must never be the thing that raises an error.
-Guard the display, not the model.
+> **The lesson as a sentence.** A view written at the moment a fact was hard to reach is a view waiting for the bug that fact causes.
 
 ## The test that names the fault
 
@@ -3610,7 +3914,7 @@ LaserPathElementTestCase >> testTheNextElementFollowsTheMirrorAfterItIsRotated
 	method where that shows."
 
 	| grid mirror element |
-	grid := GridFactory demoGrid.
+	grid := GridExample demoGrid.
 	mirror := grid at: 4 @ 1.
 	element := LaserPathElement cell: mirror entrySide: #south.
 	self assert: mirror isRight.
@@ -3655,7 +3959,7 @@ Now the test reads a fact that `rotate` does not write directly, which is what m
 
 ## The fix
 
-`MirrorCell` already has two methods that set the lean and the four exit sides together, written when we built the model and used by `GridFactory` ever since:
+`MirrorCell` already has two methods that set the lean and the four exit sides together, written when we built the model and used by `GridExample demoGrid` ever since:
 
 ```smalltalk
 MirrorCell >> leanLeft
@@ -3734,7 +4038,7 @@ Where filling in a method is the whole job of a subclass, say so in the method r
 
 ```smalltalk
 | grid |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 grid inspect
 ```
@@ -3744,7 +4048,7 @@ Then turn the mirror and inspect again:
 
 ```smalltalk
 | grid |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 grid rotateCellClockwiseAt: 4 @ 1.
 grid inspect
@@ -4051,8 +4355,7 @@ LaserGameCellElementTestCase >> testClickingTheUpperOutsideRegionOfAMirrorTurnsI
 	click carries a point in the coordinates of the cell, which is the whole of what the region
 	needs."
 
-	| board element mirror |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element mirror |
 	element := board cellElementAt: 4 @ 1.
 	mirror := element cell.
 	self assert: mirror isRight.
@@ -4070,8 +4373,7 @@ LaserGameCellElementTestCase >> testClickingTheLowerOutsideRegionOfAMirrorTurnsI
 	last row of the outside rectangle belongs to the ignore margin, as `Rectangle >>
 	containsPoint:` leaves its bottom edge out, so the point is taken one pixel above it."
 
-	| board element mirror |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element mirror |
 	element := board cellElementAt: 4 @ 1.
 	mirror := element cell.
 	element dispatchEvent: (BlClickEvent new
@@ -4092,8 +4394,7 @@ LaserGameCellElementTestCase >> testClickingTheIgnoreRegionOfAMirrorDoesNothing
 	The superclass of the regions answers that no action is possible, which is where the ignore
 	region gets its answer from."
 
-	| board element mirror |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element mirror |
 	element := board cellElementAt: 4 @ 1.
 	mirror := element cell.
 	element dispatchEvent: (BlClickEvent new
@@ -4109,8 +4410,6 @@ LaserGameCellElementTestCase >> testClickingACellThatIsNotAMirrorDoesNothing
 	"Only a mirror acts on a click. A blank cell and the target answer nothing wherever they are
 	clicked, which is the renderer superclass doing nothing."
 
-	| board |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
 	#( 1 5 ) do: [ :column |
 		| element |
 		element := board cellElementAt: column @ 1.
@@ -4138,8 +4437,7 @@ LaserGameCellElementTestCase >> testTurningAMirrorOnTheBeamRedrawsTheWholeBoard
 	so the target goes dark without anything working out which cells the beam left. The disc is the
 	last child of the target, since a lit target draws the beam under its picture."
 
-	| grid board target |
-	grid := GridFactory demoGrid.
+	| target |
 	grid fireLaser.
 	board := LaserGameBoardElement on: grid.
 	target := board cellElementAt: 5 @ 1.
@@ -4169,8 +4467,7 @@ LaserGameCellElementTestCase >> testClickingTheInsideRegionOfAMirrorPushesIt
 	the lower triangle pushes north; the mirror at 1@2 has a blank cell above it, and after the
 	click each of the two cell elements draws what now stands in it."
 
-	| board element |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element |
 	element := board cellElementAt: 1 @ 2.
 	self assert: element cell class equals: MirrorCell.
 	element dispatchEvent: (BlClickEvent new
@@ -4195,7 +4492,7 @@ An element that had kept its original renderer would draw a mirror in an empty c
 
 ```smalltalk
 | grid space board |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 board := LaserGameBoardElement on: grid.
 space := BlSpace new.
@@ -4337,8 +4634,7 @@ LaserGameCellElementTestCase >> testHoveringAnotherCellClearsTheHintOfTheOneLeft
 	left without ever being told. The board hovers one cell at a time, so the cell it hovered
 	before loses its hint when another one takes its place, whatever events were missed."
 
-	| board first second |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| first second |
 	first := board cellElementAt: 4 @ 1.
 	second := board cellElementAt: 1 @ 2.
 	first dispatchEvent: (BlMouseMoveEvent new
@@ -4367,7 +4663,7 @@ LaserGameHintEventTestCase >> setUp
 
 	| aSpace |
 	super setUp.
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	aSpace := self newTestingSpace.
 	aSpace root addChild: board.
 	aSpace settle
@@ -4446,7 +4742,7 @@ Write a point outside something as *its own corner plus a margin*, never as a nu
 
 ```smalltalk
 | grid space board |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 board := LaserGameBoardElement on: grid.
 space := BlSpace new.
@@ -4481,35 +4777,12 @@ This one is a method that is correct, called by a method that is correct, with n
 The first question for *every* bug where the screen is wrong: is the model wrong, or is the picture of a correct model wrong?
 Answer that before anything else, because it halves the code you have to read, and it is cheap to answer.
 
-The board already has an inspector tab that draws it.
-We add a third tab, which lists the cells with their state, and then we answer the question by looking:
-
-```smalltalk
-Grid >> inspectionCells: aBuilder
-	"Show one row per cell of me, in the order the board lays them out, with what the cell is and
-	whether it is lit. Read it to catch a cell whose state disagrees with the beam: a target that
-	says it is on while nothing reaches it shows up here at once."
-
-	<inspectorPresentationOrder: 3 title: 'Cells'>
-	| everyCell |
-	everyCell := OrderedCollection new.
-	1 to: self numberOfRows do: [ :row |
-		1 to: self numberOfColumns do: [ :column |
-			everyCell add: (self at: column @ row) ] ].
-	^ aBuilder newTable
-		  items: everyCell;
-		  addColumn: (SpStringTableColumn title: 'Cell' evaluated: [ :each |
-					   each printString ]);
-		  addColumn: (SpStringTableColumn title: 'Lit' evaluated: [ :each |
-					   each isOn
-						   ifTrue: [ 'yes' ]
-						   ifFalse: [ '' ] ]);
-		  yourself
-```
+A grid has three tabs by now and every one of them was written before this bug existed: *Board* draws it, *Beam* lists the path the laser takes, and *Cells* — written back in *Grid*, when a row and a column had just been confused in `at:put:` — lists one row per cell with what the cell is and whether it is lit.
+So we answer the question by looking:
 
 ```smalltalk
 | grid |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 grid rotateCellCounterClockwiseAt: 4 @ 1.
 grid inspect
@@ -4520,8 +4793,8 @@ So the model is wrong.
 The drawing is faithfully showing a cell that believes something untrue, and no amount of reading the renderers would have found that for you.
 
 Notice how little work that was, and notice that it was work done *earlier*.
-The tab we added for the previous bug paid for itself in this one.
-Diagnostic tools are worth building because they are worth keeping.
+Three tabs, written in three different chapters for three different reasons, and the one written for a confusion between rows and columns is the one that names this bug.
+That is the argument for writing a view the day a fact is hard to reach rather than the day a bug needs it: you do not know yet which bug it will catch, and it costs one method either way.
 
 One warning while reading a tab like this, and it is the commonest way to waste an afternoon: change **one** thing at a time.
 Turn a mirror *and* stop the laser, then look at the cells, and whatever is wrong could belong to either action.
@@ -4535,8 +4808,7 @@ We already have a test about rotation:
 ```smalltalk
 GridTestCase >> testFireLaserAfterMirrorRotation
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	self assert: grid laserIsActive.
 	cell := grid startingCell.
@@ -4570,8 +4842,7 @@ So we write the missing test, which turns the mirror with the beam running:
 ```smalltalk
 GridTestCase >> testFireLaserDuringMirrorRotation
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	self assert: grid laserIsActive.
 	cell := grid startingCell.
@@ -4708,8 +4979,6 @@ LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterATurn
 	holds? Every cell is asked: the renderer is the one of the cell standing there, and the
 	target is drawn lit exactly when its cell is on."
 
-	| grid board |
-	grid := GridFactory demoGrid.
 	grid fireLaser.
 	board := LaserGameBoardElement on: grid.
 	(board cellElementAt: 4 @ 1) dispatchEvent: (BlClickEvent new
@@ -4736,15 +5005,15 @@ Not *the target at 5@1 is dark* — the rule, for every cell, whatever the board
 Write a test like this once per bug class, not once per bug.
 It costs a nested loop and it closes the whole family: any future change that leaves an element describing a cell that is no longer there fails here.
 
-And we test the tab, because it is now a tool the book tells you to use:
+The *Cells* tab has gone untested since *Grid*, and this is the first chapter that can test it, because the row that matters is the lit one and nothing lit a board until Section 2.
+A presentation method gets one smoke test, and here it is:
 
 ```smalltalk
 GridTestCase >> testTheCellsTabListsEveryCellWithItsState
 	"The Cells tab answers in one view whether any cell disagrees with the beam: one row per cell,
 	with what the cell is and whether it is lit."
 
-	| grid builder table |
-	grid := self generateDemoGrid.
+	| builder table |
 	grid fireLaser.
 	builder := SpPresenterBuilder new
 		           application: SpApplication new;
@@ -4760,13 +5029,14 @@ GridTestCase >> testTheCellsTabListsEveryCellWithItsState
 ```
 
 One row per cell, the target among them, two columns.
+Not the pixels: the rows and the column titles, which is enough to catch the tab raising an error, and that is the only way a tab really breaks.
 A tab that silently stopped listing some of the cells would be worse than no tab, since you would trust it.
 
 ## Checking it
 
 ```smalltalk
 | grid space board |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 board := LaserGameBoardElement on: grid.
 space := BlSpace new.
@@ -4844,13 +5114,8 @@ That is not an accident.
 We built the demo grid to be looked at, and it earns its keep as a test fixture because it holds every situation the rules mention.
 
 When you find yourself building a fresh object in ten tests, each one slightly different, stop and build one object that covers all ten.
-Every test here starts with the same line:
-
-```smalltalk
-GridTestCase >> generateDemoGrid
-
-	^ GridFactory demoGrid
-```
+That is what `GridExample demoGrid` has been since the chapter *Grid*, and `GridTestCase >> setUp` reads it into the `grid` instance variable before every test, so no test in this chapter deals a board of its own.
+You will see the tests below start straight in on `grid`, with nothing between the temporaries and the first push.
 
 ## The tests come from the rules
 
@@ -4860,8 +5125,7 @@ We push the blank corner at `1@1` all four ways and it must still be a blank cel
 ```smalltalk
 GridTestCase >> testPushBlankCell
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	cell := grid at: 1 @ 1.
 	grid pushCellSouthFromLocation: 1 @ 1.
 	cell := grid at: 1 @ 1.
@@ -4889,8 +5153,7 @@ Rule two says the target never moves, and we give it the same four pushes at `5@
 ```smalltalk
 GridTestCase >> testPushTargetCell
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid pushCellSouthFromLocation: 5 @ 1.
 	cell := grid at: 5 @ 1.
 	self assert: cell class equals: TargetCell.
@@ -4914,8 +5177,7 @@ The first takes the lone mirror at `1@2` and pushes it up into the empty corner:
 ```smalltalk
 GridTestCase >> testPushIsolatedMirrorCellNorthCase1
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid pushCellNorthFromLocation: 1 @ 2.
 	cell := grid at: 1 @ 1.
 	self assert: cell class equals: MirrorCell.
@@ -4932,8 +5194,7 @@ The second takes a mirror out of the block at `3@3`, where the cell above is fre
 ```smalltalk
 GridTestCase >> testPushIsolatedMirrorCellNorthCase2
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid pushCellNorthFromLocation: 3 @ 3.
 	cell := grid at: 3 @ 2.
 	self assert: cell class equals: MirrorCell.
@@ -5147,6 +5408,31 @@ GridDirectionWest class >> vector
 	^-1@0
 ```
 
+Each of them answers one more thing, which the beam needs rather than the push:
+
+```smalltalk
+GridDirectionNorth class >> adjacentInversionSymbol
+	^#south
+```
+
+```smalltalk
+GridDirectionEast class >> adjacentInversionSymbol
+	^#west
+```
+
+```smalltalk
+GridDirectionSouth class >> adjacentInversionSymbol
+	^#north
+```
+
+```smalltalk
+GridDirectionWest class >> adjacentInversionSymbol
+	^#east
+```
+
+A beam leaving a cell northwards arrives at the next cell from the south.
+That is the whole of what `adjacentInversionSymbol` means, and it is a name that tells you none of it until you have seen the four answers side by side — which we do two sections on.
+
 `0 @ -1` is up, because row 1 is the top row.
 Adding a vector to a location is the whole of "the cell one step that way", and it is why `pushCell:fromLocation:` has no conditional about direction in it at all.
 
@@ -5163,7 +5449,7 @@ GridDirection class >> directionFor: aSymbol
 A dictionary from `#north` to `GridDirectionNorth` would do the same job, and it would be one more place for you to edit when a direction is added.
 
 Asking the subclasses means the classes themselves are the table.
-The beam uses the same four classes to walk from cell to cell, which is where they came from: each direction also answers the side a beam entering that way comes *from*.
+The beam uses the same four classes to walk from cell to cell, which is where they came from.
 
 One test covers all four:
 
@@ -5196,6 +5482,97 @@ Four blocks of four lines, one per direction, with the answers written out as li
 
 Tests over a small fixed set of objects are allowed to be boring and repetitive.
 The alternative — a loop over the four directions computing what to expect — would compute the expected value the same way the code does, and would agree with a mistake.
+
+## Four objects, one table
+
+`testDirectionSelection` is four blocks of four lines, and the name it repeats four times is `adjacentInversionSymbol`.
+Nothing in that name says what the answer is for, and the literal beside it says only what the answer is.
+A reader who meets `#south` under `GridDirectionNorth` has to be told why, every time.
+
+Four rows say it once:
+
+```smalltalk
+GridDirection class >> inspectionDirections: aBuilder
+	"Show the four directions in compass order, each with the vector it adds to a location and the
+	side the beam enters the next cell from. The last column is what adjacentInversionSymbol
+	means, which is a name that explains nothing until the table is read."
+
+	<inspectorPresentationOrder: 1 title: 'Directions'>
+	^ aBuilder newTable
+		  items: (#( #north #east #south #west ) collect: [ :each |
+					   self directionFor: each ]);
+		  addColumn: (SpStringTableColumn title: 'Direction' evaluated: [ :each |
+					   each name ]);
+		  addColumn: (SpStringTableColumn title: 'Symbol' evaluated: [ :each |
+					   each directionSymbol asString ]);
+		  addColumn: (SpStringTableColumn title: 'Vector' evaluated: [ :each |
+					   each vector printString ]);
+		  addColumn:
+			  (SpStringTableColumn title: 'Beam enters next cell from' evaluated: [ :each |
+					   each adjacentInversionSymbol asString ]);
+		  yourself
+```
+
+The rows are fetched through `directionFor:`, the message the game uses to turn a symbol into a direction, so the table comes out in compass order without a list of the four classes being written anywhere in the view.
+That is the same trick as `sortedSubclasses` in *Priority decides, not geometry*: a view that lists what it shows is a second place to keep in step.
+
+Inspect `GridDirection` and the tab reads:
+
+```text
+GridDirectionNorth  north  (0@ -1)  south
+GridDirectionEast   east   (1@0)    west
+GridDirectionSouth  south  (0@1)    north
+GridDirectionWest   west   (-1@0)   east
+```
+
+The last column is the whole point, and it is why the column is titled with a sentence rather than with the selector.
+A beam leaving a cell northwards arrives at the next cell from the south, so `adjacentInversionSymbol` is the side the next cell is entered by, and `nextElementIn:` passes it to the step it builds.
+
+The vector column settles something else quickly: north is `(0@ -1)`, because the first row of the board is at the top and `y` grows downwards.
+Every sign error in a direction is that line being misremembered.
+
+The tab is class-side, because the question is about the hierarchy rather than about one direction, and a direction has no subclasses of its own to list:
+
+```smalltalk
+GridDirection class >> inspectionDirectionsContext: aContext
+	"Show the Directions table on the class that has the four directions under it. A direction has
+	no subclasses to list, so the tab would be empty on one of them."
+
+	aContext active: self subclasses notEmpty
+```
+
+A view is a method, so it gets a test like any other:
+
+```smalltalk
+GridDirectionTestCase >> testTheDirectionsTabListsTheFourDirectionsWithTheirVectors
+	"The Directions tab is the four directions in compass order, each with the vector it adds to a
+	location and the side the beam enters the next cell from. The last column is the one worth
+	having: adjacentInversionSymbol is a name that explains nothing until the table is read."
+
+	| builder table row |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := GridDirection inspectionDirections: builder.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals:
+		#( 'Direction' 'Symbol' 'Vector' 'Beam enters next cell from' ).
+	self
+		assert: (table items collect: [ :each | each directionSymbol ]) asArray
+		equals: #( #north #east #south #west ).
+	row := table columns collect: [ :each |
+		       each evaluation value: GridDirectionNorth ].
+	self
+		assert: row asArray
+		equals: #( 'GridDirectionNorth' 'north' '(0@ -1)' 'south' )
+```
+
+Three claims: the columns are the four we meant, the rows are in compass order, and one row reads out in full.
+`each evaluation value: GridDirectionNorth` is how you ask a Spec column what it would print for an item without opening a window — the column holds the block, and `evaluation` hands it back.
+
+That last assertion is the same four literals `testDirectionSelection` holds, read through the table instead of through the classes.
+Two tests over one fact is the right amount here: one of them is the rule, and the other is the only place a reader will go looking for it.
 
 ## Writing the move down
 
@@ -5247,8 +5624,6 @@ GridTestCase >> testPushingAMirrorOffTheEdgeOfTheGridDoesNothing
 	is a rule about the adjacent cell; the demo grid has a mirror on the left edge at 1@2 and one
 	on the bottom edge at 1@5."
 
-	| grid |
-	grid := self generateDemoGrid.
 	grid pushCellWestFromLocation: 1 @ 2.
 	self assert: (grid at: 1 @ 2) class equals: MirrorCell.
 	grid pushCellSouthFromLocation: 1 @ 5.
@@ -5267,8 +5642,6 @@ GridTestCase >> testPushingAMirrorAgainstANonBlankNeighbourDoesNothing
 	together. The target is no different from a mirror here — it is simply not blank, so a
 	mirror cannot be pushed into it either."
 
-	| grid |
-	grid := self generateDemoGrid.
 	grid pushCellEastFromLocation: 2 @ 3.
 	self assert: (grid at: 2 @ 3) class equals: MirrorCell.
 	self assert: (grid at: 3 @ 3) class equals: MirrorCell.
@@ -5292,8 +5665,7 @@ GridTestCase >> testAPushedMirrorIsTheSameCellInItsNewPlace
 	cell carries, would be lost. Both cells are the ones that were there before, and both know
 	their new location."
 
-	| grid mirror blank |
-	grid := self generateDemoGrid.
+	| mirror blank |
 	mirror := grid at: 3 @ 3.
 	blank := grid at: 3 @ 2.
 	grid pushCellNorthFromLocation: 3 @ 3.
@@ -5319,8 +5691,6 @@ GridTestCase >> testAPushThatMovesNothingRecordsNoMove
 	"A push that the rules refuse is not a move, so nothing goes on the moves stack. This is what
 	pushCellAction:fromLocation: asks when it compares the two locations."
 
-	| grid |
-	grid := self generateDemoGrid.
 	grid pushCellNorthFromLocation: 1 @ 1.
 	grid pushCellWestFromLocation: 1 @ 2.
 	grid pushCellEastFromLocation: 2 @ 3.
@@ -5344,8 +5714,7 @@ GridTestCase >> testFireLaserDuringMirrorPush
 	the new path. The beam crosses the mirror at 4@5, so pushing that mirror west sends the beam
 	a different way and the target goes dark."
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	grid fireLaser.
 	cell := grid startingCell.
 	self assert: cell isOn.
@@ -5367,8 +5736,7 @@ GridTestCase >> testFireLaserAfterMirrorPush
 	"The same push with the laser off moves the mirror and lights nothing. Firing afterwards
 	follows the new path, which no longer reaches the target."
 
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	cell := grid startingCell.
 	self assert: cell isOff.
 	cell := grid at: 5 @ 1.
@@ -5392,6 +5760,107 @@ Notice also what they assert: never only the flag, always the cells.
 `laserIsActive` would be true in both tests at the end and would tell you nothing about where the beam goes.
 The target going dark is the thing a player would see.
 
+## One step of the beam
+
+Both of those tests assert cells, and when one of them fails the thing you want to know is where the beam went instead.
+`LaserPathElement >> nextElementIn:` is the method that answers it, and it is eight lines with two `nil` guards in them: a reader who wants to know why a beam stopped has to run all eight in their head.
+
+We ask it the same questions in a tab, and lay the answers out as facts:
+
+```smalltalk
+LaserPathElement >> inspectionStep: aBuilder
+	"Answer the questions nextElementIn: asks about me: the side the beam leaves my cell by, the
+	location it lands on, and whether it stops here. 'nowhere' means my cell swallows the light,
+	which is the first of the two ways a beam path ends."
+
+	<inspectorPresentationOrder: 1 title: 'Step'>
+	| exitSide facts |
+	exitSide := self cell exitSideFor: self entrySide.
+	facts := OrderedCollection new.
+	facts add: 'Cell' -> self cell printString.
+	facts add: 'Enters from' -> self entrySide asString.
+	facts add: 'Leaves by' -> (exitSide
+			 ifNil: [ 'nowhere' ]
+			 ifNotNil: [ :side | side asString ]).
+	facts add: 'Next location' -> (exitSide
+			 ifNil: [ 'nowhere' ]
+			 ifNotNil: [ :side |
+				 (self cell gridLocation + (GridDirection directionFor: side) vector) printString ]).
+	facts add: 'Stops here' -> (exitSide
+			 ifNil: [ 'yes' ]
+			 ifNotNil: [ 'no' ]).
+	^ aBuilder newTable
+		  items: facts;
+		  addColumn: (SpStringTableColumn title: 'Fact' evaluated: [ :each | each key ]);
+		  addColumn: (SpStringTableColumn title: 'Value' evaluated: [ :each | each value ]);
+		  yourself
+```
+
+A two-column table over a collection of associations is the plainest way to show a handful of facts about one object, and it reads top to bottom like a sentence.
+
+The first step of the beam on the demo board reads:
+
+```text
+Cell           a MirrorCell(1@5 leans right, on)
+Enters from    south
+Leaves by      east
+Next location  (2@5)
+Stops here     no
+```
+
+and the last step reads:
+
+```text
+Cell           a TargetCell(5@1, on)
+Enters from    west
+Leaves by      nowhere
+Next location  nowhere
+Stops here     yes
+```
+
+`nowhere` twice over is the first of the two guards in `nextElementIn:`: a cell with no exit side for the side the beam came in by swallows the light.
+The other guard is a location off the board, and the *Next location* row is what tells you when you are about to meet it.
+
+Read this tab beside the *Directions* table of two sections ago and there is no mystery left in the beam.
+One of them says which way a direction goes; the other says where this step of this beam is going, and why it is the last one.
+
+```smalltalk
+LaserPathElementTestCase >> testTheStepTabSaysWhereTheBeamGoesNext
+	"The Step tab answers, for one step of the beam, the three questions nextElementIn: asks: the
+	side the beam leaves by, the location it lands on, and whether it stops here. A target cell
+	stops it, which is the row that explains the first of the two nil guards."
+
+	| grid step builder table value target |
+	grid := GridExample demoGrid.
+	step := LaserPathElement cell: grid startingCell entrySide: #south.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := step inspectionStep: builder.
+	self
+		assert: (table items collect: [ :each | each key ]) asArray
+		equals: #( 'Cell' 'Enters from' 'Leaves by' 'Next location' 'Stops here' ).
+	value := [ :fact |
+	          (table items detect: [ :each | each key = fact ]) value ].
+	self assert: (value value: 'Enters from') equals: 'south'.
+	self
+		assert: (value value: 'Leaves by')
+		equals: (step cell exitSideFor: #south) asString.
+	self assert: (value value: 'Stops here') equals: 'no'.
+	target := LaserPathElement cell: (grid at: 5 @ 1) entrySide: #west.
+	table := target inspectionStep: builder.
+	value := [ :fact |
+	          (table items detect: [ :each | each key = fact ]) value ].
+	self assert: (value value: 'Leaves by') equals: 'nowhere'.
+	self assert: (value value: 'Next location') equals: 'nowhere'.
+	self assert: (value value: 'Stops here') equals: 'yes'
+```
+
+The test asks the table by name — `value value: 'Leaves by'` — rather than by row number, so a fact added in the middle later will not make it fail for the wrong reason.
+
+The *Leaves by* row is asserted against `exitSideFor:` rather than against `#east`, because the point of that row is that it agrees with the model.
+The target cell is asserted literally, since `nowhere` is the fact we are here for.
+
 ## Checking it
 
 The push is in the model, and nothing on the screen can reach it yet, but you can push the model from a playground.
@@ -5399,7 +5868,7 @@ Open an inspector on the grid and watch its *Board* and *Beam* tabs:
 
 ```smalltalk
 | grid |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 grid pushCellWestFromLocation: 4 @ 5.
 grid inspect
@@ -5407,6 +5876,7 @@ grid inspect
 
 The *Board* tab draws the board after the push, with the mirror now at `3@5`, and the *Beam* tab lists the new path: it leaves the starting cell, turns north at `3@5` instead of `4@5`, runs through the block of mirrors and walks off the left edge at `1@3`.
 The target is not on the list, which is the same fact `testFireLaserDuringMirrorPush` asserts.
+Click any entry of that list and the inspector opens on a `LaserPathElement`, where the *Step* tab says which side the beam leaves that cell by and where it lands next.
 
 Try a refused push in the same place — `grid pushCellEastFromLocation: 2 @ 3` — and you get no change in either tab.
 Then ask `grid movesStack` and it holds one entry, from the push that worked.
@@ -5570,8 +6040,6 @@ LaserGameCellElementTestCase >> testEveryCellElementAgreesWithItsCellAfterAPush
 	real click on a push arrow: the beam is off the board and back on it before anything is
 	drawn, and every cell element shows the cell that stands in it."
 
-	| grid board |
-	grid := GridFactory demoGrid.
 	grid fireLaser.
 	board := LaserGameBoardElement on: grid.
 	self assert: (grid at: 5 @ 1) isOn.
@@ -5611,6 +6079,84 @@ They assert that the thing the test is about actually happened: the target was l
 Without them, a push that silently did nothing would leave every element agreeing with every cell, and the test would pass while testing nothing at all.
 **A test of a consequence needs an assertion that the cause took place.**
 
+## Four push rules, asked of every mirror
+
+`canPushCell:fromLocation:` is three questions in a row, and the arrows on the board are drawn from it.
+The player sees the answers one mirror at a time, and the test above walked every cell to check the *picture* rather than the rules.
+
+Nobody has yet seen the rules themselves laid out, and there are only forty answers on the demo board: four directions for each of ten mirrors.
+We ask all forty at once, in one table.
+
+First a small method to turn a rule's answer into something a column can print:
+
+```smalltalk
+Grid >> pushAnswerFor: aGridDirection fromLocation: aPoint
+	"Answer 'yes' when the rules allow the mirror at aPoint to be pushed in aGridDirection, and an
+	empty string when they do not. The Pushes tab reads the rules through me."
+
+	^ (self canPushCell: aGridDirection fromLocation: aPoint)
+		  ifTrue: [ 'yes' ]
+		  ifFalse: [ '' ]
+```
+
+It belongs on the grid rather than in the view, because it is the grid that knows the rules, and because the test can then read an answer without a presenter.
+
+Then the tab:
+
+```smalltalk
+Grid >> inspectionPushes: aBuilder
+	"Show one row per mirror on the board and ask the four push rules of each: a yes is a push the
+	rules allow from where that mirror stands now. The arrows the player sees are drawn from these
+	same four questions."
+
+	<inspectorPresentationOrder: 5 title: 'Pushes'>
+	| mirrors |
+	mirrors := OrderedCollection new.
+	1 to: self numberOfRows do: [ :row |
+		1 to: self numberOfColumns do: [ :column |
+			| location |
+			location := column @ row.
+			(self at: location) class = MirrorCell ifTrue: [ mirrors add: location ] ] ].
+	^ aBuilder newTable
+		  items: mirrors;
+		  addColumn: (SpStringTableColumn title: 'Mirror' evaluated: [ :each | each printString ]);
+		  addColumn: (SpStringTableColumn title: 'North' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionNorth fromLocation: each ]);
+		  addColumn: (SpStringTableColumn title: 'East' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionEast fromLocation: each ]);
+		  addColumn: (SpStringTableColumn title: 'South' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionSouth fromLocation: each ]);
+		  addColumn: (SpStringTableColumn title: 'West' evaluated: [ :each |
+					   self pushAnswerFor: GridDirectionWest fromLocation: each ]);
+		  yourself
+```
+
+The two loops walk the board row by row, so the rows of the table come out in the order the board reads, and only mirrors get a row.
+On the demo board the tab reads:
+
+```text
+(4@1)         south  west
+(1@2)  north  east   south
+(5@2)                       west
+(2@3)  north                west
+(3@3)  north  east
+(5@3)         south  west
+(2@4)         south  west
+(3@4)  east   south
+(1@5)  north  east
+(4@5)  north  east          west
+```
+
+Every blank in that table is a push the player will click for and not get, and now you can see why before they do.
+The arrows drawn on the board and the yeses in this table come from the same method, so one of them cannot be right while the other is wrong.
+
+That is the *Pushes* tab, fifth on the grid after *Board*, *Beam* and *Cells* — and the undo stack takes a fourth in *Undo*.
+Its smoke test has to wait: it asserts the number of rows against `grid numberOfMirrors`, and the grid does not learn to count its own mirrors until *Adding more game stats*.
+Asserting `10` instead would make the test agree with the demo board rather than with the rule, so the test is written there, where the two counts can be compared.
+
+Open the tab now, though, and read the row for `1@2`: north, east and south, with west blank because the mirror stands against the left edge.
+The next chapter is about an arrow that stayed on the screen after the push it hinted at had been made, and this is the tab that says whether the arrow was ever right.
+
 ## What is left
 
 Run the package: everything is green, including the new walk over the board.
@@ -5628,7 +6174,7 @@ That is the third item of the list at the top of this chapter, and it is the nex
 
 ```smalltalk
 | grid board space |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 board := LaserGameBoardElement on: grid.
 space := BlSpace new.
@@ -5667,7 +6213,7 @@ Push the mirror in a playground and look at the grid:
 
 ```smalltalk
 | grid |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid pushCellNorthFromLocation: 1 @ 2.
 grid inspect
 ```
@@ -5809,8 +6355,7 @@ LaserGameCellElementTestCase >> testTheArrowGoesWhenAPushEmptiesTheCellUnderTheP
 	be the one of the cell that moved away. The pointer has not moved, and a blank cell offers no
 	push, so the arrow goes and the emptied cell looks like any other blank cell."
 
-	| board element blank |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	| element blank |
 	element := board cellElementAt: 1 @ 2.
 	blank := board cellElementAt: 2 @ 2.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -5853,7 +6398,7 @@ LaserGameCellElementTestCase >> testTheArrowStaysWhenTheCellUnderThePointerStill
 	cell that stands there after the action, not kept and not dropped."
 
 	| board element childCount |
-	board := LaserGameBoardElement on: GridFactory demoGrid.
+	board := LaserGameBoardElement on: GridExample demoGrid.
 	element := board cellElementAt: 4 @ 1.
 	childCount := element children size.
 	element dispatchEvent: (BlMouseMoveEvent new
@@ -5899,7 +6444,7 @@ Then open the board and play with it, because you have to see this one:
 
 ```smalltalk
 | grid board space |
-grid := GridFactory demoGrid.
+grid := GridExample demoGrid.
 grid fireLaser.
 board := LaserGameBoardElement on: grid.
 space := BlSpace new.

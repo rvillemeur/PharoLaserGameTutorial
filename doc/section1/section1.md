@@ -97,6 +97,16 @@ You write a first version that does what the chapter in front of you needs, and 
 The text always says when that happens, and a version that a later chapter supersedes is shown without syntax colouring, so a coloured block is always the final one.
 The last version of a method in the book is the one the finished game holds.
 
+The book writes three kinds of code and keeps them apart.
+A **test** asks whether a behaviour is right and whether it stays right, and we write it before the code it tests.
+An **example** answers a different question, *how do I get one of these*: it is a class-side method marked `<sampleInstance>` that builds an object and answers it, and the browser offers it to you as one click.
+An example never asserts anything, because that is the test's work.
+An **inspector view** answers a third question, *what do I see once I have one*: it is a method marked `<inspectorPresentationOrder:title:>` that gives an object a tab of its own in the inspector.
+A view never changes the object it looks at.
+
+The chapters write all three, each at the point the game asks for it, and say why it is written there.
+The cycle that puts them in that order is written down on its own, free of this game, in `DEV-CYCLE.md` in the repository.
+
 ## Getting the finished code
 
 You can write every line of the game yourself, which is the point of the book.
@@ -462,6 +472,22 @@ Navigate the call stack by clicking the lines of the top pane, and the variables
 You can inspect any of them from their context menu, and you can select any piece of code in the method and inspect or evaluate it.
 
 Later we show that you can also change the method and carry on from where you were.
+
+## The checkpoint at the end of a feature
+
+Red, green, refactor is the inner loop, and it runs once per method.
+There is an outer loop that runs once per *feature*, when the behaviour you set out to add works and its tests pass, and it is four questions long.
+Did a snippet you typed into the Playground survive the feature, or does a second test class now want the same fixture?
+Then it has earned a name, and it becomes an example.
+Did any red test in the feature take you more than about a minute to diagnose?
+That is a missing inspector view rather than a missing skill, so write the view now, while you still remember what you went looking for.
+Does every view you wrote have at least one example to open on?
+A view laid out against an imagined object is laid out blind.
+And do the tests still pass?
+
+The usual answer to all four is no, and the checkpoint costs you the few seconds it takes to ask.
+The chapters ahead run it in the open: each example and each view in this book arrives at the checkpoint of the feature that earned it, and the text says which of the four questions it answers.
+The order inside the checkpoint never varies — the code first, then the example, then the view — because a view is laid out against a real object or not at all.
 
 # Getting our first test to pass
 
@@ -829,6 +855,21 @@ That is where this game ends up: *Push a cell* introduces a `GridDirection` hier
 
 It removes the last case statement from the beam path, and it is a good example of what you get for making a value into an object.
 
+## The checkpoint, and why it adds nothing here
+
+The feature is done, so run the four questions of the checkpoint.
+
+Did a snippet survive?
+`BlankCell new` was typed in all three tests of this chapter, which looks like the *typed twice* signal until you notice that retyping a signal means retyping it in the Playground, and that the three copies here are in one test class.
+One test class wanting the same object is what `setUp` is for; it takes two test classes to earn an example.
+That boundary is the main brake on the example package, and this is the first place the book puts weight on it.
+Did a red test cost more than a minute to diagnose?
+No: every red test in the chapter was a message-not-understood, and the debugger named the missing method and offered to write it.
+The remaining two questions follow from the first two, since there is no new example to pair and no new view to gate.
+
+So the chapter ends with three methods, three tests and nothing else, which is the usual outcome.
+The next chapter is where the answers change.
+
 # Enhancing MirrorCell
 
 A `MirrorCell` differs from a `BlankCell` in that it carries a mirror, and the mirror can be oriented to send the laser beam in different directions.
@@ -906,7 +947,7 @@ I am abstract: a subclass fills `exitSides` in `initializeExitSides`. `BlankCell
 ```
 
 > **Note.** Again, that is the comment the class ends up with.
-> The last two paragraphs describe `printOn:` and the inspector tab, which we write later, and `gridLocation` is the instance variable `Cell` gains in the chapter *Grid*.
+> `printOn:` is written later, the *Sides* tab the last paragraph mentions arrives at the end of this chapter, and `gridLocation` is the instance variable `Cell` gains in the chapter *Grid*.
 > At this point it has neither, so write what is true now and come back.
 
 Pharo comes with a powerful tool for restructuring code: the refactoring engine, reachable from the *Refactoring* item of the class list context menu in the System Browser.
@@ -1259,6 +1300,254 @@ MirrorCell class >> leanRight
 Check it from a Playground with `MirrorCell leanRight inspect`.
 The two tests `testCellLaserActivityMirrorLeft` and `testCellLaserActivityMirrorRight` above already use the new API.
 
+## The checkpoint, and the first example
+
+The feature is finished.
+A mirror holds its lean, each lean sets all four exit sides with it, four tests say what that means, and two class methods hand you a leaning mirror in one message.
+So run the checkpoint from *Test driven development*.
+
+The first question asks whether a snippet survived the feature, and one did.
+`MirrorCell leanRight inspect` went into the Playground once to see that the new class method worked, and again a minute later to see what the right lean had done to the exit sides.
+Retyping it is the whole of the signal; no judgement is needed.
+It becomes an example.
+
+An example is a class-side method that takes no argument, answers an object, and asserts nothing.
+The last part is the one people get wrong.
+The four tests above are where every claim about a mirror lives, and an example that repeated one of those claims would be a test filed in the wrong package.
+What an example adds is a name for a state you want to come back to, and a single click that puts you in front of it.
+
+Examples live in a package of their own, so make a third package, `Laser-Game-Examples`, the way you made `Laser-Game-Tests`.
+The game must never depend on it, the tests may, and the reason for the separate package is worth stating now rather than later.
+A fixture with nowhere to live gets pushed into the model instead — a shared board added to some factory class, because a factory is where boards come from — and from then on the game ships test data.
+A package costs nothing and stops that from happening.
+
+A class in it holds the examples of one kind of object and is named after it.
+
+```smalltalk
+Object << #CellExample
+	slots: {};
+	tag: 'Examples';
+	package: 'Laser-Game-Examples'
+```
+
+Give it a comment, as you would any other class.
+
+```text
+I offer single cells to look at.
+
+Most of my examples answer one cell read off a board, so the inspector opens on the Sides tab, which says where light entering each side leaves, and on the Picture tab, which draws the cell the way the board draws it. `mirrorOnNoBoard` stands on no board at all, because it is the only cell you can build before a grid deals one.
+
+A mirror adds the Lean tab, which turns it and shows what every turn does.
+```
+
+> **Note.** The *Sides* tab is written at the end of this chapter and the *Lean* tab just after it.
+> The *Picture* tab, which draws a cell the way the board draws it, needs the drawing code of Section 2 and arrives in the chapter *Drawing the mirror*.
+> Write the first paragraph now and come back for the rest.
+
+Then the example itself, on the class side, carrying the `<sampleInstance>` pragma.
+
+```smalltalk
+CellExample class >> mirrorOnNoBoard
+	"A mirror leaning right that stands on no board. It is the only cell you can build before a
+	grid deals one: its Sides tab answers the four questions a cell is asked, and its Lean tab
+	turns it.
+	CellExample mirrorOnNoBoard"
+
+	<sampleInstance>
+	^ MirrorCell leanRight
+```
+
+> **Note.** The name says what the object *is*, not what it is for.
+> `mirrorOnNoBoard` is still accurate in Section 5, whereas `mirrorForExitSideTests` would have died with the test that prompted it.
+> The comment ends with the expression itself so that you can select that line in the browser and run it.
+
+Select `CellExample` in the browser and the pragma makes Pharo offer the example to you: run it and an inspector opens on the mirror it answered.
+That inspector is where the rest of this chapter happens.
+
+A mirror on no board is a strange object to keep, and it is the only cell we can keep today.
+Nothing deals cells yet, so a cell has no board to stand on and no location to know; the chapter *Grid*, three chapters from here, is where boards arrive and where the cells read off a board become examples too.
+
+> **The lesson as a sentence.** A test says whether an object is right and an example says how to get one, and neither of them does the other's work.
+
+## A tab for the four sides
+
+Run the example and look at what the inspector gives you.
+A `MirrorCell`, three instance variables — `activeSegments`, `exitSides` and `leansLeft` — and nothing that answers the question the last two chapters have been asking.
+To find where a beam entering the north side leaves, you open `exitSides`, read four associations, and keep the one you wanted.
+To see whether that side is lit you climb back out, open `activeSegments`, and read four more.
+One row of one table, fetched from two places.
+
+That is the second question of the checkpoint.
+A fact you went digging for twice is not a gap in your skill, it is a missing inspector view, and the time to write it is while you still remember what you were digging for.
+
+A view is an ordinary method with a pragma on it.
+It answers a presentation built from the object, it takes a builder as its argument, and it never changes what it looks at.
+
+```smalltalk
+Cell >> inspectionSides: aBuilder
+	"Show one row per side of me: where a beam entering there leaves, and whether that side is lit.
+	This is the table to read when a beam leaves a cell by the wrong side, because the usual cause
+	is an exit side that was left unchanged."
+
+	<inspectorPresentationOrder: 1 title: 'Sides'>
+	^ aBuilder newTable
+		  items: #( #north #east #south #west );
+		  addColumn: (SpStringTableColumn title: 'Enters from' evaluated: [ :each |
+					   each asString ]);
+		  addColumn: (SpStringTableColumn title: 'Leaves by' evaluated: [ :each |
+					   (self exitSideFor: each)
+						   ifNil: [ 'nowhere' ]
+						   ifNotNil: [ :side | side asString ] ]);
+		  addColumn: (SpStringTableColumn title: 'Lit' evaluated: [ :each |
+					   (self isSegmentOnFor: each)
+						   ifTrue: [ 'yes' ]
+						   ifFalse: [ '' ] ]);
+		  yourself
+```
+
+The pragma is what the inspector reads: the title is the name on the tab and the number is its place in the row of tabs, counted from the left, after the tabs Pharo gives every object.
+`aBuilder newTable` asks for a table presentation, `items:` gives it its rows — the four sides, in the order a compass names them — and each `addColumn:` adds a column that is told how to turn one row into one string.
+`yourself` is there because the cascade's last message answers a column rather than the table, and the method must answer the table.
+
+Write it on `Cell` and not on `MirrorCell`.
+Every kind of cell answers these four questions, so every kind of cell gets the tab, and a blank cell inspected in a later chapter will have it too.
+The `ifNil: [ 'nowhere' ]` in the second column is there for the next chapter: a target swallows the beam, so it answers no exit side at all, and a view that fell over on `nil` would be useless on exactly the cell you most want to look at.
+
+A view is a method, so we test it like one: hand it a builder and look at the table it answers.
+
+```smalltalk
+MirrorCellTestCase >> testTheSidesTabListsTheFourSidesOfTheCell
+	"The Sides tab has one row per side of the cell. It is the table to read when a beam leaves a
+	cell by the wrong side, since it shows the exit sides against the lean."
+
+	| cell table |
+	cell := MirrorCell leanRight.
+	cell gridLocation: 4 @ 1.
+	table := cell inspectionSides:
+		         (SpPresenterBuilder new
+			          application: SpApplication new;
+			          yourself).
+	self assert: table items asArray equals: #( #north #east #south #west ).
+	self assert: table columns size equals: 3
+```
+
+Not the pixels: the rows and the number of columns.
+That is enough to catch the tab raising an error, which is the only way a tab really breaks, and it will not have to be rewritten when a column title changes.
+`SpPresenterBuilder new application: SpApplication new` is the one piece of Spec a test of a view has to know: a presenter needs an application to be built against.
+
+> **The lesson as a sentence.** A red test you cannot diagnose in a minute is telling you about a view you have not written.
+
+## A tab for the lean
+
+The chapter has already named the bug this game spends a later chapter hunting: a lean changed without its exit sides.
+The *Sides* tab shows the four exit sides, but it cannot tell you whether they are the right four, because nothing in it knows which way the mirror leans.
+Reading that off means holding the four mappings of `leanLeft` and `leanRight` in your head while you read the table, which is the kind of thing a head gets wrong at the end of an afternoon.
+
+So the mirror gets a second tab, which asks the object the question instead.
+
+```smalltalk
+MirrorCell >> inspectionLean: aBuilder
+	"Show my four sides against the way I lean: where a beam entering each side leaves me, and
+	whether that is the side a fresh mirror leaning my way would send it out by. A mirror whose
+	lean was changed without its exit sides reads 'no' on every row, which is the fault rotate
+	exists to prevent."
+
+	<inspectorPresentationOrder: 3 title: 'Lean'>
+	^ aBuilder newTable
+		  items: #( #north #east #south #west );
+		  addColumn: (SpStringTableColumn title: 'Enters from' evaluated: [ :each | each asString ]);
+		  addColumn: (SpStringTableColumn title: 'Leaves by' evaluated: [ :each |
+					   (self exitSideFor: each) asString ]);
+		  addColumn: (SpStringTableColumn title: 'Matches lean' evaluated: [ :each |
+					   | reference |
+					   reference := self isLeft
+						                ifTrue: [ self class leanLeft ]
+						                ifFalse: [ self class leanRight ].
+					   (self exitSideFor: each) = (reference exitSideFor: each)
+						   ifTrue: [ 'yes' ]
+						   ifFalse: [ 'no' ] ]);
+		  yourself
+```
+
+The *Matches lean* column is the whole point of it.
+For each side it builds a fresh mirror leaning the way this one says it leans, asks that mirror where the beam would leave, and compares.
+A healthy mirror reads `yes` on all four rows.
+A mirror whose `leansLeft` was flipped on its own reads `no` on all four, and the tab names the fault at a glance.
+
+This view could not have been written earlier in the chapter.
+It builds its reference mirror with `self class leanLeft` and `self class leanRight`, which are the two class methods of the previous section, and a view is laid out against a real object or not at all.
+That is the order the checkpoint fixes: the code, then the example, then the view.
+
+The *Matches lean* column is worth a test of its own, because it is the column that will name the bug.
+A table column holds the block it was given, and a test can run that block over the rows the table holds:
+
+```smalltalk
+MirrorCellTestCase >> testTheLeanTabComparesMyExitSidesWithTheWayILean
+	"The Lean tab reads my four exit sides against the lean they belong to, so a mirror whose lean
+	was changed without its exit sides reads 'no' on every row. That is the bug rotate exists to
+	prevent, and this is the view that names it."
+
+	| cell builder table matches |
+	cell := MirrorCell leanLeft.
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := cell inspectionLean: builder.
+	self assert: table items asArray equals: #( #north #east #south #west ).
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Enters from' 'Leaves by' 'Matches lean' ).
+	matches := table columns third.
+	self
+		assert: (table items collect: [ :each | matches evaluation value: each ]) asArray
+		equals: #( 'yes' 'yes' 'yes' 'yes' ).
+	cell leansLeft: false.
+	self
+		assert: (table items collect: [ :each | matches evaluation value: each ]) asArray
+		equals: #( 'no' 'no' 'no' 'no' )
+```
+
+`matches evaluation` is the block the column was given, and `value:` runs it on one row, so the last six lines are the view's claim stated as an assertion: a healthy mirror reads `yes` four times, and a mirror whose flag was flipped on its own reads `no` four times.
+`cell leansLeft: false` is the bug, written down here on purpose, three chapters before the chapter that commits it by accident.
+
+That is the §7 rule about splitting data from presentation, met the cheap way.
+This view has no separate data method, so the test reaches the data through the column instead, and the view still gets a real assertion rather than a smoke test.
+
+> **Note.** Two tabs in one chapter is the most this book ever adds at once.
+> A view is cheap to write and it is not free to read: ten tabs on one class are ten tabs nobody looks at.
+> If you find yourself wanting a third, ask first whether one of the other two was answering a question you no longer have.
+
+## Two gates for the example package
+
+An example that stops working is worse than no example, because the browser still offers it.
+The same goes for a view that outlives the object it described.
+Both are cheap to prevent, and the way to prevent them is one test each, written now, while the package holds one example, rather than retrofitted over twenty.
+
+The first gate walks the example package, finds every method marked `<sampleInstance>`, runs each one, and asserts that none of them raises an error.
+
+```st
+testEveryExampleBuilds
+	| methods |
+	methods := (self examplePackage definedClasses flatCollect: [ :each |
+		            each class methods ]) select: [ :each |
+		           each pragmas anySatisfy: [ :pragma |
+			           pragma selector = #sampleInstance ] ].
+	self deny: methods isEmpty.
+	methods do: [ :each |
+		self shouldnt: [ each methodClass instanceSide perform: each selector ]
+			raise: Error ]
+```
+
+One test, and no example in the package can rot: the next example you write is covered by it the moment you accept the method.
+
+The second gate walks the game's own package for `<inspectorPresentationOrder:title:>` methods and asserts that the examples reach every one of them, so that a view always has an object you can open it on.
+It has teeth today, with two views and one example to open them both, which is why it is written now.
+
+Both gates grow as the game grows, and the finished versions — which have an opener to exclude, a class side to exempt and a package walk to share — are in the chapter *Looking at objects*, in Section 5, with the rest of the practice.
+`LaserGameExamplesTestCase` in `Laser-Game-Tests` is the class they live in.
+
+> **The lesson as a sentence.** Write the two generic gates when the example package is born, because retrofitting them means auditing every example you ever wrote.
+
 ## About the design of MirrorCell
 
 Instead of testing the state all the time with `isLeft` and `isRight`, a cleaner design defines two subclasses of `MirrorCell`, one per orientation, and puts the specific methods in each.
@@ -1384,6 +1673,21 @@ TargetCell >> initialize
 Run the tests again and the three cell test classes are green.
 This is a good moment to save your code.
 
+## The tab we already have
+
+Run the checkpoint and it costs nothing this time, which is the point of showing it again.
+No snippet survived the chapter, no red test took a minute to diagnose, and there is no new view to pair.
+
+There is, though, a tab to collect on.
+Type `TargetCell new inspect` into the Playground and the *Sides* tab is already there, because it was written on `Cell` and a target is a cell.
+It reads `nowhere` in the *Leaves by* column on all four rows, which is the whole of what a target does to a beam, stated in the place you would look for it.
+That is what the `ifNil: [ 'nowhere' ]` of the previous chapter was for.
+
+A target does not become an example here.
+The cells this book keeps as examples are the cells it reads off a board, and the board arrives in the next chapter.
+
+> **The lesson as a sentence.** A view written on the superclass is a view you collect again on every subclass you add.
+
 ## About the design
 
 ### About our initialize methods
@@ -1442,14 +1746,17 @@ A new grid should have an inactive laser, and every location should hold a blank
 
 ```smalltalk
 TestCase << #GridTestCase
-	slots: {};
+	slots: { #grid };
 	package: 'Laser-Game-Tests'
 ```
+
+> **Note.** The slot is there because most of this class's tests end up working on one board, which `setUp` puts in `grid` a few sections from now.
+> The two tests of this section want a board of their own instead — an empty one, of a stated size — so they assign `grid` themselves and ignore whatever `setUp` left there.
 
 ```smalltalk
 GridTestCase >> testInitialConditions
 
-	| grid cell |
+	| cell |
 	grid := Grid new.
 	self shouldnt: [ grid laserIsActive ].
 	cell := grid at: 1 @ 1.
@@ -1676,7 +1983,7 @@ We have been making grids by sending `new` to the class.
 ```smalltalk
 GridTestCase >> testNonDefaultGridSizeInitialConditions
 
-	| grid cell |
+	| cell |
 	grid := Grid newOfSize: 4 @ 4.
 	self shouldnt: [ grid laserIsActive ].
 	cell := grid at: 1 @ 1.
@@ -1765,55 +2072,175 @@ With the cells working and a minimal test for `Grid`, we can write a much deeper
 Remember the diagram we used to introduce the game?
 That board is a good context to test against, so let us build it once and reuse it.
 
-```st
-generateDemoGrid
+The question is where to build it.
+It is tempting to write it as a method of `GridTestCase`, and for one test class that would be the right answer.
+But look at what we want to do with it.
+`GridTestCase` wants a board with something on it.
+So will the beam tests, two chapters from now, and so will the drawing tests of Section 2.
+And the cells we have been inspecting one at a time are cells of *this* board — the mirror at `1@2`, the target at `5@1` — which means the board is also what the cell examples need.
+
+A fixture that two test classes want is the second promotion signal, and this board trips it before the first test is even written.
+So it goes into the example package, as a board example, next to `CellExample`.
+
+```smalltalk
+Object << #GridExample
+	slots: {};
+	tag: 'Examples';
+	package: 'Laser-Game-Examples'
+```
+
+```text
+I offer boards to look at.
+
+Each of my examples answers a `Grid`, so the inspector opens on the rules of the game: the Board tab draws it, Beam lists the cells the light crosses, Cells counts what is on it, and Moves and Pushes say what has been played and what could be.
+```
+
+> **Note.** That is the comment the class ends up with.
+> The *Board* tab arrives in Section 2, with the drawing code, and *Beam*, *Cells*, *Moves* and *Pushes* arrive as the grid learns to do those things.
+> The *Cells* tab is the one we write at the end of this chapter.
+
+Then the board itself.
+
+```smalltalk
+GridExample class >> demoGrid
+	"Answer a five by five grid holding ten mirrors and one target, always the same ones. This is
+	the board of the book: the tests use it whenever a board with something on it is needed, and
+	the other examples build on it.
+	GridExample demoGrid"
+
+	<sampleInstance>
 	| grid |
 	grid := Grid newOfSize: 5@5.
-	grid at: 5@1 put: TargetCell new.
-
 	grid at: 4@1 put: MirrorCell leanRight.
+	grid at: 5@1 put: TargetCell new.
 	grid at: 1@2 put: MirrorCell leanRight.
-	grid at: 3@3 put: MirrorCell leanRight.
-	grid at: 1@5 put: MirrorCell leanRight.
-	grid at: 4@5 put: MirrorCell leanRight.
-
 	grid at: 5@2 put: MirrorCell leanLeft.
 	grid at: 2@3 put: MirrorCell leanLeft.
+	grid at: 3@3 put: MirrorCell leanRight.
 	grid at: 5@3 put: MirrorCell leanLeft.
 	grid at: 2@4 put: MirrorCell leanLeft.
 	grid at: 3@4 put: MirrorCell leanLeft.
-	^ grid
+	grid at: 1@5 put: MirrorCell leanRight.
+	grid at: 4@5 put: MirrorCell leanRight.
+	^grid
 ```
 
-Put it in a protocol of its own — `private`, or `grids` — since it is not a test.
+> **Note.** Keep the two leans apart as you type it: five mirrors lean right, five lean left, and a board that disagrees with the diagram makes every later chapter's test results look wrong for no reason.
+> The example answers a *new* board on every call, which is a rule and not an accident.
+> Tests change what they are given — they fire the laser, they push cells — and two tests that shared one board would share one bug.
+
+Now the test class reads it.
+`GridTestCase` has several tests that want a board with something on it, so the board goes in `setUp` and those tests read it from the `grid` instance variable the class was given at the start of the chapter.
+
+```smalltalk
+GridTestCase >> setUp
+	"Most of my tests need a board with something on it, which is the board of the book."
+
+	super setUp.
+	grid := GridExample demoGrid
+```
 
 And a test that uses it.
 Checking that the target cell is off will do for now.
 
 ```st
 testCellInteractions
-	| grid cell |
-	grid := self generateDemoGrid.
-	cell := grid at: 5@1.
+	| cell |
+	cell := grid at: 5 @ 1.
 	self assert: cell isOff
 ```
 
-> **Note.** A hand-made board is useful well beyond this one test, so it does not stay in the test class for long.
-> The chapter *Drawing the mirror* moves it to `GridFactory class >> demoGrid`, where the examples can reach it too, and `generateDemoGrid` becomes one line:
+> **Note.** This test grows twice more before the section ends, once when the beam starts crossing the board and once when the path is pinned down cell by cell, so it is shown here without colouring.
+> The version the game keeps is in the chapter *Chasing the beam*.
+
+> **Note.** A test class with three or more uses of the board gets it in `setUp` like this one.
+> A class with one or two keeps `GridExample demoGrid` inline, where you can see what the test is working on without scrolling, and a test that needs two boards at once stays inline whatever the count.
+
+## Three cells worth keeping
+
+The board exists, so the cells we have been typing by hand can stop being typed by hand.
+Each of the three is the board plus one message, which is all a derived example should ever be.
 
 ```smalltalk
-GridTestCase >> generateDemoGrid
+CellExample class >> blankCell
+	"A blank cell of the demo board, at 1@1: the one cell the Sides tab has nothing to bend.
+	CellExample blankCell"
 
-	^ GridFactory demoGrid
+	<sampleInstance>
+	^ GridExample demoGrid at: 1 @ 1
 ```
 
-Writing the generator, it was easy to get confused about which half of `x@y` was the row and which the column.
+```smalltalk
+CellExample class >> mirrorCell
+	"The mirror at 1@2 of the demo board, dark and leaning one way.
+	CellExample mirrorCell"
+
+	<sampleInstance>
+	^ GridExample demoGrid at: 1 @ 2
+```
+
+```smalltalk
+CellExample class >> targetCell
+	"The target of the demo board, at 5@1, before the beam reaches it.
+	CellExample targetCell"
+
+	<sampleInstance>
+	^ GridExample demoGrid at: 5 @ 1
+```
+
+> **Note.** `mirrorOnNoBoard`, from the chapter *Enhancing MirrorCell*, stays as it is.
+> It is the cell you can build with no board at all, and it is still the right example to open the *Lean* tab on when you are working on a mirror alone.
+> These three are the cells of the board, and the difference is worth keeping: one of them knows where it sits and the other does not.
+
+Click `blankCell` in the browser and the *Sides* tab says `south` for a beam entering from the north, with nothing lit.
+Click `targetCell` and the same tab says `nowhere` four times.
+Two chapters of behaviour, read off two clicks.
+
+## Looking at a whole board
+
+Writing the board, it was easy to get confused about which half of `x@y` was the row and which the column.
 That is a tip-off: the names `at:` and `at:put:` are not saying enough, and we should go back and make them more intention-revealing.
 
 Perhaps we should have written this test *before* writing them — which is a clear advantage of writing tests first, since a test is the first client of the code and passes judgement on it.
 
-A way to look at a whole grid at once, rather than asking it for one cell at a time, would make all of this easier to debug.
-The grid gets one later, in *Rotate a mirror cell*, where it learns to show its board and its beam path in the inspector.
+The same confusion is also the checkpoint's diagnosis question, asked about a board instead of a cell.
+Inspect the board the example answers and the inspector shows you `cells`, a dictionary of twenty-five associations from a point to a cell, in no order you can read a board from.
+To check that the mirror at `3@3` leans the way the diagram says, you hunt for the association, open the cell, and read its `leansLeft`.
+Do that twice and you have paid for a view.
+
+```smalltalk
+Grid >> inspectionCells: aBuilder
+	"Show one row per cell of me, in the order the board lays them out, with what the cell is and
+	whether it is lit. Read it to catch a cell whose state disagrees with the beam: a target that
+	says it is on while nothing reaches it shows up here at once."
+
+	<inspectorPresentationOrder: 3 title: 'Cells'>
+	| everyCell |
+	everyCell := OrderedCollection new.
+	1 to: self numberOfRows do: [ :row |
+		1 to: self numberOfColumns do: [ :column |
+			everyCell add: (self at: column @ row) ] ].
+	^ aBuilder newTable
+		  items: everyCell;
+		  addColumn: (SpStringTableColumn title: 'Cell' evaluated: [ :each |
+					   each printString ]);
+		  addColumn: (SpStringTableColumn title: 'Lit' evaluated: [ :each |
+					   each isOn
+						   ifTrue: [ 'yes' ]
+						   ifFalse: [ '' ] ]);
+		  yourself
+```
+
+The two loops are what makes it readable: rows outside, columns inside, so the table lists the board in the order you would read it off the diagram.
+Each row prints the cell and says whether it is lit, and `printOn:` on the cell is what gives the first column its text — which is the other half of why a `printOn:` is worth writing.
+
+That is the third tab of the book and the last one of this section's model chapters.
+The grid gets more as it learns more: *Board*, which draws it, in Section 2, and *Beam*, *Moves* and *Pushes* as the beam, the undo stack and the pushes arrive.
+
+A presentation method gets one smoke test, and this one has to wait.
+The row of the table worth asserting on is a lit cell, and nothing lights a board until Section 2 fires the laser, so the test of this tab is written in *Bug with target cell*, the chapter whose bug it catches.
+
+> **The lesson as a sentence.** A dictionary is the right way to store a board and the wrong way to read one, and that gap is exactly what an inspector view is for.
 
 ## Conclusion
 
@@ -2041,8 +2468,7 @@ Now the board can be lit, so the test can say what the beam does to it.
 
 ```st
 testCellInteractions
-	| grid cell |
-	grid := self generateDemoGrid.
+	| cell |
 	cell := grid at: 5@1.
 	self assert: cell isOff.
 	grid activateCellsInPath.
@@ -2060,14 +2486,14 @@ Then open a playground and look at the path itself, because the one thing a pass
 
 ```smalltalk
 | grid |
-grid := GridTestCase new generateDemoGrid.
+grid := GridExample demoGrid.
 grid calculatePath.
 grid laserBeamPath collect: [ :pe | pe cell gridLocation ]
 >>> {(1@5). (2@5). (3@5). (4@5). (4@4). (4@3). (4@2). (4@1). (5@1)}
 ```
 
-The demo board lives in the test class for now, and `GridTestCase new generateDemoGrid` is how a playground borrows it.
-From *Drawing the mirror* onwards the same board is `GridFactory demoGrid`, which is what the rest of this book writes.
+This is the second time this chapter that the board has been built in a playground to be looked at, and the two snippets differ by one message.
+Hold that thought until the end of the chapter: the checkpoint has something to say about it.
 
 It answers nine locations.
 Follow them on the board picture from *Game overview*.
@@ -2078,7 +2504,7 @@ Asking for the entry sides instead is just as useful:
 
 ```smalltalk
 | grid |
-grid := GridTestCase new generateDemoGrid.
+grid := GridExample demoGrid.
 grid calculatePath.
 grid laserBeamPath collect: [ :pe | pe entrySide ]
 >>> #(#south #west #west #west #south #south #south #south #west)
@@ -2298,8 +2724,7 @@ This is the version in the image:
 ```smalltalk
 GridTestCase >> testCellInteractions
 
-	| grid cell expectedActiveLocationList foundOn |
-	grid := self generateDemoGrid.
+	| cell expectedActiveLocationList foundOn |
 	cell := grid at: 5 @ 1.
 	self assert: cell isOff.
 	grid activateCellsInPath.
@@ -2353,6 +2778,22 @@ The four tools, in the order the four bugs asked for them:
 And one habit underneath all four: every one of those bugs was found by asking a live object a question, in the debugger or in a playground, rather than by reading the method again.
 Reading finds the bugs you can imagine.
 Asking finds the others.
+
+## The checkpoint the section leaves open
+
+Two chapters of beam work leave two signals showing, and neither of them is collected here.
+
+The snippet that built the demo board and walked its path went into a playground twice, once for the locations and once for the entry sides, which is the promotion signal.
+The example it becomes is a board with its laser firing, and the message that fires one is `fireLaser`, which the grid does not have yet.
+Section 1 lights a board with `activateCellsInPath`; `fireLaser` and its opposite `stopLaser` arrive in *Drawing the target*, the chapter that draws a target with two states and therefore needs a switch for both of them.
+An example is quoted as the finished method or not at all, so the board with its beam running becomes `GridExample gridWithTheLaserFiring` in that chapter, along with the two `LaserPathExample` examples for the first and last step of the path, and the two lit cells `CellExample litMirrorCell` and `litTargetCell`, which are the three dark cells of this section with the laser on.
+
+The second signal is a view, and it is really two.
+A path is a collection of `LaserPathElement`s, each printing as two facts that neither `printOn:` nor the inspector shows side by side, which is exactly the shape a tab is for.
+The grid wants one too, listing the cells the light crosses in the order it crosses them.
+Both of them want the laser lit before there is anything to show, so they arrive with the examples that light it: *Beam* on the grid in *Drawing the target*, and *Step* on `LaserPathElement` in *Push a cell*, where a step learns to name the direction it travels in.
+
+> **The lesson as a sentence.** A signal you cannot collect yet is written down, not forgotten: the example or the view goes in at the first chapter that can quote it whole.
 
 ## Checking it
 
