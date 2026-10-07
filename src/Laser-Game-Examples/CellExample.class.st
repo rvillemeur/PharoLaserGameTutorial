@@ -55,6 +55,17 @@ CellExample class >> mirrorCell [
 ]
 
 { #category : 'examples' }
+CellExample class >> mirrorOnNoBoard [
+	"A mirror leaning right that stands on no board. It is the only cell you can build before a
+	grid deals one: its Sides tab answers the four questions a cell is asked, and its Lean tab
+	turns it.
+	CellExample mirrorOnNoBoard"
+
+	<sampleInstance>
+	^ MirrorCell leanRight
+]
+
+{ #category : 'examples' }
 CellExample class >> targetCell [
 	"The target of the demo board, at 5@1, before the beam reaches it.
 	CellExample targetCell"
