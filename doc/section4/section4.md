@@ -2540,6 +2540,70 @@ Put the dismissal inside `ifTrue:` and a No leaves you with the shade over a gam
 And `onConfirm:` takes only the yes branch, because a No never has anything to do.
 If a question ever needs both, the method we write then is `ask:onConfirm:onCancel:` — not a boolean argument to this one.
 
+## The grid can count its mirrors
+
+The tests of the dealer are all about how many mirrors it dealt and where they landed, and counting them is a question about the board rather than about the dealer:
+
+```smalltalk
+Grid >> numberOfMirrors
+	"Answer how many mirror cells stand on my board, lit or not."
+
+	^(self cells select: [:each | each class = MirrorCell]) size
+```
+
+`self cells` answers every cell of the board as a flat collection.
+`select:` keeps the ones the block answers true for, and `size` counts what is left.
+Reading those two lines aloud gives you the sentence in the comment, which is what you want from a method this small.
+
+The demo board holds ten of them, which is the test:
+
+```smalltalk
+GridTestCase >> testNumberOfMirrorsCounter
+	"The demo grid holds ten mirrors. They are counted over the whole board, lit or not."
+
+	| count |
+	count := grid numberOfMirrors.
+	self assert: count equals: 10
+```
+
+The count also settles a debt from *Push cells with the mouse*.
+The *Pushes* tab was written there and left untested, because the one assertion worth making about it is the number of rows, and the only honest right-hand side for that is a count the grid makes by its own route:
+
+```smalltalk
+GridTestCase >> testThePushesTabSaysWhichPushesTheRulesAllow
+	"The Pushes tab asks the four push rules of every mirror on the board and answers in one
+	table. A mirror with no yes is a mirror the player cannot move, which is what the arrows on
+	the board are drawn from."
+
+	| builder table north east |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := grid inspectionPushes: builder.
+	self assert: table items size equals: grid numberOfMirrors.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals: #( 'Mirror' 'North' 'East' 'South' 'West' ).
+	self assert: (table items includes: 1 @ 2).
+	self deny: (table items includes: 5 @ 1).
+	north := table columns second.
+	east := table columns third.
+	self
+		assert: (north evaluation value: 1 @ 2)
+		equals: ((grid canPushCellNorthFromLocation: 1 @ 2)
+				 ifTrue: [ 'yes' ]
+				 ifFalse: [ '' ]).
+	self assert: (east evaluation value: 1 @ 2) equals: 'yes'
+```
+
+`grid numberOfMirrors` on the left of an assertion, rather than `10`, because the two count the same thing by different routes and a disagreement between them is worth being told about.
+The target cell at `5@1` is denied a row, since nothing but a mirror can be pushed.
+
+And the last two assertions check a column rather than the table: `north evaluation value: 1 @ 2` is what that column would print for that mirror, asked against the rule it prints, and then once against a literal because `1@2` really can be pushed east.
+
+The player never sees this count; it goes on the screen in the next section, in *Adding more game stats*.
+It is written now because the tests on this page need it, which is the ordinary reason a method exists before anybody has asked to see it.
+
 ## The tests
 
 The randomizer deals from a known seed, so that a board is the same board every run:
@@ -3088,6 +3152,100 @@ GridFactoryTestCase >> testTheBoardsTabDrawsEveryBoardIDeal
 ```
 
 `children size equals: inspectionBoardFacts size` is the assertion that matters, since it is the one that fails when a board is added to the facts and the layout quietly drops it.
+
+## A tab that counts the boards it deals
+
+A dealt board is random, so the picture the Boards tab draws is a different picture every time the tab is opened, and a picture that never repeats cannot be checked by eye.
+What a random board can be held to is its counts, and the grid counts mirrors already:
+
+```smalltalk
+GridFactory class >> inspectionNumberOf: aCellClass in: aGrid
+	"Answer how many cells of aGrid are instances of aCellClass. The class is compared exactly,
+	so a subclass of a cell is not counted as its superclass."
+
+	| count |
+	count := 0.
+	1 to: aGrid numberOfColumns do: [ :x |
+		1 to: aGrid numberOfRows do: [ :y |
+			(aGrid at: x @ y) class = aCellClass ifTrue: [ count := count + 1 ] ] ].
+	^ count
+```
+
+```smalltalk
+GridFactory class >> inspectionCounts: aBuilder
+	"Show each board I deal counted: its size, and how its cells are shared out between mirrors,
+	the target and blanks. A dealt board is random, so the only thing worth stating about it is
+	the counts, and the counts have to add up to the cells."
+
+	<inspectorPresentationOrder: 2 title: 'Counts'>
+	^ aBuilder newTable
+		  items: self inspectionBoardFacts;
+		  addColumn: (SpStringTableColumn title: 'Board' evaluated: [ :each |
+					   each key ]);
+		  addColumn: (SpStringTableColumn title: 'Columns' evaluated: [ :each |
+					   each value numberOfColumns printString ]);
+		  addColumn: (SpStringTableColumn title: 'Rows' evaluated: [ :each |
+					   each value numberOfRows printString ]);
+		  addColumn: (SpStringTableColumn title: 'Cells' evaluated: [ :each |
+					   (each value numberOfColumns * each value numberOfRows)
+						   printString ]);
+		  addColumn: (SpStringTableColumn title: 'Mirrors' evaluated: [ :each |
+					   each value numberOfMirrors printString ]);
+		  addColumn: (SpStringTableColumn title: 'Targets' evaluated: [ :each |
+					   (self inspectionNumberOf: TargetCell in: each value)
+						   printString ]);
+		  addColumn: (SpStringTableColumn title: 'Blanks' evaluated: [ :each |
+					   (self inspectionNumberOf: BlankCell in: each value)
+						   printString ]);
+		  yourself
+```
+
+```text
+Board             | Columns | Rows | Cells | Mirrors | Targets | Blanks
+emptyStandardGrid | 8       | 10   | 80    | 0       | 0       | 80
+defaultGrid       | 8       | 10   | 80    | 32      | 1       | 47
+```
+
+`items:` is `self inspectionBoardFacts`, the same boards the Boards tab draws, so the picture and the counts cannot drift apart.
+Three counts, and they add up to the cells on both rows.
+That is the claim the test makes of both boards, and it is the one claim a dealt board can be held to: if only 79 of the 80 cells are accounted for, you have a hole in the board.
+
+```smalltalk
+GridFactoryTestCase >> testTheCountsTabSaysWhatIsOnEveryBoardIDeal
+	"The Counts tab is the same boards counted: how many cells each one holds and how they are
+	shared out between mirrors, the target and blanks. The three counts have to add up to the
+	cells, which is what says a board was dealt and not half dealt."
+
+	| builder table empty cells mirrors targets blanks |
+	builder := SpPresenterBuilder new
+		           application: SpApplication new;
+		           yourself.
+	table := GridFactory inspectionCounts: builder.
+	self
+		assert: (table columns collect: [ :each | each title ]) asArray
+		equals:
+			#( 'Board' 'Columns' 'Rows' 'Cells' 'Mirrors' 'Targets' 'Blanks' ).
+	empty := table items detect: [ :each | each key = 'emptyStandardGrid' ].
+	self assert: (table columns second evaluation value: empty) equals: '8'.
+	self assert: (table columns fifth evaluation value: empty) equals: '0'.
+	self assert: (table columns sixth evaluation value: empty) equals: '0'.
+	cells := table columns fourth.
+	mirrors := table columns fifth.
+	targets := table columns sixth.
+	blanks := table columns last.
+	table items do: [ :each |
+			self
+				assert: (cells evaluation value: each) asNumber
+				equals:
+					(mirrors evaluation value: each) asNumber
+					+ (targets evaluation value: each) asNumber
+					+ (blanks evaluation value: each) asNumber ]
+```
+
+> **A random answer still has something exact to say about itself.** Count what has to balance, and the test holds even when the picture never repeats.
+
+`inspectionNumberOf:in:` counts by class, exactly, with `class = aCellClass` rather than `isKindOf:`.
+A mirror is not a blank cell that happens to lean, and a count that used `isKindOf:` would stop adding up the moment a cell class gained a subclass.
 
 ## Does anything still think the board is five by five?
 

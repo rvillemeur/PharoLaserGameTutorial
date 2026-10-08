@@ -376,11 +376,12 @@ comment; two test helpers, `CellRendererTestCase >> testBlankCellElement` and
 `oneCellGrid` in both; the bug chapter's two stale fences were repaired to the image. `Laser-Game-Tests`
 is 306 tests, all passing, and `run_critics` is clean on both test classes.
 
-Known interim duplication, removed by later phases: `Grid >> inspectionBoard:` and `inspectionBeam:`
-still appear in `doc/section3/section3.md` around line 3524, with a stale
-`testTheInspectorTabsOfAGridShowTheBoardAndTheBeam` that still borrows the board through
-`self generateDemoGrid`, and the `LaserGameColors` palette trio with its test still appears in
-`doc/section5/section5.md` at 4685. P6 and P8 delete the originals.
+Interim duplication, since cleared: `Grid >> inspectionBoard:` and `inspectionBeam:` also appeared in
+`doc/section3/section3.md` around line 3524, with a stale
+`testTheInspectorTabsOfAGridShowTheBoardAndTheBeam` that borrowed the board through
+`self generateDemoGrid`, and the `LaserGameColors` palette trio with its test also appeared in
+`doc/section5/section5.md` at 4685. P6 and P8 deleted the originals; no fence in the book names
+`generateDemoGrid` any more.
 
 #### Steps as planned
 
@@ -464,11 +465,11 @@ it, which is a pre-existing gap and not one P6 created.
 `testTheLeanTabComparesMyExitSidesWithTheWayILean` beside the views they exercise, which is where
 §9's reachability gate is first stated.
 
-Known interim duplication, removed by P8: every one of the six view blocks P6 inserted still has its
-original copy in `doc/section5/section5.md` — *Pushes* at about 4150, `LaserPathElement >> inspectionStep:`
-at about 4234, *Regions* and *Map* at about 4332–4500, *Directions* at about 4500, *Shapes* at about
-4581 — along with the moved *Lean* test at about 4022 and the second copy of
-`testThePushesTabSaysWhichPushesTheRulesAllow`. P8 deletes the originals.
+Interim duplication, since cleared: every one of the six view blocks P6 inserted also had its
+original copy in `doc/section5/section5.md` — *Pushes*, `LaserPathElement >> inspectionStep:`,
+*Regions* and *Map*, *Directions* and *Shapes* — along with the moved *Lean* test and the second copy
+of `testThePushesTabSaysWhichPushesTheRulesAllow`. P8 deleted the originals with the rest of
+*Looking at objects*.
 
 #### Steps as planned
 
@@ -537,13 +538,14 @@ it. The method predates the examples review, so repairing it is not P7's work, b
 whether Section 5's introduction of `numberOfMirrors` moves earlier or the Section 4 test stops
 asking for it.
 
-Known interim duplication, removed by P8: the three view blocks P7 inserted still have their
+Interim duplication, since cleared: the three view blocks P7 inserted also had their
 original copies in `doc/section5/section5.md` — `Cell >> inspectionPicture:` and
 `testThePictureTabShowsMeAsTheBoardDrawsMe` at about 3946 and 3975, *Segments* and
 `inspectionShowsDigit:` at about 4857–4866, and *Boards* with `inspectionBoardsElement` and
-`inspectionBoardFacts` at about 5023–5062. The *Boards* fences are the ones to read carefully before
-deleting: Section 5 also shows a table of `inspectionBoardFacts` at about 5099, which is a different
-view and stays. P8 deletes the originals.
+`inspectionBoardFacts` at about 5023–5062. The *Boards* fences needed reading carefully before
+deleting: Section 5 also held a table of `inspectionBoardFacts`, which is the *Counts* view rather
+than *Boards*, and P8 moved that table to Section 4 beside the view it belongs to, rebuilt from the
+image because the Section 5 copy still listed three boards. P8 deleted the originals.
 
 #### Steps as planned
 
@@ -556,7 +558,93 @@ view and stays. P8 deletes the originals.
    promoted; `LaserGameElementExample openStandardExample` with them.
 4. Rewrite the 35 fences; re-gate the section.
 
-### P8 — Section 5
+### P8 — Section 5 — book rewritten, 2026-10-08, awaiting commit
+
+Section 5 is where the last three views arrive and where *Looking at objects* stops teaching views and
+starts teaching the practice. The `Grid` *Moves* view is in *Undo*, with its context method, its test
+and `GridExample gridAfterAMoveAndARotation` promoted beside it; the `LaserGameControlPanelElement`
+*Labels* and *Measures* views are in *Buttons of one width*, each with the test that had never been
+fenced anywhere; and *Looking at objects* is down from 1,158 lines to 434, holding the five lessons,
+how a view is tested, the finished gate class, the garbage-collection rule and *Which object to
+inspect*. The gate finds 160 gated fences in `doc/section5/section5.md`, down from 183, and 182 in
+`doc/section4/section4.md`, up from 176; every row matches the image. No image code was written in
+P8: every fence was taken character-for-character from a method that already existed, which for the
+fourteen `LaserGameExamplesTestCase` fences was checked by hashing the image's own source rather than
+by eye. `Laser-Game-Tests` is 306 tests, all passing. `run_critics` reports only the critiques the
+project has carried and argued for all along — the direction and reverse-action subclasses that are
+reached by `perform:` and so look unreferenced, their missing class comments, and the example classes
+the browser reaches by click.
+
+Nine deviations and repairs, against the steps as planned.
+
+**Step 2 landed in step 3's chapter.** *Measures* was planned for *Counters of one width*, the
+chapter already about measuring, but `inspectionMeasureFacts` asks `buttonLabelMargin`, which arrives
+in *Buttons of one width*. Both panel views are therefore in that one chapter, which takes the §7 cap
+of two views in flight exactly.
+
+**Step 4 went the other way, by option B.** The step list, and the §5 audit row behind it, moved the
+`GridFactory` *Counts* view into S5 *Adding more game stats* because its Mirrors column asks
+`Grid >> numberOfMirrors`, which Section 5 wrote. P7 left the decision to P8, and the decision was to
+move the method rather than the view: Section 4's
+`testTheMirrorsStandOneToACellAndAwayFromTheTarget` already asked for the count, and Section 3's
+smoke test at section3.md:6154 was already deferring to the chapter that would write it. So
+`Grid >> numberOfMirrors` and `GridTestCase >> testNumberOfMirrorsCounter` are now introduced in S4
+*Dealing a random board*, in a section of their own before *The tests*, the *Pushes*-tab debt that
+Section 3 owed moves with them, and *Counts* sits in S4 *A bigger game board* beside *Boards*, which
+is where the two views belong anyway: they read the same `inspectionBoardFacts`. Section 3's sentence
+was repointed at *Dealing a random board*, and Section 5's first chapter was rewritten to introduce
+only the lit count, with its assert-a-value lesson rebased on 3 rather than 10.
+
+**Two tests were written from the image that the book had never shown.**
+`LaserGameControlPanelElementTestCase >> testTheLabelsTabSaysWhetherEveryLabelFitsInsideItsButton`
+and `testTheMeasuresTabStatesEveryWidthAndHeightIKeep` existed in the image and in no fence anywhere.
+They are now quoted with their views.
+
+**A stale table was corrected rather than moved.** The *Counts* table Section 5 held listed three
+boards, including the demo board. The image's `inspectionBoardFacts` names two, `emptyStandardGrid`
+and `defaultGrid`, and Section 4 says so, so the table was rebuilt from the image on its way into
+Section 4 instead of being copied.
+
+**Thirty-two drifted fences were rewritten mechanically.** Section 5's fences had drifted from the
+image in the same way Section 3's and Section 4's had. They were dumped out of the image and rewritten
+character-for-character — 36 fences rewritten, of which 32 were the drifted rows — rather than edited
+by hand.
+
+**The rewritten chapter is 434 lines, not 300.** The finished gate class is fourteen fences: nine
+helpers and five tests. *Enhancing MirrorCell* promises all of it here, and a reader who is sent to a
+chapter for the finished version of a test should find the whole of it. What the chapter does not do
+is teach a view for the first time, which is what D6 asked for. Three of the five lessons it keeps
+exist nowhere else in the book — a view must not change what it shows, compare against the rule
+rather than a copy of it, and read the list off the object — and the other two are also quoted by the
+chapters that took the views.
+
+**There are five gates, not two.** `DEV-CYCLE.md` §9 names the two generic tests, and the image holds
+three more: every class-side tab is shown by inspecting its class, which the chapter puts beside the
+second gate because it is the other half of the class-side exemption; the example package holds
+nothing but examples; and only an example named `open…` opens a window. The chapter presents them as
+the two gates, the class-side check that goes with the second, and two the package grew later. §9 of
+the method document is worth amending to match in P9.
+
+**Fourteen dead invocations were repointed.** Section 5's Playground snippets still evaluated
+`GridFactory demoGrid`, which P1 moved out of core, so none of them would have run. They are now
+`GridExample demoGrid`. All fourteen were in ungated fences, and re-gating confirms no gated row
+changed with them.
+
+**The suite counts in Section 5 were understated and are only part-repaired.** The three
+*Checking it* blocks the section carried all read 280 runs, including the one immediately before
+*Looking at objects*, which cannot be right once everything but the gate class exists. The final
+block now states the image's own number, 306, and the block before *Looking at objects* states 301,
+the suite without the five gate tests. The two earlier blocks were raised by the four tests P8 moved
+ahead of them, to 284. Every count in the book is P9's to walk.
+
+**Every gated fence in the book was checked against the image at the end of P8.** The five files
+hold 781 gated rows, 715 of them distinct methods. The image computed the body checksum of each one
+and reported it grouped by class; all 72 groups agree with the book except `MyClass >> myMethod`,
+the two-line placeholder that Section 1 uses to explain the `Class >> selector` convention, and
+which deliberately has no class in the image. P9 should teach the gate to exempt that one row
+instead of reporting it as missing.
+
+#### Steps as planned
 
 1. *Undo*: the `Grid` *Moves* view arrives, with its context method, and
    `GridExample gridAfterAMoveAndARotation` is promoted to open on it.
@@ -576,7 +664,9 @@ view and stays. P8 deletes the originals.
 ### P9 — Close
 
 1. Full `run_tests` on `Laser-Game-Tests`; full `run_critics` on all three packages.
-2. Walk every fence of all five files against the image again, 734 of them, and fix the stragglers.
+2. Walk every fence of all five files against the image again, 781 rows over 715 distinct methods,
+   and fix the stragglers. P8 left them all matching bar the `MyClass >> myMethod` placeholder, so
+   this is a re-check after P9's own edits, plus the gate exemption for that row.
 3. Confirm `BaselineOfLaserGame` still loads `core`, `examples`, `tests` and `default` in a clean
    image, with `Laser-Game-Tests` requiring `Laser-Game-Examples` and `Laser-Game` requiring neither.
 4. Update `PROJECT_MAP.md`: the counts, the package table, the chapter inventory, and a new short
@@ -608,12 +698,12 @@ image character for character. Nine rows moved; ten were confirmed.
 | `Grid` *Pushes* | instance | S3 *Push cells with the mouse* | after S3:5458 | 2 | four push rules per mirror | moved: `pushAnswerFor:fromLocation:` asks `canPushCell:fromLocation:`, which arrives at S3:5439 |
 | `LaserGameLedElement` *Segments* | instance | S4 *Add a counter and window colours* | after S4:1218 | 1 | seven segments, lit by a digit | done in P7: the five missing fences of F9 were written with it |
 | `GridFactory` *Boards* | class | S4 *A bigger game board* | after S4:2697 | 3 | the boards the factory deals, side by side | done in P7, in its own section after the `GridFactory class >> defaultGrid` fence, which is the last of the two selectors `inspectionBoardFacts` sends |
-| `Grid` *Moves* | instance | S5 *Undo* | after S5:1103 | 1 | an undo stack that prints as a size | verified |
-| `GridFactory` *Counts* | class | S5 *Adding more game stats* | after S5:18 | 2 | the new stats counted on every board I deal | moved from Section 4: the Mirrors column asks `Grid >> numberOfMirrors`, which arrives at S5:18 |
-| `LaserGameControlPanelElement` *Labels* | class | S5 *Buttons of one width* | after S5:3698 | 2 | a width stated from its labels | verified |
-| `LaserGameControlPanelElement` *Measures* | class | S5 *Buttons of one width* | after the *Labels* view | 2 | a width that measured the wrong thing | moved one chapter later: `inspectionMeasureFacts` asks `buttonLabelMargin`, which arrives at S5:3669, in this chapter |
+| `Grid` *Moves* | instance | S5 *Undo* | after S5:1103 | 1 | an undo stack that prints as a size | done in P8, in *A tab that reads the undo stack out loud*, with `GridExample gridAfterAMoveAndARotation` promoted beside it |
+| `GridFactory` *Counts* | class | S4 *A bigger game board* | after the *Boards* view | 2 | the new stats counted on every board I deal | moved back to Section 4 in P8: `Grid >> numberOfMirrors` went with it, to S4 *Dealing a random board*, where the dealer's own tests ask for the count |
+| `LaserGameControlPanelElement` *Labels* | class | S5 *Buttons of one width* | after S5:3698 | 2 | a width stated from its labels | done in P8, with the test that had never been fenced |
+| `LaserGameControlPanelElement` *Measures* | class | S5 *Buttons of one width* | after the *Labels* view | 2 | a width that measured the wrong thing | done in P8, one chapter later than first planned: `inspectionMeasureFacts` asks `buttonLabelMargin`, which arrives at S5:3669, in this chapter |
 
-Where they land: three in Section 1, four in Section 2, six in Section 3, two in Section 4, four in
+Where they land: three in Section 1, four in Section 2, six in Section 3, three in Section 4, three in
 Section 5. The cap of `DEV-CYCLE.md` §7 — two views in flight at a time — holds in every chapter:
 *Enhancing MirrorCell*, *Determine rotate regions*, *Push a cell* and *Buttons of one width* take
 two each, and the other eleven chapters take one.
@@ -655,7 +745,7 @@ first evaluated at S2:1205 in *Drawing the target* (F11), so none of them can ap
 | `LaserGameElementExample openStandardExample` | promote | S4 *A bigger game board* | screenshot | done in P7, in *Handing the game a board*, replacing the dead core fence |
 | `LaserGameLedExample ledShowingOneHundredAndEight` | promote | S4 *Add a counter and window colours* | pairs with *Segments* | done in P7, with the F9 fences |
 | `LaserGameLedExample ledShowingEverySegmentLit` | promote | S4 *Add a counter and window colours* | bug reproduction | done in P7, with the F9 fences |
-| `GridExample gridAfterAMoveAndARotation` | promote | S5 *Undo* | pairs with *Moves* | verified: the push and the rotation both arrive in Section 3 |
+| `GridExample gridAfterAMoveAndARotation` | promote | S5 *Undo* | pairs with *Moves* | done in P8, in the same section as the *Moves* view |
 | `CellClickRegionExample clickRegions` | deleted in P2 | — | bookmark, class-side view | class deleted with it |
 | `GridDirectionExample directions` | deleted in P2 | — | bookmark, class-side view | class deleted with it |
 | `GridFactoryExample boardsTheFactoryDeals` | deleted in P2 | — | bookmark, class-side view | class deleted with it |

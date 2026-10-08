@@ -6151,7 +6151,7 @@ Every blank in that table is a push the player will click for and not get, and n
 The arrows drawn on the board and the yeses in this table come from the same method, so one of them cannot be right while the other is wrong.
 
 That is the *Pushes* tab, fifth on the grid after *Board*, *Beam* and *Cells* — and the undo stack takes a fourth in *Undo*.
-Its smoke test has to wait: it asserts the number of rows against `grid numberOfMirrors`, and the grid does not learn to count its own mirrors until *Adding more game stats*.
+Its smoke test has to wait: it asserts the number of rows against `grid numberOfMirrors`, and the grid does not learn to count its own mirrors until *Dealing a random board*, where the dealer needs the count to be tested at all.
 Asserting `10` instead would make the test agree with the demo board rather than with the rule, so the test is written there, where the two counts can be compared.
 
 Open the tab now, though, and read the row for `1@2`: north, east and south, with west blank because the mirror stands against the left edge.
