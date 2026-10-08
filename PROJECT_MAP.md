@@ -1,6 +1,6 @@
 # Laser Game — Project Map
 
-Status date: 2026-10-04. Image: Pharo 13.1.0SNAPSHOT, driven live through the `pharo` MCP server.
+Status date: 2026-10-08. Image: Pharo 13.1.0SNAPSHOT, driven live through the `pharo` MCP server.
 
 This file is the reference for finishing the Laser Game tutorial on Pharo 13 with Bloc as the
 graphics foundation, while keeping the chapter structure of the original 2007 Squeak tutorial.
@@ -11,9 +11,9 @@ graphics foundation, while keeping the chapter structure of the original 2007 Sq
 |---|---|
 | Book text | Markdown under `doc/section<n>/section<n>.md`, code blocks quoting the image verbatim. `doc/section1/section1.md` covers `SectionOne/1-Introduction.pier` through `10-Grid.pier`; `doc/section2/section2.md` covers pages 049–073A, which is the whole of Section 2 from the beam path onward; `doc/section3/section3.md` covers pages 074–129A, and `doc/section4/section4.md` covers pages 130–173, which is the whole of Section 4, plus two chapters for work of the port itself, *A window the player can resize* and *Counters the player can read*; `doc/section5/section5.md` covers pages 174–204, which is the whole of Section 5, plus four chapters for work of the port itself, *Counters of one width*, *Buttons of one width*, *The 2007 Code Leaves The Package* and *Looking at objects*. The Pillar sources (`SectionOne/*.pier`, `SectionTwo/*.pier`, `pillar.conf`, `compile.sh`) are frozen; see section 8 |
 | Reader position | end of `tut2007/html/204.html`, which is the end of Section 5, and the end of the port: `205.html` begins Section 6, Prepare For Application Deployment, which is **cancelled** |
-| Code | packages `Laser-Game` (42 classes, tags `Model` and `Graphics`), `Laser-Game-Examples` (12 classes, tag `Examples`, 25 class-side examples) and `Laser-Game-Tests` (25 classes) in `src/`, loaded by `BaselineOfLaserGame`, which declares the Bloc and Toplo baselines and the groups `core`, `examples`, `tests` and `default`; `Laser-Game-Tests` requires `Laser-Game-Examples`, because `LaserGameExamplesTestCase` reads that package |
-| Tests | 273 test methods, all green, reported by `run_tests` on `Laser-Game-Tests` as 305 runs: since 5.7 four test classes inherit from the abstract `LaserGameTestCase`, and Pharo builds an abstract test case's suite out of its subclasses, so those four run twice. Since 5.4 the test classes are no longer in `Laser-Game` |
-| Git | branch `master`, head `21cfc8c` (Section 5.7). **Every subsection through 5.7 is committed**; 5.8 and 5.9 are in the image and awaiting the user's commits, one per subsection. Two subjects came out wrong and could be amended: `7ac6a08` (2.15) reads `Commit message:` and `4471f4f` (2.12) reads `Commit message for 2.12:`, both with the real subject in the body. 2.14, 2.17 and 3.16 add no code and produce no commit. The counter fix of section 9 is `2176126`; the window-resize work of section 9 has no commit of its own and entered git with a later section commit, Iceberg committing whole packages. **`Laser-Game-Tests` was untracked from 5.4 to 5.7:** 5.4 moved the test classes out of `Laser-Game`, which deleted their Tonel files from `src/Laser-Game/`, but the new package was never added to the Iceberg working copy, so no test code reached git until the user added it at 5.7 and `21cfc8c` wrote all 24 files of `src/Laser-Game-Tests/` at once. Check `wc packages` after any package split. The `doc/` Markdown is tracked and its edits are uncommitted, text never riding in a code commit |
+| Code | packages `Laser-Game` (42 classes, tags `Model` and `Graphics`), `Laser-Game-Examples` (7 classes, tag `Examples`, 21 class-side examples, 5 of them window openers) and `Laser-Game-Tests` (25 classes) in `src/`, loaded by `BaselineOfLaserGame`, which declares the Bloc and Toplo baselines and the groups `core`, `examples`, `tests` and `default`; `Laser-Game-Tests` requires `Laser-Game-Examples`, because `LaserGameExamplesTestCase` reads that package |
+| Tests | 274 test methods, all green. `run_tests` on the package reports 306, which is wrong: four test classes inherit from the abstract `LaserGameTestCase`, and Pharo builds an abstract test case's suite out of its subclasses, so those four are counted twice. The true figure, 274, is what an actual `TestSuite` run of the package answers, and what the sum of `allTestSelectors` over the concrete classes gives. Ask per class, or run the suite, rather than trusting the package-level count. Since 5.4 the test classes are no longer in `Laser-Game` |
+| Git | branch `master`, head `39df955` (examples review P8). **Every subsection of the tutorial is committed, and so are the code phases of the examples review**; the book text of the review's closing phase is on disk and awaiting the user's commit. Two subjects came out wrong and could be amended: `7ac6a08` (2.15) reads `Commit message:` and `4471f4f` (2.12) reads `Commit message for 2.12:`, both with the real subject in the body. 2.14, 2.17 and 3.16 add no code and produce no commit. The counter fix of section 9 is `2176126`; the window-resize work of section 9 has no commit of its own and entered git with a later section commit, Iceberg committing whole packages. **`Laser-Game-Tests` was untracked from 5.4 to 5.7:** 5.4 moved the test classes out of `Laser-Game`, which deleted their Tonel files from `src/Laser-Game/`, but the new package was never added to the Iceberg working copy, so no test code reached git until the user added it at 5.7 and `21cfc8c` wrote all 24 files of `src/Laser-Game-Tests/` at once. Check `wc packages` after any package split. The `doc/` Markdown is tracked and its edits are uncommitted, text never riding in a code commit |
 
 ## 2. Sources of the original code
 
@@ -190,11 +190,11 @@ State of the port:
 
 | File | Covers | State |
 |---|---|---|
-| `doc/section1/section1.md` | the model | **rewritten to `doc/REWRITE-PLAN.md`.** Thirteen chapters, 2101 lines: the eleven of the model plus *The path the beam takes* and *Chasing the beam*, written new in that plan's phase 3. *Introduction* and *Game overview* are Pharo text now, carrying the one history paragraph, the attribution, the licence and the four diagrams of `SectionOne/figures/`. 56 method blocks, all identical to the image |
-| `doc/section2/section2.md` | the game on screen | **rewritten.** Ten chapters, 2455 lines, opening with the one Morphic reminder sentence. The beam path it used to be missing is in section1 now, since it is model work. 106 method blocks, all identical to the image |
-| `doc/section3/section3.md` | interaction | **rewritten.** Sixteen chapters, 6034 lines. 219 method blocks, all identical to the image |
-| `doc/section4/section4.md` | feedback and the laser beam | **rewritten.** Twelve chapters, 5116 lines, the last two being *A window the player can resize* and *Counters the player can read*. 160 method blocks, all identical to the image |
-| `doc/section5/section5.md` | polish, and the bugs polish finds | **rewritten.** Twelve chapters, 5233 lines, the last being *Looking at objects*. 182 method blocks, all identical to the image |
+| `doc/section1/section1.md` | the model | **rewritten to `doc/REWRITE-PLAN.md`.** Thirteen chapters, 2817 lines: the eleven of the model plus *The path the beam takes* and *Chasing the beam*, written new in that plan's phase 3. *Introduction* and *Game overview* are Pharo text now, carrying the one history paragraph, the attribution, the licence and the four diagrams of `SectionOne/figures/`. 69 gated method fences, all identical to the image |
+| `doc/section2/section2.md` | the game on screen | **rewritten.** Nine chapters, 2842 lines, opening with the one Morphic reminder sentence. The beam path it used to be missing is in section1 now, since it is model work. 119 gated method fences, all identical to the image |
+| `doc/section3/section3.md` | interaction | **rewritten.** Sixteen chapters, 6468 lines. 250 gated method fences, all identical to the image |
+| `doc/section4/section4.md` | feedback and the laser beam | **rewritten.** Twelve chapters, 5408 lines, the last two being *A window the player can resize* and *Counters the player can read*. 182 gated method fences, all identical to the image |
+| `doc/section5/section5.md` | polish, and the bugs polish finds | **rewritten.** Twelve chapters, 4578 lines, the last being *Looking at objects*. 160 gated method fences, all identical to the image |
 
 The Pillar book (`SectionOne/*.pier`, `SectionTwo/*.pier`, `pillar.conf`, the LaTeX and HTML
 templates, `compile.sh`) is the 2015 form of the same text. It is **frozen**: do not add chapters to
@@ -412,12 +412,12 @@ bind `Form`, `BitBlt`, `Morph`, `SketchMorph`, `StringMorph`, `Display`, `World`
   `pillar.conf` by commits `f666984` and `a8d7a00`. Their content now lives in
   `doc/section2/section2.md`, so the two files and their two `pillar.conf` lines can be deleted.
   Waiting on the user; nothing is added to them meanwhile.
-- The 37 critiques `run_critics` reports over `Laser-Game` (44 before the class comments of the
-  book rewrite) are all pre-existing and none is a
-  broken send: twelve classes with no class comment (`GridDirection` and its four subclasses,
-  `ReverseLaserGameAction` and its six), seventeen unclassified class-side methods in the same two
-  hierarchies, six `ReClassNotReferencedRule` on the `Reverse*LaserGameAction` classes, which are
-  looked up by symbol, and nine `ReMissingSubclassResponsibilityRule`. One of the nine is worth a
+- The 37 critiques `run_critics` reports over `Laser-Game` are all pre-existing and none is a
+  broken send: 13 `ReUnclassifiedMethodsRule`, 10 `ReNoClassCommentRule` on the `GridDirection` and
+  `ReverseLaserGameAction` hierarchies, 8 `ReMissingSubclassResponsibilityRule`, and 6
+  `ReClassNotReferencedRule` on the `Reverse*LaserGameAction` classes, which are looked up by symbol.
+  `Laser-Game-Examples` reports 6, all `ReClassNotReferencedRule`, which is what an examples package
+  is. `Laser-Game-Tests` reports none. One of the nine is worth a
   look on its own: `GridDirection` class implements both `adjacentInVersionSymbol` and
   `adjacentInversionSymbol`, a near-duplicate pair that reads like a typo kept alive by its subclasses.
 - ~~`doc/section2/section2.md` starts at page 049, and the beam path work is only in
@@ -439,19 +439,30 @@ bind `Form`, `BitBlt`, `Morph`, `SketchMorph`, `StringMorph`, `Display`, `World`
   (`figures/020.jpg`–`031.jpg`) and drops every Pharo 3.0 tool screenshot of the Pillar book, which
   shows an IDE that no longer looks like that.
 
-- The suite is **305 tests** in `Laser-Game-Tests`, all green. Section 6 of this file stops counting
-  at the subsection it was written for, so a count quoted there is the count of that day.
+- The suite is **274 tests** in `Laser-Game-Tests`, all green. Section 6 of this file stops counting
+  at the subsection it was written for, so a count quoted there is the count of that day, and every
+  count written before 2026-10-08 came from the package-level `run_tests` figure, which over-counts
+  by 32; see the Tests row of section 1.
+- The book's suite counts are the reader's, not the package's: a reader who has typed the book's
+  tests and nothing else ends with **242**, and the book says so, with a note in *A less brittle unit
+  test design* that the package carries thirty-two more. Those thirty-two are never fenced: the
+  remaining push directions, and tests on the confirmation dialog and the digit display that no
+  chapter had room for.
 - There is no "in-image block checker". The fence gate is in two halves, described in
   `doc/REWRITE-PLAN.md` §8: a python script reads the ```smalltalk fences of a Markdown file and
   prints `Class|selector|checksum|length` for each one that carries a `Class >> selector` head, and
-  the same checksum is computed in the image over `sourceCode trimRight` and compared. 734 blocks
-  over the five files. **Six fences no longer have a method to match, since the four openers moved to
-  `Laser-Game-Examples` on 2026-10-05:** `LaserGameBoardElement class >> openExample` (section2 546),
-  `LaserGameBoardElement class >> openExampleWithLaserFired` (section2 1196, section4 3525),
-  `LaserGameElement class >> openExample` (section2 1591, section4 2822) and
-  `LaserGameElement class >> openStandardExample` (section4 2797). The bodies are unchanged; only the
-  class the method hangs on moved, to `LaserGameBoardExample` and `LaserGameElementExample`. 34 prose
-  and `>>>` mentions name the old receivers as well. The book edit is pending.
+  the same checksum is computed in the image over `sourceCode trimRight` and compared. 780 gated
+  rows over the five files, S1 69 · S2 119 · S3 250 · S4 182 · S5 160, naming 714 distinct methods,
+  every one of them matching the image as of 2026-10-08. The six fences that dangled when the four
+  window openers moved into `Laser-Game-Examples` were rewritten onto `LaserGameBoardExample` and
+  `LaserGameElementExample` during the examples review, and no fence dangles now. One fence is
+  exempt from the gate by name, `MyClass >> myMethod` in section 1, which exists to explain the
+  `Class >> selector` convention and names no method in the image.
+- The image's filesystem is not the shell's, and `evaluate_pharo` truncates its answer near 10 KB
+  and strips carriage returns. To check all 780 fences at once, send the image the method *names*
+  (gzip, then base64, pasted into an expression) and have it answer one aggregate SHA1 per class,
+  which is 72 lines; compare those against the same aggregate computed locally. A per-method
+  transcript does not fit.
 - Every fence in the book carries a language tag, and the tag is what tells the gate which fences to
   read: `smalltalk` for code that is live in the image, `st` for a version the book shows on the way
   to it, `text` for class comments, printed output, errors and tables. `doc/REWRITE-PLAN.md` §8 item
@@ -487,3 +498,27 @@ during and marked as an addition rather than a page.
 | **Custom inspector views, tier two.** Asked for by the user on 2026-10-04, after tier one: the three views a reader most wants are not on an instance at all, they are on a class, because what they explain is a rule the whole hierarchy shares. All three are class side, in the protocol `inspecting`. `CellClickRegion class >> inspectionRegions:` paints one cell at zoom 6, one coloured square per sampled point, and it gets each colour by *asking* the rules -- `clickRegionForPoint:` then `hintRegionForPoint:` -- so the picture cannot drift from the ten `containsPoint:` methods and the two diagonals it draws; the sampling is factored into `inspectionSampleStep`, `inspectionSamplePoints`, `inspectionRegionAt:` and `inspectionColorFor:`. `CellClickRegion class >> inspectionMap:` is the same geometry as a table, one row per region with the number of sampled points that land in it, built by `inspectionRegionCounts` so the view method stays under the complexity rule. `GridDirection class >> inspectionDirections:` is the four directions with their vectors and the side a beam enters the next cell from. A class-side tab must not answer for a hierarchy from the middle, since `clickRegionForPoint:` walks `self sortedSubclasses`, so `inspectionRegionsContext:` and `inspectionMapContext:` gate on `self superclass = Object` and `inspectionDirectionsContext:` on `self subclasses notEmpty` -- neither names a class literally, which keeps `ReRefersToClassRule` quiet. Four tests added | Section 5 | **Done, in the image, awaiting the user's commit.** 294 runs, all green; no critiques on `CellClickRegion`, `CellClickRegionTestCase` or `GridDirectionTestCase`, and `GridDirection` keeps only the four critiques it already had. Three sections added to the *Looking at objects* chapter: *The click geometry, painted*, *The same geometry as a table* and *The four directions* |
 | **Custom inspector views, tier three.** Asked for by the user on 2026-10-04, after tier two: the drawing side of the game, where what a reader wants is a picture or a list of numbers rather than a model fact. `LaserGameShapes class >> inspectionShapes:` draws every shape the class can make at 30, 50 and 80 pixels, through `inspectionShapeExtents`, `inspectionShapeSelectors` and `inspectionGalleryElement`, which is `pointsOf:scaledToExtent:` shown rather than argued; `LaserGameColors class >> inspectionPalette:` paints a swatch and a name per colour, over a list of colours read off the class by `inspectionColorSelectors` (every argumentless selector that answers a `Color`, which is 24 of the 26) rather than written into the view, so a colour added later appears on its own; `LaserGameLedElement >> inspectionSegments:` is `segmentsForDigit:` as the table it always was, ten digits by seven segments, with a last column from `inspectionShowsDigit:` saying which digits this display is showing; `LaserGameControlPanelElement class >> inspectionMeasures:` is the eleven numbers the panel is laid out from, and `inspectionLabels:` is what each label needs beside what a button holds, which is the *Counters of one width* and *Buttons of one width* material as a standing view (*Undo* and *Reset* need 45 of the 50); `GridFactory class >> inspectionBoards:` draws the three boards the factory deals and `inspectionCounts:` counts them, with `inspectionNumberOf:in:` counting cells of one class exactly. `LaserGameColorsTestCase` is new, since the class had nothing to test before. Seven tests added | Section 5 | **Done, in the image, awaiting the user's commit.** 301 runs, all green; no critiques on any of the five classes or any of the five test classes. Five sections added to the *Looking at objects* chapter: *Every shape at three sizes*, *The palette, as colours*, *The seven segments*, *The numbers the panel is laid out from* and *The boards the factory deals* |
 | **One click per key object: the package `Laser-Game-Examples`.** Asked for by the user on 2026-10-05, who had already moved the four window openers out of `Laser-Game` into `LaserGameElementExample` and `LaserGameBoardExample`: a class-side method carrying `<sampleInstance>` is a button in the browser that runs it and inspects what it answers, so the custom inspector tabs of tier one to tier three become reachable without writing a playground line. Ten more example classes, one per subject, 21 more examples, all class side in the protocol `examples` under the tag `Examples`, each with the invocation as the last line of its comment. `GridExample` deals the four boards (`demoGrid`, `standardGrid`, `emptyStandardGrid`, `randomGrid`) plus `gridWithTheLaserFiring`, which is the only board whose Beam tab has rows, and `gridAfterAMoveAndARotation`, which is the only one whose Moves tab shows at all, since `inspectionMovesContext:` hides it on an empty stack. `CellExample` answers five single cells, dark and lit, `LaserPathExample` the first and last step of the beam, `LaserGameLedExample` a display showing 108 and one showing 888. The six class-side tab subjects are examples that answer the class itself -- `LaserGameShapesExample >> shapes`, `LaserGameColorsExample >> palette`, `GridFactoryExample >> boardsTheFactoryDeals`, `GridDirectionExample >> directions`, `CellClickRegionExample >> clickRegions`, `LaserGameControlPanelExample >> panelMeasures` -- because that is where those tabs live. `LaserGameExamplesTestCase` holds the package to four rules: every method in it is an example, every example that answers an object answers one with a tab of ours, between them the examples reach **every** tab the game defines (the test subtracts the reached set from the tabs of `Laser-Game`, so a new tab without an example fails it), and only a selector beginning `open` opens a window, read off the source so that the suite puts up nothing. Four tests. The two classes the user wrote gained class comments and their comments' invocation lines were corrected, which named methods that no longer exist | Section 5 | **Done, in the image, awaiting the user's commit.** 305 runs, all green; critics clean apart from `ReClassNotReferencedRule` on all twelve example classes, which is what an examples package is. No book text yet |
+
+## 10. The method: tests, examples and views
+
+The port finished with three kinds of artefact per class, and they answer three different questions:
+
+- a **test** states a fact and fails when the fact stops holding, including the degenerate states no
+  example is interesting enough to show;
+- an **example** is a class-side method carrying `<sampleInstance>`, taking no argument, rebuilding
+  its object on every call and asserting nothing, so the browser can run it with one click and
+  inspect what it answers;
+- a **view** is a method carrying `<inspectorPresentationOrder: n title: '…'>`, which never mutates
+  the object it is shown, and asks the rules rather than restating them, so the picture cannot drift
+  from the code it illustrates. A view that explains a rule the whole hierarchy shares goes on the
+  class side.
+
+`doc/DEV-CYCLE.md` is the method written down: what each artefact is for, when to write which, how a
+view stays honest, and the five generic gates that hold an example package to its contract.
+`LaserGameExamplesTestCase` is a working implementation of all five, in fourteen methods.
+
+`doc/EXAMPLES-PLAN.md` is the review that applied the method to the whole tutorial, phase by phase,
+and the record of what it changed: 19 views over 11 classes, 21 examples in 7 classes, and the book
+text reframed so that every chapter introduces the view or example it wants, where it wants it. All
+of its code phases are committed; the counts at its close are in its own table, measured on
+2026-10-08.

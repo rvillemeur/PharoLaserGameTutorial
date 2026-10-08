@@ -1076,6 +1076,17 @@ The last line before the extent is the wire this chapter ends with.
 ## A display drawn from seven rectangles
 
 Pharo has no LED widget, so we draw the display: seven rectangles per digit, and showing a number recolours them.
+The class is a `BlElement` like the rest of the view, and it keeps four things: how many digits it shows, the number it is showing, whether it is highlighted, and the digit elements themselves.
+
+```smalltalk
+BlElement << #LaserGameLedElement
+	slots: { #digitCount . #value . #highlighted . #digitElements };
+	tag: 'Graphics';
+	package: 'Laser-Game'
+```
+
+The accessors are written by hand below rather than generated, because setting the digit count or the value does work as well as storing it.
+
 The segments carry the letters a seven segment display has always given them — `a` across the top, `b` and `c` down the right side, `d` across the bottom, `e` and `f` down the left, `g` across the middle:
 
 ```smalltalk

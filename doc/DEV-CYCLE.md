@@ -162,21 +162,38 @@ Core  <--  Examples  <--  Tests
 
 ## 9. Gating
 
-Two generic tests, written once, early, when the example package is created and not retrofitted:
+Generic tests, written once, early, when the example package is created and not retrofitted. Start
+with the first two. The other three are what the Laser Game found it wanted once the first two had
+been running for a while, and they cost nothing extra, since all five share the same handful of
+helpers.
 
-- **Every example builds.** Walk the example package for `<sampleInstance>` methods, reject the
-  openers by their prefix, perform each selector on its class, assert no error. One method, and no
-  example can rot.
+- **Every example answers something worth a click.** Walk the example package for `<sampleInstance>`
+  methods, set the openers aside by their prefix, perform each remaining selector on its class, and
+  assert that it answers neither nil nor an object the inspector shows no tab of ours for. One
+  method, and no example can rot.
 - **Every instance-side view is reachable.** Walk the core packages for
   `<inspectorPresentationOrder:title:>` methods and assert that the examples between them reach every
   *instance-side* one. This is what stops a view from surviving the object it described.
   **Exempt the class-side views.** A view on the class side is reached by inspecting the class, which
   needs no example. Demanding one produces bookmark methods (§6 rule 7) and nothing else: the Laser
   Game grew six of them this way, one per class-side view, each with `^ SomeClass` for a body.
+- **Every class-side view is shown by inspecting its class.** The counterpart of the exemption above,
+  and the reason the exemption is safe: the class-side views are still checked, by the one route that
+  reaches them.
+- **The example package holds examples and nothing else.** Every method in it carries
+  `<sampleInstance>`, so everything in it is a click the browser offers. This is the rule that keeps
+  a helper from quietly moving in next to the examples.
+- **Only an example named `open…` opens a window.** Reading the selector then tells you what the
+  click costs: an opener puts a window on screen, anything else only answers an object. Checked both
+  ways, so an opener that opens nothing fails too.
 
-The Laser Game's `LaserGameExamplesTestCase` is a working implementation of both; read it before
-writing another. Beyond those two, data methods get ordinary assertions and presentation methods get
-one smoke test each.
+A rule that starts producing code which exists only to satisfy it has the wrong scope, not the code.
+That is why the second gate exempts the class side rather than demanding an example per view, and it
+is the question to ask of any gate added later.
+
+The Laser Game's `LaserGameExamplesTestCase` is a working implementation of all five, in fourteen
+methods: read it before writing another. Beyond the gates, data methods get ordinary assertions and
+presentation methods get one smoke test each.
 
 ## 10. Garbage collection
 
@@ -228,5 +245,6 @@ Pin this where the keyboard is.
 - Every view splits data from presentation. The data method gets real assertions.
 - Every instance-side view has an example that opens on it. Class-side views are exempt.
 - Core never depends on the example package. No fixture in core.
-- The two generic gates exist from the day the example package is created.
+- The generic gates exist from the day the example package is created: the first two on day one,
+  the other three as soon as they are cheap.
 - Delete the example with no sender and the view with nothing to add.

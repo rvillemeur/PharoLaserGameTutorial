@@ -947,7 +947,7 @@ I am abstract: a subclass fills `exitSides` in `initializeExitSides`. `BlankCell
 ```
 
 > **Note.** Again, that is the comment the class ends up with.
-> `printOn:` is written later, the *Sides* tab the last paragraph mentions arrives at the end of this chapter, and `gridLocation` is the instance variable `Cell` gains in the chapter *Grid*.
+> `printOn:` is written later, the *Sides* tab the last paragraph mentions arrives at the end of this chapter, and `gridLocation` is the instance variable `Cell` gains in *The path the beam takes*.
 > At this point it has neither, so write what is true now and come back.
 
 Pharo comes with a powerful tool for restructuring code: the refactoring engine, reachable from the *Refactoring* item of the class list context menu in the System Browser.
@@ -1800,7 +1800,7 @@ Grid >> cells: anObject
 `laserIsActive`, `laserIsActive:`, `numberOfColumns:` and `numberOfRows:` are the same three lines each.
 The two getters `numberOfColumns` and `numberOfRows` are rewritten in a moment, so leave them as the refactoring wrote them for now.
 
-> **Note.** The finished class has two more instance variables, `laserBeamPath` and `movesStack`, which arrive with the beam path in *The path the beam takes*, two chapters from here, and with *Undo* near the end of the book.
+> **Note.** The finished class has two more instance variables, `laserBeamPath` and `movesStack`, which arrive with the beam path in *The path the beam takes*, the next chapter, and with *Undo* near the end of the book.
 > The definition in the image is therefore:
 
 ```smalltalk
@@ -1844,7 +1844,7 @@ It is a fine first pass all the same, and that is exactly the point of `at:` and
 
 > **Note.** Two details here point forward.
 > `at:` answers `nil` for a location the grid does not hold, because of the `ifAbsent: []` — we come back below to why that matters.
-> And `at:put:` tells the cell where it has been put, which needs the `gridLocation` instance variable that `Cell` gains with the beam path, two chapters from here.
+> And `at:put:` tells the cell where it has been put, which needs the `gridLocation` instance variable that `Cell` gains in *The path the beam takes*, the next chapter, at the first method that reads it.
 
 ## Initializing a grid
 
@@ -2372,6 +2372,18 @@ The `inversions` dictionary is the one to slow down over, and it is where the ne
 The beam leaves the current cell by its east side, so it arrives at the next cell through that cell's *west* side.
 
 The side the beam leaves by and the side it enters by are opposites, always, and both of them are named from the point of view of the cell that owns them.
+
+`self cell gridLocation` is the first reader of the instance variable *Grid* promised, so add it now.
+Select `Cell`, add `gridLocation` to its slots, and generate the accessor pair the way we generated the ones on `Grid`.
+
+```smalltalk
+Object << #Cell
+	slots: { #activeSegments . #exitSides . #gridLocation };
+	tag: 'Model';
+	package: 'Laser-Game'
+```
+
+`gridLocation` and `gridLocation:` are three lines each, and `Grid >> at: put:` is the one method that ever writes the variable.
 
 `aGrid at: newLocation` answers `nil` for a location the grid does not hold, and this is where that pays off.
 One step past the right-hand column is simply not in the dictionary, so the `ifAbsent: []` we put in `Grid >> at:` turns walking off the board into the same answer as a target: no next element, the path ends.

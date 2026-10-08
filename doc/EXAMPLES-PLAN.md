@@ -11,18 +11,29 @@ to reach for either, because in the book they arrive almost entirely in one late
 rewrites the book, and adapts the code, so that both arrive at the moment a developer following the
 cycle would have written them.
 
-## 1. Where we are, measured
+## 1. Where we were, measured at the plan's start, 2026-10-05
 
 | Item | Count |
 |---|---|
 | Code | `Laser-Game` 42 classes · `Laser-Game-Examples` 12 classes, 25 examples · `Laser-Game-Tests` 25 classes |
-| Tests | 273 methods, 305 runs, all green |
+| Tests | 273 tests, all green (the MCP runner reported 305; see the P9 note on the over-count) |
 | Book | five Markdown files under `doc/`, 20,932 lines, 65 chapters, 734 code fences, all gated against the image |
 | Inspector views | 19, across 11 classes: 10 instance-side, 9 class-side |
 | Views introduced in Section 3, at the bug that wanted them | 4 — `Cell` *Sides*, `Grid` *Board*, *Beam*, *Cells* |
 | Views introduced in Section 5, chapter *Looking at objects* | 15 |
 | `GridFactory demoGrid` in the book | 144 fences: S1 2 · S2 22 · S3 50 · S4 35 · S5 35 |
 | `GridFactory demoGrid` in the tests | 86 sites across 10 test classes, the largest being `LaserGameCellElementTestCase` 34 and `LaserGameElementTestCase` 28 |
+
+### Where we are, measured at the close, 2026-10-08
+
+| Item | Count |
+|---|---|
+| Code | `Laser-Game` 42 classes, 505 methods · `Laser-Game-Examples` 7 classes, 21 examples, 5 of them openers · `Laser-Game-Tests` 25 classes |
+| Tests | 274 tests, all green |
+| Book | five Markdown files under `doc/`, 22,113 lines, 62 chapters, 1,097 fences, every one language-tagged: 896 `smalltalk`, 161 `st`, 40 `text` |
+| Gated method fences | 780: S1 69 · S2 119 · S3 250 · S4 182 · S5 160, over 714 distinct methods, every one matching the image |
+| Inspector views | 19, across 11 classes: 10 instance-side, 9 class-side, each introduced in the chapter that wanted it |
+| Generic gates | 5, in `LaserGameExamplesTestCase`, 14 methods |
 
 ## 2. Findings — where the project departs from the cycle
 
@@ -80,10 +91,17 @@ announced in two notes (section1 909 and 1540) but no class-definition fence eve
 and `digits:`, `value:` and `value` are never defined, although the chapter builds a display and the
 examples send all three. The *Picture* and *Segments* views and the two LED examples depend on them.
 Partly closed by P7: the five `LaserGameLedElement` methods are now fenced in Section 4, and the
-*Segments* view and both LED examples with them. Still open: `Cell`'s `gridLocation` has no
-class-definition fence, `LaserGameLedElement` has none either, and `Grid >> laserIsActive:` is still
-never quoted — it is a generated accessor whose comment says nothing, so P9 should decide whether it
-earns a fence or whether the two notes that promise it should stop promising it.
+*Segments* view and both LED examples with them.
+Closed by P9, in three decisions.
+`Cell`'s slot is now added by a class-definition fence in *The path the beam takes*, at the first
+method that reads it, `self cell gridLocation`, and the three notes that used to promise it from a
+distance now name that chapter instead of counting chapters.
+`LaserGameLedElement` gains its class-definition fence at the top of *A display drawn from seven
+rectangles*, quoted from `definitionString`, with a sentence saying why its accessors are written by
+hand rather than generated.
+`Grid >> laserIsActive:` earns no fence: section1 1800 already tells the reader that `Grid`'s
+accessors are "the same three lines each", and a fence that repeats a generated accessor teaches
+nothing. The notes that mention it were checked and none of them promises a fence.
 
 **F10. Two shapes and one colour have no fence.** `LaserGameShapes class >>
 southArrowElementOfExtent:` and `westArrowElementOfExtent:` are missing although `north` and `east`
@@ -173,7 +191,7 @@ instance variable instead of a temporary. Three shadowing critiques that this ra
 `openExample` lines in the `LaserGameElement` and `LaserGameBoardElement` class comments were fixed
 here rather than in P2, and the two core `openOn:` comments now show `GridFactory defaultGrid`, so no
 core comment points at the examples except the one sentence in `GridFactory`'s class comment that
-says where the fixed board went. 305 runs green, critics clean on the three packages apart from
+says where the fixed board went. 273 runs green, critics clean on the three packages apart from
 pre-existing findings.
 
 #### Steps as planned
@@ -190,7 +208,7 @@ pre-existing findings.
    `GridExample demoGrid`.
 4. Fix `GridFactory class >> inspectionBoardFacts` per D1 and update its comment and its test.
 5. Delete `GridFactory class >> demoGrid`.
-6. Verify: 305 runs green; `find_senders: #demoGrid` names nothing in `Laser-Game`; critics clean.
+6. Verify: 273 runs green; `find_senders: #demoGrid` names nothing in `Laser-Game`; critics clean.
 
 *Verification that matters most:* no method of `Laser-Game` references `Laser-Game-Examples`. Check
 it mechanically, not by eye.
@@ -244,7 +262,7 @@ chapter, ten were confirmed, and no view needed splitting. §5 above carries the
 the corrected promotion chapters. The audit also found five gaps in the book that P4–P8 must repair:
 findings F8–F12. One code change came out of it, `CellExample class >> mirrorOnNoBoard`, which gives
 the *Sides* and *Lean* views a cell to open on before the book has a board. `Laser-Game-Tests` runs
-306 tests green; critics on `CellExample` report only `ReClassNotReferencedRule`, which is the
+274 tests green; critics on `CellExample` report only `ReClassNotReferencedRule`, which is the
 standing pattern for an example entry point.
 
 #### Steps as planned
@@ -295,7 +313,7 @@ shown with its `grid` slot from the start; the three playground snippets of *Cha
 the intermediate `testCellInteractions` still borrowed the board through `GridTestCase new
 generateDemoGrid`, and now read `GridExample demoGrid`; the final `testCellInteractions` fence was
 replaced with the image's version. One code change: `CellExample`'s class comment said every example
-answers a cell of a board, which `mirrorOnNoBoard` made false. `Laser-Game-Tests` is 306 tests, all
+answers a cell of a board, which `mirrorOnNoBoard` made false. `Laser-Game-Tests` is 274 tests, all
 passing.
 
 A new finding, F13, came out of the fence work and belongs to P5.
@@ -374,7 +392,7 @@ comment; two test helpers, `CellRendererTestCase >> testBlankCellElement` and
 `TargetCellRendererTestCase >> rendererForTarget:`, declared a `grid` temporary that shadowed the
 `grid` slot `setUp` fills, which `ReTempVarOverridesInstVarRule` reports, so the temporary is renamed
 `oneCellGrid` in both; the bug chapter's two stale fences were repaired to the image. `Laser-Game-Tests`
-is 306 tests, all passing, and `run_critics` is clean on both test classes.
+is 274 tests, all passing, and `run_critics` is clean on both test classes.
 
 Interim duplication, since cleared: `Grid >> inspectionBoard:` and `inspectionBeam:` also appeared in
 `doc/section3/section3.md` around line 3524, with a stale
@@ -410,7 +428,7 @@ test fences are rewritten from the image, every `GridFactory demoGrid` in the te
 fences in `doc/section3/section3.md`, up from 227, and all 250 match the image; the 69 real fences
 of `doc/section1/section1.md` match too, including the three heads repaired here and the two cell
 tab tests added to it. No image code was written in P6: every fence was taken character-for-character
-from a method that already existed. `Laser-Game-Tests` is 306 tests, all passing.
+from a method that already existed. `Laser-Game-Tests` is 274 tests, all passing.
 
 Eight deviations from the steps as planned.
 
@@ -494,7 +512,7 @@ boards and `LaserGameElementExample openStandardExample` are promoted with them,
 `Cell >> inspectionPicture:` — the one line *Drawing the mirror* promised this section — lands in
 *Laser on blank cell*. The gate finds 176 gated fences in `doc/section4/section4.md`, up from 159,
 and all 176 match the image. No image code was written in P7: every fence was taken
-character-for-character from a method that already existed. `Laser-Game-Tests` is 306 tests, all
+character-for-character from a method that already existed. `Laser-Game-Tests` is 274 tests, all
 passing; both generic gates of `DEV-CYCLE.md` §9 hold, with sixteen examples building and no
 instance-side view unreachable.
 
@@ -570,7 +588,7 @@ inspect*. The gate finds 160 gated fences in `doc/section5/section5.md`, down fr
 `doc/section4/section4.md`, up from 176; every row matches the image. No image code was written in
 P8: every fence was taken character-for-character from a method that already existed, which for the
 fourteen `LaserGameExamplesTestCase` fences was checked by hashing the image's own source rather than
-by eye. `Laser-Game-Tests` is 306 tests, all passing. `run_critics` reports only the critiques the
+by eye. `Laser-Game-Tests` is 274 tests, all passing. `run_critics` reports only the critiques the
 project has carried and argued for all along — the direction and reverse-action subclasses that are
 reached by `perform:` and so look unreferenced, their missing class comments, and the example classes
 the browser reaches by click.
@@ -623,26 +641,27 @@ three more: every class-side tab is shown by inspecting its class, which the cha
 second gate because it is the other half of the class-side exemption; the example package holds
 nothing but examples; and only an example named `open…` opens a window. The chapter presents them as
 the two gates, the class-side check that goes with the second, and two the package grew later. §9 of
-the method document is worth amending to match in P9.
+the method document was amended to match in P9: it now names all five, says the first two are
+written at the package's birth and the other three as soon as they are cheap, and carries the rule
+about a gate that breeds methods.
 
 **Fourteen dead invocations were repointed.** Section 5's Playground snippets still evaluated
 `GridFactory demoGrid`, which P1 moved out of core, so none of them would have run. They are now
 `GridExample demoGrid`. All fourteen were in ungated fences, and re-gating confirms no gated row
 changed with them.
 
-**The suite counts in Section 5 were understated and are only part-repaired.** The three
+**The suite counts in Section 5 were understated and were only part-repaired in P8.** The three
 *Checking it* blocks the section carried all read 280 runs, including the one immediately before
-*Looking at objects*, which cannot be right once everything but the gate class exists. The final
-block now states the image's own number, 306, and the block before *Looking at objects* states 301,
-the suite without the five gate tests. The two earlier blocks were raised by the four tests P8 moved
-ahead of them, to 284. Every count in the book is P9's to walk.
+*Looking at objects*, which cannot be right once everything but the gate class exists. P8 raised
+them to 284, 301 and 306 from what the MCP test runner reports. P9 found that runner over-counts and
+rewrote all of them; see the P9 note.
 
 **Every gated fence in the book was checked against the image at the end of P8.** The five files
-hold 781 gated rows, 715 of them distinct methods. The image computed the body checksum of each one
-and reported it grouped by class; all 72 groups agree with the book except `MyClass >> myMethod`,
-the two-line placeholder that Section 1 uses to explain the `Class >> selector` convention, and
-which deliberately has no class in the image. P9 should teach the gate to exempt that one row
-instead of reporting it as missing.
+hold 781 method fences, 715 of them distinct. The image computed the body checksum of each one and
+reported it grouped by class; all 72 groups agree with the book except `MyClass >> myMethod`, the
+two-line placeholder that Section 1 uses to explain the `Class >> selector` convention, and which
+deliberately has no class in the image. P9 exempts that one fence, which leaves 780 gated rows over
+714 distinct methods, all matching.
 
 #### Steps as planned
 
@@ -661,12 +680,89 @@ instead of reporting it as missing.
 6. Rewrite the 35 fences; re-gate the section, and delete the Section 5 duplicates P6 and P7 left
    behind, listed at the end of P6.
 
-### P9 — Close
+### P9 — Close, 2026-10-08, awaiting commit
+
+P9 wrote no image code. It re-checked what the eight phases before it had built, corrected the one
+number the whole project had been quoting wrongly, closed the last of F9, and brought the method
+document and the project map up to what the image actually holds.
+
+**The suite is 274 tests, not 306.** The MCP `run_tests` call over `Laser-Game-Tests` reports 306,
+and every count written into the book and into this plan since 5.7 came from that figure. It
+over-counts by 32: `CellClickRegionTestCase`, `CellClickInsideRegionPushTestCase`,
+`CellClickOutsideRegionRotateTestCase` and `CellRendererTestCase` all inherit from the abstract
+`LaserGameTestCase`, and Pharo builds an abstract test case's suite out of its subclasses, so those
+four classes are collected twice: 10 + 6 + 5 + 11 = 32. Three independent counts agree on 274 — the
+sum of `testSelectors` over the 24 concrete classes, the sum over `buildSuite`, and an actual
+`TestSuite` run, which answers `ran 274 passed 274 failed 0 errors 0`. Ask per class, or run a suite,
+and do not trust a package-level count again.
+
+**The book now prints the reader's count, which is smaller still.** A reader who types the book's
+tests and nothing else has 242, because the package carries 32 tests the book never fences. They are
+spread over eleven classes — `GridTestCase` 5, `LaserGameControlPanelElementTestCase` 6,
+`GridFactoryTestCase` 3, `LaserGameConfirmElementTestCase` 3, `LaserGameLedElementTestCase` 3,
+`LaserGameElementTestCase` 3, `BlankCellTestCase` 2, `CellClickRegionTestCase` 2,
+`LaserGameCounterElementTestCase` 2, `TargetCellTestCase` 2 and `MirrorCellTestCase` 1 — and they are
+further cases of tests the book does write, plus the confirmation dialog and the digit display, which
+no chapter had room for. The book cannot honestly print the package's number, so it prints the
+reader's: *A less brittle unit test design* says "Two hundred and seven tests, five cell sizes, all
+green" at section5 941, and the four later run-blocks read 215, 231, 237 and 242. A note after the
+last of them says in as many words that the repository's package answers 274, and why. The decision
+is the user's, taken on 2026-10-08.
+
+**One fence is exempt from the gate.** The aggregate check at the end of P8 compared one SHA1 per
+class, 72 groups, and 71 matched. The 72nd was `MyClass >> myMethod`, which section 1 uses to explain
+the `Class >> selector` convention itself and which does not exist in the image. The gate script now
+carries it in an `EXEMPT` set with a comment saying why, which leaves 780 gated rows over 714 distinct
+methods, every one matching. After P9's own edits the gate reports the same per-file counts as before
+them, S1 69 · S2 119 · S3 250 · S4 182 · S5 160, and no row changed: the new fences are
+class-definition fences, which carry no `Class >> selector` head and so are not gated.
+
+**F9 is closed, in three decisions**, which are written into the finding itself: `Cell`'s
+`gridLocation` slot is added by a class-definition fence in *The path the beam takes*, at the first
+method that reads it; `LaserGameLedElement` gains its class definition at the top of *A display drawn
+from seven rectangles*; and `Grid >> laserIsActive:` earns no fence, because section1 1800 already
+tells the reader those accessors are the same three lines each. Three stale forward-references in
+section 1, which counted chapters to the slot, now name the chapter instead.
+
+**`DEV-CYCLE.md` §9 described two generic gates; the image has five.** The document was written
+before `LaserGameExamplesTestCase` had grown, and the plan had already promised an amendment. §9 now
+names all five in the image's own terms — every example answers something worth a click, every
+instance-side view is reachable with the class-side views exempt, every class-side view is shown by
+inspecting its class, the example package holds examples and nothing else, and only an example named
+`open…` opens a window — says that the first two are written the day the package is created and the
+other three as soon as they are cheap, and carries the rule that a gate which starts breeding methods
+has the wrong scope. §12's checklist line and the plan's §9-amendment note match.
+
+**The baseline resolves, and its edges are the planned ones.** Metacello parses
+`BaselineOfLaserGame >> baseline:` in the image and answers the two projects, the three packages and
+the four groups: `Laser-Game` requires `Bloc` and `Toplo` only, `Laser-Game-Examples` requires
+`Laser-Game`, `Laser-Game-Tests` requires `Laser-Game` and `Laser-Game-Examples`, and `default` is
+`core`, `examples` and `tests`. The image's method is identical to `src/BaselineOfLaserGame/`. The
+dependency claim was checked against the code as well, not only against the specification: no method
+of `Laser-Game` mentions any of the 32 example or test class names, and no method of
+`Laser-Game-Examples` mentions a test class. A load into a genuinely clean image was not run, because
+this machine's shell has no Pharo VM; that one step is left for the user.
+
+`run_critics` over the three packages reports 37 on `Laser-Game` (13 unclassified methods, 10 missing
+class comments, 8 missing subclass responsibilities, 6 unreferenced classes reached by `perform:`),
+6 on `Laser-Game-Examples`, all `ReClassNotReferencedRule`, which is what an examples package is, and
+none on `Laser-Game-Tests`. Every one of those is a critique the project has carried and argued for
+all along.
+
+`PROJECT_MAP.md` has the measured counts, the corrected test row with the over-count warning, the
+per-file book table rebuilt on the gate's own numbers, and a new section 10 describing the three
+artefacts and pointing at `DEV-CYCLE.md` and at this plan.
+
+One thing is flagged and not done: the 32 unfenced tests. Fencing them would mean finding a chapter
+for each, and several have no chapter that wants them. They are recorded here and in the book's note
+so that a later phase can decide.
+
+#### Steps as planned
 
 1. Full `run_tests` on `Laser-Game-Tests`; full `run_critics` on all three packages.
-2. Walk every fence of all five files against the image again, 781 rows over 715 distinct methods,
+2. Walk every fence of all five files against the image again, 780 rows over 714 distinct methods,
    and fix the stragglers. P8 left them all matching bar the `MyClass >> myMethod` placeholder, so
-   this is a re-check after P9's own edits, plus the gate exemption for that row.
+   this is a re-check after P9's own edits, plus the gate exemption for that fence.
 3. Confirm `BaselineOfLaserGame` still loads `core`, `examples`, `tests` and `default` in a clean
    image, with `Laser-Game-Tests` requiring `Laser-Game-Examples` and `Laser-Game` requiring neither.
 4. Update `PROJECT_MAP.md`: the counts, the package table, the chapter inventory, and a new short
@@ -781,8 +877,8 @@ Where they land: five in Section 1, nine in Section 2, six in Section 4 and one 
 3. **Section 1 getting heavy.** Four views, a new package, two generic gates and seven examples all
    land in a section written for a reader who may be new to programming. Mitigation: D4's option of
    deferring the gates, and a hard rule that a view arrives in at most two paragraphs and one fence.
-4. **Re-gating drift.** 734 fences were gated once; this plan touches a quarter of them. P9's full
-   walk is not optional.
+4. **Re-gating drift.** The gated fences were gated once; this plan touches a quarter of them. P9's
+   full walk is not optional. Settled: 780 gated rows over 714 distinct methods, all matching.
 5. **The 2007 page order.** D3 option B and the shrinking of *Looking at objects* both move further
    from the original structure than anything the port has done so far. D3 option A keeps the page
    anchor; D6 does not, and should be stated in the chapter itself.
@@ -795,8 +891,8 @@ Where they land: five in Section 1, nine in Section 2, six in Section 4 and one 
 - Every example is introduced at its promotion, with one of the four triggers named.
 - No bookmark examples. No example without a sender or a `<sampleInstance>`.
 - `LaserGameExamplesTestCase` gates instance-side coverage and exempts class-side views.
-- 305 runs green, critics clean, baseline loads in a clean image.
-- All 734 fences match the image.
+- 274 runs green, critics clean, baseline loads in a clean image.
+- All 780 gated fences match the image.
 - *Looking at objects* teaches the practice and maps the views, and teaches no view for the first
   time.
 - `PROJECT_MAP.md` points at `DEV-CYCLE.md`, and `DEV-CYCLE.md` is unchanged by this plan except

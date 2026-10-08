@@ -938,7 +938,7 @@ report := WriteStream on: String new.
 report contents
 ```
 
-Two hundred and eighty tests, five cell sizes, all green.
+Two hundred and seven tests, five cell sizes, all green.
 The habit costs you a minute and it is the cheapest test in the book: it checks a claim no single test can reach, by changing the one thing the whole package agrees about.
 
 In the next chapter we let the player take a move back.
@@ -1634,7 +1634,7 @@ A linter complaint that will not go away is sometimes a design decision you have
 We run the suite on the test package now, and it answers what it answered before:
 
 ```text
-284 run, 284 passes, 0 skipped, 0 expected failures,
+215 run, 215 passes, 0 skipped, 0 expected failures,
 0 failures, 0 errors, 0 unexpected passes
 ```
 
@@ -3382,10 +3382,10 @@ game := LaserGameElement new.
 You get `{8@10.
 335}`: the standard board, and a panel fifteen pixels taller than it was before the bar.
 
-The suite we have is still green, at 284 runs:
+The suite we have is still green, at 231 runs:
 
 ```text
-284 run, 284 passes, 0 skipped, 0 expected failures,
+231 run, 231 passes, 0 skipped, 0 expected failures,
 0 failures, 0 errors, 0 unexpected passes
 ```
 
@@ -4134,7 +4134,7 @@ You get `{130.
 And then the whole suite:
 
 ```text
-301 run, 301 passes, 0 skipped, 0 expected failures,
+237 run, 237 passes, 0 skipped, 0 expected failures,
 0 failures, 0 errors, 0 unexpected passes
 ```
 
@@ -4567,8 +4567,12 @@ led inspect
 This chapter adds five tests and the class they live in, and that is the suite complete:
 
 ```text
-306 run, 306 passes, 0 skipped, 0 expected failures,
+242 run, 242 passes, 0 skipped, 0 expected failures,
 0 failures, 0 errors, 0 unexpected passes
 ```
 
-That is the game: a board of cells that knows nothing about how it is drawn, a beam that walks it, a window built out of named numbers, twenty-one examples that open any of it in one click, nineteen tabs that explain the lot without a method being read, and three hundred and six tests that will say so again tomorrow.
+That is the count for a suite built from the book.
+The package in the repository answers a larger number, because it carries thirty-two tests the book never shows: more cases of tests the book does write, such as the remaining push directions, and a handful on the confirmation dialog and the digit display that no chapter had room for.
+Loading `Laser-Game-Tests` and running it gives two hundred and seventy-four.
+
+That is the game: a board of cells that knows nothing about how it is drawn, a beam that walks it, a window built out of named numbers, twenty-one examples that open any of it in one click, nineteen tabs that explain the lot without a method being read, and two hundred and forty-two tests that will say so again tomorrow.
